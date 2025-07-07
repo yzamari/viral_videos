@@ -179,9 +179,9 @@ launch_web_ui() {
     if lsof -Pi :7860 -sTCP:LISTEN -t >/dev/null 2>&1; then
         print_warning "Port 7860 is already in use"
         print_status "Trying alternative port 7861..."
-        python3 enhanced_ui.py --port 7861
+        python3 simple_test_ui.py
     else
-        python3 enhanced_ui.py
+        python3 simple_test_ui.py
     fi
 }
 
@@ -324,7 +324,7 @@ show_documentation() {
     echo "🚀 Quick Commands:"
     echo "  python3 main.py --help                    # Show all options"
     echo "  python3 main.py generate --topic 'test'   # Generate video"
-    echo "  python3 enhanced_ui.py                    # Launch web UI"
+    echo "  python3 simple_test_ui.py                 # Launch web UI"
     echo
 }
 

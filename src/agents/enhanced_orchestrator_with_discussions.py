@@ -735,7 +735,8 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                 use_real_veo2=master_plan.get('use_real_veo2', True),
                 use_vertex_ai=self.vertex_ai_config.get('use_vertex_ai', True),
                 project_id=self.vertex_ai_config.get('vertex_project_id') or "viralgen-464411",
-                location=self.vertex_ai_config.get('vertex_location') or "us-central1"
+                location=self.vertex_ai_config.get('vertex_location') or "us-central1",
+                session_id=self.session_id
             )
             
             # Convert platform and category strings to enums
@@ -787,15 +788,28 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             # Generate video
             result = generator.generate_video(config)
             
-            return {
-                'script': result.script if result else f"This is a {master_plan['duration']} second video about {master_plan['topic']}",
-                'scenes': getattr(result, 'scenes', []) if result else [],
-                'duration': master_plan['duration'],
-                'success': True,
-                'config': config,
-                'result': result,
-                'composition_applied': True if composition_decisions else False
-            }
+            # VideoGenerator.generate_video returns a file path string, not an object
+            if result and isinstance(result, str):
+                # result is the final video file path
+                return {
+                    'script': f"Generated video script for {master_plan['topic']} ({master_plan['duration']}s)",
+                    'scenes': [],  # We don't have scene data from the file path
+                    'duration': master_plan['duration'],
+                    'success': True,
+                    'config': config,
+                    'result': result,  # This is the video file path
+                    'composition_applied': True if composition_decisions else False
+                }
+            else:
+                # Generation failed
+                return {
+                    'script': f"This is a {master_plan['duration']} second video about {master_plan['topic']}",
+                    'scenes': [],
+                    'duration': master_plan['duration'],
+                    'success': False,
+                    'error': 'Video generation returned no result',
+                    'composition_applied': False
+                }
             
         except Exception as e:
             logger.error(f"❌ Script generation failed: {e}")
@@ -814,11 +828,12 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             # If script generation already produced a result, use it
             if 'result' in script_data and script_data['result']:
                 result = script_data['result']
+                # result is a file path string from VideoGenerator
                 return {
-                    'clips': getattr(result, 'clips', []),
+                    'clips': [],  # We don't have individual clips from the file path
                     'total_duration': master_plan['duration'],
                     'success': True,
-                    'video_path': result.file_path if result else None,
+                    'video_path': result if isinstance(result, str) else None,
                     'result': result
                 }
             else:
@@ -843,8 +858,9 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             # Audio is typically generated as part of the video generation process
             if 'result' in script_data and script_data['result']:
                 result = script_data['result']
+                # result is a file path string from VideoGenerator
                 return {
-                    'audio_path': getattr(result, 'audio_path', None),
+                    'audio_path': None,  # Audio is embedded in the video file
                     'duration': master_plan['duration'],
                     'success': True,
                     'result': result
@@ -871,8 +887,9 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             # Final assembly is typically done as part of the video generation process
             if 'result' in script_data and script_data['result']:
                 result = script_data['result']
+                # result is a file path string from VideoGenerator
                 return {
-                    'final_video_path': result.file_path if result else None,
+                    'final_video_path': result if isinstance(result, str) else None,
                     'success': True,
                     'result': result
                 }

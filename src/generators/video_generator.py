@@ -59,15 +59,15 @@ class VideoGenerator:
     """
     
     def __init__(self, api_key: str, use_vertex_ai: bool = True, project_id: Optional[str] = None, 
-                 location: Optional[str] = None, use_real_veo2: bool = True):
+                 location: Optional[str] = None, use_real_veo2: bool = True, session_id: Optional[str] = None):
         self.api_key = api_key
         self.use_vertex_ai = use_vertex_ai
         self.project_id = project_id or "viralgen-464411"
         self.location = location or "us-central1"
         self.use_real_veo2 = use_real_veo2
         
-        # Initialize session
-        self.session_id = str(uuid.uuid4())[:8]
+        # Initialize session - use provided session_id or generate one
+        self.session_id = session_id or str(uuid.uuid4())[:8]
         self.output_dir = "outputs"
         self.clips_dir = os.path.join(self.output_dir, "clips")
         os.makedirs(self.clips_dir, exist_ok=True)
@@ -312,24 +312,30 @@ class VideoGenerator:
                             logger.info(f"✅ VEO-2 clip {i+1} generated: {local_path}")
                         else:
                             logger.warning(f"❌ VEO-2 clip {i+1} failed, using fallback")
-                            # Create fallback clip
-                            fallback_path = os.path.join(self.output_dir, f"fallback_clip_{i}_{self.session_id}.mp4")
+                            # Create fallback clip in session directory
+                            session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+                            os.makedirs(session_dir, exist_ok=True)
+                            fallback_path = os.path.join(session_dir, f"fallback_clip_{i}_{self.session_id}.mp4")
                             self._create_placeholder_clip(fallback_path, 8)
                             clips.append(fallback_path)
                             
                     except Exception as e:
                         logger.error(f"❌ VEO-2 generation failed for clip {i+1}: {e}")
-                        # Create fallback clip
-                        fallback_path = os.path.join(self.output_dir, f"fallback_clip_{i}_{self.session_id}.mp4")
+                        # Create fallback clip in session directory
+                        session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+                        os.makedirs(session_dir, exist_ok=True)
+                        fallback_path = os.path.join(session_dir, f"fallback_clip_{i}_{self.session_id}.mp4")
                         self._create_placeholder_clip(fallback_path, 8)
                         clips.append(fallback_path)
             else:
                 logger.info("🎬 Generating placeholder clips (VEO-2 disabled)")
-                # Fallback to placeholder clips
+                # Fallback to placeholder clips in session directory
+                session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+                os.makedirs(session_dir, exist_ok=True)
                 num_clips = max(1, config.duration_seconds // 8)
                 
                 for i in range(num_clips):
-                    clip_path = os.path.join(self.output_dir, f"clip_{i}_{self.session_id}.mp4")
+                    clip_path = os.path.join(session_dir, f"clip_{i}_{self.session_id}.mp4")
                     self._create_placeholder_clip(clip_path, 8)
                     clips.append(clip_path)
             
@@ -375,8 +381,10 @@ class VideoGenerator:
         try:
             import subprocess
             
-            # Create local path
-            local_path = os.path.join(self.output_dir, f"veo2_clip_{clip_index}_{self.session_id}.mp4")
+            # Create local path in session directory
+            session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+            os.makedirs(session_dir, exist_ok=True)
+            local_path = os.path.join(session_dir, f"veo2_clip_{clip_index}_{self.session_id}.mp4")
             
             # Use gsutil to download the file
             cmd = ["gsutil", "cp", gcs_uri, local_path]
@@ -411,7 +419,10 @@ class VideoGenerator:
                            config: GeneratedVideoConfig) -> str:
         """Compose final video from clips and audio"""
         try:
-            final_video_path = os.path.join(self.output_dir, f"final_video_{self.session_id}.mp4")
+            # Create session directory path
+            session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+            os.makedirs(session_dir, exist_ok=True)
+            final_video_path = os.path.join(session_dir, f"final_video_{self.session_id}.mp4")
             
             # Load video clips
             clips = []
@@ -603,8 +614,10 @@ class VideoGenerator:
                 )
                 
                 if audio_path and os.path.exists(audio_path):
-                    # Move to output directory
-                    final_path = os.path.join(self.output_dir, f"google_tts_voice_{uuid.uuid4()}.mp3")
+                    # Move to session directory
+                    session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+                    os.makedirs(session_dir, exist_ok=True)
+                    final_path = os.path.join(session_dir, f"google_tts_voice_{uuid.uuid4()}.mp3")
                     import shutil
                     shutil.move(audio_path, final_path)
                     
@@ -637,7 +650,9 @@ class VideoGenerator:
                 enhanced_script = self._add_natural_speech_patterns(clean_script, feeling_context)
                 
                 tts = gTTS(text=enhanced_script, **tts_config)
-                audio_path = os.path.join(self.output_dir, f"enhanced_voice_{uuid.uuid4()}.mp3")
+                session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+                os.makedirs(session_dir, exist_ok=True)
+                audio_path = os.path.join(session_dir, f"enhanced_voice_{uuid.uuid4()}.mp3")
                 tts.save(audio_path)
                 
                 logger.info(f"✅ Enhanced gTTS generated: {audio_path}")
@@ -649,7 +664,9 @@ class VideoGenerator:
                 # STEP 4: Simple fallback
                 try:
                     simple_tts = gTTS(text=clean_script, lang='en', slow=False)
-                    audio_path = os.path.join(self.output_dir, f"simple_voice_{uuid.uuid4()}.mp3")
+                    session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+                    os.makedirs(session_dir, exist_ok=True)
+                    audio_path = os.path.join(session_dir, f"simple_voice_{uuid.uuid4()}.mp3")
                     simple_tts.save(audio_path)
                     logger.info(f"✅ Simple TTS fallback: {audio_path}")
                     return audio_path
@@ -741,7 +758,7 @@ class VideoGenerator:
                     ).set_position(('center', 0.15)).set_duration(3).set_start(2),
                     
                     TextClip(
-                        "👍 LIKE & SUBSCRIBE",
+                        "LIKE & SUBSCRIBE",
                         fontsize=50,
                         color='white',
                         font='Arial-Bold',
