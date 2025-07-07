@@ -119,7 +119,7 @@ def test_veo3_integration():
         
     except ImportError as e:
         print(f"❌ Import error: {e}")
-        print("Make sure you're in the viral-video-generator directory")
+        print("Make sure you're in the viralAi directory")
         return False
     except Exception as e:
         print(f"❌ Test failed: {e}")

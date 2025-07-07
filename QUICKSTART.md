@@ -8,7 +8,7 @@ Get up and running with AI-powered video generation and revolutionary frame cont
 ```bash
 # 1. Clone and install
 git clone <repo-url>
-cd viral-video-generator
+cd viralAi
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt

@@ -8,7 +8,7 @@ Welcome to the comprehensive usage guide for Viral Video Generator v2.0! This gu
 ```bash
 # Clone and install
 git clone <repository-url>
-cd viral-video-generator
+cd viralAi
 chmod +x install_app.sh
 ./install_app.sh
 

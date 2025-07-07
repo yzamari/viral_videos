@@ -123,8 +123,8 @@ python example_usage.py --prompt "your idea" --duration 25
 
 ### **Installation**
 ```bash
-git clone https://github.com/yourusername/viral-video-generator
-cd viral-video-generator
+git clone https://github.com/yourusername/viralAi
+cd viralAi
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -143,7 +143,7 @@ GEMINI_REFINEMENT_MODEL=gemini-2.5-pro
 ## 📁 **Project Structure**
 
 ```
-viral-video-generator/
+viralAi/
 ├── src/
 │   ├── analyzers/          # Content analysis
 │   ├── generators/         # AI video/script generation

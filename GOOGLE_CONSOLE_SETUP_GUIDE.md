@@ -13,7 +13,7 @@
 2. **Create New Project**
    - Click the project dropdown at the top
    - Click "New Project"
-   - Enter project name: `viral-video-generator`
+   - Enter project name: `viralAi`
    - Note your Project ID (you'll need this)
    - Click "Create"
 

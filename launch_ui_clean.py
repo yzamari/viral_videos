@@ -20,7 +20,7 @@ def main():
     
     # Check if we're in the right directory
     if not os.path.exists("comprehensive_ui_fixed.py"):
-        print("❌ Error: Please run from the viral-video-generator directory")
+        print("❌ Error: Please run from the viralAi directory")
         return 1
     
     try:

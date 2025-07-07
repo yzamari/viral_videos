@@ -3,26 +3,33 @@
 # 🎬 Viral Video Generator - Launch Script
 # Simple script that actually works
 
-echo "🎬 Starting Basic UI..."
+echo "🎬 Starting Video Generator..."
 echo "=================================="
 
-# Set the API key
-export GOOGLE_API_KEY=AIzaSyCtw5XG_XTbxxNRajkbGWj9feoaqwFoptA
-
-# Navigate to the correct directory
-cd /Users/yahavzamari/viralAi/viral-video-generator
-
 # Check if we're in the right directory
-if [ ! -f "simple_working_ui.py" ]; then
-    echo "❌ Error: simple_working_ui.py not found"
+if [ ! -f "launch_full_working_app.py" ]; then
+    echo "❌ Error: launch_full_working_app.py not found"
+    echo "Please run this script from the viralAi directory"
     exit 1
 fi
 
-# Launch the simple working UI
-echo "🚀 Launching Simple Working UI..."
+# Activate virtual environment if it exists
+if [ -d ".venv" ]; then
+    echo "🔧 Activating virtual environment..."
+    source .venv/bin/activate
+fi
+
+# Check for API key
+if [ -z "$GOOGLE_API_KEY" ]; then
+    echo "⚠️  Warning: GOOGLE_API_KEY not set"
+    echo "Loading from .env file if available..."
+fi
+
+# Launch the enhanced video generator
+echo "🚀 Launching Enhanced Video Generator..."
 echo "🌐 Interface will be available at: http://localhost:7860"
 echo ""
 echo "Press Ctrl+C to stop the application"
 echo ""
 
-python basic_ui.py 
+python launch_full_working_app.py "$@" 

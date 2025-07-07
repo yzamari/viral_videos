@@ -177,3 +177,17 @@ credentials.json
 session_*/
 backup_*/
 archive_*/ 
+*.mp3
+*.mp4
+outputs/*
+test_output/*
+test_images/*
+test_videos/*
+test_audio/*
+test_scripts/*
+test_configs/*
+test_logs/*
+test_errors/*
+test_results/*
+test_reports/*
+*.log

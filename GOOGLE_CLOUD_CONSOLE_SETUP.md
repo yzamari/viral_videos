@@ -13,7 +13,7 @@
 2. **Create New Project**
    - Click the project dropdown (top left)
    - Click "New Project"
-   - Enter project name: `viral-video-generator`
+   - Enter project name: `viralAi`
    - Click "Create"
    - Wait for project creation (~30 seconds)
 
@@ -97,12 +97,12 @@ Add to your `.env` file:
 GOOGLE_APPLICATION_CREDENTIALS=/Users/YOUR_USERNAME/.google-cloud-keys/service-key.json
 
 # Google Cloud Project
-GOOGLE_CLOUD_PROJECT=viral-video-generator
+GOOGLE_CLOUD_PROJECT=viralAi
 
 # Enable services
 GOOGLE_TTS_ENABLED=true
 ENABLE_VERTEX_AI_IMAGEN=true
-VERTEX_AI_PROJECT_ID=viral-video-generator
+VERTEX_AI_PROJECT_ID=viralAi
 VERTEX_AI_LOCATION=us-central1
 ```
 

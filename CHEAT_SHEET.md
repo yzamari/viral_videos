@@ -75,8 +75,8 @@ python main.py generate --category Technology --topic "AI breakthrough"
 ### **First Time Setup**
 ```bash
 # 1. Clone repository
-git clone https://github.com/yzamari/viral-video-generator.git
-cd viral-video-generator
+git clone https://github.com/yzamari/viralAi.git
+cd viralAi
 
 # 2. Setup environment
 python3 -m venv venv

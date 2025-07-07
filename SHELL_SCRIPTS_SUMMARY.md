@@ -170,7 +170,7 @@ chmod +x quick_run.sh
 ### **Path Issues**
 ```bash
 # Always run from project root
-cd viral-video-generator
+cd viralAi
 ./run_video_generator.sh ui
 ```
 

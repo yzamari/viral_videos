@@ -56,13 +56,24 @@ class FullWorkingVideoApp:
         Generate a complete video with all features using the enhanced orchestrator
         """
         try:
-            # Create session directory
+            # Create session directory with consistent naming
             session_id = datetime.now().strftime('%Y%m%d_%H%M%S')
-            output_dir = f"outputs/session_{session_id}"
-            os.makedirs(output_dir, exist_ok=True)
+            session_dir = os.path.join(os.getcwd(), "outputs", f"session_{session_id}")
+            os.makedirs(session_dir, exist_ok=True)
+            
+            # Create subdirectories for organization
+            subdirs = [
+                'agent_discussions',
+                'veo2_clips', 
+                'audio_files',
+                'scripts',
+                'analysis'
+            ]
+            for subdir in subdirs:
+                os.makedirs(os.path.join(session_dir, subdir), exist_ok=True)
             
             logger.info(f"🎯 Generating video: {topic}")
-            logger.info(f"📁 Session: {output_dir}")
+            logger.info(f"📁 Session: {session_dir}")
             logger.info(f"⏱️ Duration: {duration}s")
             logger.info(f"📱 Platform: {platform}")
             logger.info(f"🎭 Category: {category}")
@@ -152,22 +163,61 @@ class FullWorkingVideoApp:
             generation_time = time.time() - start_time
             logger.info(f"⏱️ Generation completed in {generation_time:.2f} seconds")
             
-            # Handle result from orchestrator
+            # Handle result from orchestrator - ensure it's in the session directory
+            video_path = None
+            video_id = f"video_{session_id}"
+            
             if video_result and hasattr(video_result, 'file_path'):
-                video_path = video_result.file_path
+                source_path = video_result.file_path
                 video_id = video_result.video_id
-            elif isinstance(video_result, str):
-                video_path = video_result
-                video_id = os.path.basename(video_path).replace('.mp4', '')
-            else:
-                # Look for generated video files
-                video_files = [f for f in os.listdir(output_dir) if f.endswith('.mp4')]
-                if video_files:
-                    video_path = os.path.join(output_dir, video_files[0])
-                    video_id = video_files[0].replace('.mp4', '')
+                
+                # Move video to session directory if it's not already there
+                if not source_path.startswith(session_dir):
+                    video_path = os.path.join(session_dir, f"final_video_{video_id}.mp4")
+                    if os.path.exists(source_path):
+                        import shutil
+                        shutil.move(source_path, video_path)
+                        logger.info(f"📁 Moved video to session directory: {video_path}")
                 else:
-                    video_path = None
-                    video_id = 'unknown'
+                    video_path = source_path
+                    
+            elif isinstance(video_result, str):
+                source_path = video_result
+                
+                # Move video to session directory
+                video_path = os.path.join(session_dir, f"final_video_{video_id}.mp4")
+                if os.path.exists(source_path) and not source_path.startswith(session_dir):
+                    import shutil
+                    shutil.move(source_path, video_path)
+                    logger.info(f"📁 Moved video to session directory: {video_path}")
+                else:
+                    video_path = source_path
+            else:
+                # Look for generated video files in various locations
+                search_locations = [
+                    session_dir,
+                    f"outputs/session_{session_id}",
+                    "outputs",
+                    "."
+                ]
+                
+                for location in search_locations:
+                    if os.path.exists(location):
+                        video_files = [f for f in os.listdir(location) if f.endswith('.mp4')]
+                        if video_files:
+                            source_path = os.path.join(location, video_files[0])
+                            video_path = os.path.join(session_dir, f"final_video_{video_id}.mp4")
+                            
+                            if source_path != video_path:
+                                import shutil
+                                shutil.move(source_path, video_path)
+                                logger.info(f"📁 Found and moved video: {video_path}")
+                            else:
+                                video_path = source_path
+                            break
+            
+            # Organize all session files
+            self._organize_session_files(session_dir, session_id)
             
             if video_path and os.path.exists(video_path):
                 file_size = os.path.getsize(video_path) / (1024 * 1024)
@@ -178,52 +228,141 @@ class FullWorkingVideoApp:
                 logger.info(f"📏 Video duration: {duration_actual:.1f} seconds")
                 
                 # Create analysis
-                analysis = self._create_analysis(video_path, config, generation_time, output_dir)
+                analysis = self._create_analysis(video_path, config, generation_time, session_dir)
                 
-                # Get additional files (VEO-2 clips, agent discussions, etc.)
-                audio_files = [f for f in os.listdir(output_dir) if f.endswith('.mp3')]
-                script_files = [f for f in os.listdir(output_dir) if 'script' in f.lower() and f.endswith('.txt')]
-                veo2_clips = []
-                agent_discussions = []
-                
-                # Check for VEO-2 clips
-                veo2_dir = os.path.join(output_dir, 'veo2_clips')
-                if os.path.exists(veo2_dir):
-                    veo2_clips = [f for f in os.listdir(veo2_dir) if f.endswith('.mp4')]
-                
-                # Check for agent discussions
-                discussions_dir = os.path.join(output_dir, 'agent_discussions')
-                if os.path.exists(discussions_dir):
-                    agent_discussions = [f for f in os.listdir(discussions_dir) if f.endswith('.json')]
+                # Get organized file lists
+                file_summary = self._get_session_file_summary(session_dir)
                 
                 # Parse agent discussions for visualization
-                discussion_data = self._parse_agent_discussions(discussions_dir)
+                discussion_data = self._parse_agent_discussions(os.path.join(session_dir, 'agent_discussions'))
                 
                 return {
                     'success': True,
                     'video_path': video_path,
                     'video_id': video_id,
-                    'session_dir': output_dir,
+                    'session_dir': session_dir,
                     'generation_time': generation_time,
                     'duration_actual': duration_actual,
                     'file_size_mb': file_size,
-                    'audio_files': audio_files,
-                    'script_files': script_files,
-                    'veo2_clips': veo2_clips,
-                    'agent_discussions': agent_discussions,
+                    'audio_files': file_summary['audio_files'],
+                    'script_files': file_summary['script_files'],
+                    'veo2_clips': file_summary['veo2_clips'],
+                    'agent_discussions': file_summary['agent_discussions'],
                     'discussion_data': discussion_data,
                     'analysis': analysis,
                     'config': config
                 }
             else:
-                logger.error(f"❌ Video not found: {video_path}")
-                return {'success': False, 'error': f'Video not found: {video_path}'}
+                logger.error(f"❌ Video not found after generation")
+                return {'success': False, 'error': f'Video not found after generation'}
                 
         except Exception as e:
             logger.error(f"❌ Video generation failed: {e}")
             import traceback
             traceback.print_exc()
             return {'success': False, 'error': str(e)}
+    
+    def _organize_session_files(self, session_dir: str, session_id: str):
+        """Organize all generated files into proper session structure"""
+        try:
+            logger.info(f"📁 Organizing session files in {session_dir}")
+            
+            # Define file patterns and their target directories
+            file_patterns = {
+                'agent_discussions': ['*discussion*.json', '*agent*.json', '*report*.md', '*visualization*.json'],
+                'audio_files': ['*.mp3', '*.wav', '*audio*', '*voice*', '*tts*'],
+                'scripts': ['*script*.txt', '*prompt*.txt', '*tts_script*'],
+                'veo2_clips': ['*veo*.mp4', '*clip*.mp4', 'sample_*.mp4'],
+                'analysis': ['*analysis*.txt', '*report*.txt', '*summary*.txt']
+            }
+            
+            # Search for files in common generation locations
+            search_locations = [
+                ".",
+                "outputs",
+                f"outputs/session_{session_id}",
+                "temp",
+                "/tmp"
+            ]
+            
+            import glob
+            import shutil
+            
+            for location in search_locations:
+                if not os.path.exists(location):
+                    continue
+                    
+                for target_dir, patterns in file_patterns.items():
+                    target_path = os.path.join(session_dir, target_dir)
+                    
+                    for pattern in patterns:
+                        search_pattern = os.path.join(location, pattern)
+                        matching_files = glob.glob(search_pattern)
+                        
+                        for file_path in matching_files:
+                            if os.path.isfile(file_path):
+                                filename = os.path.basename(file_path)
+                                dest_path = os.path.join(target_path, filename)
+                                
+                                # Only move if not already in target location
+                                if not file_path.startswith(session_dir):
+                                    try:
+                                        shutil.move(file_path, dest_path)
+                                        logger.info(f"📁 Moved {filename} to {target_dir}/")
+                                    except Exception as move_error:
+                                        logger.warning(f"Could not move {filename}: {move_error}")
+            
+            logger.info(f"✅ Session files organized in {session_dir}")
+            
+        except Exception as e:
+            logger.warning(f"File organization failed: {e}")
+    
+    def _get_session_file_summary(self, session_dir: str) -> Dict[str, List[str]]:
+        """Get summary of all files in the session directory"""
+        summary = {
+            'audio_files': [],
+            'script_files': [],
+            'veo2_clips': [],
+            'agent_discussions': [],
+            'analysis_files': []
+        }
+        
+        try:
+            # Check each subdirectory
+            subdirs = {
+                'audio_files': 'audio_files',
+                'script_files': 'scripts', 
+                'veo2_clips': 'veo2_clips',
+                'agent_discussions': 'agent_discussions',
+                'analysis_files': 'analysis'
+            }
+            
+            for key, subdir in subdirs.items():
+                subdir_path = os.path.join(session_dir, subdir)
+                if os.path.exists(subdir_path):
+                    files = [f for f in os.listdir(subdir_path) if os.path.isfile(os.path.join(subdir_path, f))]
+                    summary[key] = files
+            
+            # Also check root session directory for any files
+            root_files = [f for f in os.listdir(session_dir) if os.path.isfile(os.path.join(session_dir, f))]
+            
+            # Categorize root files
+            for file in root_files:
+                if file.endswith(('.mp3', '.wav')):
+                    summary['audio_files'].append(file)
+                elif file.endswith('.txt') and ('script' in file.lower() or 'prompt' in file.lower()):
+                    summary['script_files'].append(file)
+                elif file.endswith('.mp4') and file != f"final_video_{os.path.basename(session_dir).split('_')[-1]}.mp4":
+                    summary['veo2_clips'].append(file)
+                elif file.endswith('.json') and 'discussion' in file.lower():
+                    summary['agent_discussions'].append(file)
+                elif file.endswith('.txt') and 'analysis' in file.lower():
+                    summary['analysis_files'].append(file)
+            
+        except Exception as e:
+            logger.warning(f"Could not create file summary: {e}")
+        
+        return summary
     
     def _parse_agent_discussions(self, discussions_dir: str) -> Dict[str, Any]:
         """Parse agent discussion files to extract conversation data"""

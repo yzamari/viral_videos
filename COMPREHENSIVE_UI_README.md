@@ -185,7 +185,7 @@ outputs/session_YYYYMMDD_HHMMSS_ID/
 - **Status**: Safe to ignore
 
 #### UI Not Loading
-- **Check**: Ensure you're in the viral-video-generator directory
+- **Check**: Ensure you're in the viralAi directory
 - **Verify**: Python virtual environment is activated
 - **Port**: Make sure port 7860 is available
 

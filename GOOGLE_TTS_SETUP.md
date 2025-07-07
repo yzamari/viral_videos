@@ -62,7 +62,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="/path/to/google-tts-credentials.json"
 echo 'GOOGLE_TTS_CREDENTIALS="/path/to/google-tts-credentials.json"' >> .env
 
 # Option 3: Copy to project directory
-cp /path/to/google-tts-credentials.json viral-video-generator/
+cp /path/to/google-tts-credentials.json viralAi/
 ```
 
 ### Step 6: Install Python Client

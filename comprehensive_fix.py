@@ -213,7 +213,7 @@ def main():
     
     # Check current directory
     if not os.path.exists("main.py"):
-        print("❌ Please run this script from the viral-video-generator directory")
+        print("❌ Please run this script from the viralAi directory")
         return False
     
     # Apply fixes

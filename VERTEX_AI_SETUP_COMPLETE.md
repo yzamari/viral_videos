@@ -138,7 +138,7 @@ Based on [official Vertex AI pricing](https://cloud.google.com/vertex-ai/generat
 
 ### 1. Start the Application
 ```bash
-cd /Users/yahavzamari/viralAi/viral-video-generator
+cd /Users/yahavzamari/viralAi/viralAi
 source .env
 python gradio_ui.py
 ```
@@ -166,7 +166,7 @@ If VEO-2 quota is exhausted or fails:
 ## File Structure
 
 ```
-viral-video-generator/
+viralAi/
 ├── .env                                    # Environment configuration
 ├── src/generators/
 │   ├── vertex_ai_veo2_client.py           # NEW: Vertex AI client

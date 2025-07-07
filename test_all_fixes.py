@@ -304,7 +304,7 @@ def main():
     
     # Check if we're in the right directory
     if not os.path.exists("main.py"):
-        print("❌ Please run from viral-video-generator directory")
+        print("❌ Please run from viralAi directory")
         return False
     
     # Run comprehensive test

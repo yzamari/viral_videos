@@ -51,8 +51,8 @@ def check_environment():
     
     # Check if we're in the right directory
     if not os.path.exists("config"):
-        print("❌ Error: Please run this script from the viral-video-generator directory")
-        print("Usage: cd viral-video-generator && python launch_ui.py")
+        print("❌ Error: Please run this script from the viralAi directory")
+        print("Usage: cd viralAi && python launch_ui.py")
         return False
     
     # Check for .env file

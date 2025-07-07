@@ -117,7 +117,7 @@ def main():
     
     # Check if we're in the right directory
     if not os.path.exists("config"):
-        print("❌ Error: Please run from the viral-video-generator directory")
+        print("❌ Error: Please run from the viralAi directory")
         return
     
     print("✅ Environment check passed")

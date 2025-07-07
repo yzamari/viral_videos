@@ -361,4 +361,382 @@ class VideoGenerator:
             logger.error(f"❌ Placeholder clip creation failed: {e}")
             raise
 
+    def _clean_script_for_tts(self, script: str, target_duration: int) -> str:
+        """Clean and optimize script for TTS generation - Remove ALL technical terms"""
+        import re
+        
+        logger.info(f"🧹 Cleaning script for TTS (target: {target_duration}s)")
+        
+        # STEP 1: Extract only VOICEOVER content
+        dialogue_lines = []
+        for line in script.split('\n'):
+            if '**VOICEOVER:**' in line:
+                content = line.replace('**VOICEOVER:**', '').strip()
+                if content and len(content) > 10:
+                    dialogue_lines.append(content)
+        
+        if not dialogue_lines:
+            # Fallback: extract any meaningful content that isn't technical
+            sentences = script.split('.')
+            for sentence in sentences:
+                clean_sentence = sentence.strip()
+                # Skip technical lines
+                if not any(skip in clean_sentence.upper() for skip in [
+                    'HOOK', 'TEXT', 'TYPE', 'SHOCK', 'VISUAL', 'SOUND', 'SFX', 
+                    'MUSIC', 'CUT', 'FADE', 'ZOOM', 'TRANSITION', 'OVERLAY',
+                    'DURATION', 'TIMING', 'POSITION', 'STYLE', 'FONT', 'COLOR'
+                ]):
+                    if len(clean_sentence) > 15:
+                        dialogue_lines.append(clean_sentence)
+        
+        # STEP 2: Join and clean technical metadata
+        full_dialogue = ' '.join(dialogue_lines)
+        
+        # Remove technical terms that shouldn't be spoken
+        technical_patterns = [
+            r'\b(hook|text|type|shock|visual|sound|sfx|music|cut|fade|zoom)\b',
+            r'\b(transition|overlay|duration|timing|position|style|font|color)\b',
+            r'\b(scene|clip|video|audio|track|layer|effect|filter)\b',
+            r'\[(.*?)\]',  # Remove brackets
+            r'\((.*?)\)',  # Remove parentheses  
+            r'\{(.*?)\}',  # Remove curly braces
+            r'<(.*?)>',    # Remove angle brackets
+            r'\*\*(.*?)\*\*',  # Remove bold markers
+            r'=+',         # Remove equal signs
+            r'-{3,}',      # Remove long dashes
+            r'\d+:\d+',    # Remove timestamps
+            r'\btiming:\s*\w+\b',  # Remove timing specifications
+            r'\bstyle:\s*\w+\b',   # Remove style specifications
+        ]
+        
+        cleaned_text = full_dialogue
+        for pattern in technical_patterns:
+            cleaned_text = re.sub(pattern, '', cleaned_text, flags=re.IGNORECASE)
+        
+        # Clean up whitespace and punctuation
+        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+        cleaned_text = re.sub(r'^[:\-\s]+', '', cleaned_text)
+        cleaned_text = re.sub(r'[.]+$', '.', cleaned_text)
+        
+        # STEP 3: Calculate optimal word count and trim
+        target_words = int(target_duration * 2.5)  # 2.5 words per second
+        words = cleaned_text.split()
+        
+        if len(words) > target_words:
+            # Trim to target length but keep complete sentences
+            trimmed_words = words[:target_words]
+            trimmed_text = ' '.join(trimmed_words)
+            
+            # Try to end at a sentence boundary
+            if '.' in trimmed_text:
+                sentences = trimmed_text.split('.')
+                if len(sentences) > 1:
+                    trimmed_text = '. '.join(sentences[:-1]) + '.'
+            final_script = trimmed_text
+        else:
+            final_script = cleaned_text
+        
+        # Ensure it ends properly
+        if not final_script.endswith('.'):
+            final_script += '.'
+        
+        logger.info(f"✅ Cleaned TTS script: {len(words)} → {len(final_script.split())} words")
+        logger.info(f"🎯 Removed technical terms, kept only natural speech")
+        logger.info(f"📝 Clean script preview: {final_script[:100]}...")
+        
+        return final_script
+    
+    def _generate_voiceover(self, script: str, duration: int = 30, config: Dict = None) -> str:
+        """Generate high-quality AI voice-over using Google Cloud TTS"""
+        logger.info(f"🎤 Generating high-quality voice-over for {duration}s video...")
+        
+        if not config:
+            config = {}
+        
+        # Extract context for voice selection
+        narrative_context = config.get('narrative', 'neutral')
+        feeling_context = config.get('feeling', 'neutral')
+        
+        try:
+            # STEP 1: Clean script thoroughly for TTS
+            clean_script = self._clean_script_for_tts(script, duration)
+            
+            if not clean_script or len(clean_script.strip()) < 10:
+                logger.warning("⚠️ Script too short after cleaning, using fallback")
+                clean_script = f"Welcome to this amazing video about {config.get('topic', 'our topic')}. This content will definitely interest you. Thanks for watching!"
+            
+            # STEP 2: Try Google Cloud TTS first for natural voice
+            try:
+                from .google_tts_client import GoogleTTSClient
+                
+                logger.info("🎤 Using Google Cloud TTS for natural voice...")
+                google_tts = GoogleTTSClient()
+                
+                audio_path = google_tts.generate_speech(
+                    text=clean_script,
+                    feeling=feeling_context,
+                    narrative=narrative_context,
+                    duration_target=duration,
+                    use_ssml=False  # Keep it simple for reliability
+                )
+                
+                if audio_path and os.path.exists(audio_path):
+                    # Move to output directory
+                    final_path = os.path.join(self.output_dir, f"google_tts_voice_{uuid.uuid4()}.mp3")
+                    import shutil
+                    shutil.move(audio_path, final_path)
+                    
+                    logger.info(f"✅ Google Cloud TTS SUCCESS: Natural voice generated")
+                    logger.info(f"📁 Audio file: {final_path}")
+                    return final_path
+                    
+            except Exception as e:
+                logger.warning(f"⚠️ Google Cloud TTS failed: {e}")
+                logger.info("🔄 Falling back to enhanced gTTS...")
+            
+            # STEP 3: Enhanced gTTS fallback with better settings
+            try:
+                from gtts import gTTS
+                
+                # Enhanced TTS settings based on feeling
+                tts_config = {
+                    'lang': 'en',
+                    'slow': False,
+                    'tld': 'com'  # Use .com for most natural voice
+                }
+                
+                # Adjust for feeling
+                if feeling_context in ['funny', 'excited']:
+                    tts_config['tld'] = 'co.uk'  # British accent for variety
+                elif feeling_context in ['serious', 'dramatic']:
+                    tts_config['tld'] = 'com.au'  # Australian for deeper tone
+                
+                # Add natural speech patterns
+                enhanced_script = self._add_natural_speech_patterns(clean_script, feeling_context)
+                
+                tts = gTTS(text=enhanced_script, **tts_config)
+                audio_path = os.path.join(self.output_dir, f"enhanced_voice_{uuid.uuid4()}.mp3")
+                tts.save(audio_path)
+                
+                logger.info(f"✅ Enhanced gTTS generated: {audio_path}")
+                return audio_path
+                
+            except Exception as gtts_error:
+                logger.error(f"❌ Enhanced gTTS failed: {gtts_error}")
+                
+                # STEP 4: Simple fallback
+                try:
+                    simple_tts = gTTS(text=clean_script, lang='en', slow=False)
+                    audio_path = os.path.join(self.output_dir, f"simple_voice_{uuid.uuid4()}.mp3")
+                    simple_tts.save(audio_path)
+                    logger.info(f"✅ Simple TTS fallback: {audio_path}")
+                    return audio_path
+                except Exception as simple_error:
+                    logger.error(f"❌ All TTS methods failed: {simple_error}")
+                    return None
+        
+        except Exception as e:
+            logger.error(f"❌ Voice generation completely failed: {e}")
+            return None
+    
+    def _add_natural_speech_patterns(self, text: str, feeling: str) -> str:
+        """Add natural speech patterns to make TTS sound more human"""
+        
+        # Add natural pauses and emphasis
+        if feeling == "excited":
+            text = text.replace('.', '! ')
+            text = text.replace(',', ', ')
+            
+        elif feeling == "dramatic":
+            text = text.replace('.', '... ')
+            text = text.replace('!', '! ')
+            
+        elif feeling == "funny":
+            text = text.replace('.', '. ')
+            # Add slight emphasis
+            text = text.replace(' and ', ' and, ')
+            
+        # Add natural breathing pauses
+        sentences = text.split('. ')
+        if len(sentences) > 2:
+            # Add pause after every other sentence
+            for i in range(1, len(sentences), 2):
+                if i < len(sentences):
+                    sentences[i] = sentences[i] + ' '
+        
+        return '. '.join(sentences)
+    
+    def _add_text_overlays(self, video_clip, config: GeneratedVideoConfig, duration: float):
+        """Add professional text overlays and headers to the video"""
+        from moviepy.editor import TextClip, CompositeVideoClip
+        
+        logger.info(f"📝 Adding professional text overlays to {duration:.1f}s video")
+        
+        try:
+            overlays = []
+            
+            # HEADER/TITLE - Always show at the beginning
+            title_text = self._create_video_title(config.topic)
+            title_clip = TextClip(
+                title_text,
+                fontsize=70,
+                color='white',
+                font='Arial-Bold',
+                stroke_color='black',
+                stroke_width=3
+            ).set_position(('center', 0.1)).set_duration(4).set_start(0)
+            overlays.append(title_clip)
+            
+            # PLATFORM-SPECIFIC OVERLAYS
+            if config.target_platform.value.upper() == 'TIKTOK':
+                # TikTok style overlays
+                overlays.extend([
+                    TextClip(
+                        "🔥 VIRAL CONTENT",
+                        fontsize=60,
+                        color='orange',
+                        font='Impact'
+                    ).set_position(('center', 0.8)).set_duration(3).set_start(1),
+                    
+                    TextClip(
+                        "👆 FOLLOW FOR MORE",
+                        fontsize=55,
+                        color='white',
+                        font='Arial-Bold',
+                        stroke_color='black',
+                        stroke_width=2
+                    ).set_position(('center', 0.85)).set_duration(3).set_start(duration-4)
+                ])
+                
+            elif config.target_platform.value.upper() == 'YOUTUBE':
+                # YouTube style overlays
+                overlays.extend([
+                    TextClip(
+                        "🎬 MUST WATCH!",
+                        fontsize=65,
+                        color='red',
+                        font='Arial-Bold'
+                    ).set_position(('center', 0.15)).set_duration(3).set_start(2),
+                    
+                    TextClip(
+                        "👍 LIKE & SUBSCRIBE",
+                        fontsize=50,
+                        color='white',
+                        font='Arial-Bold',
+                        stroke_color='red',
+                        stroke_width=2
+                    ).set_position(('center', 0.9)).set_duration(4).set_start(duration-5)
+                ])
+                
+            elif config.target_platform.value.upper() == 'INSTAGRAM':
+                # Instagram style overlays
+                overlays.extend([
+                    TextClip(
+                        "✨ AMAZING!",
+                        fontsize=60,
+                        color='magenta',
+                        font='Arial-Bold'
+                    ).set_position(('center', 0.2)).set_duration(3).set_start(1.5),
+                    
+                    TextClip(
+                        "💖 DOUBLE TAP",
+                        fontsize=55,
+                        color='white',
+                        font='Arial-Bold',
+                        stroke_color='magenta',
+                        stroke_width=2
+                    ).set_position(('center', 0.85)).set_duration(3).set_start(duration-4)
+                ])
+            
+            # MIDDLE ENGAGEMENT OVERLAY
+            if duration > 8:
+                middle_text = self._get_engagement_text(config.category.value)
+                middle_clip = TextClip(
+                    middle_text,
+                    fontsize=65,
+                    color='cyan',
+                    font='Impact'
+                ).set_position('center').set_duration(2).set_start(duration/2)
+                overlays.append(middle_clip)
+            
+            # CATEGORY-SPECIFIC OVERLAY
+            category_overlay = self._get_category_overlay(config.category.value, duration)
+            if category_overlay:
+                overlays.append(category_overlay)
+            
+            # Combine video with all overlays
+            if overlays:
+                final_video = CompositeVideoClip([video_clip] + overlays)
+                logger.info(f"✅ Added {len(overlays)} professional text overlays")
+                return final_video
+            else:
+                logger.warning("⚠️ No overlays created, returning original video")
+                return video_clip
+                
+        except Exception as e:
+            logger.error(f"❌ Text overlay creation failed: {e}")
+            logger.info("🔄 Returning video without overlays")
+            return video_clip
+    
+    def _create_video_title(self, topic: str) -> str:
+        """Create an engaging title for the video"""
+        # Clean and format the topic
+        clean_topic = topic.replace('_', ' ').title()
+        
+        # Add engaging elements based on content
+        if any(word in topic.lower() for word in ['funny', 'comedy', 'laugh']):
+            return f"😂 {clean_topic}"
+        elif any(word in topic.lower() for word in ['amazing', 'incredible', 'mind']):
+            return f"🤯 {clean_topic}"
+        elif any(word in topic.lower() for word in ['secret', 'hidden', 'truth']):
+            return f"🔥 {clean_topic}"
+        elif any(word in topic.lower() for word in ['new', 'latest', 'breaking']):
+            return f"🚨 {clean_topic}"
+        else:
+            return f"✨ {clean_topic}"
+    
+    def _get_engagement_text(self, category: str) -> str:
+        """Get engagement text based on category"""
+        engagement_texts = {
+            'Comedy': '😂 SO FUNNY!',
+            'Entertainment': '🎉 AMAZING!',
+            'Education': '🧠 LEARN THIS!',
+            'News': '📰 BREAKING!',
+            'Sports': '⚽ INCREDIBLE!',
+            'Music': '🎵 EPIC!',
+            'Gaming': '🎮 LEGENDARY!',
+            'Food': '🍕 DELICIOUS!',
+            'Travel': '✈️ WANDERLUST!',
+            'Fashion': '👗 STUNNING!'
+        }
+        return engagement_texts.get(category, '🔥 WOW!')
+    
+    def _get_category_overlay(self, category: str, duration: float):
+        """Get category-specific overlay"""
+        from moviepy.editor import TextClip
+        
+        try:
+            category_configs = {
+                'Comedy': {'text': '🎭 COMEDY', 'color': 'yellow', 'font': 'Comic Sans MS'},
+                'Entertainment': {'text': '🎪 ENTERTAINMENT', 'color': 'purple', 'font': 'Arial-Bold'},
+                'Education': {'text': '📚 EDUCATIONAL', 'color': 'blue', 'font': 'Times-Bold'},
+                'News': {'text': '📺 NEWS', 'color': 'red', 'font': 'Arial-Bold'},
+                'Sports': {'text': '🏆 SPORTS', 'color': 'green', 'font': 'Impact'},
+                'Music': {'text': '🎼 MUSIC', 'color': 'gold', 'font': 'Arial-Bold'}
+            }
+            
+            config = category_configs.get(category)
+            if config:
+                return TextClip(
+                    config['text'],
+                    fontsize=45,
+                    color=config['color'],
+                    font=config['font']
+                ).set_position(('left', 'top')).set_duration(3).set_start(0.5)
+            
+        except Exception as e:
+            logger.warning(f"Category overlay creation failed: {e}")
+        
+        return None
+
 # NO MOCK CLIENTS - ONLY REAL VEO GENERATION ALLOWED!

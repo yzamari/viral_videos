@@ -6,19 +6,19 @@ A comprehensive web interface for the Viral Video Generator with real-time progr
 
 ### Option 1: Using the Launch Script (Recommended)
 ```bash
-cd viral-video-generator
+cd viralAi
 ./launch_ui.sh
 ```
 
 ### Option 2: Using Python Directly
 ```bash
-cd viral-video-generator
+cd viralAi
 python3 launch_ui.py
 ```
 
 ### Option 3: Manual Launch
 ```bash
-cd viral-video-generator
+cd viralAi
 python3 -m pip install -r requirements.txt
 python3 gradio_ui.py
 ```

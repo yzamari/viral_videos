@@ -22,7 +22,7 @@
 ### Step 2: Create Project
 1. Click project dropdown (top bar)
 2. Click "NEW PROJECT"
-3. Name: `viral-video-generator`
+3. Name: `viralAi`
 4. Click "CREATE"
 5. Wait ~30 seconds for creation
 
@@ -108,11 +108,11 @@ GOOGLE_TTS_ENABLED=true
 GOOGLE_TTS_VOICE_TYPE=en-US-Neural2-F
 
 # Google Cloud Project
-GOOGLE_CLOUD_PROJECT=viral-video-generator
+GOOGLE_CLOUD_PROJECT=viralAi
 
 # Vertex AI (optional)
 ENABLE_VERTEX_AI_IMAGEN=false
-VERTEX_AI_PROJECT_ID=viral-video-generator
+VERTEX_AI_PROJECT_ID=viralAi
 VERTEX_AI_LOCATION=us-central1
 ```
 
