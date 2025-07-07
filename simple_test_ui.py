@@ -159,7 +159,7 @@ with gr.Blocks(title="🎬 Viral Video Generator") as app:
                 
                 category = gr.Dropdown(
                     label="Category",
-                    choices=["Comedy", "Education", "Entertainment", "News", "Technology"],
+                    choices=["Comedy", "Educational", "Entertainment", "News", "Technology"],
                     value="Comedy"
                 )
             
