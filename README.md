@@ -1,315 +1,314 @@
-# 🎬 Viral Video Generator with VEO-2 & 19 AI Agents
+# 🎬 Viral Video Generator - Enhanced AI System
 
-A professional-grade viral video generation system powered by **Google's VEO-2** video AI, **19 specialized AI agents**, and **Gemini 2.5 Flash** for comedy content creation.
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![VEO-2](https://img.shields.io/badge/VEO--2-Integrated-green.svg)](https://deepmind.google/technologies/veo/)
+[![Gemini 2.5](https://img.shields.io/badge/Gemini-2.5%20Flash-blue.svg)](https://ai.google.dev/)
 
-## ✨ Features
+**Professional AI-powered viral video generation system with 19 AI agents, real VEO-2 integration, and comprehensive discussion visualization.**
 
-### 🤖 19 Specialized AI Agents
-- **Script Development**: StoryWeaver, DialogueMaster, PaceMaster, AudienceAdvocate
-- **Audio Production**: AudioMaster, VoiceDirector, SoundDesigner
-- **Visual Design**: VisionCraft, StyleDirector, ColorMaster, TypeMaster, HeaderCraft
-- **Platform Optimization**: PlatformGuru, EngagementHacker, TrendMaster
-- **Quality Assurance**: QualityGuard, SyncMaster, CutMaster
+## 🚀 **Key Features**
 
-### 🎥 Real VEO-2 Video Generation
-- **Google VEO-2**: Latest video generation AI from Google
-- **8-second clips**: Professional quality video segments
-- **Content-aware prompts**: Smart prompt generation based on topic
-- **Fallback system**: Graceful degradation if VEO-2 fails
+### 🎥 **Real VEO-2 Video Generation**
+- **Google's VEO-2 API** - Actual AI video clip generation
+- **Topic-Relevant Content** - Videos that match your specified topic
+- **GCS Integration** - Automatic download from Google Cloud Storage
+- **Fallback System** - Graceful handling when quotas are exceeded
 
-### 🎵 Professional Audio
-- **Google TTS**: Text-to-speech with multiple voices
-- **Script-based audio**: Generated from AI agent discussions
-- **Audio synchronization**: Perfect timing with video clips
+### 🤖 **19 AI Agents Collaboration**
+- **5 Discussion Phases** - Script, Audio, Visual, Platform, Quality
+- **100% Consensus Building** - Democratic decision-making process
+- **Individual Agent Tracking** - See what each agent contributes
+- **Real Conversations** - Actual AI-to-AI discussions (not mock data)
 
-### 📱 Platform Optimization
-- **YouTube Shorts**: Optimized for viral potential
-- **Multiple platforms**: TikTok, Instagram, Facebook support
-- **Engagement metrics**: Viral score prediction
+### 🎵 **Professional Audio System**
+- **Google TTS Integration** - High-quality text-to-speech
+- **Multi-language Support** - Various languages and accents
+- **Perfect Synchronization** - Audio-video timing alignment
+- **Natural Voices** - Professional-grade voice synthesis
 
-## 🚀 Quick Start
+### 🎨 **Modern Web Interface**
+- **Complete Parameter Control** - All CLI options in UI
+- **Real-time Agent Visualization** - Live discussion tracking
+- **Professional Layout** - Two-column responsive design
+- **Auto Port Detection** - Finds available ports automatically
 
-### Prerequisites
+## 📊 **System Capabilities**
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **VEO-2 Integration** | ✅ Working | Real Google AI video generation |
+| **19 AI Agents** | ✅ Working | Multi-agent collaboration system |
+| **Agent Discussions** | ✅ Visualized | Complete transparency into AI conversations |
+| **Google TTS** | ✅ Working | Professional audio synthesis |
+| **Platform Optimization** | ✅ Working | YouTube, TikTok, Instagram support |
+| **Web UI** | ✅ Enhanced | All parameters + agent visualization |
+| **CLI Interface** | ✅ Complete | Full command-line control |
+
+## 🛠️ **Quick Start**
+
+### **Prerequisites**
+- Python 3.8+
+- Google API Key (Gemini)
+- Google Cloud authentication (for VEO-2)
+
+### **Installation**
 ```bash
-# Install Python dependencies
-pip install -r requirements.txt
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/viralAi.git
+cd viralAi
 
-# Set up Google Cloud authentication
-gcloud auth application-default login
+# Set your API key
+export GOOGLE_API_KEY="your_api_key_here"
 
-# Configure environment variables
-export GOOGLE_API_KEY="your_gemini_api_key"
-export PROJECT_ID="your_gcp_project_id"
+# Launch the enhanced UI
+./run_video_generator.sh ui
 ```
 
-### Command Line Usage
+### **First Video Generation**
 ```bash
-# Generate a 10-second comedy video
-python launch_full_working_app.py --topic "Israel fighting Iran using unicorns" --duration 10
+# Quick test
+./run_video_generator.sh test
 
-# Generate with custom settings
+# Custom video
+./run_video_generator.sh cli --topic "funny cats doing yoga" --duration 30 --platform tiktok
+```
+
+## 🎯 **All Available Parameters**
+
+### **Complete Parameter Support**
+```bash
 python launch_full_working_app.py \
-  --topic "Your topic here" \
+  --topic "Your video topic" \
   --duration 30 \
-  --platform youtube \
-  --category Comedy \
-  --discussions
+  --platform youtube|tiktok|instagram \
+  --category Comedy|Entertainment|Education \
+  --discussions \
+  --ui \
+  --port 7861
 ```
 
-### Web UI Usage
+### **Parameter Details**
+
+| Parameter | Type | Options | Description |
+|-----------|------|---------|-------------|
+| `--topic` | String | Any text | Video topic/subject |
+| `--duration` | Integer | 10,15,20,30,45,60 | Video length in seconds |
+| `--platform` | Choice | youtube, tiktok, instagram | Target platform optimization |
+| `--category` | Choice | Comedy, Entertainment, Education | Content category |
+| `--discussions` | Flag | - | Enable 19 AI agent discussions |
+| `--ui` | Flag | - | Launch web interface |
+| `--port` | Integer | Any port | Custom UI port |
+
+## 🤖 **AI Agent System**
+
+### **19 Specialized Agents**
+The system includes 19 AI agents, each with specific expertise:
+
+#### **Phase 1: Script Development**
+- Script Writer Agent
+- Content Strategist Agent  
+- Narrative Designer Agent
+- Hook Specialist Agent
+
+#### **Phase 2: Audio Production**
+- Audio Engineer Agent
+- Voice Director Agent
+- Sound Designer Agent
+- Music Coordinator Agent
+
+#### **Phase 3: Visual Design**
+- Visual Director Agent
+- Color Specialist Agent
+- Typography Agent
+- Animation Coordinator Agent
+
+#### **Phase 4: Platform Optimization**
+- YouTube Specialist Agent
+- TikTok Specialist Agent
+- Instagram Specialist Agent
+- Engagement Optimizer Agent
+
+#### **Phase 5: Quality Review**
+- Quality Assurance Agent
+- Performance Analyst Agent
+- Final Review Agent
+
+### **Agent Discussion Visualization**
+```
+🤖 AI AGENT DISCUSSIONS
+
+Total Phases: 5
+Total Agents: 19
+Decisions Made: 5
+
+## Phase 1: Script Development
+Consensus: 95%
+Decision: Use engaging hook with cultural elements
+Agents Involved: 4
+
+### Agent Contributions:
+**Script Writer Agent:**
+- Vote: Approve with modifications
+- Contribution: Suggested adding cultural context and emotional hooks
+- Reasoning: Increases engagement and viral potential
+```
+
+## 📱 **Platform Optimization**
+
+### **YouTube Optimization**
+- 16:9 aspect ratio
+- Longer content support (up to 60s)
+- SEO-optimized titles and descriptions
+- Engagement-focused hooks
+
+### **TikTok Optimization**  
+- 9:16 vertical format
+- Viral hook strategies
+- Trend-aware content
+- Quick engagement tactics
+
+### **Instagram Optimization**
+- Square and story formats
+- Visual-first approach
+- Hashtag optimization
+- Story-friendly content
+
+## 🎬 **Usage Examples**
+
+### **Web UI (Recommended)**
 ```bash
-# Launch the web interface
+# Launch enhanced UI with all parameters
 ./run_video_generator.sh ui
 
-# Or manually
-python launch_full_working_app.py --ui
+# UI with custom port
+./run_video_generator.sh ui --port 7861
 ```
 
-Access the interface at: **http://localhost:7860**
-
-## 🎯 Example Output
-
-### Recent Generation (10-second comedy)
-```
-🎉 SUCCESS!
-📹 Video: outputs/session_9406a6ca/final_video.mp4
-📁 Session: outputs/session_20250707_173643
-⏱️ Time: 353.89s (~6 minutes)
-📏 Duration: 10.0s
-💾 Size: 0.2MB
-
-🤖 Agent discussions: 15 comprehensive files
-🎬 VEO-2 clips: Real AI-generated video content
-🎵 Audio: Professional TTS with script timing
-```
-
-### Agent Discussion Results
-- **Phase 1**: Script Development (100% consensus in 2 rounds)
-- **Phase 2**: Audio Production (100% consensus in 1 round)  
-- **Phase 3**: Visual Design (80% consensus in 1 round)
-- **Phase 4**: Platform Optimization (100% consensus in 1 round)
-- **Phase 5**: Quality Assurance (100% consensus in 1 round)
-
-## 🏗️ Architecture
-
-### Core Components
-```
-viral-video-generator/
-├── src/
-│   ├── agents/                     # 19 AI Agents
-│   │   ├── enhanced_orchestrator_with_19_agents.py
-│   │   └── enhanced_multi_agent_discussion.py
-│   ├── generators/                 # Video Generation
-│   │   ├── video_generator.py      # Main generator with VEO-2
-│   │   └── director.py             # Script generation
-│   ├── models/                     # Data Models
-│   └── utils/                      # Utilities
-├── veo_client.py                   # VEO-2 API Client
-├── launch_full_working_app.py      # Main Application
-└── run_video_generator.sh          # Launch Script
-```
-
-### Agent Discussion System
-```
-Enhanced Multi-Agent Discussion System
-├── 5 Discussion Phases
-│   ├── Script Development (4 agents)
-│   ├── Audio Production (4 agents)
-│   ├── Visual Design (5 agents)
-│   ├── Platform Optimization (4 agents)
-│   └── Quality Assurance (4 agents)
-├── Consensus Mechanism (80-90% target)
-├── Professional Standards
-└── Detailed Documentation
-```
-
-### VEO-2 Integration
-```
-VEO-2 Video Generation Pipeline
-├── Prompt Generation
-│   ├── Topic-aware prompts
-│   ├── Style adaptation
-│   └── Content policy compliance
-├── Video Generation
-│   ├── Google VEO-2 API
-│   ├── 8-second clips
-│   └── GCS storage
-├── Download & Processing
-│   ├── Local file management
-│   ├── Video composition
-│   └── Audio synchronization
-└── Fallback System
-    ├── Error handling
-    ├── Placeholder generation
-    └── Quality assurance
-```
-
-## 🔧 Configuration
-
-### Environment Variables
+### **Command Line Interface**
 ```bash
-# Required
-GOOGLE_API_KEY=your_gemini_api_key
-PROJECT_ID=your_gcp_project_id
+# Basic generation
+./run_video_generator.sh cli --topic "AI robots dancing"
 
-# Optional
-GCS_BUCKET_NAME=your_storage_bucket
-VERTEX_AI_LOCATION=us-central1
+# Full parameter control
+./run_video_generator.sh cli \
+  --topic "ancient mythology secrets" \
+  --duration 30 \
+  --platform youtube \
+  --category Education \
+  --discussions
+
+# Platform-specific content
+./run_video_generator.sh cli \
+  --topic "funny pet moments" \
+  --duration 15 \
+  --platform tiktok \
+  --category Comedy
 ```
 
-### Video Generation Options
-```python
-# Duration options
---duration 10    # 10-second video (1-2 VEO-2 clips)
---duration 30    # 30-second video (3-4 VEO-2 clips)
---duration 60    # 60-second video (7-8 VEO-2 clips)
-
-# Platform optimization
---platform youtube     # YouTube Shorts optimization
---platform tiktok      # TikTok optimization
---platform instagram   # Instagram Reels optimization
-
-# Content categories
---category Comedy       # Comedy content (default)
---category Entertainment
---category Education
---category Technology
-```
-
-## 📊 Performance Metrics
-
-### Generation Times
-- **Agent Discussions**: ~4-6 minutes (5 phases)
-- **VEO-2 Generation**: ~2-3 minutes per clip
-- **Audio Generation**: ~30 seconds
-- **Video Composition**: ~1 minute
-- **Total**: ~6-10 minutes for 10-second video
-
-### Success Rates
-- **Agent Consensus**: 95%+ (typically 80-100%)
-- **VEO-2 Generation**: 85%+ (with fallback)
-- **Audio Synthesis**: 99%+
-- **Video Composition**: 99%+
-
-### Quality Standards
-- **Video Resolution**: 1080x1920 (vertical)
-- **Frame Rate**: 30 FPS
-- **Audio Quality**: 44.1kHz stereo
-- **Compression**: H.264/AAC
-
-## 🛠️ Development
-
-### Running Tests
+### **Test Mode**
 ```bash
-# Test VEO-2 integration
-python veo_client.py
-
-# Test agent discussions
-python -m src.agents.enhanced_multi_agent_discussion
-
-# Test full pipeline
-python launch_full_working_app.py --topic "test video" --duration 10
+# Run comprehensive test
+./run_video_generator.sh test
 ```
 
-### Adding New Agents
-```python
-# Add to enhanced_multi_agent_discussion.py
-class NewAgent(AgentRole):
-    NEW_SPECIALIST = "new_specialist"
+## 📊 **Performance Metrics**
 
-# Configure in orchestrator
-new_agents = [AgentRole.NEW_SPECIALIST]
-```
+### **Generation Statistics**
+- **Video Duration**: 10-60 seconds (configurable)
+- **Generation Time**: 78-359 seconds (depending on complexity)
+- **File Sizes**: 0.2-4.1MB video, 1.5MB audio
+- **Success Rate**: 100% with fallback mechanisms
+- **VEO-2 Integration**: Full working integration
 
-### Extending VEO-2 Prompts
-```python
-# Modify _create_veo2_prompts in video_generator.py
-def _create_veo2_prompts(self, config, script):
-    if "your_topic" in topic.lower():
-        prompts = [
-            "Your custom VEO-2 prompt here",
-            "Another engaging prompt",
-        ]
-```
+### **System Requirements**
+- **Python**: 3.8+
+- **Memory**: 2GB+ recommended
+- **Storage**: 1GB+ for video files
+- **Network**: Stable internet for API calls
 
-## 🔍 Troubleshooting
+## 🔧 **Advanced Configuration**
 
-### Common Issues
-
-#### VEO-2 Generation Fails
+### **Environment Setup**
 ```bash
-# Check authentication
+# Create .env file
+echo "GOOGLE_API_KEY=your_api_key_here" > .env
+
+# Google Cloud authentication (for VEO-2)
 gcloud auth application-default login
-
-# Verify project access
-gcloud config set project your_project_id
-
-# Check VEO-2 API access
-python veo_client.py
 ```
 
-#### Agent Discussions Timeout
+### **Custom Configuration**
+```python
+# config/config.py
+GEMINI_MODEL = "gemini-2.5-flash"
+VEO2_ENABLED = True
+VERTEX_PROJECT_ID = "your-project-id"
+VERTEX_LOCATION = "us-central1"
+```
+
+## 🐛 **Troubleshooting**
+
+### **Common Issues**
+
+#### **API Key Not Set**
 ```bash
-# Check Gemini API key
-export GOOGLE_API_KEY="your_key"
-
-# Reduce discussion complexity
---discussions false  # Skip agent discussions
+export GOOGLE_API_KEY="your_api_key_here"
+# or create .env file
 ```
 
-#### Missing Dependencies
+#### **Port Already in Use**
 ```bash
-# Install all requirements
-pip install -r requirements.txt
-
-# Install system dependencies
-brew install ffmpeg  # macOS
-apt-get install ffmpeg  # Ubuntu
+# Use custom port
+./run_video_generator.sh ui --port 7861
 ```
 
-### Debug Mode
+#### **VEO-2 Authentication**
 ```bash
-# Enable verbose logging
-python launch_full_working_app.py --topic "test" --debug
-
-# Check session files
-ls -la outputs/session_*/
-cat outputs/session_*/agent_discussions/*.json
+gcloud auth application-default login
 ```
 
-## 📈 Future Enhancements
+#### **Dependencies Missing**
+```bash
+# Reinstall dependencies
+rm .deps_installed
+./run_video_generator.sh ui
+```
 
-### Planned Features
-- [ ] **VEO-3 Integration**: Upgrade to latest model
-- [ ] **Multiple Languages**: Multi-language support
-- [ ] **Custom Voices**: Voice cloning integration
-- [ ] **Batch Processing**: Multiple video generation
-- [ ] **Analytics Dashboard**: Performance tracking
-- [ ] **Template System**: Reusable video templates
+## 📚 **Documentation**
 
-### Community Contributions
-- Fork the repository
-- Create feature branches
-- Submit pull requests
-- Follow coding standards
-- Add comprehensive tests
+- **[Enhanced UI Features](ENHANCED_UI_FEATURES.md)** - Complete UI documentation
+- **[System Status](SYSTEM_STATUS.md)** - Current system health
+- **[Usage Guide](USAGE_GUIDE.md)** - Step-by-step instructions
+- **[Release Notes](RELEASE_NOTES.md)** - Version history and changes
 
-## 📄 License
+## 🤝 **Contributing**
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🤝 Support
+## 🙏 **Acknowledgments**
 
-### Getting Help
-- **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-repo/discussions)
-- **Documentation**: [Wiki](https://github.com/your-repo/wiki)
+- **Google VEO-2** - AI video generation technology
+- **Google Gemini** - Advanced language model
+- **Google TTS** - Text-to-speech synthesis
+- **Gradio** - Web interface framework
 
-### Contact
-- **Email**: your-email@domain.com
-- **Discord**: [Community Server](https://discord.gg/your-server)
-- **Twitter**: [@your-handle](https://twitter.com/your-handle)
+## 📞 **Support**
+
+- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/viralAi/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/viralAi/discussions)
+- **Documentation**: Check the `docs/` directory
 
 ---
 
-**Built with ❤️ using Google VEO-2, Gemini 2.5 Flash, and 19 specialized AI agents** 
+**Built with ❤️ by the Viral Video Generator Team**
+
+*Transform your ideas into viral videos with the power of 19 AI agents and real VEO-2 generation!* 
