@@ -6,8 +6,8 @@
 
 ```bash
 # Clone and setup
-git clone <repository-url>
-cd viralAi
+git clone https://github.com/yzamari/viral_videos.git
+cd viral_videos
 python3 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
@@ -20,7 +20,7 @@ cp config.env.example config.env
 python3 main.py generate --topic "AI creating amazing content" --duration 30
 
 # Launch web interface
-python3 enhanced_ui.py
+python3 simple_test_ui.py
 ```
 
 ## ✨ Key Features
@@ -81,8 +81,8 @@ python3 enhanced_ui.py
 
 1. **Clone Repository**
    ```bash
-   git clone <repository-url>
-   cd viralAi
+   git clone https://github.com/yzamari/viral_videos.git
+   cd viral_videos
    ```
 
 2. **Create Virtual Environment**
@@ -137,7 +137,7 @@ python3 main.py generate \
 
 ```bash
 # Launch web UI
-python3 enhanced_ui.py
+python3 simple_test_ui.py
 
 # Access at http://localhost:7860
 # Features:
@@ -244,9 +244,9 @@ python3 main.py --help
 ## 📁 Project Structure
 
 ```
-viralAi/
+viral_videos/
 ├── main.py                    # Main CLI interface
-├── enhanced_ui.py             # Web interface
+├── simple_test_ui.py         # Web interface
 ├── config/                    # Configuration management
 ├── src/
 │   ├── agents/               # AI agent system
@@ -285,4 +285,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**Built with ❤️ using 26+ AI Agents and Senior Manager supervision** 
+**Built with ❤️ using 26+ AI Agents and Senior Manager supervision**
