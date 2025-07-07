@@ -1,0 +1,152 @@
+{
+  "discussion_summary": {
+    "topic": "Script Development and Dialogue Optimization for 'Israel fighting Iran using unicorns'",
+    "participants": [
+      "StoryWeaver",
+      "DialogueMaster",
+      "PaceMaster",
+      "AudienceAdvocate"
+    ],
+    "duration_seconds": 37.58339810371399,
+    "total_rounds": 1,
+    "final_consensus": 1.0,
+    "target_consensus": 0.8,
+    "success": true
+  },
+  "round_by_round": [
+    {
+      "round": 1,
+      "contributions": [
+        {
+          "agent": "StoryWeaver",
+          "message": "For 'Israel fighting Iran using unicorns,' the narrative must lean heavily into absurdist comedy, establishing the ridiculous premise immediately and then exploring the bewildered, bureaucratic, or surprisingly mundane reactions of characters involved. The core comedic hook lies in the stark contrast between the fantastical unicorns and the geopolitical conflict.",
+          "vote": "agree",
+          "timestamp": "2025-07-07 17:24:02.309484"
+        },
+        {
+          "agent": "DialogueMaster",
+          "message": "I concur with the emphasis on absurdist comedy; character dialogue will be paramount in manifesting the bewildering and mundane reactions StoryWeaver outlined. The comedic power lies in crafting distinct, natural voices that grapple with the sheer absurdity of the situation, making the fantastical feel grounded through their authentic, albeit bizarre, responses.",
+          "vote": "agree",
+          "timestamp": "2025-07-07 17:24:11.764544"
+        },
+        {
+          "agent": "PaceMaster",
+          "message": "For a 10-second viral comedy, the pacing must be relentless, front-loading the absurdist premise within the first 1-2 seconds to immediately capture attention and leveraging rapid-fire dialogue to maintain engagement. We need to maximize information density by having visual gags reinforce character reactions, ensuring no moment is wasted in conveying the comedic contrast.",
+          "vote": "agree",
+          "timestamp": "2025-07-07 17:24:20.747028"
+        },
+        {
+          "agent": "AudienceAdvocate",
+          "message": "The immediate comedic impact and clear establishment of the absurd premise are paramount for a 10-second YouTube short, ensuring rapid audience engagement and minimizing drop-off. Viewer retention hinges on the swift delivery of punchlines and the relatability of character reactions to the fantastical absurdity.",
+          "vote": "agree",
+          "timestamp": "2025-07-07 17:24:30.167834"
+        }
+      ],
+      "votes": {
+        "agree": 4,
+        "disagree": 0,
+        "neutral": 0
+      }
+    }
+  ],
+  "consensus_progression": [
+    {
+      "round": 1,
+      "consensus": 1.0,
+      "timestamp": "2025-07-07 17:24:30.169290"
+    }
+  ],
+  "agent_contributions": {
+    "StoryWeaver": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-07 17:24:02.309484",
+      "last_contribution": "2025-07-07 17:24:02.309484"
+    },
+    "DialogueMaster": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-07 17:24:11.764544",
+      "last_contribution": "2025-07-07 17:24:11.764544"
+    },
+    "PaceMaster": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-07 17:24:20.747028",
+      "last_contribution": "2025-07-07 17:24:20.747028"
+    },
+    "AudienceAdvocate": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-07 17:24:30.167834",
+      "last_contribution": "2025-07-07 17:24:30.167834"
+    }
+  },
+  "timeline": [
+    {
+      "timestamp": "2025-07-07 17:23:52.588091",
+      "event": "discussion_started",
+      "description": "Discussion 'Script Development and Dialogue Optimization for 'Israel fighting Iran using unicorns'' started"
+    },
+    {
+      "timestamp": "2025-07-07 17:24:02.309484",
+      "event": "agent_contribution",
+      "agent": "StoryWeaver",
+      "round": 1,
+      "description": "StoryWeaver contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-07 17:24:11.764544",
+      "event": "agent_contribution",
+      "agent": "DialogueMaster",
+      "round": 1,
+      "description": "DialogueMaster contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-07 17:24:20.747028",
+      "event": "agent_contribution",
+      "agent": "PaceMaster",
+      "round": 1,
+      "description": "PaceMaster contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-07 17:24:30.167834",
+      "event": "agent_contribution",
+      "agent": "AudienceAdvocate",
+      "round": 1,
+      "description": "AudienceAdvocate contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-07 17:24:30.169290",
+      "event": "consensus_update",
+      "round": 1,
+      "consensus_level": 1.0,
+      "description": "Consensus updated to 100.0% in round 1"
+    },
+    {
+      "timestamp": "2025-07-07 17:24:30.171485",
+      "event": "discussion_completed",
+      "description": "Discussion completed with 100.0% consensus"
+    }
+  ]
+}

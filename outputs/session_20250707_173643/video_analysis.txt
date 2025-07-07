@@ -1,0 +1,60 @@
+🎬 VIRAL VIDEO GENERATION ANALYSIS
+============================================================
+
+📋 SESSION INFORMATION
+------------------------------
+Video Path: outputs/session_9406a6ca/final_video.mp4
+Generation Date: 2025-07-07 17:42:37
+Generation Time: 353.89 seconds
+Session Folder: session_20250707_173643
+
+🎯 CONTENT ANALYSIS
+------------------------------
+Topic: Israel fighting Iran using unicorns
+Platform: Platform.YOUTUBE
+Category: VideoCategory.COMEDY
+Duration: 10 seconds
+Style: viral
+Tone: engaging
+
+🤖 AI MODELS USED
+------------------------------
+• Gemini 2.5 Flash: Script generation
+• Google Veo-2: Video clip generation
+• Google TTS: Voice synthesis
+• Enhanced Orchestrator: 19 AI agents
+• Agent Discussions: Multi-AI collaboration
+
+📊 PERFORMANCE METRICS
+------------------------------
+Generation Speed: 0.03s video per minute
+Real VEO-2 Usage: Yes
+Agent Discussions: Yes
+Vertex AI: True
+Predicted Viral Score: 0.85
+
+📁 SESSION FILES
+------------------------------
+• video_analysis.txt (0.0MB)
+• agent_discussions/enhanced_discussion_audio_production_27f21e80_final.json (0.0MB)
+• agent_discussions/enhanced_discussion_quality_assurance_a2cc08d0_final.json (0.0MB)
+• agent_discussions/enhanced_discussion_platform_optimization_2f5a9c7d.json (0.0MB)
+• agent_discussions/enhanced_discussion_visual_design_c2eeee66_final.json (0.0MB)
+• agent_discussions/visualization_visual_design_and_typography_strategy.json (0.0MB)
+• agent_discussions/visualization_script_development_and_dialogue_optimization_for_'israel_fighting_iran_using_unicorns'.json (0.0MB)
+• agent_discussions/enhanced_discussion_visual_design_c2eeee66.json (0.0MB)
+• agent_discussions/report_visual_design_and_typography_strategy.md (0.0MB)
+• agent_discussions/visualization_platform_optimization_and_viral_mechanics.json (0.0MB)
+• agent_discussions/enhanced_discussion_platform_optimization_2f5a9c7d_final.json (0.0MB)
+• agent_discussions/report_audio_production_and_voice_optimization.md (0.0MB)
+• agent_discussions/report_script_development_and_dialogue_optimization_for_'israel_fighting_iran_using_unicorns'.md (0.0MB)
+• agent_discussions/enhanced_discussion_audio_production_27f21e80.json (0.0MB)
+• agent_discussions/visualization_quality_assurance_and_user_experience.json (0.0MB)
+• agent_discussions/enhanced_discussion_script_development_760f6aa6_final.json (0.0MB)
+• agent_discussions/enhanced_discussion_quality_assurance_a2cc08d0.json (0.0MB)
+• agent_discussions/visualization_audio_production_and_voice_optimization.json (0.0MB)
+• agent_discussions/enhanced_discussion_script_development_760f6aa6.json (0.0MB)
+• agent_discussions/report_quality_assurance_and_user_experience.md (0.0MB)
+• agent_discussions/report_platform_optimization_and_viral_mechanics.md (0.0MB)
+
+🎉 Analysis Complete!

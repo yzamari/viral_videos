@@ -1,0 +1,13 @@
+{
+  "resolution": "1280x720",
+  "fps": 30,
+  "quality": "high",
+  "motion_effects": true,
+  "text_overlay": true,
+  "color_schemes": {
+    "baby": "#FFB6C1",
+    "nature": "#90EE90",
+    "news": "#FF6B6B",
+    "default": "#4A90E2"
+  }
+}

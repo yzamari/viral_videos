@@ -1,0 +1,12 @@
+{
+  "max_retries": 3,
+  "initial_delay": 60,
+  "max_delay": 300,
+  "exponential_backoff": true,
+  "jitter": true,
+  "retry_on_errors": [
+    "RESOURCE_EXHAUSTED",
+    "DEADLINE_EXCEEDED",
+    "UNAVAILABLE"
+  ]
+}

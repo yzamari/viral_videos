@@ -1,0 +1,90 @@
+/Users/yahavzamari/viralAi/viral-video-generator/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[32m2025-06-30 17:46:51 - src.generators.real_veo2_client - INFO - Real Veo-2 client initialized with model: veo-2.0-generate-001[0m
+[32m2025-06-30 17:46:51 - src.generators.director - INFO - Director initialized with model: gemini-2.5-flash[0m
+[32m2025-06-30 17:46:51 - src.generators.video_generator - INFO - VideoGenerator initialized with Gemini 2.5 Flash (script), Gemini 2.5 Pro (refinement), Google AI Studio Veo-2 (video)[0m
+[32m2025-06-30 17:46:51 - src.generators.video_generator - INFO - 📁 Created session folder: session_20250630_174651_8c3700d9[0m
+[32m2025-06-30 17:46:51 - src.generators.video_generator - INFO - Generating creative script with Gemini 2.5 Flash...[0m
+[32m2025-06-30 17:47:04 - src.generators.video_generator - INFO - Refining script with Gemini 2.5 Pro...[0m
+[32m2025-06-30 17:47:35 - src.generators.video_generator - INFO - Script generated and refined successfully with creative variations[0m
+[32m2025-06-30 17:47:35 - src.generators.video_generator - INFO - Generating 3 Veo-2 prompts for 15s video[0m
+[32m2025-06-30 17:47:35 - src.generators.video_generator - INFO - Parsing script to generate scene-specific Veo-2 prompts...[0m
+[32m2025-06-30 17:47:52 - src.generators.video_generator - INFO - Generated 3 script-specific Veo-2 prompts[0m
+[32m2025-06-30 17:47:52 - src.generators.video_generator - INFO - Generating TTS for EXACT 15s duration (target: 37 words)[0m
+[32m2025-06-30 17:48:24 - src.generators.video_generator - INFO - Generated TTS: 43 words (target: 37)[0m
+[32m2025-06-30 17:48:24 - src.generators.video_generator - INFO - Final TTS: 43 words for 15s duration[0m
+[32m2025-06-30 17:48:24 - src.generators.video_generator - INFO - TTS Content: Wait... is this even real? Okay, see that? That little shimmer right there? That was the entire test...[0m
+[32m2025-06-30 17:48:24 - src.generators.video_generator - INFO - Saved prompts to: outputs/session_20250630_174651_8c3700d9/script_8c3700d9-0819-4487-825e-4728060f0105.txt, outputs/session_20250630_174651_8c3700d9/tts_script_8c3700d9-0819-4487-825e-4728060f0105.txt, outputs/session_20250630_174651_8c3700d9/veo2_prompts_8c3700d9-0819-4487-825e-4728060f0105.txt[0m
+[32m2025-06-30 17:48:24 - src.generators.video_generator - INFO - 🎯 QUOTA-OPTIMIZED VEO GENERATION[0m
+[32m2025-06-30 17:48:24 - src.generators.video_generator - INFO - 📊 Google AI Tier 1 Limits: 2 videos/minute, 50 videos/day[0m
+[32m2025-06-30 17:48:24 - src.generators.video_generator - INFO - 💡 Using 8-second clips and Veo-2 → Veo-3 → Fallback chain[0m
+Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO - 🔍 Detected 58 total models[0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO - ✅ VEO2 detected: veo-2.0-generate-001[0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO - ✅ VEO2_ALT detected: models/veo-2.0-generate-001[0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO - 🎬 Optimized Veo client initialized[0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO - 📊 Available models: ['veo2', 'veo2_alt'][0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO - ⏰ Quota tracking: Daily: 0/50, Spacing: 30s[0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO - 🎯 OPTIMIZED GENERATION:[0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO -    Target duration: 15s[0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO -    Clips: 1 × 8.0s = 8.0s[0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO -    Quota status: Daily: 0/50, Spacing: 30s[0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO - 🎬 Attempting Veo-2 generation (8s)...[0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO - 📡 Calling Veo-2 API...[0m
+[33m2025-06-30 17:48:25 - src.generators.optimized_veo_client - WARNING - ⏰ Veo-2 quota exceeded: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}]}}[0m
+[33m2025-06-30 17:48:25 - src.generators.optimized_veo_client - WARNING - ⏰ Quota limit detected - increasing spacing[0m
+[32m2025-06-30 17:48:25 - src.generators.optimized_veo_client - INFO - 🔄 Retrying Veo-2 after 30s wait...[0m
+[32m2025-06-30 17:48:55 - src.generators.optimized_veo_client - INFO - 📡 Calling Veo-2 (retry) API...[0m
+[33m2025-06-30 17:48:55 - src.generators.optimized_veo_client - WARNING - ⏰ Veo-2 (retry) quota exceeded: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}]}}[0m
+[33m2025-06-30 17:48:55 - src.generators.optimized_veo_client - WARNING - ⏰ Quota limit detected - increasing spacing[0m
+[32m2025-06-30 17:48:55 - src.generators.optimized_veo_client - INFO - ℹ️ Veo-3 not available - Veo-3 models haven't been released yet[0m
+[32m2025-06-30 17:48:55 - src.generators.optimized_veo_client - INFO - 🔄 All AI models exhausted - using enhanced fallback...[0m
+[32m2025-06-30 17:48:55 - src.generators.optimized_veo_client - INFO - 🎨 Creating 8-second enhanced fallback...[0m
+[32m2025-06-30 17:48:56 - src.generators.optimized_veo_client - INFO - ✅ Enhanced 8s fallback created: outputs/session_20250630_174651_8c3700d9/veo2_clips/veo2_clip_8c3700d9-0819-4487-825e-4728060f0105_scene_0.mp4 (0.0MB)[0m
+[32m2025-06-30 17:48:56 - src.generators.optimized_veo_client - INFO - ✅ Clip 1/1 complete: 0.0MB[0m
+[32m2025-06-30 17:48:56 - src.generators.optimized_veo_client - INFO - 🎬 Optimized generation complete: 1/1 clips successful[0m
+[32m2025-06-30 17:48:56 - src.generators.video_generator - INFO - 🎬 Optimized generation SUCCESS: 1 clips[0m
+[32m2025-06-30 17:48:56 - src.generators.video_generator - INFO - Generating TTS for EXACT 15s duration (target: 37 words)[0m
+[32m2025-06-30 17:49:43 - src.generators.video_generator - INFO - Generated TTS: 43 words (target: 37)[0m
+[32m2025-06-30 17:49:43 - src.generators.video_generator - INFO - Final TTS: 43 words for 15s duration[0m
+[32m2025-06-30 17:49:43 - src.generators.video_generator - INFO - TTS Content: Whoa… wait. Is this even real? Okay, did you see that little shimmer? Right there? That was the test...[0m
+[32m2025-06-30 17:50:06 - src.generators.video_generator - INFO - Enhanced TTS script with energetic emotion and neutral perspective[0m
+[31m2025-06-30 17:50:15 - src.generators.google_tts_client - ERROR - ❌ Failed to initialize Google TTS client: Your default credentials were not found. To set up Application Default Credentials, see https://cloud.google.com/docs/authentication/external/set-up-adc for more information.[0m
+[33m2025-06-30 17:50:15 - src.generators.video_generator - WARNING - ⚠️ Google Cloud TTS failed: Your default credentials were not found. To set up Application Default Credentials, see https://cloud.google.com/docs/authentication/external/set-up-adc for more information.[0m
+[32m2025-06-30 17:50:15 - src.generators.video_generator - INFO - 🔄 Falling back to basic gTTS...[0m
+[32m2025-06-30 17:50:45 - src.generators.video_generator - INFO - ✅ Basic TTS fallback generated: outputs/session_20250630_174651_8c3700d9/emotional_voiceover_761040fe-0602-43ed-b208-aadfae8b01f3.mp3[0m
+[32m2025-06-30 17:50:45 - src.generators.video_generator - INFO - Audio duration: 40.63s, Target: 15s[0m
+[32m2025-06-30 17:50:45 - src.generators.video_generator - INFO - Loaded clip 1: 8.00s (outputs/session_20250630_174651_8c3700d9/veo2_clips/veo2_clip_8c3700d9-0819-4487-825e-4728060f0105_scene_0.mp4)[0m
+[32m2025-06-30 17:50:45 - src.generators.video_generator - INFO - Concatenated video duration: 8.00s[0m
+[32m2025-06-30 17:50:46 - src.generators.video_generator - INFO - Extended video with last frame to match audio: 40.63s[0m
+[32m2025-06-30 17:50:46 - src.generators.video_generator - INFO - Generated 3 text overlays for 40.6s video[0m
+[32m2025-06-30 17:50:46 - src.generators.video_generator - INFO - Added text overlay: '🔥 MUST WATCH!' at 0.0s-3.0s[0m
+[32m2025-06-30 17:50:46 - src.generators.video_generator - INFO - Added text overlay: '🤯 AMAZING!' at 20.3s-32.5s[0m
+[32m2025-06-30 17:50:46 - src.generators.video_generator - INFO - Added text overlay: '👆 FOLLOW FOR MORE' at 37.6s-40.6s[0m
+[32m2025-06-30 17:50:46 - src.generators.video_generator - INFO - Successfully added 3 text overlays to video[0m
+[32m2025-06-30 17:51:42 - src.generators.video_generator - INFO - Final video duration: 40.63s matches audio: 40.63s[0m
+[32m2025-06-30 17:51:42 - src.generators.video_generator - INFO - 📊 Created video analysis file: outputs/session_20250630_174651_8c3700d9/video_analysis.txt[0m
+[32m2025-06-30 17:51:42 - src.generators.video_generator - INFO - Generating TTS for EXACT 15s duration (target: 37 words)[0m
+[32m2025-06-30 17:52:06 - src.generators.video_generator - INFO - Generated TTS: 49 words (target: 37)[0m
+[33m2025-06-30 17:52:06 - src.generators.video_generator - WARNING - TTS too long (49 words), trimming to 37 words[0m
+[32m2025-06-30 17:52:06 - src.generators.video_generator - INFO - Final TTS: 37 words for 15s duration[0m
+[32m2025-06-30 17:52:06 - src.generators.video_generator - INFO - TTS Content: Whoa... wait, is this even real? Okay, look. That little shimmer right there? That was the whole tes...[0m
+[32m2025-06-30 17:52:06 - src.generators.video_generator - INFO - ✅ Successfully generated video 8c3700d9-0819-4487-825e-4728060f0105 in session folder: session_20250630_174651_8c3700d9[0m
+🎬 Enhanced Viral Video Generator
+📝 Prompt: create an amazing test video with clear voice and real visuals
+⏱️  Duration: 15 seconds
+🎨 Style: engaging
+📖 Narrative: neutral
+🎭 Feeling: energetic
+🌍 Languages: english
+🎤 Realistic Audio: No
+🤖 Real Veo-2: Yes
+============================================================
+Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+🎬 Generating single-language video...
+✅ Video generated successfully!
+📁 File: outputs/session_20250630_174651_8c3700d9/viral_video_8c3700d9-0819-4487-825e-4728060f0105.mp4
+📏 Size: 0.77 MB
+⏱️  Duration: 15 seconds
+🎯 Predicted viral score: 0.85

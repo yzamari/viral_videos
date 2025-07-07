@@ -1,0 +1,9 @@
+{
+  "daily_limit": 50,
+  "request_spacing": 60,
+  "retry_attempts": 3,
+  "backoff_multiplier": 2,
+  "quota_reset_time": "00:00:00 UTC",
+  "enable_smart_spacing": true,
+  "enable_quota_monitoring": true
+}

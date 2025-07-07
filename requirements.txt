@@ -1,0 +1,73 @@
+# Core dependencies
+python-dotenv==1.0.0
+pydantic==2.5.2
+pydantic-settings==2.1.0
+
+# Google Cloud & AI
+google-cloud-storage==2.13.0
+google-cloud-firestore==2.13.1
+google-cloud-bigquery==3.13.0
+google-generativeai==0.3.1
+google-ai-generativelanguage==0.4.0
+google-api-python-client==2.111.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.0
+google-genai>=0.3.0  # For VEO2 video generation
+google-cloud-texttospeech>=2.16.0  # For premium TTS
+
+# YouTube & Trends
+pytrends==4.9.2
+youtube-transcript-api==0.6.1
+
+# Video Generation & Processing
+moviepy==1.0.3
+pillow==10.1.0
+numpy==1.26.2
+opencv-python==4.8.1.78
+gtts==2.5.0  # Google Text-to-Speech fallback
+imageio==2.33.0  # Video I/O support
+imageio-ffmpeg==0.4.9  # FFmpeg wrapper for video processing
+
+# Web Scraping
+requests==2.31.0
+beautifulsoup4==4.12.2
+selenium==4.16.0
+webdriver-manager==4.0.1
+feedparser==6.0.10  # RSS feed parsing
+
+# Data Processing
+pandas==2.1.4
+matplotlib==3.8.2
+seaborn==0.13.0
+scikit-learn==1.3.2
+
+# API & Scheduling
+fastapi==0.108.0
+uvicorn==0.25.0
+celery==5.3.4
+redis==5.0.1
+schedule==1.2.0
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.23.2
+pytest-cov==4.1.0
+
+# Utilities
+tqdm==4.66.1
+colorlog==6.8.0
+tenacity==8.2.3  # For retry logic
+click==8.1.7  # CLI framework 
+
+# Additional dependencies for enhanced functionality
+pathlib2>=2.3.0  # Path handling compatibility
+json5>=0.9.0  # Enhanced JSON parsing
+
+# Web UI Dependencies
+gradio==4.16.0  # Main UI framework
+plotly==5.17.0  # Interactive charts and graphs
+dash==2.16.1  # Dashboard components
+websockets==12.0  # Real-time communication
+asyncio-mqtt==0.13.0  # Async messaging for real-time updates
+
+# Note: Built-in Python modules (os, sys, time, math, random, datetime, logging, uuid, tempfile, subprocess, re, collections) don't need to be installed

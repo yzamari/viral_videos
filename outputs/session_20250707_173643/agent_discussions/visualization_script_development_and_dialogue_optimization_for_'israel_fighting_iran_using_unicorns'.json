@@ -1,0 +1,226 @@
+{
+  "discussion_summary": {
+    "topic": "Script Development and Dialogue Optimization for 'Israel fighting Iran using unicorns'",
+    "participants": [
+      "StoryWeaver",
+      "DialogueMaster",
+      "PaceMaster",
+      "AudienceAdvocate"
+    ],
+    "duration_seconds": 73.38538074493408,
+    "total_rounds": 2,
+    "final_consensus": 1.0,
+    "target_consensus": 0.8,
+    "success": true
+  },
+  "round_by_round": [
+    {
+      "round": 1,
+      "contributions": [
+        {
+          "agent": "StoryWeaver",
+          "message": "To craft a truly viral 10-minute comedy around 'Israel fighting Iran using unicorns,' we must establish a clear, escalating narrative arc that maximizes absurdity while maintaining surprisingly grounded character reactions. The opening hook needs to immediately plunge the audience into the bizarre premise, ensuring every line of dialogue serves to advance the comedic situation or reveal character through their bewildered responses to the fantastical chaos.",
+          "vote": "neutral",
+          "timestamp": "2025-07-07 17:36:52.154010"
+        },
+        {
+          "agent": "DialogueMaster",
+          "message": "I fully support StoryWeaver's emphasis on grounded character reactions amidst escalating absurdity; this is where natural dialogue becomes paramount. Our dialogue must articulate the characters' bewilderment and adapt to the escalating chaos, while ensuring each line is crafted for optimal TTS readability and comedic timing.",
+          "vote": "agree",
+          "timestamp": "2025-07-07 17:36:58.994766"
+        },
+        {
+          "agent": "PaceMaster",
+          "message": "To maximize virality for a 10-minute comedy, our pacing must be meticulously engineered, starting with a rapid-fire hook within the first 5-10 seconds to instantly grab attention. We should then employ an escalating comedic rhythm, strategically introducing new layers of absurdity or visual gags every 30-60 seconds to maintain peak engagement and prevent attention decay.",
+          "vote": "agree",
+          "timestamp": "2025-07-07 17:37:08.008501"
+        },
+        {
+          "agent": "AudienceAdvocate",
+          "message": "My primary concern is ensuring maximum audience satisfaction and engagement throughout the 10-minute duration, which hinges on both the comedic impact and overall viewing experience. Grounded character reactions are absolutely critical, as they serve as the audience's relatable anchor in the escalating absurdity, allowing the humor to truly land. Furthermore, optimizing all dialogue for TTS readability directly enhances accessibility and ensures a consistent viewing experience for YouTube's diverse audience.",
+          "vote": "agree",
+          "timestamp": "2025-07-07 17:37:19.455950"
+        }
+      ],
+      "votes": {
+        "agree": 3,
+        "disagree": 0,
+        "neutral": 1
+      }
+    },
+    {
+      "round": 2,
+      "contributions": [
+        {
+          "agent": "StoryWeaver",
+          "message": "To ensure virality and audience retention, our narrative structure must meticulously map the escalating absurdity, ensuring each comedic beat advances the story while deepening the characters' grounded, bewildered reactions. This creates a compelling emotional journey, however comedic, that transcends individual gags and encourages re-engagement.",
+          "vote": "agree",
+          "timestamp": "2025-07-07 17:37:31.249558"
+        },
+        {
+          "agent": "DialogueMaster",
+          "message": "To fully leverage the 'grounded reactions to escalating absurdity,' our dialogue must establish distinct character voices that evolve through disbelief, acceptance, and eventually, comedic exasperation. This natural progression, paired with concise, impactful lines, is crucial for both comedic timing and TTS clarity.",
+          "vote": "agree",
+          "timestamp": "2025-07-07 17:37:38.917144"
+        },
+        {
+          "agent": "PaceMaster",
+          "message": "Building on previous points, optimizing pacing throughout the 10-minute duration is critical to sustain peak engagement and ensure virality. Beyond the initial hook, we must engineer a dynamic comedic rhythm, strategically varying the rate of absurdity escalation and character reactions to prevent predictability and combat attention decay. Each major comedic beat needs precise timing to land effectively and propel the narrative forward.",
+          "vote": "agree",
+          "timestamp": "2025-07-07 17:37:45.843852"
+        },
+        {
+          "agent": "AudienceAdvocate",
+          "message": "From an audience satisfaction standpoint, the emphasis on grounded character reactions amidst escalating absurdity is crucial; this provides the relatable anchor necessary for the humor to truly land and resonate with diverse viewers. Equally vital is the meticulous optimization of all dialogue for TTS readability, which not only enhances accessibility but also ensures a uniform and positive viewing experience across various consumption methods on YouTube.",
+          "vote": "agree",
+          "timestamp": "2025-07-07 17:37:56.623040"
+        }
+      ],
+      "votes": {
+        "agree": 4,
+        "disagree": 0,
+        "neutral": 0
+      }
+    }
+  ],
+  "consensus_progression": [
+    {
+      "round": 1,
+      "consensus": 0.75,
+      "timestamp": "2025-07-07 17:37:19.457546"
+    },
+    {
+      "round": 2,
+      "consensus": 1.0,
+      "timestamp": "2025-07-07 17:37:56.624142"
+    }
+  ],
+  "agent_contributions": {
+    "StoryWeaver": {
+      "total_contributions": 2,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 1
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-07 17:36:52.154010",
+      "last_contribution": "2025-07-07 17:37:31.249558"
+    },
+    "DialogueMaster": {
+      "total_contributions": 2,
+      "votes": {
+        "agree": 2,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-07 17:36:58.994766",
+      "last_contribution": "2025-07-07 17:37:38.917144"
+    },
+    "PaceMaster": {
+      "total_contributions": 2,
+      "votes": {
+        "agree": 2,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-07 17:37:08.008501",
+      "last_contribution": "2025-07-07 17:37:45.843852"
+    },
+    "AudienceAdvocate": {
+      "total_contributions": 2,
+      "votes": {
+        "agree": 2,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-07 17:37:19.455950",
+      "last_contribution": "2025-07-07 17:37:56.623040"
+    }
+  },
+  "timeline": [
+    {
+      "timestamp": "2025-07-07 17:36:43.240633",
+      "event": "discussion_started",
+      "description": "Discussion 'Script Development and Dialogue Optimization for 'Israel fighting Iran using unicorns'' started"
+    },
+    {
+      "timestamp": "2025-07-07 17:36:52.154010",
+      "event": "agent_contribution",
+      "agent": "StoryWeaver",
+      "round": 1,
+      "description": "StoryWeaver contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-07 17:36:58.994766",
+      "event": "agent_contribution",
+      "agent": "DialogueMaster",
+      "round": 1,
+      "description": "DialogueMaster contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-07 17:37:08.008501",
+      "event": "agent_contribution",
+      "agent": "PaceMaster",
+      "round": 1,
+      "description": "PaceMaster contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-07 17:37:19.455950",
+      "event": "agent_contribution",
+      "agent": "AudienceAdvocate",
+      "round": 1,
+      "description": "AudienceAdvocate contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-07 17:37:19.457546",
+      "event": "consensus_update",
+      "round": 1,
+      "consensus_level": 0.75,
+      "description": "Consensus updated to 75.0% in round 1"
+    },
+    {
+      "timestamp": "2025-07-07 17:37:31.249558",
+      "event": "agent_contribution",
+      "agent": "StoryWeaver",
+      "round": 2,
+      "description": "StoryWeaver contributed in round 2"
+    },
+    {
+      "timestamp": "2025-07-07 17:37:38.917144",
+      "event": "agent_contribution",
+      "agent": "DialogueMaster",
+      "round": 2,
+      "description": "DialogueMaster contributed in round 2"
+    },
+    {
+      "timestamp": "2025-07-07 17:37:45.843852",
+      "event": "agent_contribution",
+      "agent": "PaceMaster",
+      "round": 2,
+      "description": "PaceMaster contributed in round 2"
+    },
+    {
+      "timestamp": "2025-07-07 17:37:56.623040",
+      "event": "agent_contribution",
+      "agent": "AudienceAdvocate",
+      "round": 2,
+      "description": "AudienceAdvocate contributed in round 2"
+    },
+    {
+      "timestamp": "2025-07-07 17:37:56.624142",
+      "event": "consensus_update",
+      "round": 2,
+      "consensus_level": 1.0,
+      "description": "Consensus updated to 100.0% in round 2"
+    },
+    {
+      "timestamp": "2025-07-07 17:37:56.626019",
+      "event": "discussion_completed",
+      "description": "Discussion completed with 100.0% consensus"
+    }
+  ]
+}
