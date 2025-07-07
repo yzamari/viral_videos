@@ -609,13 +609,13 @@ class FullWorkingVideoApp:
                         )
                         
                         with gr.Row():
-                            duration_input = gr.Slider(
+                        duration_input = gr.Slider(
                                 label="⏱️ Duration (seconds)",
-                                minimum=10,
-                                maximum=60,
-                                value=15,
-                                step=5
-                            )
+                            minimum=10,
+                            maximum=60,
+                            value=15,
+                            step=5
+                        )
                             
                             platform_input = gr.Dropdown(
                                 label="📱 Target Platform",
@@ -630,10 +630,10 @@ class FullWorkingVideoApp:
                                 value="Comedy"
                             )
                             
-                            discussions_input = gr.Checkbox(
+                        discussions_input = gr.Checkbox(
                                 label="🤖 Enable 19 AI Agent Discussions",
-                                value=True
-                            )
+                            value=True
+                        )
                         
                         generate_btn = gr.Button("🚀 Generate Enhanced Video", variant="primary", size="lg")
                         
@@ -657,8 +657,8 @@ class FullWorkingVideoApp:
                             with gr.Column():
                                 video_output = gr.Video(label="🎬 Generated Video")
                                 details_output = gr.Markdown(label="📋 Generation Details")
-                            
-                            with gr.Column():
+                    
+                    with gr.Column():
                                 gr.Markdown("### 🤖 AI Agent Discussions")
                                 discussions_output = gr.Markdown(
                                     label="Agent Conversations",
@@ -695,13 +695,13 @@ class FullWorkingVideoApp:
                         """)
                     
                     with gr.Column():
-                        gr.Markdown("""
+                gr.Markdown("""
                         ### 🎵 Audio & Effects
                         - **Google TTS**: Natural voice synthesis
                         - **Multi-language Support**: Various accents
                         - **Sound Effects**: Professional audio design
                         - **Perfect Sync**: Audio-video alignment
-                        """)
+                """)
             
             return interface
             

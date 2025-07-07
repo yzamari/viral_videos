@@ -1,121 +1,119 @@
 """
-Configuration for Viral Video Generator
+Configuration management for the viral video generator
 """
-from pydantic_settings import BaseSettings
-from pydantic import Field, validator
-from typing import List, Optional
 import os
-from pathlib import Path
+from typing import Optional
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    """Application settings with environment variable support"""
+    """Application settings with comprehensive environment variable support"""
     
-    # Project paths
-    project_root: Path = Path(__file__).parent.parent
-    data_dir: Path = project_root / "data"
-    output_dir: Path = project_root / "outputs"
-    local_storage_dir: Path = project_root / "outputs" / "videos"
+    # Core API Keys
+    google_api_key: str = ""
+    gemini_api_key: str = ""
+    openai_api_key: str = ""
+    elevenlabs_api_key: str = ""
     
-    # Storage Configuration
-    use_local_storage: bool = Field(default=True, env="USE_LOCAL_STORAGE")
+    # Google Cloud Configuration
+    google_cloud_project_id: str = "viralgen-464411"
+    google_cloud_location: str = "us-central1"
+    google_application_credentials: Optional[str] = None
     
-    # Google Cloud Configuration (Optional - only needed if use_local_storage=False)
-    gcp_project_id: Optional[str] = Field(default=None, env="GCP_PROJECT_ID")
-    gcp_region: str = Field(default="us-central1", env="GCP_REGION")
-    gcs_bucket_name: Optional[str] = Field(default=None, env="GCS_BUCKET_NAME")
+    # VEO Video Generation
+    veo_project_id: str = "viralgen-464411"
+    veo_location: str = "us-central1"
+    use_real_veo2: bool = True
+    veo_fallback_enabled: bool = True
     
-    # Google AI Studio / Gemini - Multi-model configuration
-    google_api_key: str = Field(..., env="GOOGLE_API_KEY")
-    gemini_script_model: str = Field(default="gemini-2.5-flash", env="GEMINI_SCRIPT_MODEL")
-    gemini_refinement_model: str = Field(default="gemini-2.5-pro", env="GEMINI_REFINEMENT_MODEL")
-    veo_model: str = Field(default="veo-2", env="VEO_MODEL")
+    # Google Cloud TTS Configuration
+    google_tts_voice_type: str = "en-US-Neural2-F"
+    google_tts_enabled: bool = True
+    google_tts_fallback_to_gtts: bool = True
     
-    # Backward compatibility
-    gemini_model: str = Field(default="gemini-2.5-flash", env="GEMINI_MODEL")
+    # Audio Generation Settings
+    default_audio_feeling: str = "excited"
+    default_audio_narrative: str = "energetic"
+    audio_sample_rate: int = 24000
+    audio_effects_profile: str = "headphone-class-device"
     
-    # YouTube API (Optional - will use mock data if not available)
-    youtube_api_key: Optional[str] = Field(default=None, env="YOUTUBE_API_KEY")
-    youtube_api_version: str = "v3"
-    max_results_per_query: int = 50
-    use_mock_youtube_data: bool = Field(default=True, env="USE_MOCK_YOUTUBE_DATA")
+    # Video Generation Settings
+    default_video_duration: int = 15
+    default_platform: str = "youtube"
+    default_category: str = "Comedy"
+    default_frame_continuity: bool = True
     
-    # Firestore Collections (for local JSON storage when use_local_storage=True)
-    firestore_videos_collection: str = "analyzed_videos"
-    firestore_generated_collection: str = "generated_videos"
-    firestore_analytics_collection: str = "video_analytics"
+    # AI Agent Discussion Settings
+    default_discussion_mode: str = "standard"
+    max_discussion_rounds: int = 3
+    discussion_consensus_threshold: float = 0.5
+    discussion_timeout_seconds: int = 60
+    enable_discussion_logging: bool = True
     
-    # BigQuery Datasets (not used in local mode)
-    bigquery_dataset: str = "viral_video_analytics"
-    bigquery_trending_table: str = "trending_videos"
-    bigquery_performance_table: str = "video_performance"
+    # Agent Configuration
+    total_ai_agents: int = 25
+    discussion_phases: int = 5
+    enable_enhanced_orchestration: bool = True
     
-    # Video Generation Settings - Configurable Duration
-    video_duration_seconds: int = Field(default=30, env="VIDEO_DURATION")
-    video_fps: int = 30
-    video_resolution: tuple = (1080, 1920)  # Vertical format for shorts
-    supported_platforms: List[str] = ["youtube", "tiktok", "instagram", "facebook"]
+    # Output Settings
+    output_directory: str = "outputs"
+    clips_directory: str = "clips"
+    logs_directory: str = "logs"
+    enable_comprehensive_logging: bool = True
     
-    # Scraping Settings
-    scraping_interval_hours: int = Field(default=6, env="SCRAPING_INTERVAL")
-    trending_categories: List[str] = [
-        "Music", "Gaming", "Entertainment", "Comedy", 
-        "Education", "Technology", "Sports", "News"
-    ]
+    # Performance Settings
+    max_concurrent_generations: int = 3
+    video_render_threads: int = 4
+    audio_processing_threads: int = 2
     
-    # Analysis Settings
-    min_views_threshold: int = 10000
-    viral_velocity_threshold: float = 0.8  # Views per hour threshold
-    comment_sample_size: int = 100
+    # Development Settings
+    debug_mode: bool = False
+    verbose_logging: bool = False
+    enable_performance_metrics: bool = True
+    cleanup_temp_files: bool = True
     
-    # Redis Configuration (for Celery)
-    redis_url: str = Field(default="redis://localhost:6379", env="REDIS_URL")
+    # Platform Specific Settings
+    youtube_shorts_aspect_ratio: str = "9:16"
+    tiktok_max_duration: int = 60
+    instagram_reels_max_duration: int = 90
+    twitter_video_max_duration: int = 140
     
-    # API Settings
-    api_host: str = Field(default="0.0.0.0", env="API_HOST")
-    api_port: int = Field(default=8000, env="API_PORT")
+    # Quality Settings
+    video_quality: str = "high"
+    audio_quality: str = "high"
+    compression_level: str = "medium"
+    target_file_size_mb: int = 50
     
-    # Video generation settings with proper annotations
-    video_duration_override: int = Field(default_factory=lambda: int(os.getenv('VIDEO_DURATION', 30)))
-    output_dir_override: str = Field(default_factory=lambda: os.getenv('OUTPUT_DIR', 'outputs'))
-    
-    # Veo-2 Configuration
-    use_real_veo2_override: bool = Field(default_factory=lambda: os.getenv('USE_REAL_VEO2', 'false').lower() == 'true')
-    veo2_model_override: str = Field(default_factory=lambda: os.getenv('VEO2_MODEL', 'veo-2.0-generate-001'))
-    
-    # API Keys  
-    gemini_api_key_override: Optional[str] = Field(default_factory=lambda: os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY'))
-    
-    # Logging configuration
-    
-    @validator('youtube_api_key')
-    def validate_youtube_key(cls, v):
-        """Make YouTube API key optional - use mock data if not provided"""
-        return v
-    
-    @validator('gcp_project_id')
-    def validate_gcp_config(cls, v, values):
-        """Validate GCP configuration only if not using local storage"""
-        use_local = values.get('use_local_storage', True)
-        if not use_local and not v:
-            raise ValueError("GCP_PROJECT_ID is required when use_local_storage=False")
-        return v
-    
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Create directories if they don't exist
-        self.data_dir.mkdir(exist_ok=True)
-        self.output_dir.mkdir(exist_ok=True)
-        self.local_storage_dir.mkdir(exist_ok=True)
-        
-        # Create subdirectories for local storage
-        (self.local_storage_dir / "raw").mkdir(exist_ok=True)
-        (self.local_storage_dir / "generated").mkdir(exist_ok=True)
-        (self.data_dir / "metadata").mkdir(exist_ok=True)
-    
+    # Backup and Fallback Settings
+    enable_fallback_generation: bool = True
+    fallback_to_placeholder: bool = True
+    backup_sessions: bool = True
+    auto_retry_failed_generations: bool = True
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
-        extra = "allow"  # Allow extra fields from environment variables
+        case_sensitive = False
+        
+        # Environment variable prefixes
+        env_prefix = ""
+        
+        # Allow extra fields for flexibility
+        extra = "allow"
 
-# Create settings instance
-settings = Settings() 
+# Create global settings instance
+settings = Settings()
+
+# Backward compatibility - ensure google_api_key is set
+if not settings.google_api_key and settings.gemini_api_key:
+    settings.google_api_key = settings.gemini_api_key
+
+# Validate critical settings
+if not settings.google_api_key:
+    print("⚠️ Warning: GOOGLE_API_KEY not set in environment variables")
+
+# Export commonly used settings
+PROJECT_ID = settings.veo_project_id
+LOCATION = settings.veo_location
+GOOGLE_API_KEY = settings.google_api_key
+USE_REAL_VEO2 = settings.use_real_veo2
+GOOGLE_TTS_ENABLED = settings.google_tts_enabled 

@@ -9,6 +9,7 @@ import uuid
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
 import google.generativeai as genai
+import time
 
 from ..models.video_models import VideoAnalysis, GeneratedVideoConfig, GeneratedVideo, Platform, VideoCategory
 from ..utils.logging_config import get_logger
@@ -19,6 +20,7 @@ from .enhanced_multi_agent_discussion import (
     AgentRole
 )
 from ..generators.video_generator import VideoGenerator
+from ..utils.comprehensive_logger import ComprehensiveLogger
 
 logger = get_logger(__name__)
 
@@ -33,6 +35,11 @@ class EnhancedOrchestratorWith19Agents:
                  enable_native_audio: bool = True):
         self.api_key = api_key
         self.session_id = session_id
+        
+        # Initialize comprehensive logger
+        session_dir = f"outputs/session_{session_id}"
+        os.makedirs(session_dir, exist_ok=True)
+        self.comprehensive_logger = ComprehensiveLogger(session_id, session_dir)
         
         # Initialize enhanced multi-agent system
         self.discussion_system = EnhancedMultiAgentDiscussionSystem(api_key, session_id)
@@ -50,6 +57,21 @@ class EnhancedOrchestratorWith19Agents:
         
         logger.info(f"🚀 Enhanced Orchestrator with 19 AI Agents initialized")
         logger.info(f"🎬 VEO-3 Support: {prefer_veo3}, Native Audio: {enable_native_audio}")
+        
+        # Log initialization
+        self.comprehensive_logger.log_debug_info(
+            component="EnhancedOrchestrator",
+            level="INFO",
+            message="Enhanced orchestrator with 19 agents initialized",
+            data={
+                "session_id": session_id,
+                "use_vertex_ai": use_vertex_ai,
+                "project_id": vertex_project_id,
+                "location": vertex_location,
+                "prefer_veo3": prefer_veo3,
+                "enable_native_audio": enable_native_audio
+            }
+        )
     
     def generate_viral_video(self, topic: str, category: VideoCategory, 
                            platform: Platform, duration: int = 30,
@@ -92,7 +114,22 @@ class EnhancedOrchestratorWith19Agents:
             ]
             
             script_topic = EnhancedVideoGenerationTopics.script_development(context)
+            script_start_time = time.time()
             script_result = self.discussion_system.start_discussion(script_topic, script_agents)
+            script_discussion_time = time.time() - script_start_time
+            
+            # Log script discussion
+            self.comprehensive_logger.log_agent_discussion(
+                discussion_id=f"script_development_{self.session_id}",
+                topic="Script Development and Dialogue Optimization",
+                participating_agents=[agent.value for agent in script_agents],
+                total_rounds=getattr(script_result, 'total_rounds', 1),
+                consensus_level=getattr(script_result, 'consensus_level', 1.0),
+                duration=script_discussion_time,
+                key_decisions=getattr(script_result, 'decision', {}),
+                key_insights=getattr(script_result, 'key_insights', []),
+                success=True
+            )
             
             # Phase 2: Audio Production Discussion
             logger.info("🎵 Phase 2: Audio Production Discussion")
@@ -104,7 +141,22 @@ class EnhancedOrchestratorWith19Agents:
             ]
             
             audio_topic = EnhancedVideoGenerationTopics.audio_production(context)
+            audio_start_time = time.time()
             audio_result = self.discussion_system.start_discussion(audio_topic, audio_agents)
+            audio_discussion_time = time.time() - audio_start_time
+            
+            # Log audio discussion
+            self.comprehensive_logger.log_agent_discussion(
+                discussion_id=f"audio_production_{self.session_id}",
+                topic="Audio Production and Voice Optimization",
+                participating_agents=[agent.value for agent in audio_agents],
+                total_rounds=getattr(audio_result, 'total_rounds', 1),
+                consensus_level=getattr(audio_result, 'consensus_level', 1.0),
+                duration=audio_discussion_time,
+                key_decisions=getattr(audio_result, 'decision', {}),
+                key_insights=getattr(audio_result, 'key_insights', []),
+                success=True
+            )
             
             # Phase 3: Visual Design Discussion
             logger.info("🎨 Phase 3: Visual Design Discussion")
@@ -117,37 +169,88 @@ class EnhancedOrchestratorWith19Agents:
             ]
             
             visual_topic = EnhancedVideoGenerationTopics.visual_design(context)
+            visual_start_time = time.time()
             visual_result = self.discussion_system.start_discussion(visual_topic, visual_agents)
+            visual_discussion_time = time.time() - visual_start_time
+            
+            # Log visual discussion
+            self.comprehensive_logger.log_agent_discussion(
+                discussion_id=f"visual_design_{self.session_id}",
+                topic="Visual Design and Typography Strategy",
+                participating_agents=[agent.value for agent in visual_agents],
+                total_rounds=getattr(visual_result, 'total_rounds', 1),
+                consensus_level=getattr(visual_result, 'consensus_level', 1.0),
+                duration=visual_discussion_time,
+                key_decisions=getattr(visual_result, 'decision', {}),
+                key_insights=getattr(visual_result, 'key_insights', []),
+                success=True
+            )
             
             # Phase 4: Platform Optimization Discussion
             logger.info("📱 Phase 4: Platform Optimization Discussion")
             platform_agents = [
-                AgentRole.PLATFORM_GURU,      # PlatformGuru - platform optimization
-                AgentRole.ENGAGEMENT_HACKER,  # EngagementHacker - viral mechanics
-                AgentRole.TREND_ANALYST,      # TrendMaster - viral trends
-                AgentRole.QUALITY_GUARD       # QualityGuard - quality standards
+                AgentRole.PLATFORM_GURU,     # PlatformGuru - platform expertise
+                AgentRole.ENGAGEMENT_HACKER, # EngagementHacker - viral mechanics
+                AgentRole.TREND_ANALYST,     # TrendMaster - trend analysis
+                AgentRole.QUALITY_GUARD      # QualityGuard - quality assurance
             ]
             
             platform_topic = EnhancedVideoGenerationTopics.platform_optimization(context)
+            platform_start_time = time.time()
             platform_result = self.discussion_system.start_discussion(platform_topic, platform_agents)
+            platform_discussion_time = time.time() - platform_start_time
+            
+            # Log platform discussion
+            self.comprehensive_logger.log_agent_discussion(
+                discussion_id=f"platform_optimization_{self.session_id}",
+                topic="Platform Optimization and Viral Mechanics",
+                participating_agents=[agent.value for agent in platform_agents],
+                total_rounds=getattr(platform_result, 'total_rounds', 1),
+                consensus_level=getattr(platform_result, 'consensus_level', 1.0),
+                duration=platform_discussion_time,
+                key_decisions=getattr(platform_result, 'decision', {}),
+                key_insights=getattr(platform_result, 'key_insights', []),
+                success=True
+            )
             
             # Phase 5: Final Quality Review Discussion
             logger.info("🔍 Phase 5: Final Quality Review Discussion")
             quality_agents = [
-                AgentRole.QUALITY_GUARD,      # QualityGuard - quality assurance
-                AgentRole.AUDIENCE_ADVOCATE,  # AudienceAdvocate - user experience
-                AgentRole.ORCHESTRATOR,       # SyncMaster - coordination
-                AgentRole.EDITOR              # CutMaster - final assembly
+                AgentRole.QUALITY_GUARD,     # QualityGuard - quality assurance
+                AgentRole.AUDIENCE_ADVOCATE, # AudienceAdvocate - user experience
+                AgentRole.ORCHESTRATOR,      # SyncMaster - coordination
+                AgentRole.EDITOR             # CutMaster - final assembly
             ]
             
             quality_topic = EnhancedVideoGenerationTopics.quality_assurance(context)
+            quality_start_time = time.time()
             quality_result = self.discussion_system.start_discussion(quality_topic, quality_agents)
+            quality_discussion_time = time.time() - quality_start_time
+            
+            # Log quality discussion
+            self.comprehensive_logger.log_agent_discussion(
+                discussion_id=f"quality_assurance_{self.session_id}",
+                topic="Quality Assurance and User Experience",
+                participating_agents=[agent.value for agent in quality_agents],
+                total_rounds=getattr(quality_result, 'total_rounds', 1),
+                consensus_level=getattr(quality_result, 'consensus_level', 1.0),
+                duration=quality_discussion_time,
+                key_decisions=getattr(quality_result, 'decision', {}),
+                key_insights=getattr(quality_result, 'key_insights', []),
+                success=True
+            )
             
             # Synthesize all discussion results
             enhanced_config = self._synthesize_discussion_results(
                 context, script_result, audio_result, visual_result, 
                 platform_result, quality_result
             )
+            
+            # Update comprehensive metrics
+            total_discussion_time = (script_discussion_time + audio_discussion_time + 
+                                   visual_discussion_time + platform_discussion_time + 
+                                   quality_discussion_time)
+            self.comprehensive_logger.update_metrics(discussion_time=total_discussion_time)
             
             logger.info("✅ All 5 discussion phases completed successfully")
             
@@ -247,8 +350,8 @@ class EnhancedOrchestratorWith19Agents:
     def _extract_decision_value(self, decisions: Union[Dict, List], key: str, default: Any) -> Any:
         """Extract decision value with fallback"""
         if isinstance(decisions, dict):
-            return decisions.get('recommended_actions', {}).get(key, 
-                   decisions.get('consensus_points', {}).get(key, default))
+        return decisions.get('recommended_actions', {}).get(key, 
+               decisions.get('consensus_points', {}).get(key, default))
         elif isinstance(decisions, list) and decisions:
             # If decisions is a list, look for the key in the first item
             first_decision = decisions[0] if decisions else {}
@@ -273,14 +376,14 @@ class EnhancedOrchestratorWith19Agents:
                 f"Absurd visual reveal with {topic}",
                 f"Hilarious character reactions to {topic}",
                 f"Comedic climax and memorable ending"
-            ]
+        ]
         
         return content
     
     def _extract_color_scheme(self, visual_decisions: Union[Dict, List]) -> List[str]:
         """Extract color scheme from visual decisions"""
         if isinstance(visual_decisions, dict):
-            recommended_actions = visual_decisions.get('recommended_actions', [])
+        recommended_actions = visual_decisions.get('recommended_actions', [])
         elif isinstance(visual_decisions, list):
             recommended_actions = visual_decisions
         else:

@@ -7,6 +7,7 @@ import sys
 import uuid
 from typing import Dict, List, Optional, Any
 from datetime import datetime
+from dataclasses import dataclass
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -15,6 +16,7 @@ from src.generators.director import Director
 from src.generators.video_generator import VideoGenerator
 from src.models.video_models import GeneratedVideoConfig, Platform, VideoCategory
 from src.utils.logging_config import get_logger
+from config.config import settings
 
 logger = get_logger(__name__)
 
@@ -363,8 +365,17 @@ class EnhancedOrchestratorAgent:
         # Create VEO2 prompts that match script content exactly
         veo_prompts = self._create_synchronized_veo_prompts(script_data, master_timeline)
         
-        # Initialize video generator
-        video_generator = VideoGenerator(api_key, self.session_dir)
+        # Initialize video generator with proper parameters
+        video_generator = VideoGenerator(
+            api_key=api_key,
+            use_vertex_ai=True,
+            project_id=settings.veo_project_id,
+            location=settings.veo_location,
+            use_real_veo2=settings.use_real_veo2
+        )
+        
+        # Set session directory for video generator
+        video_generator.output_dir = self.session_dir
         
         # Create synchronized config
         config = self._create_video_config(master_timeline)
@@ -502,18 +513,28 @@ class EnhancedOrchestratorAgent:
         """🎤 Soundman Agent: Generate perfectly timed audio"""
         logger.info("🎤 Orchestrating Soundman Agent (Audio Generation)...")
         
-        # Generate audio with exact timing requirements
-        video_generator = VideoGenerator(api_key, self.session_dir)
+        # Initialize video generator with proper parameters for audio generation
+        video_generator = VideoGenerator(
+            api_key=api_key,
+            use_vertex_ai=True,
+            project_id=settings.veo_project_id,
+            location=settings.veo_location,
+            use_real_veo2=settings.use_real_veo2
+        )
         
-        # Create audio config for perfect synchronization
+        # Set session directory for video generator
+        video_generator.output_dir = self.session_dir
+        
+        # Create audio config for perfect synchronization with Google Cloud TTS
         audio_config = {
-            'narrative': 'energetic',
-            'feeling': 'excited',
-            'realistic_audio': True,
-            'duration_seconds': int(master_timeline['total_duration'])
+            'narrative': settings.default_audio_narrative,
+            'feeling': settings.default_audio_feeling,
+            'realistic_audio': settings.google_tts_enabled,
+            'duration_seconds': int(master_timeline['total_duration']),
+            'topic': self.topic
         }
         
-        # Generate audio with exact duration matching
+        # Generate audio with exact duration matching using Google Cloud TTS
         audio_path = video_generator._generate_voiceover(
             script_data['full_script'], 
             int(master_timeline['total_duration']), 
@@ -526,10 +547,11 @@ class EnhancedOrchestratorAgent:
             'script_text': script_data['full_script'],
             'word_count': script_data['word_count'],
             'synchronized': True,
-            'no_repetition': True
+            'no_repetition': True,
+            'google_cloud_tts': True
         }
         
-        logger.info(f"✅ Soundman Agent complete: {master_timeline['total_duration']}s audio, no repetition")
+        logger.info(f"✅ Soundman Agent complete: {master_timeline['total_duration']}s audio with Google Cloud TTS")
         return audio_data
     
     def _orchestrate_editor_agent(self, video_data: Dict[str, Any], audio_data: Dict[str, Any], 
@@ -537,18 +559,26 @@ class EnhancedOrchestratorAgent:
         """✂️ Editor Agent: Compose final synchronized video"""
         logger.info("✂️ Orchestrating Editor Agent (Final Composition)...")
         
-        # Use video generator's composition with perfect sync
-        video_generator = VideoGenerator("dummy", self.session_dir)
+        # Initialize video generator with proper parameters for video composition
+        video_generator = VideoGenerator(
+            api_key="dummy",
+            use_vertex_ai=True,
+            project_id=settings.VIDEO_GENERATOR_PROJECT_ID,
+            location=settings.VIDEO_GENERATOR_LOCATION,
+            use_real_veo2=True
+        )
+        
+        # Set session directory for video generator
+        video_generator.output_dir = self.session_dir
         
         # Create config for final composition
         config = self._create_video_config(master_timeline)
         
         # Compose final video with synchronized timing
-        final_video_path = video_generator._compose_video_with_veo_clips(
+        final_video_path = video_generator._compose_final_video(
             video_data['clips'],
             audio_data['audio_path'],
-            config,
-            self.session_id
+            config
         )
         
         logger.info(f"✅ Editor Agent complete: {final_video_path}")

@@ -60,6 +60,14 @@ class AgentRole(Enum):
     # NEW: Quality Assurance & Testing (2)
     QUALITY_GUARD = "quality_guard"
     AUDIENCE_ADVOCATE = "audience_advocate"
+    
+    # NEW: Advanced Specialists (6 additional agents)
+    DATA_SCIENTIST = "data_scientist"
+    PSYCHOLOGY_EXPERT = "psychology_expert"
+    BRAND_STRATEGIST = "brand_strategist"
+    ACCESSIBILITY_EXPERT = "accessibility_expert"
+    PERFORMANCE_OPTIMIZER = "performance_optimizer"
+    INNOVATION_CATALYST = "innovation_catalyst"
 
 @dataclass
 class AgentMessage:
@@ -126,9 +134,9 @@ class EnhancedMultiAgentDiscussionSystem:
         # Initialize discussion visualizer
         self.visualizer = DiscussionVisualizer(self.session_dir)
         
-        # ENHANCED: 19 Total Agent Personalities
+        # ENHANCED: 25+ Total Agent Personalities
         self.agent_personalities = {
-            # Original Agents (7)
+            # Original Core Agents (7)
             AgentRole.TREND_ANALYST: {
                 "name": "TrendMaster",
                 "personality": "Data-driven, analytical, focused on viral patterns and audience engagement metrics",
@@ -172,68 +180,66 @@ class EnhancedMultiAgentDiscussionSystem:
                 "decision_style": "Holistic with coordination priority"
             },
             
-            # NEW: Script & Dialogue Specialists (2)
+            # Script Development Phase (4 agents total)
             AgentRole.DIALOGUE_MASTER: {
                 "name": "DialogueMaster",
-                "personality": "Dialogue writing specialist, focused on natural conversation and character voice consistency",
-                "expertise": ["natural dialogue writing", "character voice consistency", "conversational flow", "emotional dialogue beats", "TTS optimization"],
-                "decision_style": "Character-driven with conversational authenticity"
+                "personality": "Dialogue and conversation expert, focused on natural speech patterns and voice optimization",
+                "expertise": ["dialogue writing", "conversation flow", "voice acting", "speech patterns", "character development"],
+                "decision_style": "Dialogue-focused with natural speech priority"
             },
             AgentRole.PACE_MASTER: {
                 "name": "PaceMaster",
-                "personality": "Pacing and timing expert, focused on viral content rhythm and attention optimization",
-                "expertise": ["viral content pacing", "attention span optimization", "hook timing", "information density", "retention optimization"],
-                "decision_style": "Rhythm-focused with engagement priority"
+                "personality": "Timing and pacing expert, focused on rhythm and flow optimization",
+                "expertise": ["timing optimization", "pacing control", "rhythm analysis", "flow management", "duration targeting"],
+                "decision_style": "Timing-focused with flow optimization priority"
             },
             
-            # NEW: Advanced Audio Specialists (2)
+            # Audio Production Phase (5 agents total)
             AgentRole.VOICE_DIRECTOR: {
                 "name": "VoiceDirector",
-                "personality": "Voice acting and performance specialist, focused on casting and emotional delivery",
-                "expertise": ["voice casting", "performance direction", "emotional delivery", "multi-speaker coordination", "voice matching"],
-                "decision_style": "Performance-driven with emotional authenticity"
+                "personality": "Voice casting and direction expert, focused on vocal performance optimization",
+                "expertise": ["voice casting", "vocal direction", "performance coaching", "emotion delivery", "accent control"],
+                "decision_style": "Voice-focused with performance optimization priority"
             },
             AgentRole.SOUND_DESIGNER: {
                 "name": "SoundDesigner",
-                "personality": "Advanced audio design expert, focused on immersive soundscapes and emotional audio",
-                "expertise": ["sound effects selection", "ambient audio creation", "audio branding", "emotional audio cues", "audio storytelling"],
-                "decision_style": "Atmosphere-focused with emotional impact"
+                "personality": "Sound design and audio effects expert, focused on immersive audio experiences",
+                "expertise": ["sound effects", "audio design", "ambient sound", "audio atmosphere", "immersive audio"],
+                "decision_style": "Sound-focused with immersion priority"
             },
             
-            # NEW: Typography & Visual Text Specialists (2)
+            # Visual Design Phase (6 agents total)
+            AgentRole.STYLE_DIRECTOR: {
+                "name": "StyleDirector",
+                "personality": "Art direction and visual style expert, focused on aesthetic consistency and brand alignment",
+                "expertise": ["art direction", "visual style", "aesthetic design", "brand consistency", "color theory"],
+                "decision_style": "Style-focused with aesthetic priority"
+            },
+            AgentRole.COLOR_MASTER: {
+                "name": "ColorMaster",
+                "personality": "Color psychology and palette expert, focused on emotional impact through color",
+                "expertise": ["color psychology", "palette design", "emotional color impact", "visual harmony", "brand colors"],
+                "decision_style": "Color-focused with psychological impact priority"
+            },
             AgentRole.TYPE_MASTER: {
                 "name": "TypeMaster",
-                "personality": "Typography and font psychology expert, focused on readable and impactful text design",
-                "expertise": ["font psychology", "text hierarchy", "readability optimization", "typography trends", "brand consistency"],
+                "personality": "Typography and text design expert, focused on readable and impactful text elements",
+                "expertise": ["typography", "text design", "font selection", "readability optimization", "text hierarchy"],
                 "decision_style": "Typography-focused with readability priority"
             },
             AgentRole.HEADER_CRAFT: {
                 "name": "HeaderCraft",
-                "personality": "Header design and text overlay specialist, focused on strategic text placement",
-                "expertise": ["header positioning", "visual impact optimization", "text overlay design", "information hierarchy", "mobile optimization"],
-                "decision_style": "Layout-focused with visual hierarchy priority"
+                "personality": "Header and title design expert, focused on attention-grabbing visual elements",
+                "expertise": ["header design", "title creation", "visual hierarchy", "attention grabbing", "clickbait optimization"],
+                "decision_style": "Header-focused with attention priority"
             },
             
-            # NEW: Visual Style & Art Direction (2)
-            AgentRole.STYLE_DIRECTOR: {
-                "name": "StyleDirector",
-                "personality": "Art direction and visual style expert, focused on consistent aesthetic vision",
-                "expertise": ["art direction", "visual style selection", "color palette creation", "visual brand development", "style consistency"],
-                "decision_style": "Aesthetic-focused with brand consistency priority"
-            },
-            AgentRole.COLOR_MASTER: {
-                "name": "ColorMaster",
-                "personality": "Color psychology and palette specialist, focused on emotional color impact",
-                "expertise": ["color psychology", "platform color optimization", "emotional color associations", "accessibility compliance", "viral color trends"],
-                "decision_style": "Color-focused with psychological impact priority"
-            },
-            
-            # NEW: Platform & Optimization Specialists (2)
+            # Platform Optimization Phase (5 agents total)
             AgentRole.PLATFORM_GURU: {
                 "name": "PlatformGuru",
-                "personality": "Platform optimization expert, focused on algorithm understanding and cross-platform success",
-                "expertise": ["YouTube Shorts optimization", "TikTok algorithm", "Instagram Reels", "platform features", "cross-platform adaptation"],
-                "decision_style": "Platform-focused with algorithm optimization priority"
+                "personality": "Multi-platform expert, focused on platform-specific optimization and best practices",
+                "expertise": ["platform optimization", "multi-platform strategy", "platform algorithms", "format requirements", "distribution"],
+                "decision_style": "Platform-focused with optimization priority"
             },
             AgentRole.ENGAGEMENT_HACKER: {
                 "name": "EngagementHacker",
@@ -242,7 +248,7 @@ class EnhancedMultiAgentDiscussionSystem:
                 "decision_style": "Engagement-focused with viral optimization priority"
             },
             
-            # NEW: Quality Assurance & Testing (2)
+            # Quality Assurance & Testing (3 agents total)
             AgentRole.QUALITY_GUARD: {
                 "name": "QualityGuard",
                 "personality": "Quality assurance and testing expert, focused on technical excellence and error prevention",
@@ -254,12 +260,51 @@ class EnhancedMultiAgentDiscussionSystem:
                 "personality": "User experience and audience psychology expert, focused on viewer satisfaction",
                 "expertise": ["audience psychology", "user experience", "accessibility", "demographic preferences", "feedback interpretation"],
                 "decision_style": "User-focused with audience satisfaction priority"
+            },
+            
+            # NEW: Advanced Specialists (6 additional agents)
+            AgentRole.DATA_SCIENTIST: {
+                "name": "DataMaven",
+                "personality": "Data science and analytics expert, focused on performance prediction and optimization",
+                "expertise": ["data analysis", "performance prediction", "A/B testing", "metrics optimization", "statistical modeling"],
+                "decision_style": "Data-driven with predictive analytics priority"
+            },
+            AgentRole.PSYCHOLOGY_EXPERT: {
+                "name": "MindReader",
+                "personality": "Psychology and behavioral expert, focused on human psychology and decision-making",
+                "expertise": ["behavioral psychology", "cognitive science", "decision psychology", "emotional triggers", "persuasion techniques"],
+                "decision_style": "Psychology-focused with behavioral optimization priority"
+            },
+            AgentRole.BRAND_STRATEGIST: {
+                "name": "BrandMaster",
+                "personality": "Brand strategy and positioning expert, focused on brand consistency and market positioning",
+                "expertise": ["brand strategy", "market positioning", "brand consistency", "competitive analysis", "brand identity"],
+                "decision_style": "Brand-focused with strategic positioning priority"
+            },
+            AgentRole.ACCESSIBILITY_EXPERT: {
+                "name": "AccessGuard",
+                "personality": "Accessibility and inclusion expert, focused on universal design and compliance",
+                "expertise": ["accessibility design", "universal access", "compliance standards", "inclusive design", "assistive technology"],
+                "decision_style": "Accessibility-focused with inclusion priority"
+            },
+            AgentRole.PERFORMANCE_OPTIMIZER: {
+                "name": "SpeedDemon",
+                "personality": "Performance and optimization expert, focused on technical performance and efficiency",
+                "expertise": ["performance optimization", "technical efficiency", "resource management", "speed optimization", "system performance"],
+                "decision_style": "Performance-focused with efficiency priority"
+            },
+            AgentRole.INNOVATION_CATALYST: {
+                "name": "InnovateMaster",
+                "personality": "Innovation and creativity expert, focused on cutting-edge techniques and breakthrough ideas",
+                "expertise": ["innovation strategies", "creative techniques", "breakthrough thinking", "emerging technologies", "disruptive approaches"],
+                "decision_style": "Innovation-focused with breakthrough priority"
             }
         }
         
         logger.info(f"🚀 ENHANCED Multi-Agent Discussion System initialized for session {session_id}")
-        logger.info(f"🤖 Total agents: {len(self.agent_personalities)} (19 specialized experts)")
-        logger.info(f"💬 Agent categories: Script (4), Audio (3), Visual (4), Platform (3), Quality (2), Production (3)")
+        logger.info(f"🤖 Total agents: {len(self.agent_personalities)} (25+ specialized experts)")
+        logger.info(f"💬 Agent phases: Script (4), Audio (5), Visual (6), Platform (5), Quality (3), Advanced (6)")
+        logger.info(f"🎯 Discussion modes: light/standard/deep with configurable consensus thresholds")
     
     def _find_existing_session_directory(self, session_id: str) -> str:
         """Find existing session directory that contains the session_id"""
@@ -285,7 +330,7 @@ class EnhancedMultiAgentDiscussionSystem:
         if session_dirs:
             session_dirs.sort(key=lambda x: x[1], reverse=True)
             most_recent_session = session_dirs[0][0]
-            logger.info(f"�� Using most recent session directory: {most_recent_session}")
+            logger.info(f" Using most recent session directory: {most_recent_session}")
             return most_recent_session
         
         return ""

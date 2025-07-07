@@ -58,61 +58,185 @@ class VideoGenerator:
     Main video generator class with REAL VEO-2 video generation
     """
     
-    def __init__(self, api_key: str, output_dir: str = "outputs", use_real_veo2: bool = True, 
-                 use_vertex_ai: bool = True, project_id: str = None, location: str = "us-central1"):
+    def __init__(self, api_key: str, use_vertex_ai: bool = True, project_id: Optional[str] = None, 
+                 location: Optional[str] = None, use_real_veo2: bool = True):
         self.api_key = api_key
-        self.output_dir = output_dir
-        self.session_id = str(uuid.uuid4())[:8]
-        self.use_real_veo2 = use_real_veo2
         self.use_vertex_ai = use_vertex_ai
         self.project_id = project_id or "viralgen-464411"
-        self.location = location
+        self.location = location or "us-central1"
+        self.use_real_veo2 = use_real_veo2
         
-        # Initialize VEO client for real video generation
-        if self.use_real_veo2 and self.use_vertex_ai:
-            self.veo_client = VeoApiClient(
-                project_id=self.project_id,
-                location=self.location
-            )
-            logger.info(f"🎬 VEO-2 Client initialized for project: {self.project_id}")
+        # Initialize session
+        self.session_id = str(uuid.uuid4())[:8]
+        self.output_dir = "outputs"
+        self.clips_dir = os.path.join(self.output_dir, "clips")
+        os.makedirs(self.clips_dir, exist_ok=True)
+        
+        # Initialize comprehensive logger
+        from ..utils.comprehensive_logger import ComprehensiveLogger
+        session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+        os.makedirs(session_dir, exist_ok=True)
+        self.comprehensive_logger = ComprehensiveLogger(self.session_id, session_dir)
+        
+        # Initialize models
+        import google.generativeai as genai
+        genai.configure(api_key=api_key)
+        self.script_model = genai.GenerativeModel("gemini-2.5-flash")
+        self.prompt_model = genai.GenerativeModel("gemini-2.5-flash")
+        
+        # Initialize VEO-2 client if enabled
+        if use_real_veo2 and use_vertex_ai:
+            try:
+                from .veo_client import VeoApiClient
+                self.veo_client = VeoApiClient(
+                    project_id=self.project_id,
+                    location=self.location
+                )
+                logger.info(f"🎬 VEO-2 Client initialized for project: {self.project_id}")
+            except Exception as e:
+                logger.warning(f"VEO-2 client initialization failed: {e}")
+                self.veo_client = None
         else:
             self.veo_client = None
-            logger.info("🎬 Using placeholder video generation (VEO-2 disabled)")
-        
-        # Ensure output directory exists
-        os.makedirs(output_dir, exist_ok=True)
         
         logger.info(f"🎬 VideoGenerator initialized with session {self.session_id}, use_real_veo2={use_real_veo2}, use_vertex_ai={use_vertex_ai}")
+        
+        # Log initialization
+        self.comprehensive_logger.log_debug_info(
+            component="VideoGenerator",
+            level="INFO",
+            message="Video generator initialized",
+            data={
+                "session_id": self.session_id,
+                "use_real_veo2": use_real_veo2,
+                "use_vertex_ai": use_vertex_ai,
+                "project_id": self.project_id,
+                "location": self.location
+            }
+        )
     
     def generate_video(self, config: GeneratedVideoConfig) -> str:
-        """
-        Generate a complete video based on configuration
-        """
+        """Generate a complete video with comprehensive logging"""
+        start_time = time.time()
+        
+        # Initialize metrics
+        self.comprehensive_logger.update_metrics(
+            topic=config.topic,
+            platform=config.target_platform.value,
+            category=config.category.value,
+            target_duration=config.duration_seconds
+        )
+        
         try:
             logger.info(f"🎬 Starting video generation for topic: {config.topic}")
             
-            # Create session directory
-            session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
-            os.makedirs(session_dir, exist_ok=True)
-            
-            # Generate script
+            # Step 1: Generate Script
+            script_start = time.time()
             script = self._generate_script(config)
+            script_time = time.time() - script_start
             
-            # Generate video clips
+            # Log script generation
+            self.comprehensive_logger.log_script_generation(
+                script_type="original",
+                content=script,
+                model_used="gemini-2.5-flash",
+                generation_time=script_time,
+                topic=config.topic,
+                platform=config.target_platform.value,
+                category=config.category.value
+            )
+            
+            logger.info(f"📝 Script generated: {len(script)} characters")
+            
+            # Step 2: Clean script for TTS
+            clean_script = self._clean_script_for_tts(script, config.duration_seconds)
+            
+            # Log cleaned script
+            self.comprehensive_logger.log_script_generation(
+                script_type="cleaned",
+                content=clean_script,
+                model_used="text_processing",
+                generation_time=0.1,
+                topic=config.topic,
+                platform=config.target_platform.value,
+                category=config.category.value
+            )
+            
+            # Step 3: Generate Video Clips
+            video_start = time.time()
             video_clips = self._generate_video_clips(config, script)
+            video_time = time.time() - video_start
             
-            # Generate audio
-            audio_path = self._generate_audio(config, script)
+            logger.info(f"🎥 Generated {len(video_clips)} video clips")
             
-            # Compose final video
-            final_video = self._compose_final_video(video_clips, audio_path, config, session_dir)
+            # Step 4: Generate Audio
+            audio_start = time.time()
+            audio_path = self._generate_audio(clean_script, config.duration_seconds)
+            audio_time = time.time() - audio_start
             
-            logger.info(f"✅ Video generation complete: {final_video}")
-            return final_video
+            # Log audio generation
+            if audio_path and os.path.exists(audio_path):
+                file_size_mb = os.path.getsize(audio_path) / (1024 * 1024)
+                self.comprehensive_logger.log_audio_generation(
+                    audio_type="enhanced_gtts",
+                    file_path=audio_path,
+                    file_size_mb=file_size_mb,
+                    duration=config.duration_seconds,
+                    voice_settings={"lang": "en", "slow": False},
+                    script_used=clean_script,
+                    generation_time=audio_time,
+                    success=True
+                )
+            else:
+                self.comprehensive_logger.log_audio_generation(
+                    audio_type="enhanced_gtts",
+                    file_path=audio_path or "failed",
+                    file_size_mb=0.0,
+                    duration=0.0,
+                    voice_settings={},
+                    script_used=clean_script,
+                    generation_time=audio_time,
+                    success=False,
+                    error_message="Audio generation failed"
+                )
+            
+            # Step 5: Compose Final Video
+            final_video_path = self._compose_final_video(video_clips, audio_path, config)
+            
+            # Calculate final metrics
+            total_time = time.time() - start_time
+            final_video_size = 0.0
+            if os.path.exists(final_video_path):
+                final_video_size = os.path.getsize(final_video_path) / (1024 * 1024)
+            
+            # Update comprehensive metrics
+            self.comprehensive_logger.update_metrics(
+                script_generation_time=script_time,
+                audio_generation_time=audio_time,
+                video_generation_time=video_time,
+                total_clips_generated=len(video_clips),
+                successful_veo_clips=len([c for c in video_clips if not c.endswith('placeholder')]),
+                fallback_clips=len([c for c in video_clips if c.endswith('placeholder')]),
+                final_video_size_mb=final_video_size,
+                actual_duration=config.duration_seconds
+            )
+            
+            # Finalize session
+            self.comprehensive_logger.finalize_session(success=True)
+            
+            logger.info(f"✅ Video generation complete: {final_video_path}")
+            logger.info(f"⏱️ Total time: {total_time:.2f}s")
+            logger.info(f"📊 Final video size: {final_video_size:.1f}MB")
+            
+            return final_video_path
             
         except Exception as e:
             logger.error(f"❌ Video generation failed: {e}")
-            raise GenerationFailedError("video_generation", f"Video generation failed: {str(e)}")
+            
+            # Log failure
+            self.comprehensive_logger.finalize_session(success=False, error_message=str(e))
+            
+            raise
     
     def _generate_script(self, config: GeneratedVideoConfig) -> str:
         """Generate script for the video"""
@@ -269,27 +393,25 @@ class VideoGenerator:
             logger.error(f"❌ Error downloading VEO-2 video: {e}")
             raise
     
-    def _generate_audio(self, config: GeneratedVideoConfig, script: str) -> str:
-        """Generate audio for the video"""
-        try:
-            audio_path = os.path.join(self.output_dir, f"audio_{self.session_id}.mp3")
-            
-            # Use gTTS for text-to-speech
-            tts = gTTS(text=script, lang='en', slow=False)
-            tts.save(audio_path)
-            
-            logger.info(f"🎤 Audio generated: {audio_path}")
-            return audio_path
-            
-        except Exception as e:
-            logger.error(f"❌ Audio generation failed: {e}")
-            raise
+    def _generate_audio(self, script: str, duration: int) -> str:
+        """Generate high-quality audio using Google Cloud TTS"""
+        logger.info(f"🎤 Generating high-quality audio for {duration}s video...")
+        
+        # Use the advanced voiceover generation with Google Cloud TTS
+        config = {
+            'narrative': 'energetic',
+            'feeling': 'excited',
+            'realistic_audio': True,
+            'duration_seconds': duration
+        }
+        
+        return self._generate_voiceover(script, duration, config)
     
     def _compose_final_video(self, video_clips: List[str], audio_path: str, 
-                           config: GeneratedVideoConfig, session_dir: str) -> str:
+                           config: GeneratedVideoConfig) -> str:
         """Compose final video from clips and audio"""
         try:
-            final_video_path = os.path.join(session_dir, "final_video.mp4")
+            final_video_path = os.path.join(self.output_dir, f"final_video_{self.session_id}.mp4")
             
             # Load video clips
             clips = []
