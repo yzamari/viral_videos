@@ -37,6 +37,9 @@ class AgentRole(Enum):
     EDITOR = "editor"
     ORCHESTRATOR = "orchestrator"
     
+    # NEW: Senior Management (1)
+    SENIOR_MANAGER = "senior_manager"
+    
     # NEW: Script & Dialogue Specialists (2)
     DIALOGUE_MASTER = "dialogue_master"
     PACE_MASTER = "pace_master"
@@ -134,8 +137,16 @@ class EnhancedMultiAgentDiscussionSystem:
         # Initialize discussion visualizer
         self.visualizer = DiscussionVisualizer(self.session_dir)
         
-        # ENHANCED: 25+ Total Agent Personalities
+        # ENHANCED: 26+ Total Agent Personalities with Senior Management
         self.agent_personalities = {
+            # Senior Management (1 agent)
+            AgentRole.SENIOR_MANAGER: {
+                "name": "ExecutiveChief",
+                "personality": "Senior executive and strategic supervisor, focused on overall project success and quality assurance across all phases",
+                "expertise": ["strategic oversight", "quality management", "resource coordination", "risk assessment", "performance optimization", "team leadership"],
+                "decision_style": "Executive-focused with strategic oversight and quality assurance priority"
+            },
+            
             # Original Core Agents (7)
             AgentRole.TREND_ANALYST: {
                 "name": "TrendMaster",
@@ -302,7 +313,7 @@ class EnhancedMultiAgentDiscussionSystem:
         }
         
         logger.info(f"🚀 ENHANCED Multi-Agent Discussion System initialized for session {session_id}")
-        logger.info(f"🤖 Total agents: {len(self.agent_personalities)} (25+ specialized experts)")
+        logger.info(f"🤖 Total agents: {len(self.agent_personalities)} (26+ specialized experts)")
         logger.info(f"💬 Agent phases: Script (4), Audio (5), Visual (6), Platform (5), Quality (3), Advanced (6)")
         logger.info(f"🎯 Discussion modes: light/standard/deep with configurable consensus thresholds")
     

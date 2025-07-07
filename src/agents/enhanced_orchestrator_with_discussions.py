@@ -8,11 +8,14 @@ import uuid
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
-from .multi_agent_discussion import (
-    MultiAgentDiscussionSystem, AgentRole, DiscussionTopic, 
-    VideoGenerationTopics
-)
 from .enhanced_orchestrator import EnhancedOrchestratorAgent
+from .enhanced_multi_agent_discussion import (
+    EnhancedMultiAgentDiscussionSystem, 
+    AgentRole, 
+    DiscussionTopic, 
+    DiscussionResult
+)
+from .video_generation_topics import VideoGenerationTopics
 from ..utils.logging_config import get_logger
 from ..models.video_models import Platform, VideoCategory
 
@@ -78,9 +81,21 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
         self.enable_discussions = True  # Force enable
         self.discussion_depth = discussion_depth  # "light", "standard", "deep"
         
-        # Initialize discussion system (always enabled)
-        self.discussion_system = MultiAgentDiscussionSystem(api_key, self.session_id)
-        logger.info("🤖 Multi-Agent Discussion System FORCED ENABLED")
+        # Initialize enhanced discussion system if enabled
+        if self.enable_discussions:
+            try:
+                self.discussion_system = EnhancedMultiAgentDiscussionSystem(
+                    api_key=api_key, 
+                    session_id=self.session_id
+                )
+                logger.info("🤖 Enhanced Multi-Agent Discussion System ENABLED")
+            except Exception as e:
+                logger.error(f"Failed to initialize Enhanced Discussion System: {e}")
+                self.discussion_system = None
+                logger.warning("🔄 Continuing without enhanced discussions")
+        else:
+            self.discussion_system = None
+            logger.info("🤖 Enhanced Multi-Agent Discussion System DISABLED")
         
         # Discussion results storage
         self.discussion_results = {}
@@ -208,14 +223,31 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             'config': config
         }
         
-        # Define participating agents based on discussion depth
+        # Define participating agents based on discussion depth - ALWAYS include Senior Manager
         depth_config = self.discussion_configs[self.discussion_depth]
-        participating_agents = [
+        base_participating_agents = [
+            AgentRole.SENIOR_MANAGER,  # Always included for oversight
             AgentRole.ORCHESTRATOR,
             AgentRole.TREND_ANALYST,
             AgentRole.SCRIPT_WRITER,
             AgentRole.DIRECTOR
-        ][:depth_config['participating_agents']]
+        ]
+        
+        # Add more agents based on depth
+        if self.discussion_depth in ['standard', 'deep']:
+            base_participating_agents.extend([
+                AgentRole.AUDIENCE_ADVOCATE,
+                AgentRole.QUALITY_GUARD
+            ])
+        
+        if self.discussion_depth == 'deep':
+            base_participating_agents.extend([
+                AgentRole.DATA_SCIENTIST,
+                AgentRole.PSYCHOLOGY_EXPERT,
+                AgentRole.BRAND_STRATEGIST
+            ])
+        
+        participating_agents = base_participating_agents[:depth_config['participating_agents']]
         
         # Create discussion topic
         topic = DiscussionTopic(
@@ -261,17 +293,29 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             'target_duration': self.duration
         }
         
-        # Use predefined script optimization topic
+        # Script optimization discussion with comprehensive agent participation
+        participating_agents = [
+            AgentRole.SENIOR_MANAGER,     # Strategic oversight
+            AgentRole.SCRIPT_WRITER,      # Core script expertise
+            AgentRole.DIALOGUE_MASTER,    # Natural dialogue
+            AgentRole.PACE_MASTER,        # Timing optimization
+            AgentRole.TREND_ANALYST,      # Viral patterns
+            AgentRole.DIRECTOR,           # Visual storytelling
+            AgentRole.AUDIENCE_ADVOCATE,  # User experience
+            AgentRole.ORCHESTRATOR        # Coordination
+        ]
+        
+        # Limit based on discussion depth
+        if self.discussion_depth == 'light':
+            participating_agents = participating_agents[:4]
+        elif self.discussion_depth == 'standard':
+            participating_agents = participating_agents[:6]
+        # Deep mode uses all agents
+        
+        # Create discussion topic
         topic = VideoGenerationTopics.script_optimization(context)
         topic.max_rounds = self.discussion_configs[self.discussion_depth]['max_rounds']
         topic.min_consensus = self.discussion_configs[self.discussion_depth]['min_consensus']
-        
-        participating_agents = [
-            AgentRole.SCRIPT_WRITER,
-            AgentRole.TREND_ANALYST,
-            AgentRole.DIRECTOR,
-            AgentRole.ORCHESTRATOR
-        ]
         
         if self.discussion_system:
             result = self.discussion_system.start_discussion(topic, participating_agents)
@@ -596,11 +640,8 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                 api_key=self.api_key,
                 use_real_veo2=master_plan.get('use_real_veo2', True),
                 use_vertex_ai=self.vertex_ai_config.get('use_vertex_ai', True),
-                vertex_project_id=self.vertex_ai_config.get('vertex_project_id') or "viralgen-464411",
-                vertex_location=self.vertex_ai_config.get('vertex_location') or "us-central1",
-                vertex_gcs_bucket=self.vertex_ai_config.get('vertex_gcs_bucket') or "viral-veo2-results",
-                prefer_veo3=self.vertex_ai_config.get('prefer_veo3', True),
-                enable_native_audio=self.vertex_ai_config.get('enable_native_audio', True)
+                project_id=self.vertex_ai_config.get('vertex_project_id') or "viralgen-464411",
+                location=self.vertex_ai_config.get('vertex_location') or "us-central1"
             )
             
             # Convert platform and category strings to enums
