@@ -50,7 +50,8 @@ class FullWorkingVideoApp:
         logger.info(f"🔑 API Key: {self.api_key[:20]}...")
         logger.info(f"🏗️ Project: {self.project_id}")
     
-    def generate_video(self, topic: str, duration: int = 15, use_discussions: bool = True) -> Dict[str, Any]:
+    def generate_video(self, topic: str, duration: int = 15, platform: str = "youtube", 
+                      category: str = "Comedy", use_discussions: bool = True) -> Dict[str, Any]:
         """
         Generate a complete video with all features using the enhanced orchestrator
         """
@@ -63,14 +64,32 @@ class FullWorkingVideoApp:
             logger.info(f"🎯 Generating video: {topic}")
             logger.info(f"📁 Session: {output_dir}")
             logger.info(f"⏱️ Duration: {duration}s")
-            logger.info(f"🎭 Agent Discussions: {use_discussions}")
+            logger.info(f"📱 Platform: {platform}")
+            logger.info(f"🎭 Category: {category}")
+            logger.info(f"🤖 Agent Discussions: {use_discussions}")
+            
+            # Map platform and category strings to enums
+            platform_map = {
+                "youtube": Platform.YOUTUBE,
+                "tiktok": Platform.TIKTOK,
+                "instagram": Platform.INSTAGRAM
+            }
+            
+            category_map = {
+                "Comedy": VideoCategory.COMEDY,
+                "Entertainment": VideoCategory.ENTERTAINMENT,
+                "Education": VideoCategory.EDUCATION
+            }
+            
+            target_platform = platform_map.get(platform.lower(), Platform.YOUTUBE)
+            target_category = category_map.get(category, VideoCategory.COMEDY)
             
             # Create configuration for the enhanced orchestrator
             config = GeneratedVideoConfig(
                 topic=topic,
                 duration_seconds=duration,
-                target_platform=Platform.YOUTUBE,
-                category=VideoCategory.COMEDY,
+                target_platform=target_platform,
+                category=target_category,
                 style="viral",
                 tone="engaging",
                 target_audience="18-35 year olds interested in culture and content",
@@ -124,8 +143,8 @@ class FullWorkingVideoApp:
             # This is the method that creates real VEO-2 videos and agent discussions
             video_result = orchestrator.generate_viral_video(
                 topic=topic,
-                category=config.category,
-                platform=config.target_platform,
+                category=target_category,
+                platform=target_platform,
                 duration=duration,
                 discussion_mode=use_discussions
             )
@@ -177,6 +196,9 @@ class FullWorkingVideoApp:
                 if os.path.exists(discussions_dir):
                     agent_discussions = [f for f in os.listdir(discussions_dir) if f.endswith('.json')]
                 
+                # Parse agent discussions for visualization
+                discussion_data = self._parse_agent_discussions(discussions_dir)
+                
                 return {
                     'success': True,
                     'video_path': video_path,
@@ -189,6 +211,7 @@ class FullWorkingVideoApp:
                     'script_files': script_files,
                     'veo2_clips': veo2_clips,
                     'agent_discussions': agent_discussions,
+                    'discussion_data': discussion_data,
                     'analysis': analysis,
                     'config': config
                 }
@@ -201,6 +224,75 @@ class FullWorkingVideoApp:
             import traceback
             traceback.print_exc()
             return {'success': False, 'error': str(e)}
+    
+    def _parse_agent_discussions(self, discussions_dir: str) -> Dict[str, Any]:
+        """Parse agent discussion files to extract conversation data"""
+        discussion_data = {
+            'phases': [],
+            'agents': {},
+            'consensus': {},
+            'decisions': []
+        }
+        
+        if not os.path.exists(discussions_dir):
+            return discussion_data
+        
+        try:
+            # Find all discussion files
+            discussion_files = [f for f in os.listdir(discussions_dir) if f.endswith('.json')]
+            
+            for file in discussion_files:
+                file_path = os.path.join(discussions_dir, file)
+                try:
+                    with open(file_path, 'r') as f:
+                        data = json.load(f)
+                    
+                    # Extract phase information
+                    if 'phase' in data:
+                        phase_info = {
+                            'name': data.get('phase', 'Unknown'),
+                            'agents': data.get('agents', []),
+                            'consensus': data.get('consensus', 0.0),
+                            'decision': data.get('final_decision', 'No decision recorded'),
+                            'timestamp': data.get('timestamp', ''),
+                            'discussion_rounds': data.get('discussion_rounds', [])
+                        }
+                        discussion_data['phases'].append(phase_info)
+                    
+                    # Extract individual agent contributions
+                    if 'agents' in data:
+                        for agent_name, agent_data in data['agents'].items():
+                            if agent_name not in discussion_data['agents']:
+                                discussion_data['agents'][agent_name] = []
+                            
+                            discussion_data['agents'][agent_name].append({
+                                'phase': data.get('phase', 'Unknown'),
+                                'contribution': agent_data.get('contribution', ''),
+                                'vote': agent_data.get('vote', ''),
+                                'reasoning': agent_data.get('reasoning', '')
+                            })
+                    
+                    # Extract consensus information
+                    if 'consensus' in data:
+                        phase_name = data.get('phase', 'Unknown')
+                        discussion_data['consensus'][phase_name] = data['consensus']
+                    
+                    # Extract final decisions
+                    if 'final_decision' in data:
+                        discussion_data['decisions'].append({
+                            'phase': data.get('phase', 'Unknown'),
+                            'decision': data['final_decision'],
+                            'consensus': data.get('consensus', 0.0)
+                        })
+                        
+                except Exception as e:
+                    logger.error(f"Error parsing discussion file {file}: {e}")
+                    continue
+                    
+        except Exception as e:
+            logger.error(f"Error reading discussions directory: {e}")
+        
+        return discussion_data
     
     def _get_video_duration(self, video_path: str) -> float:
         """Get video duration using ffprobe"""
@@ -282,86 +374,195 @@ class FullWorkingVideoApp:
             logger.error(f"❌ Analysis creation failed: {e}")
             return {'error': str(e)}
     
+    def _format_agent_discussions(self, discussion_data: Dict[str, Any]) -> str:
+        """Format agent discussions for display"""
+        if not discussion_data or not discussion_data.get('phases'):
+            return "No agent discussions found."
+        
+        formatted = "🤖 **AI AGENT DISCUSSIONS**\n\n"
+        
+        # Overview
+        formatted += f"**Total Phases:** {len(discussion_data['phases'])}\n"
+        formatted += f"**Total Agents:** {len(discussion_data['agents'])}\n"
+        formatted += f"**Decisions Made:** {len(discussion_data['decisions'])}\n\n"
+        
+        # Phase-by-phase breakdown
+        for i, phase in enumerate(discussion_data['phases'], 1):
+            formatted += f"## Phase {i}: {phase['name']}\n"
+            formatted += f"**Consensus:** {phase['consensus']:.1%}\n"
+            formatted += f"**Decision:** {phase['decision']}\n"
+            formatted += f"**Agents Involved:** {len(phase['agents'])}\n\n"
+            
+            # Show individual agent contributions
+            if phase['agents']:
+                formatted += "### Agent Contributions:\n"
+                for agent in phase['agents']:
+                    agent_name = agent.get('name', 'Unknown Agent')
+                    contribution = agent.get('contribution', 'No contribution recorded')
+                    vote = agent.get('vote', 'No vote')
+                    
+                    formatted += f"**{agent_name}:**\n"
+                    formatted += f"- Vote: {vote}\n"
+                    formatted += f"- Contribution: {contribution}\n\n"
+            
+            formatted += "---\n\n"
+        
+        # Final consensus summary
+        if discussion_data['consensus']:
+            formatted += "## Final Consensus Summary\n"
+            for phase_name, consensus in discussion_data['consensus'].items():
+                formatted += f"- **{phase_name}:** {consensus:.1%}\n"
+        
+        return formatted
+    
     def launch_ui(self):
-        """Launch the UI interface"""
+        """Launch the enhanced UI interface with all parameters"""
         try:
             import gradio as gr
             
-            def generate_video_ui(topic, duration, use_discussions):
+            def generate_video_ui(topic, duration, platform, category, use_discussions):
                 """UI wrapper for video generation"""
                 try:
-                    result = self.generate_video(topic, int(duration), use_discussions)
+                    result = self.generate_video(topic, int(duration), platform, category, use_discussions)
                     
                     if result['success']:
-                        details = f"📁 Session: {result['session_dir']}\n"
-                        details += f"📏 Duration: {result['duration_actual']:.1f}s\n"
-                        details += f"💾 Size: {result['file_size_mb']:.1f}MB\n"
-                        details += f"🎵 Audio files: {len(result['audio_files'])}\n"
-                        details += f"📝 Script files: {len(result['script_files'])}\n"
-                        details += f"🎬 VEO-2 clips: {len(result['veo2_clips'])}\n"
-                        details += f"🤖 Agent discussions: {len(result['agent_discussions'])}"
+                        details = f"📁 **Session:** {result['session_dir']}\n"
+                        details += f"📏 **Duration:** {result['duration_actual']:.1f}s\n"
+                        details += f"💾 **Size:** {result['file_size_mb']:.1f}MB\n"
+                        details += f"🎵 **Audio files:** {len(result['audio_files'])}\n"
+                        details += f"📝 **Script files:** {len(result['script_files'])}\n"
+                        details += f"🎬 **VEO-2 clips:** {len(result['veo2_clips'])}\n"
+                        details += f"🤖 **Agent discussions:** {len(result['agent_discussions'])}\n"
+                        details += f"⏱️ **Generation time:** {result['generation_time']:.2f}s"
+                        
+                        # Format agent discussions
+                        discussion_text = self._format_agent_discussions(result.get('discussion_data', {}))
                         
                         return (
-                            f"✅ SUCCESS! Video generated in {result['generation_time']:.2f}s",
+                            f"✅ **SUCCESS!** Video generated in {result['generation_time']:.2f}s",
                             result['video_path'],
-                            details
+                            details,
+                            discussion_text
                         )
                     else:
-                        return f"❌ FAILED: {result['error']}", None, "No video generated"
+                        return f"❌ **FAILED:** {result['error']}", None, "No video generated", "No discussions available"
                         
                 except Exception as e:
                     import traceback
                     error_details = traceback.format_exc()
                     logger.error(f"UI generation error: {error_details}")
-                    return f"❌ ERROR: {e}", None, f"Generation failed: {error_details}"
+                    return f"❌ **ERROR:** {e}", None, f"Generation failed: {error_details}", "Error occurred"
             
-            # Create Gradio interface
-            with gr.Blocks(title="🎬 Real VEO-2 Video Generator") as interface:
-                gr.Markdown("# 🎬 Real VEO-2 Video Generator")
-                gr.Markdown("**Enhanced Orchestrator + 19 AI Agents + Real VEO-2 + Agent Discussions**")
+            # Create enhanced Gradio interface
+            with gr.Blocks(title="🎬 Enhanced VEO-2 Video Generator") as interface:
+                gr.Markdown("# 🎬 Enhanced VEO-2 Video Generator")
+                gr.Markdown("**Complete System: VEO-2 + 19 AI Agents + Real Discussions + Professional Audio**")
                 
                 with gr.Row():
-                    with gr.Column():
+                    with gr.Column(scale=1):
+                        gr.Markdown("## 🎯 Video Configuration")
+                        
                         topic_input = gr.Textbox(
-                            label="Video Topic",
+                            label="📝 Video Topic",
                             value="ancient Persian mythology is amazing and vibrant",
-                            placeholder="Enter your video topic..."
+                            placeholder="Enter your video topic...",
+                            lines=2
                         )
-                        duration_input = gr.Slider(
-                            label="Duration (seconds)",
-                            minimum=10,
-                            maximum=60,
-                            value=15,
-                            step=5
-                        )
-                        discussions_input = gr.Checkbox(
-                            label="Enable Agent Discussions",
-                            value=True
-                        )
-                        generate_btn = gr.Button("🚀 Generate Real VEO-2 Video", variant="primary")
+                        
+                        with gr.Row():
+                            duration_input = gr.Slider(
+                                label="⏱️ Duration (seconds)",
+                                minimum=10,
+                                maximum=60,
+                                value=15,
+                                step=5
+                            )
+                            
+                            platform_input = gr.Dropdown(
+                                label="📱 Target Platform",
+                                choices=["youtube", "tiktok", "instagram"],
+                                value="youtube"
+                            )
+                        
+                        with gr.Row():
+                            category_input = gr.Dropdown(
+                                label="🎭 Category",
+                                choices=["Comedy", "Entertainment", "Education"],
+                                value="Comedy"
+                            )
+                            
+                            discussions_input = gr.Checkbox(
+                                label="🤖 Enable 19 AI Agent Discussions",
+                                value=True
+                            )
+                        
+                        generate_btn = gr.Button("🚀 Generate Enhanced Video", variant="primary", size="lg")
+                        
+                        gr.Markdown("---")
+                        gr.Markdown("### 🎯 All Features Included")
+                        gr.Markdown("""
+                        - ✅ **Real VEO-2 Videos** - Actual AI video generation
+                        - ✅ **19 AI Agents** - Multi-agent collaboration
+                        - ✅ **Platform Optimization** - YouTube/TikTok/Instagram
+                        - ✅ **Professional Audio** - Google TTS synthesis
+                        - ✅ **Agent Discussions** - Real AI conversations
+                        - ✅ **Topic Relevance** - Content matches your topic
+                        """)
                     
-                    with gr.Column():
-                        status_output = gr.Textbox(label="Status", interactive=False)
-                        video_output = gr.Video(label="Generated Video")
-                        details_output = gr.Textbox(label="Details", interactive=False, lines=8)
+                    with gr.Column(scale=2):
+                        gr.Markdown("## 📊 Results & Analysis")
+                        
+                        status_output = gr.Markdown(label="Status")
+                        
+                        with gr.Row():
+                            with gr.Column():
+                                video_output = gr.Video(label="🎬 Generated Video")
+                                details_output = gr.Markdown(label="📋 Generation Details")
+                            
+                            with gr.Column():
+                                gr.Markdown("### 🤖 AI Agent Discussions")
+                                discussions_output = gr.Markdown(
+                                    label="Agent Conversations",
+                                    value="Generate a video to see agent discussions...",
+                                    height=400
+                                )
                 
                 generate_btn.click(
                     generate_video_ui,
-                    inputs=[topic_input, duration_input, discussions_input],
-                    outputs=[status_output, video_output, details_output]
+                    inputs=[topic_input, duration_input, platform_input, category_input, discussions_input],
+                    outputs=[status_output, video_output, details_output, discussions_output]
                 )
                 
                 gr.Markdown("---")
-                gr.Markdown("### 🎯 Real Features")
-                gr.Markdown("""
-                - ✅ **Real VEO-2 Video Generation** - Actual AI video clips from Google
-                - ✅ **19 AI Agents** - Enhanced orchestrator with agent discussions
-                - ✅ **Google TTS Audio** - Natural voice synthesis  
-                - ✅ **Agent Discussions** - Real multi-AI collaboration
-                - ✅ **Topic-Relevant Content** - Videos actually match your topic
-                - ✅ **Vertex AI Integration** - Enterprise-grade APIs
-                - ✅ **Complete Pipeline** - Script → VEO-2 → Audio → Composition
-                """)
+                gr.Markdown("## 🚀 System Capabilities")
+                
+                with gr.Row():
+                    with gr.Column():
+                        gr.Markdown("""
+                        ### 🎬 Video Generation
+                        - **VEO-2 Integration**: Real Google AI video clips
+                        - **Duration Control**: 10-60 seconds
+                        - **Platform Optimization**: Tailored for each platform
+                        - **Category Matching**: Comedy, Entertainment, Education
+                        """)
+                    
+                    with gr.Column():
+                        gr.Markdown("""
+                        ### 🤖 AI Agent System
+                        - **19 Specialized Agents**: Each with unique expertise
+                        - **5 Discussion Phases**: Comprehensive collaboration
+                        - **Consensus Building**: Democratic decision making
+                        - **Real Conversations**: Actual AI-to-AI discussions
+                        """)
+                    
+                    with gr.Column():
+                        gr.Markdown("""
+                        ### 🎵 Audio & Effects
+                        - **Google TTS**: Natural voice synthesis
+                        - **Multi-language Support**: Various accents
+                        - **Sound Effects**: Professional audio design
+                        - **Perfect Sync**: Audio-video alignment
+                        """)
             
             return interface
             
@@ -370,21 +571,33 @@ class FullWorkingVideoApp:
             return None
 
 def main():
-    """Main execution function"""
-    parser = argparse.ArgumentParser(description='Real VEO-2 Video App')
+    """Main execution function with all CLI parameters"""
+    parser = argparse.ArgumentParser(description='Enhanced VEO-2 Video Generator')
     parser.add_argument('--topic', default='ancient Persian mythology is amazing and vibrant', 
                        help='Video topic')
-    parser.add_argument('--duration', type=int, default=15, help='Video duration in seconds')
-    parser.add_argument('--ui', action='store_true', help='Launch UI interface')
-    parser.add_argument('--no-discussions', action='store_true', help='Disable agent discussions')
-    parser.add_argument('--port', type=int, default=None, help='Port for UI (auto-detect if not specified)')
+    parser.add_argument('--duration', type=int, choices=[10, 15, 20, 30, 45, 60], default=15, 
+                       help='Video duration in seconds (10|30|60)')
+    parser.add_argument('--platform', choices=['youtube', 'tiktok', 'instagram'], default='youtube',
+                       help='Target platform (youtube|tiktok|instagram)')
+    parser.add_argument('--category', choices=['Comedy', 'Entertainment', 'Education'], default='Comedy',
+                       help='Video category (Comedy|Entertainment|Education)')
+    parser.add_argument('--discussions', action='store_true', default=True,
+                       help='Enable 19 AI agent discussions')
+    parser.add_argument('--no-discussions', action='store_true', 
+                       help='Disable agent discussions')
+    parser.add_argument('--ui', action='store_true', help='Launch web interface')
+    parser.add_argument('--port', type=int, default=None, 
+                       help='Custom port for UI (auto-detect if not specified)')
     
     args = parser.parse_args()
+    
+    # Handle discussions flag
+    use_discussions = args.discussions and not args.no_discussions
     
     app = FullWorkingVideoApp()
     
     if args.ui:
-        logger.info("🚀 Launching UI interface...")
+        logger.info("🚀 Launching Enhanced UI interface...")
         interface = app.launch_ui()
         if interface:
             # Auto-detect available port
@@ -409,18 +622,28 @@ def main():
                     logger.error("❌ Could not find available port")
                     sys.exit(1)
             
-            logger.info(f"🌐 Starting UI on port {port}")
-            print(f"🌐 Interface will be available at: http://localhost:{port}")
+            logger.info(f"🌐 Starting Enhanced UI on port {port}")
+            print(f"🌐 Interface available at: http://localhost:{port}")
+            print(f"🎬 All parameters included: topic, duration, platform, category, discussions")
+            print(f"🤖 Agent discussions fully visualized with individual contributions")
             
             interface.launch(server_name="0.0.0.0", server_port=port, share=False)
         else:
             logger.error("❌ Failed to launch UI")
     else:
         logger.info("🎬 Generating video via command line...")
+        print(f"🎯 Topic: {args.topic}")
+        print(f"⏱️ Duration: {args.duration}s")
+        print(f"📱 Platform: {args.platform}")
+        print(f"🎭 Category: {args.category}")
+        print(f"🤖 Discussions: {use_discussions}")
+        
         result = app.generate_video(
             topic=args.topic,
             duration=args.duration,
-            use_discussions=not args.no_discussions
+            platform=args.platform,
+            category=args.category,
+            use_discussions=use_discussions
         )
         
         if result['success']:
@@ -434,6 +657,13 @@ def main():
             print(f"📝 Script files: {len(result['script_files'])}")
             print(f"🎬 VEO-2 clips: {len(result['veo2_clips'])}")
             print(f"🤖 Agent discussions: {len(result['agent_discussions'])}")
+            
+            # Show agent discussion summary
+            if result.get('discussion_data') and result['discussion_data'].get('phases'):
+                print(f"\n🤖 AGENT DISCUSSION SUMMARY:")
+                for phase in result['discussion_data']['phases']:
+                    print(f"   • {phase['name']}: {phase['consensus']:.1%} consensus")
+                    print(f"     Decision: {phase['decision']}")
             
             # Show session contents
             print(f"\n📁 Session contents:")
