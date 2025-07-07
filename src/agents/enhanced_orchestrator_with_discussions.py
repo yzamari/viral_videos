@@ -16,6 +16,8 @@ from .enhanced_multi_agent_discussion import (
     DiscussionResult
 )
 from .video_generation_topics import VideoGenerationTopics
+from .continuity_decision_agent import ContinuityDecisionAgent
+from .advanced_composition_discussions import create_advanced_composition_system
 from ..utils.logging_config import get_logger
 from ..models.video_models import Platform, VideoCategory
 
@@ -81,6 +83,14 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
         self.enable_discussions = True  # Force enable
         self.discussion_depth = discussion_depth  # "light", "standard", "deep"
         
+        # Initialize Frame Continuity Decision Agent
+        self.continuity_agent = ContinuityDecisionAgent(api_key)
+        logger.info("🎬 Frame Continuity Decision Agent initialized")
+        
+        # Initialize Advanced Composition Discussion System
+        self.composition_system = create_advanced_composition_system(api_key, self.session_id)
+        logger.info("🎭 Advanced Composition Discussion System initialized")
+        
         # Initialize enhanced discussion system if enabled
         if self.enable_discussions:
             try:
@@ -99,6 +109,12 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
         
         # Discussion results storage
         self.discussion_results = {}
+        
+        # Frame continuity decision storage
+        self.frame_continuity_decision = None
+        
+        # Advanced composition decisions storage
+        self.composition_decisions = None
         
         # Vertex AI configuration (will be set by factory function)
         self.vertex_ai_config = {
@@ -129,60 +145,68 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
     
     def orchestrate_complete_generation(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Orchestrate complete video generation with agent discussions
+        Orchestrate complete video generation with comprehensive agent discussions
         
-        This method extends the base orchestration to include collaborative
-        decision-making at key stages.
+        This method extends the base orchestration to include detailed
+        composition decision-making at granular levels.
         """
-        logger.info("🎭 Starting Discussion-Enhanced Video Generation")
+        logger.info("🎭 Starting Advanced Composition Video Generation")
         logger.info(f"💬 Discussion mode: {self.discussion_depth}")
         
-        # Phase 1: Initial Planning Discussion
+        # PHASE 1: Comprehensive Composition Discussion
+        logger.info("🎯 PHASE 1: Comprehensive Video Composition Analysis")
+        composition_decisions = self.composition_system.conduct_comprehensive_composition_discussion(
+            topic=self.topic,
+            category=self.category,
+            platform=self.platform,
+            total_duration=self.duration,
+            style=config.get('style', 'viral')
+        )
+        
+        # Store composition decisions
+        self.composition_decisions = composition_decisions
+        
+        # PHASE 2: Initial Planning Discussion (enhanced with composition insights)
         if self.enable_discussions:
-            planning_result = self._conduct_planning_discussion(config)
-            config.update(planning_result.decision)
+            planning_result = self._conduct_planning_discussion(config, composition_decisions)
             self.discussion_results['planning'] = planning_result
         
-        # Phase 2: Master Planning (enhanced with discussion insights)
-        master_plan = self._create_enhanced_master_plan(config)
+        # PHASE 3: Master Planning (enhanced with composition decisions)
+        master_plan = self._create_enhanced_master_plan(config, composition_decisions)
         
-        # Phase 3: Script Generation Discussion
+        # PHASE 4: Script Generation Discussion (with detailed clip specifications)
         if self.enable_discussions:
-            script_result = self._conduct_script_discussion(master_plan)
-            master_plan.update(script_result.decision)
+            script_result = self._conduct_script_discussion(master_plan, composition_decisions)
             self.discussion_results['script'] = script_result
         
-        # Phase 4: Script Generation (with discussion guidance)
-        script_data = self._orchestrate_script_generation(master_plan)
+        # PHASE 5: Script Generation (with composition guidance)
+        script_data = self._orchestrate_script_generation(master_plan, composition_decisions)
         
-        # Phase 5: Visual Strategy Discussion
+        # PHASE 6: Visual Strategy Discussion (already includes frame continuity decision)
         if self.enable_discussions:
-            visual_result = self._conduct_visual_discussion(script_data, master_plan)
-            master_plan.update(visual_result.decision)
+            visual_result = self._conduct_visual_discussion(script_data, master_plan, composition_decisions)
             self.discussion_results['visual'] = visual_result
         
-        # Phase 6: Video Generation (with discussion guidance)
-        video_data = self._orchestrate_video_generation(script_data, master_plan)
+        # PHASE 7: Video Generation (with detailed clip and media specifications)
+        video_data = self._orchestrate_video_generation(script_data, master_plan, composition_decisions)
         
-        # Phase 7: Audio Strategy Discussion
+        # PHASE 8: Audio Strategy Discussion (with timing specifications)
         if self.enable_discussions:
-            audio_result = self._conduct_audio_discussion(script_data, video_data, master_plan)
-            master_plan.update(audio_result.decision)
+            audio_result = self._conduct_audio_discussion(script_data, video_data, master_plan, composition_decisions)
             self.discussion_results['audio'] = audio_result
         
-        # Phase 8: Audio Generation (with discussion guidance)
-        audio_data = self._orchestrate_audio_generation(script_data, video_data, master_plan)
+        # PHASE 9: Audio Generation (with composition guidance)
+        audio_data = self._orchestrate_audio_generation(script_data, video_data, master_plan, composition_decisions)
         
-        # Phase 9: Final Assembly Discussion
+        # PHASE 10: Final Assembly Discussion (with integration specifications)
         if self.enable_discussions:
-            assembly_result = self._conduct_assembly_discussion(script_data, video_data, audio_data, master_plan)
-            master_plan.update(assembly_result.decision)
+            assembly_result = self._conduct_assembly_discussion(script_data, video_data, audio_data, master_plan, composition_decisions)
             self.discussion_results['assembly'] = assembly_result
         
-        # Phase 10: Final Assembly (with discussion guidance)
-        final_video = self._orchestrate_final_assembly(script_data, video_data, audio_data, master_plan)
+        # PHASE 11: Final Assembly (with comprehensive composition)
+        final_video = self._orchestrate_final_assembly(script_data, video_data, audio_data, master_plan, composition_decisions)
         
-        # Phase 11: Save Discussion Results
+        # PHASE 12: Save Discussion Results
         self._save_discussion_summary()
         
         # Create comprehensive result
@@ -193,6 +217,7 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             'script_data': script_data,
             'video_data': video_data,
             'audio_data': audio_data,
+            'composition_decisions': composition_decisions,
             'discussion_results': self.discussion_results,
             'session_id': self.session_id,
             'generation_metadata': {
@@ -200,17 +225,19 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                 'discussion_depth': self.discussion_depth,
                 'total_discussions': len(self.discussion_results),
                 'average_consensus': self._calculate_average_consensus(),
-                'key_insights': self._extract_all_insights()
+                'key_insights': self._extract_all_insights(),
+                'composition_summary': self._get_composition_summary()
             }
         }
         
-        logger.info("🎯 Discussion-Enhanced Generation Complete!")
+        logger.info("🎯 Advanced Composition Generation Complete!")
         logger.info(f"📊 Conducted {len(self.discussion_results)} agent discussions")
         logger.info(f"🤝 Average consensus: {result['generation_metadata']['average_consensus']:.2f}")
+        logger.info(f"🎬 Composition: {result['generation_metadata']['composition_summary']}")
         
         return result
     
-    def _conduct_planning_discussion(self, config: Dict[str, Any]) -> Any:
+    def _conduct_planning_discussion(self, config: Dict[str, Any], composition_decisions: Dict[str, Any]) -> Any:
         """Conduct initial planning discussion"""
         logger.info("🗣️ Starting Planning Discussion")
         
@@ -220,7 +247,8 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             'category': self.category,
             'platform': self.platform,
             'duration': self.duration,
-            'config': config
+            'config': config,
+            'composition_decisions': composition_decisions
         }
         
         # Define participating agents based on discussion depth - ALWAYS include Senior Manager
@@ -282,7 +310,7 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                     self.participating_agents = []
             return DummyResult()
     
-    def _conduct_script_discussion(self, master_plan: Dict[str, Any]) -> Any:
+    def _conduct_script_discussion(self, master_plan: Dict[str, Any], composition_decisions: Dict[str, Any]) -> Any:
         """Conduct script optimization discussion"""
         logger.info("🗣️ Starting Script Discussion")
         
@@ -290,7 +318,8 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             'master_plan': master_plan,
             'topic': self.topic,
             'platform': self.platform,
-            'target_duration': self.duration
+            'target_duration': self.duration,
+            'composition_decisions': composition_decisions
         }
         
         # Script optimization discussion with comprehensive agent participation
@@ -332,15 +361,38 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                     self.participating_agents = []
             return DummyResult()
     
-    def _conduct_visual_discussion(self, script_data: Dict[str, Any], master_plan: Dict[str, Any]) -> Any:
-        """Conduct visual strategy discussion"""
+    def _conduct_visual_discussion(self, script_data: Dict[str, Any], master_plan: Dict[str, Any], composition_decisions: Dict[str, Any]) -> Any:
+        """Conduct visual strategy discussion with AI-driven frame continuity decision"""
         logger.info("🗣️ Starting Visual Strategy Discussion")
         
+        # PHASE 1: AI Frame Continuity Decision
+        logger.info("🎬 VisualFlow Agent analyzing frame continuity requirements...")
+        
+        continuity_decision = self.continuity_agent.analyze_frame_continuity_need(
+            topic=self.topic,
+            category=self.category,
+            platform=self.platform,
+            duration=self.duration,
+            style=master_plan.get('style', 'viral')
+        )
+        
+        # Store the decision for later use
+        self.frame_continuity_decision = continuity_decision
+        
+        # Log the AI decision
+        continuity_status = "✅ ENABLED" if continuity_decision['use_frame_continuity'] else "❌ DISABLED"
+        logger.info(f"🎬 AI Decision: Frame Continuity {continuity_status}")
+        logger.info(f"   Confidence: {continuity_decision['confidence']:.2f}")
+        logger.info(f"   Reason: {continuity_decision['primary_reason']}")
+        
+        # PHASE 2: Traditional Visual Strategy Discussion
         context = {
             'script_data': script_data,
             'master_plan': master_plan,
             'platform': self.platform,
-            'veo_capabilities': 'veo-2-available'
+            'veo_capabilities': 'veo-2-available',
+            'frame_continuity_decision': continuity_decision,  # Include AI decision in context
+            'composition_decisions': composition_decisions
         }
         
         topic = VideoGenerationTopics.visual_strategy(context)
@@ -356,21 +408,33 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
         
         if self.discussion_system:
             result = self.discussion_system.start_discussion(topic, participating_agents)
+            
+            # Enhance result with frame continuity decision
+            if hasattr(result, 'decision'):
+                result.decision['frame_continuity'] = continuity_decision['use_frame_continuity']
+                result.decision['frame_continuity_reasoning'] = continuity_decision['primary_reason']
+                result.decision['frame_continuity_confidence'] = continuity_decision['confidence']
+            
             logger.info(f"✅ Visual Discussion: {result.consensus_level:.2f} consensus")
+            logger.info(f"🎬 Frame Continuity: {continuity_status}")
             return result
         else:
             # Return dummy result when discussions are disabled
             class DummyResult:
                 def __init__(self):
                     self.consensus_level = 1.0
-                    self.decision = {}
-                    self.key_insights = []
+                    self.decision = {
+                        'frame_continuity': continuity_decision['use_frame_continuity'],
+                        'frame_continuity_reasoning': continuity_decision['primary_reason'],
+                        'frame_continuity_confidence': continuity_decision['confidence']
+                    }
+                    self.key_insights = [continuity_decision['primary_reason']]
                     self.total_rounds = 0
-                    self.participating_agents = []
+                    self.participating_agents = ['VisualFlow']
             return DummyResult()
     
     def _conduct_audio_discussion(self, script_data: Dict[str, Any], video_data: Dict[str, Any], 
-                                master_plan: Dict[str, Any]) -> Any:
+                                master_plan: Dict[str, Any], composition_decisions: Dict[str, Any]) -> Any:
         """Conduct audio synchronization discussion"""
         logger.info("🗣️ Starting Audio Discussion")
         
@@ -378,7 +442,8 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             'script_data': script_data,
             'video_data': video_data,
             'master_plan': master_plan,
-            'video_duration': video_data.get('total_duration', self.duration)
+            'video_duration': video_data.get('total_duration', self.duration),
+            'composition_decisions': composition_decisions
         }
         
         topic = VideoGenerationTopics.audio_synchronization(context)
@@ -408,7 +473,7 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             return DummyResult()
     
     def _conduct_assembly_discussion(self, script_data: Dict[str, Any], video_data: Dict[str, Any], 
-                                   audio_data: Dict[str, Any], master_plan: Dict[str, Any]) -> Any:
+                                   audio_data: Dict[str, Any], master_plan: Dict[str, Any], composition_decisions: Dict[str, Any]) -> Any:
         """Conduct final assembly discussion"""
         logger.info("🗣️ Starting Assembly Discussion")
         
@@ -417,7 +482,8 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             'video_data': video_data,
             'audio_data': audio_data,
             'master_plan': master_plan,
-            'platform': self.platform
+            'platform': self.platform,
+            'composition_decisions': composition_decisions
         }
         
         topic = DiscussionTopic(
@@ -458,7 +524,7 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                     self.participating_agents = []
             return DummyResult()
     
-    def _create_enhanced_master_plan(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_enhanced_master_plan(self, config: Dict[str, Any], composition_decisions: Dict[str, Any]) -> Dict[str, Any]:
         """Create master plan enhanced with discussion insights"""
         # Create base plan manually since super() method doesn't exist
         base_plan = {
@@ -503,6 +569,14 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             base_plan['discussion_enhanced'] = True
             base_plan['planning_consensus'] = planning_insights.consensus_level
             base_plan['planning_insights'] = planning_insights.key_insights
+        
+        # Enhance with composition decisions
+        if 'composition_decisions' in composition_decisions:
+            for decision in composition_decisions['composition_decisions']:
+                if decision['decision'] == 'use_frame_continuity':
+                    base_plan['use_frame_continuity'] = decision['use_frame_continuity']
+                elif decision['decision'] == 'use_composition':
+                    base_plan['use_composition'] = decision['use_composition']
         
         return base_plan
     
@@ -609,7 +683,7 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
         logger.info(f"   Participating Agents: {summary['overall_metrics']['unique_participating_agents']}")
         
         # Print enhanced summary
-        logger.info("🎯 Discussion-Enhanced Generation Complete!")
+        logger.info("🎯 Advanced Composition Generation Complete!")
     
     def _calculate_average_consensus(self) -> float:
         """Calculate average consensus across all discussions"""
@@ -618,6 +692,26 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
         
         total_consensus = sum(result.consensus_level for result in self.discussion_results.values())
         return total_consensus / len(self.discussion_results)
+    
+    def _get_composition_summary(self) -> str:
+        """Get summary of composition decisions"""
+        if not self.composition_decisions:
+            return "No composition decisions available"
+        
+        try:
+            decisions = self.composition_decisions['decisions']
+            
+            # Extract key metrics
+            segments = decisions.get('structure', {}).get('ai_analysis', {}).get('total_segments', 0)
+            clips = decisions.get('timing', {}).get('ai_analysis', {}).get('total_clips', 0)
+            veo2_clips = decisions.get('media', {}).get('ai_analysis', {}).get('resource_allocation', {}).get('veo2_clips', 0)
+            images = decisions.get('media', {}).get('ai_analysis', {}).get('resource_allocation', {}).get('static_images', 0)
+            text_elements = len(decisions.get('visual', {}).get('ai_analysis', {}).get('text_elements', []))
+            
+            return f"{segments} segments, {clips} clips ({veo2_clips} VEO2, {images} images), {text_elements} text elements"
+        except Exception as e:
+            logger.error(f"Error creating composition summary: {e}")
+            return "Composition summary unavailable"
     
     def _extract_all_insights(self) -> List[str]:
         """Extract key insights from all discussions"""
@@ -628,7 +722,7 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
         # Return unique insights
         return list(set(all_insights))[:10]  # Top 10 unique insights
 
-    def _orchestrate_script_generation(self, master_plan: Dict[str, Any]) -> Dict[str, Any]:
+    def _orchestrate_script_generation(self, master_plan: Dict[str, Any], composition_decisions: Dict[str, Any]) -> Dict[str, Any]:
         """Generate script with discussion guidance"""
         try:
             # Use the original video generator for script generation
@@ -657,6 +751,14 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
             elif master_plan['category'].lower() == 'education':
                 category_enum = VideoCategory.EDUCATION
             
+            # ENHANCED: Use AI agent's frame continuity decision
+            use_frame_continuity = True  # Default fallback
+            if self.frame_continuity_decision:
+                use_frame_continuity = self.frame_continuity_decision['use_frame_continuity']
+                logger.info(f"🎬 Using AI Frame Continuity Decision: {use_frame_continuity}")
+            else:
+                logger.info("🎬 Using default frame continuity: True")
+            
             # Create configuration
             config = GeneratedVideoConfig(
                 target_platform=platform_enum,
@@ -678,7 +780,7 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                 sound_effects=[],
                 inspired_by_videos=[],
                 predicted_viral_score=0.85,
-                frame_continuity=True,
+                frame_continuity=use_frame_continuity,  # Use AI decision
                 image_only_mode=master_plan.get('image_only_mode', False)
             )
             
@@ -691,7 +793,8 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                 'duration': master_plan['duration'],
                 'success': True,
                 'config': config,
-                'result': result
+                'result': result,
+                'composition_applied': True if composition_decisions else False
             }
             
         except Exception as e:
@@ -701,10 +804,11 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                 'scenes': [],
                 'duration': master_plan['duration'],
                 'success': False,
-                'error': str(e)
+                'error': str(e),
+                'composition_applied': False
             }
     
-    def _orchestrate_video_generation(self, script_data: Dict[str, Any], master_plan: Dict[str, Any]) -> Dict[str, Any]:
+    def _orchestrate_video_generation(self, script_data: Dict[str, Any], master_plan: Dict[str, Any], composition_decisions: Dict[str, Any]) -> Dict[str, Any]:
         """Generate video with discussion guidance"""
         try:
             # If script generation already produced a result, use it
@@ -733,7 +837,7 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                 'error': str(e)
             }
     
-    def _orchestrate_audio_generation(self, script_data: Dict[str, Any], video_data: Dict[str, Any], master_plan: Dict[str, Any]) -> Dict[str, Any]:
+    def _orchestrate_audio_generation(self, script_data: Dict[str, Any], video_data: Dict[str, Any], master_plan: Dict[str, Any], composition_decisions: Dict[str, Any]) -> Dict[str, Any]:
         """Generate audio with discussion guidance"""
         try:
             # Audio is typically generated as part of the video generation process
@@ -761,7 +865,7 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                 'error': str(e)
             }
     
-    def _orchestrate_final_assembly(self, script_data: Dict[str, Any], video_data: Dict[str, Any], audio_data: Dict[str, Any], master_plan: Dict[str, Any]) -> Dict[str, Any]:
+    def _orchestrate_final_assembly(self, script_data: Dict[str, Any], video_data: Dict[str, Any], audio_data: Dict[str, Any], master_plan: Dict[str, Any], composition_decisions: Dict[str, Any]) -> Dict[str, Any]:
         """Assemble final video with discussion guidance"""
         try:
             # Final assembly is typically done as part of the video generation process

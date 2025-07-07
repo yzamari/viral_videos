@@ -44,9 +44,11 @@ def cli():
               default='standard', help='Enable AI agent discussions (default: standard)')
 @click.option('--discussion-log', is_flag=True, default=True, help='Show detailed discussion logs')
 @click.option('--session-id', help='Custom session ID')
+@click.option('--frame-continuity', type=click.Choice(['auto', 'on', 'off']), 
+              default='auto', help='Frame continuity mode: auto (AI decides), on (always enabled), off (disabled)')
 def generate(category: str, topic: str, platform: str, duration: int, 
             image_only: bool, fallback_only: bool, force: bool, 
-            discussions: str, discussion_log: bool, session_id: str):
+            discussions: str, discussion_log: bool, session_id: str, frame_continuity: str):
     """🎬 Generate viral video with AI agent discussions (enabled by default)"""
     
     try:
@@ -60,6 +62,14 @@ def generate(category: str, topic: str, platform: str, duration: int,
         click.echo(f"🎬 Generating {category} video about: {topic}")
         click.echo(f"📱 Platform: {platform}")
         click.echo(f"⏱️ Duration: {duration} seconds")
+        
+        # Display frame continuity mode
+        continuity_modes = {
+            'auto': '🤖 AI Agent Decision',
+            'on': '✅ Always Enabled',
+            'off': '❌ Always Disabled'
+        }
+        click.echo(f"🎬 Frame Continuity: {continuity_modes[frame_continuity]}")
         
         # CRITICAL: Force agent discussions to ALWAYS be ON
         if discussions == 'off':
@@ -92,17 +102,25 @@ def generate(category: str, topic: str, platform: str, duration: int,
         if discussions == 'off':
             # Traditional generation without discussions
             result = _generate_traditional(category, topic, platform, duration, 
-                                         image_only, fallback_only)
+                                         image_only, fallback_only, frame_continuity)
         else:
             # Enhanced generation with agent discussions
             result = _generate_with_discussions(category, topic, platform, duration, 
                                               image_only, fallback_only, discussions, 
-                                              discussion_log)
+                                              discussion_log, frame_continuity)
         
         # Display results
         if result.get('success'):
             click.echo("✅ Video generation completed successfully!")
             click.echo(f"📁 Output: {result.get('final_video_path', 'Check outputs directory')}")
+            
+            # Display frame continuity decision if available
+            if result.get('frame_continuity_decision'):
+                decision = result['frame_continuity_decision']
+                status = "✅ ENABLED" if decision['use_frame_continuity'] else "❌ DISABLED"
+                click.echo(f"🎬 Frame Continuity Decision: {status}")
+                click.echo(f"   AI Confidence: {decision['confidence']:.2f}")
+                click.echo(f"   Reason: {decision['primary_reason']}")
             
             if discussions != 'off' and 'discussion_results' in result:
                 _display_discussion_summary(result['discussion_results'], result['generation_metadata'])
@@ -120,7 +138,7 @@ def generate(category: str, topic: str, platform: str, duration: int,
         sys.exit(1)
 
 def _generate_traditional(category: str, topic: str, platform: str, duration: int,
-                         image_only: bool, fallback_only: bool) -> dict:
+                         image_only: bool, fallback_only: bool, frame_continuity: str) -> dict:
     """Generate video using traditional method without discussions"""
     
     # Create video generator
@@ -128,6 +146,44 @@ def _generate_traditional(category: str, topic: str, platform: str, duration: in
         api_key=settings.google_api_key,
         use_real_veo2=not fallback_only
     )
+    
+    # Determine frame continuity setting
+    use_frame_continuity = True  # Default
+    frame_continuity_decision = None
+    
+    if frame_continuity == 'on':
+        use_frame_continuity = True
+        frame_continuity_decision = {
+            'use_frame_continuity': True,
+            'confidence': 1.0,
+            'primary_reason': 'User forced frame continuity ON',
+            'agent_name': 'User Override'
+        }
+    elif frame_continuity == 'off':
+        use_frame_continuity = False
+        frame_continuity_decision = {
+            'use_frame_continuity': False,
+            'confidence': 1.0,
+            'primary_reason': 'User forced frame continuity OFF',
+            'agent_name': 'User Override'
+        }
+    else:  # auto mode
+        # Use AI agent to decide (even in traditional mode)
+        from src.agents.continuity_decision_agent import ContinuityDecisionAgent
+        continuity_agent = ContinuityDecisionAgent(settings.google_api_key)
+        
+        frame_continuity_decision = continuity_agent.analyze_frame_continuity_need(
+            topic=topic,
+            category=category,
+            platform=platform,
+            duration=duration,
+            style="viral"
+        )
+        
+        use_frame_continuity = frame_continuity_decision['use_frame_continuity']
+        logger.info(f"🎬 AI Frame Continuity Decision: {use_frame_continuity}")
+        logger.info(f"   Confidence: {frame_continuity_decision['confidence']:.2f}")
+        logger.info(f"   Reason: {frame_continuity_decision['primary_reason']}")
     
     # Create configuration
     config = GeneratedVideoConfig(
@@ -150,7 +206,7 @@ def _generate_traditional(category: str, topic: str, platform: str, duration: in
         sound_effects=[],
         inspired_by_videos=[],
         predicted_viral_score=0.85,
-        frame_continuity=True
+        frame_continuity=use_frame_continuity  # Use AI decision or user override
     )
     
     # Force image-only if requested
@@ -163,12 +219,13 @@ def _generate_traditional(category: str, topic: str, platform: str, duration: in
     return {
         'success': True,
         'final_video_path': result.file_path if result else None,
+        'frame_continuity_decision': frame_continuity_decision,
         'error': None
     }
 
 def _generate_with_discussions(category: str, topic: str, platform: str, duration: int,
                               image_only: bool, fallback_only: bool, discussions: str,
-                              discussion_log: bool) -> dict:
+                              discussion_log: bool, frame_continuity: str) -> dict:
     """Generate video using enhanced method with agent discussions"""
     
     # CRITICAL FIX: Create session_id first and pass it to orchestrator
@@ -192,11 +249,16 @@ def _generate_with_discussions(category: str, topic: str, platform: str, duratio
         'fallback_only': fallback_only,
         'image_only_mode': image_only,
         'use_real_veo2': not fallback_only,
-        'discussion_logging': discussion_log
+        'discussion_logging': discussion_log,
+        'frame_continuity': frame_continuity
     }
     
     # Generate video with discussions
     result = orchestrator.orchestrate_complete_generation(config)
+    
+    # Add frame continuity decision to result if available
+    if hasattr(orchestrator, 'frame_continuity_decision') and orchestrator.frame_continuity_decision:
+        result['frame_continuity_decision'] = orchestrator.frame_continuity_decision
     
     return result
 
