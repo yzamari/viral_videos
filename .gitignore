@@ -44,30 +44,51 @@ env/
 ehthumbs.db
 Thumbs.db
 
-# Project specific
+# Project specific - Video files
 *.mp4
 *.mp3
 *.wav
 *.avi
 *.mov
+*.mkv
+*.webm
+*.flv
+
+# Project specific - Generated content
 output/
+outputs/
 temp/
 sessions/
+generated/
+downloads/
+uploads/
+
+# Project specific - Dependencies and cache
 .deps_installed
+node_modules/
+.npm/
+.yarn/
 
 # API Keys and secrets
 .env.local
 .env.production
+.env.development
 *.key
 *.pem
+secrets.json
+config/secrets/
 
 # Logs
 *.log
 logs/
+debug.log
+error.log
 
 # Cache
 .cache/
 .pytest_cache/
+.coverage
+htmlcov/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -110,4 +131,49 @@ venv.bak/
 # mypy
 .mypy_cache/
 .dmypy.json
-dmypy.json 
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be added to the global gitignore or merged into this project gitignore.  For a PyCharm
+#  project, it is usually recommended to do this: $ echo 'venv' >> .gitignore
+#  and $ echo '.idea' >> .gitignore
+#  (if you use PyCharm), or for VSCode users:
+#  $ echo 'venv' >> .gitignore
+#  and $ echo '.vscode' >> .gitignore
+
+# Project specific - Large model files
+*.bin
+*.h5
+*.pkl
+*.joblib
+*.model
+
+# Project specific - Temporary files
+tmp/
+temp/
+scratch/
+test_output/
+
+# Project specific - Gradio cache
+.gradio/
+flagged/
+
+# Project specific - Google Cloud
+gcloud_key.json
+service-account.json
+credentials.json
+
+# Project specific - Session data
+session_*/
+backup_*/
+archive_*/ 
