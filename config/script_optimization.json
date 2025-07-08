@@ -1,0 +1,6 @@
+{
+  "timeout_seconds": 30,
+  "max_retries": 3,
+  "fallback_enabled": true,
+  "use_simple_prompts": true
+}

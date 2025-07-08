@@ -736,6 +736,7 @@ class DiscussionEnhancedOrchestrator(EnhancedOrchestratorAgent):
                 use_vertex_ai=self.vertex_ai_config.get('use_vertex_ai', True),
                 project_id=self.vertex_ai_config.get('vertex_project_id') or "viralgen-464411",
                 location=self.vertex_ai_config.get('vertex_location') or "us-central1",
+                gcs_bucket=self.vertex_ai_config.get('vertex_gcs_bucket') or "viral-veo2-results",
                 session_id=self.session_id
             )
             

@@ -189,7 +189,7 @@ class VertexAIVeo2Client:
                 "config": {"aspectRatio": "16:9"}
             }
             
-            response = requests.post(url, headers=headers, json=test_data, timeout=10)
+            response = requests.post(url, headers=headers, json=test_data, timeout=30)
             
             # If we get 404, VEO-3 is not available
             if response.status_code == 404:

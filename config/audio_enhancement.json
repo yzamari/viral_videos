@@ -1,0 +1,19 @@
+{
+  "voice_enhancement": true,
+  "use_premium_voices": true,
+  "audio_processing": {
+    "noise_reduction": true,
+    "volume_normalization": true,
+    "speed_adjustment": 1.0
+  },
+  "fallback_voices": [
+    "en-US-Neural2-A",
+    "en-US-Neural2-B",
+    "en-US-Neural2-C"
+  ],
+  "script_cleaning": {
+    "remove_artifacts": true,
+    "fix_punctuation": true,
+    "validate_content": true
+  }
+}

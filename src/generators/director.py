@@ -96,6 +96,34 @@ class Director:
             self._validate_content_policy(optimized_script, platform)
             
             logger.info("Script generation completed successfully")
+            
+            # Log script details for debugging
+            if isinstance(optimized_script, dict):
+                script_text = json.dumps(optimized_script, indent=2)
+            else:
+                script_text = str(optimized_script)
+                
+            logger.info(f"📝 Generated script preview:")
+            logger.info(f"   Length: {len(script_text)} characters")
+            logger.info(f"   First 300 chars: {script_text[:300]}...")
+            
+            # Log any voiceover content found
+            if isinstance(optimized_script, dict):
+                # Check for voiceover in segments
+                segments = optimized_script.get('segments', [])
+                voiceover_count = 0
+                for segment in segments:
+                    if 'text' in segment and segment['text']:
+                        voiceover_count += 1
+                        logger.info(f"   Segment {voiceover_count} text: {segment['text'][:100]}...")
+            else:
+                # Check for voiceover markers in text
+                voiceover_lines = [line for line in script_text.split('\n') if '**VOICEOVER:**' in line or 'voiceover' in line.lower()]
+                if voiceover_lines:
+                    logger.info(f"🎤 Found {len(voiceover_lines)} voiceover lines:")
+                    for i, line in enumerate(voiceover_lines[:3]):  # Show first 3
+                        logger.info(f"   VO {i+1}: {line.strip()[:100]}...")
+            
             return optimized_script
             
         except Exception as e:

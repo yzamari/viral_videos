@@ -29,6 +29,12 @@ class RealTimeVideoGenerator:
         self.is_generating = False
         self.session_id = None
         self.start_time = None
+        self.latest_progress = {
+            'progress': 0,
+            'phase': 'Ready',
+            'status': 'Ready to generate video',
+            'details': 'Enter a topic and click Generate to start'
+        }
         
     def parse_progress_from_output(self, line: str) -> Dict[str, Any]:
         """Parse progress information from output lines"""
@@ -39,23 +45,37 @@ class RealTimeVideoGenerator:
             'details': line.strip()
         }
         
-        # Parse different progress indicators
-        if "Starting agent discussion" in line:
-            progress_info.update({'progress': 10, 'phase': 'Agent Discussions', 'status': 'AI agents discussing strategy...'})
-        elif "Script Discussion" in line or "script" in line.lower():
-            progress_info.update({'progress': 20, 'phase': 'Script Development', 'status': 'Creating video script...'})
-        elif "Visual Discussion" in line or "visual" in line.lower():
-            progress_info.update({'progress': 35, 'phase': 'Visual Design', 'status': 'Designing visual elements...'})
-        elif "Audio Discussion" in line or "audio" in line.lower() or "voice" in line.lower():
+        # Parse different progress indicators based on actual main.py output
+        if "🎬 Generating" in line and "video about:" in line:
+            progress_info.update({'progress': 5, 'phase': 'Initializing', 'status': 'Starting video generation...'})
+        elif "📊 Checking API quotas" in line:
+            progress_info.update({'progress': 10, 'phase': 'Setup', 'status': 'Checking API quotas...'})
+        elif "🤖 Total agents:" in line:
+            progress_info.update({'progress': 15, 'phase': 'Agent Setup', 'status': 'Initializing 26+ AI agents...'})
+        elif "🎭 Starting" in line and "discussion" in line:
+            progress_info.update({'progress': 20, 'phase': 'Agent Discussions', 'status': 'AI agents discussing strategy...'})
+        elif "Script Discussion" in line or "📝 Script" in line:
+            progress_info.update({'progress': 30, 'phase': 'Script Development', 'status': 'Creating video script...'})
+        elif "🎨 Visual" in line or "Visual Discussion" in line:
+            progress_info.update({'progress': 40, 'phase': 'Visual Design', 'status': 'Designing visual elements...'})
+        elif "🎵 Audio" in line or "Audio Discussion" in line or "🎤" in line:
             progress_info.update({'progress': 50, 'phase': 'Audio Production', 'status': 'Generating voiceover...'})
-        elif "VEO" in line or "video generation" in line.lower():
-            progress_info.update({'progress': 65, 'phase': 'Video Generation', 'status': 'Creating video clips...'})
-        elif "Assembly Discussion" in line or "composing" in line.lower():
+        elif "🎬 VEO" in line or "video generation" in line.lower() or "Generating VEO" in line:
+            progress_info.update({'progress': 65, 'phase': 'Video Generation', 'status': 'Creating video clips with VEO-2...'})
+        elif "🎞️ Assembly" in line or "composing" in line.lower() or "Final video" in line:
             progress_info.update({'progress': 80, 'phase': 'Video Assembly', 'status': 'Assembling final video...'})
-        elif "Generation Complete" in line or "completed successfully" in line:
+        elif "✅ Video generation complete" in line or "completed successfully" in line:
             progress_info.update({'progress': 100, 'phase': 'Complete', 'status': 'Video generation completed!'})
-        elif "Error" in line or "Failed" in line:
+        elif "❌" in line or "Error" in line or "Failed" in line:
             progress_info.update({'progress': -1, 'phase': 'Error', 'status': 'Error occurred during generation'})
+        elif "Generated TTS" in line:
+            progress_info.update({'progress': 55, 'phase': 'Audio Production', 'status': 'Generated text-to-speech audio...'})
+        elif "Script generated" in line or "script" in line.lower() and "generated" in line:
+            progress_info.update({'progress': 35, 'phase': 'Script Development', 'status': 'Script generation completed...'})
+        elif "Generated" in line and "video clips" in line:
+            progress_info.update({'progress': 70, 'phase': 'Video Generation', 'status': 'Video clips generated...'})
+        elif "Final video composed" in line:
+            progress_info.update({'progress': 90, 'phase': 'Video Assembly', 'status': 'Final video composed...'})
         
         return progress_info
     
@@ -83,6 +103,9 @@ class RealTimeVideoGenerator:
                     # Parse progress
                     progress_info = self.parse_progress_from_output(line)
                     self.progress_queue.put(progress_info)
+                    # Update latest progress
+                    if progress_info['progress'] > 0:
+                        self.latest_progress = progress_info
                     
                     # Check if process is still running
                     if self.current_process.poll() is not None:
@@ -93,27 +116,36 @@ class RealTimeVideoGenerator:
             
             # Final status update
             if return_code == 0:
-                self.progress_queue.put({
+                final_progress = {
                     'progress': 100,
                     'phase': 'Complete',
                     'status': '✅ Video generation completed successfully!',
                     'details': 'Check the outputs directory for your video'
-                })
+                }
+                self.progress_queue.put(final_progress)
+                self.latest_progress = final_progress
             else:
-                self.progress_queue.put({
+                error_progress = {
                     'progress': -1,
                     'phase': 'Error',
                     'status': f'❌ Generation failed with code {return_code}',
                     'details': 'Check the output log for error details'
-                })
+                }
+                self.progress_queue.put(error_progress)
+                self.latest_progress = error_progress
+            
+            self.is_generating = False
                 
         except Exception as e:
-            self.progress_queue.put({
+            error_progress = {
                 'progress': -1,
                 'phase': 'Error',
                 'status': f'❌ Error: {str(e)}',
                 'details': 'Subprocess execution failed'
-            })
+            }
+            self.progress_queue.put(error_progress)
+            self.latest_progress = error_progress
+            self.is_generating = False
     
     def start_generation(self, topic: str, duration: int, category: str, platform: str, 
                         discussions: str, frame_continuity: str) -> str:
@@ -130,11 +162,19 @@ class RealTimeVideoGenerator:
         self.start_time = datetime.now()
         self.is_generating = True
         
-        # Clear queues
+        # Clear queues and reset progress
         while not self.output_queue.empty():
             self.output_queue.get()
         while not self.progress_queue.empty():
             self.progress_queue.get()
+        
+        # Set initial progress
+        self.latest_progress = {
+            'progress': 5,
+            'phase': 'Initializing',
+            'status': 'Setting up generation...',
+            'details': 'Preparing AI agents and resources'
+        }
         
         # Build command
         cmd = [
@@ -159,23 +199,13 @@ class RealTimeVideoGenerator:
     
     def get_current_progress(self) -> Dict[str, Any]:
         """Get current progress information"""
-        if not self.progress_queue.empty():
-            return self.progress_queue.get()
+        # Update latest progress if new data is available
+        while not self.progress_queue.empty():
+            new_progress = self.progress_queue.get()
+            if new_progress['progress'] > 0:
+                self.latest_progress = new_progress
         
-        if self.is_generating:
-            return {
-                'progress': 5,
-                'phase': 'Initializing',
-                'status': 'Setting up generation...',
-                'details': 'Preparing AI agents and resources'
-            }
-        else:
-            return {
-                'progress': 0,
-                'phase': 'Ready',
-                'status': 'Ready to generate video',
-                'details': 'Enter a topic and click Generate to start'
-            }
+        return self.latest_progress
     
     def get_output_log(self) -> str:
         """Get accumulated output log"""

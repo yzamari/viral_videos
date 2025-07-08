@@ -609,13 +609,13 @@ class FullWorkingVideoApp:
                         )
                         
                         with gr.Row():
-                        duration_input = gr.Slider(
+                            duration_input = gr.Slider(
                                 label="⏱️ Duration (seconds)",
-                            minimum=10,
-                            maximum=60,
-                            value=15,
-                            step=5
-                        )
+                                minimum=10,
+                                maximum=60,
+                                value=15,
+                                step=5
+                            )
                             
                             platform_input = gr.Dropdown(
                                 label="📱 Target Platform",
@@ -695,13 +695,13 @@ class FullWorkingVideoApp:
                         """)
                     
                     with gr.Column():
-                gr.Markdown("""
+                        gr.Markdown("""
                         ### 🎵 Audio & Effects
                         - **Google TTS**: Natural voice synthesis
                         - **Multi-language Support**: Various accents
                         - **Sound Effects**: Professional audio design
                         - **Perfect Sync**: Audio-video alignment
-                """)
+                        """)
             
             return interface
             
