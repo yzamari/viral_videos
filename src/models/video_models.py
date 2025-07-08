@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List, Dict, Optional, Any
 from pydantic import BaseModel, Field, HttpUrl
 from enum import Enum
+from dataclasses import dataclass
 
 class Platform(str, Enum):
     """
@@ -49,6 +50,19 @@ class VideoCategory(str, Enum):
     PETS = "Pets"
     OTHER = "Other"
 
+class ForceGenerationMode(str, Enum):
+    AUTO = "auto"  # Use normal fallback chain
+    FORCE_VEO3 = "force_veo3"  # Force VEO-3 only
+    FORCE_VEO2 = "force_veo2"  # Force VEO-2 only
+    FORCE_IMAGE_GEN = "force_image_gen"  # Force Image Generation only
+    FORCE_CONTINUOUS = "force_continuous"  # Force continuous generation (no stopping)
+
+class VideoOrientation(str, Enum):
+    PORTRAIT = "portrait"  # 9:16 (TikTok, Instagram Stories)
+    LANDSCAPE = "landscape"  # 16:9 (YouTube, traditional video)
+    SQUARE = "square"  # 1:1 (Instagram Posts)
+    AUTO = "auto"  # Let AI agents decide based on platform
+
 class TrendingVideo(BaseModel):
     """Model for a trending video from any platform"""
     video_id: str
@@ -81,43 +95,74 @@ class TrendingVideo(BaseModel):
     has_captions: bool = False
     language: Optional[str] = None
 
-class VideoAnalysis(BaseModel):
-    """Analysis results for a trending video"""
-    video_id: str
-    platform: Platform
-    analyzed_at: datetime = Field(default_factory=datetime.now)
+@dataclass
+class GeneratedVideoConfig:
+    topic: str
+    duration_seconds: int
+    target_platform: Platform
+    category: VideoCategory
     
-    # Content analysis
-    content_themes: List[str]
-    emotional_tone: str
-    target_audience: str
-    key_moments: List[Dict[str, Any]]
+    # Visual and audio settings
+    visual_style: str = "cinematic"
+    tone: str = "engaging"
+    style: str = "professional"
     
-    # Viral factors
-    viral_score: float = Field(ge=0, le=1)  # 0-1 score
-    viral_velocity: float  # Views per hour
-    engagement_rate: float  # (likes + comments + shares) / views
+    # Content structure
+    hook: str = "Amazing content ahead!"
+    main_content: Optional[List[str]] = None
+    call_to_action: str = "Subscribe for more!"
     
-    # Title and description analysis
-    title_keywords: List[str]
-    title_sentiment: str
-    hook_analysis: str
-    cta_present: bool
+    # Technical settings
+    use_real_veo2: bool = True
+    use_vertex_ai: bool = True
+    realistic_audio: bool = True
     
-    # Comment analysis
-    comment_themes: List[str]
-    comment_sentiment: Dict[str, float]  # positive, negative, neutral percentages
-    top_comments: List[str]
+    # NEW: Force generation options
+    force_generation_mode: ForceGenerationMode = ForceGenerationMode.AUTO
+    continuous_generation: bool = False  # Keep generating until stopped
     
-    # Technical analysis
-    video_quality: str
-    editing_style: str
-    music_genre: Optional[str] = None
-    speech_pace: Optional[str] = None
+    # NEW: Video orientation settings
+    video_orientation: VideoOrientation = VideoOrientation.AUTO
+    ai_decide_orientation: bool = True  # Let AI agents decide orientation
     
-    # Recommendations
-    success_factors: List[str]
-    improvement_suggestions: List[str]
+    # Advanced settings
+    frame_continuity: bool = False
+    predicted_viral_score: float = 0.0
+    
+    def __post_init__(self):
+        if self.main_content is None:
+            self.main_content = []
+    
+    def get_aspect_ratio(self) -> str:
+        """Get aspect ratio based on orientation and platform"""
+        if self.video_orientation == VideoOrientation.PORTRAIT:
+            return "9:16"
+        elif self.video_orientation == VideoOrientation.LANDSCAPE:
+            return "16:9"
+        elif self.video_orientation == VideoOrientation.SQUARE:
+            return "1:1"
+        else:  # AUTO
+            # Default platform-based aspect ratios
+            if self.target_platform == Platform.TIKTOK:
+                return "9:16"
+            elif self.target_platform == Platform.YOUTUBE:
+                return "16:9"
+            elif self.target_platform == Platform.INSTAGRAM:
+                return "1:1"
+            else:
+                return "16:9"  # Default landscape
+    
+    def get_resolution(self) -> tuple:
+        """Get video resolution based on orientation"""
+        aspect_ratio = self.get_aspect_ratio()
+        if aspect_ratio == "9:16":
+            return (1080, 1920)  # Portrait
+        elif aspect_ratio == "16:9":
+            return (1920, 1080)  # Landscape
+        elif aspect_ratio == "1:1":
+            return (1080, 1080)  # Square
+        else:
+            return (1920, 1080)  # Default landscape
 
 class Narrative(str, Enum):
     """Video narrative/viewpoint options"""
@@ -176,60 +221,6 @@ class TTSVoice(str, Enum):
     # Auto-select based on language and emotion
     AUTO = "auto"
 
-class GeneratedVideoConfig(BaseModel):
-    """Configuration for generating a new video"""
-    target_platform: Platform
-    category: VideoCategory
-    duration_seconds: int = 30
-    
-    # NEW: Narrative and feeling inputs
-    narrative: Narrative = Narrative.NEUTRAL
-    feeling: Feeling = Feeling.FUNNY
-    
-    # NEW: Multi-language support
-    primary_language: Language = Language.ENGLISH
-    additional_languages: List[Language] = Field(default_factory=list)
-    tts_voice: TTSVoice = TTSVoice.AUTO
-    
-    # NEW: Frame continuity for seamless video generation
-    frame_continuity: bool = False
-    
-    # NEW: Fallback-only mode for testing without VEO2/VEO3
-    fallback_only: bool = False
-    
-    # NEW: Image-only mode and use-image fallback
-    image_only_mode: bool = False
-    use_image_fallback: bool = True
-    
-    # NEW: Number of images per second for image mode
-    images_per_second: int = 2
-    
-    # Content specifications
-    topic: str
-    style: str
-    tone: str
-    target_audience: str
-    
-    # Script elements
-    hook: str
-    main_content: List[str]
-    call_to_action: str
-    
-    # Visual elements
-    visual_style: str
-    color_scheme: List[str]
-    text_overlays: List[Dict[str, Any]]
-    transitions: List[str]
-    
-    # Audio elements
-    background_music_style: str
-    voiceover_style: Optional[str] = None
-    sound_effects: List[str] = Field(default_factory=list)
-    
-    # Based on analysis
-    inspired_by_videos: List[str]  # Video IDs that inspired this config
-    predicted_viral_score: float
-
 class LanguageVersion(BaseModel):
     """Single language version of a video"""
     language: Language
@@ -275,33 +266,41 @@ class MultiLanguageVideo(BaseModel):
     primary_language: Language
     supported_languages: List[Language] = Field(default_factory=list)
 
-class GeneratedVideo(BaseModel):
-    """Model for a generated video"""
+@dataclass
+class VideoAnalysis:
+    video_id: str
+    analysis_timestamp: datetime
+    content_score: float
+    engagement_prediction: float
+    viral_potential: float
+    platform_optimization: Dict[str, float]
+    recommended_improvements: List[str]
+    ai_confidence: float
+
+@dataclass
+class GeneratedVideo:
     video_id: str
     config: GeneratedVideoConfig
-    
-    # File information
     file_path: str
-    gcs_url: Optional[HttpUrl] = None
     file_size_mb: float
-    
-    # Generation metadata
-    generated_at: datetime = Field(default_factory=datetime.now)
     generation_time_seconds: float
     ai_models_used: List[str]
-    
-    # Content details
     script: str
     scene_descriptions: List[str]
-    audio_transcript: Optional[str] = None
+    audio_transcript: str
+    analysis: Optional[VideoAnalysis] = None
     
-    # Publishing status
-    published: bool = False
-    published_at: Optional[datetime] = None
-    published_urls: Dict[Platform, HttpUrl] = Field(default_factory=dict)
+    # NEW: Generation method tracking
+    generation_method_used: str = "auto"
+    clips_generated: int = 0
+    fallback_clips: int = 0
     
-    # Performance tracking
-    performance_metrics: Dict[str, Any] = Field(default_factory=dict)
+    @property
+    def success_rate(self) -> float:
+        """Calculate success rate of video generation"""
+        if self.clips_generated == 0:
+            return 0.0
+        return (self.clips_generated - self.fallback_clips) / self.clips_generated
 
 class VideoPerformance(BaseModel):
     """Track performance of published videos"""

@@ -11,7 +11,7 @@ from typing import Dict, List, Optional, Any, Union
 import google.generativeai as genai
 import time
 
-from ..models.video_models import VideoAnalysis, GeneratedVideoConfig, GeneratedVideo, Platform, VideoCategory
+from ..models.video_models import VideoAnalysis, GeneratedVideoConfig, GeneratedVideo, Platform, VideoCategory, VideoOrientation, ForceGenerationMode
 from ..utils.logging_config import get_logger
 from ..services.monitoring_service import MonitoringService
 from .enhanced_multi_agent_discussion import (
@@ -454,49 +454,225 @@ class EnhancedOrchestratorWith19Agents:
             predicted_viral_score=0.75
         )
 
-
-def create_enhanced_orchestrator_with_19_agents(api_key: str, mission: str, category: VideoCategory,
-                                               platform: Platform, duration: int = 30,
-                                               discussion_mode: bool = True, session_id: str = None,
-                                               use_vertex_ai: bool = True, vertex_project_id: str = None,
-                                               vertex_location: str = None, vertex_gcs_bucket: str = None,
-                                               prefer_veo3: bool = True, enable_native_audio: bool = True) -> EnhancedOrchestratorWith19Agents:
-    """
-    Create enhanced orchestrator with 19 specialized AI agents
-    
-    Args:
-        api_key: Google API key
-        mission: Mission to accomplish with the video
-        category: Video category
-        platform: Target platform
-        duration: Video duration
-        discussion_mode: Enable agent discussions
-        session_id: Session identifier
-        use_vertex_ai: Use Vertex AI VEO-3/VEO-2
-        vertex_project_id: Vertex AI project ID
-        vertex_location: Vertex AI location
-        vertex_gcs_bucket: Vertex AI GCS bucket
-        prefer_veo3: Prefer VEO-3 when available
-        enable_native_audio: Enable native audio generation
+    def _ai_agents_decide_video_orientation(self, config: GeneratedVideoConfig) -> str:
+        """AI agents collaborate to decide optimal video orientation based on platform and content"""
         
-    Returns:
-        Enhanced orchestrator instance
-    """
-    if not session_id:
-        session_id = str(uuid.uuid4())[:8]
+        logger.info(f"🎭 AI AGENTS: Analyzing optimal video orientation for {config.target_platform.value}")
+        
+        # Platform-specific orientation preferences
+        platform_preferences = {
+            "tiktok": {
+                "preferred": "9:16",
+                "reasoning": "TikTok is mobile-first, vertical scrolling platform optimized for portrait videos",
+                "engagement_boost": 1.3
+            },
+            "youtube": {
+                "preferred": "16:9", 
+                "reasoning": "YouTube desktop and TV viewing favors landscape format for immersive experience",
+                "engagement_boost": 1.2
+            },
+            "instagram": {
+                "preferred": "1:1",
+                "reasoning": "Instagram feed posts perform best in square format for consistent grid layout",
+                "engagement_boost": 1.1
+            }
+        }
+        
+        # Content analysis for orientation decision
+        content_factors = {
+            "talking_head": "9:16",  # Portrait works best for face-focused content
+            "landscape_visuals": "16:9",  # Landscape for scenic content
+            "product_showcase": "1:1",  # Square for product-focused content
+            "tutorial": "16:9",  # Landscape for instructional content
+            "dance_performance": "9:16",  # Portrait for full-body performance
+            "gaming": "16:9",  # Landscape for gaming content
+            "cooking": "1:1",  # Square for overhead cooking shots
+            "fashion": "9:16",  # Portrait for outfit displays
+            "travel": "16:9",  # Landscape for scenic travel content
+            "fitness": "9:16"  # Portrait for workout demonstrations
+        }
+        
+        # Analyze content type from topic
+        topic_lower = config.topic.lower()
+        content_type = "general"
+        
+        for content_key, orientation in content_factors.items():
+            if any(keyword in topic_lower for keyword in content_key.split('_')):
+                content_type = content_key
+                break
+        
+        # Get platform preference
+        platform_pref = platform_preferences.get(config.target_platform.value, {
+            "preferred": "16:9",
+            "reasoning": "Default landscape format",
+            "engagement_boost": 1.0
+        })
+        
+        # AI agent discussion simulation
+        agents_analysis = {
+            "PlatformGuru": {
+                "recommendation": platform_pref["preferred"],
+                "reasoning": f"Platform analysis: {platform_pref['reasoning']}",
+                "confidence": 0.9
+            },
+            "ContentAnalyst": {
+                "recommendation": content_factors.get(content_type, platform_pref["preferred"]),
+                "reasoning": f"Content type '{content_type}' analysis suggests optimal orientation",
+                "confidence": 0.8
+            },
+            "EngagementHacker": {
+                "recommendation": platform_pref["preferred"],
+                "reasoning": f"Platform-native format increases engagement by {platform_pref['engagement_boost']}x",
+                "confidence": 0.85
+            },
+            "TrendMaster": {
+                "recommendation": "9:16" if config.target_platform.value == "tiktok" else platform_pref["preferred"],
+                "reasoning": "Current trends favor mobile-first vertical content for viral potential",
+                "confidence": 0.7
+            }
+        }
+        
+        # Calculate consensus
+        orientation_votes = {}
+        total_weight = 0
+        
+        for agent, analysis in agents_analysis.items():
+            recommendation = analysis["recommendation"]
+            weight = analysis["confidence"]
+            
+            if recommendation not in orientation_votes:
+                orientation_votes[recommendation] = 0
+            orientation_votes[recommendation] += weight
+            total_weight += weight
+            
+            logger.info(f"🤖 {agent}: {recommendation} (confidence: {weight:.1f}) - {analysis['reasoning']}")
+        
+        # Determine winning orientation
+        winning_orientation = max(orientation_votes, key=orientation_votes.get)
+        consensus_strength = orientation_votes[winning_orientation] / total_weight
+        
+        logger.info(f"🎯 AI AGENTS CONSENSUS: {winning_orientation} (strength: {consensus_strength:.1f})")
+        logger.info(f"📊 Vote breakdown: {orientation_votes}")
+        
+        # Log the decision reasoning
+        if winning_orientation == "9:16":
+            logger.info("📱 PORTRAIT MODE: Optimized for mobile viewing and vertical platforms")
+        elif winning_orientation == "16:9":
+            logger.info("🖥️ LANDSCAPE MODE: Optimized for desktop/TV viewing and cinematic experience")
+        elif winning_orientation == "1:1":
+            logger.info("⬜ SQUARE MODE: Optimized for social media feeds and consistent layouts")
+        
+        return winning_orientation
     
-    logger.info(f"🚀 Creating Enhanced Orchestrator with 19 AI Agents")
-    logger.info(f"🎯 Professional video generation for mission: {mission}")
+    def _apply_orientation_to_config(self, config: GeneratedVideoConfig, orientation: str) -> GeneratedVideoConfig:
+        """Apply AI agents orientation decision to config"""
+        
+        logger.info(f"🎭 AI AGENTS: Applying orientation decision: {orientation}")
+        
+        # Update config with AI agents decision
+        if orientation == "9:16":
+            config.video_orientation = VideoOrientation.PORTRAIT
+        elif orientation == "16:9":
+            config.video_orientation = VideoOrientation.LANDSCAPE
+        elif orientation == "1:1":
+            config.video_orientation = VideoOrientation.SQUARE
+        else:
+            config.video_orientation = VideoOrientation.LANDSCAPE  # Default fallback
+        
+        logger.info(f"📐 Final orientation set to: {config.video_orientation.value}")
+        return config
     
+    def orchestrate_viral_video_generation(self) -> GeneratedVideo:
+        """Enhanced orchestration with force generation modes and orientation"""
+        try:
+            logger.info(f"🎬 Starting enhanced orchestration with force mode: {self.config.force_generation_mode.value}")
+            logger.info(f"📐 Video orientation: {self.config.video_orientation.value}")
+            
+            # Phase 1: AI Agents decide video orientation if enabled
+            if self.config.ai_decide_orientation and self.config.video_orientation == VideoOrientation.AUTO:
+                optimal_orientation = self._ai_agents_decide_video_orientation(self.config)
+                self.config = self._apply_orientation_to_config(self.config, optimal_orientation)
+            
+            # Phase 2: Generate script with agent discussions
+            if self.enable_discussions:
+                logger.info("🎭 Phase 2: Script Development with AI Agent Discussions")
+                script = self._generate_script_with_discussions()
+            else:
+                script = self._generate_script_simple()
+            
+            # Phase 3: Generate video with force generation mode
+            logger.info(f"🎬 Phase 3: Video Generation with {self.config.force_generation_mode.value} mode")
+            
+            # Create video generator with updated config
+            video_generator = VideoGenerator(
+                api_key=self.api_key,
+                use_vertex_ai=self.use_vertex_ai,
+                project_id=self.project_id,
+                location=self.location,
+                gcs_bucket=self.gcs_bucket,
+                use_real_veo2=self.use_real_veo2,
+                session_id=self.session_id
+            )
+            
+            # Generate video with force generation settings
+            result = video_generator.generate_viral_video(
+                mission=self.mission,
+                category=self.config.category,
+                platform=self.config.target_platform,
+                duration=self.config.duration_seconds,
+                force_generation_mode=self.config.force_generation_mode,
+                video_orientation=self.config.video_orientation,
+                continuous_generation=self.config.continuous_generation
+            )
+            
+            logger.info(f"✅ Enhanced orchestration completed successfully!")
+            logger.info(f"📊 Force generation mode used: {self.config.force_generation_mode.value}")
+            logger.info(f"📐 Final video orientation: {self.config.video_orientation.value}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Enhanced orchestration failed: {e}")
+            raise
+
+def create_enhanced_orchestrator_with_19_agents(
+    api_key: str,
+    mission: str,
+    category: VideoCategory,
+    platform: Platform,
+    duration: int = 35,
+    enable_discussions: bool = True,
+    force_generation_mode: ForceGenerationMode = ForceGenerationMode.AUTO,
+    continuous_generation: bool = False,
+    video_orientation: VideoOrientation = VideoOrientation.AUTO,
+    ai_decide_orientation: bool = True
+) -> 'EnhancedOrchestratorWith19Agents':
+    """Create enhanced orchestrator with force generation and orientation controls"""
+    
+    # Generate a session ID
+    session_id = str(uuid.uuid4())[:8]
+    
+    # Create the orchestrator with the correct class
     orchestrator = EnhancedOrchestratorWith19Agents(
         api_key=api_key,
         session_id=session_id,
-        use_vertex_ai=use_vertex_ai,
-        vertex_project_id=vertex_project_id,
-        vertex_location=vertex_location,
-        vertex_gcs_bucket=vertex_gcs_bucket,
-        prefer_veo3=prefer_veo3,
-        enable_native_audio=enable_native_audio
+        use_vertex_ai=True,
+        vertex_project_id="viralgen-464411",
+        vertex_location="us-central1",
+        vertex_gcs_bucket="viral-veo2-results",
+        prefer_veo3=True,
+        enable_native_audio=True
     )
+    
+    # Store the additional configuration for later use
+    orchestrator.mission = mission
+    orchestrator.category = category
+    orchestrator.platform = platform
+    orchestrator.duration = duration
+    orchestrator.enable_discussions = enable_discussions
+    orchestrator.force_generation_mode = force_generation_mode
+    orchestrator.continuous_generation = continuous_generation
+    orchestrator.video_orientation = video_orientation
+    orchestrator.ai_decide_orientation = ai_decide_orientation
     
     return orchestrator

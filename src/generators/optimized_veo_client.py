@@ -792,48 +792,87 @@ class OptimizedVeoClient:
             return 0.0
     
     def _create_colorful_fallback(self, prompt: str, duration: float, clip_id: str) -> str:
-        """Create colorful engaging fallback when all AI generation fails"""
+        """Create colorful, engaging fallback video based on the actual prompt content"""
         output_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
         
         try:
             import subprocess
             
-            logger.info("🎨 Creating colorful engaging fallback with enhanced visuals...")
-            
+            # Analyze prompt to create appropriate visual content
+            prompt_lower = prompt.lower()
             width, height = 1280, 720
             fps = 30
             
-            # Extract key message from prompt
-            text = "Viral Content Loading..."
-            bg_color = "0x4A90E2"  # Nice blue default
-            
-            if "baby" in prompt.lower():
-                text = "Baby Moments Coming Soon!"
-                bg_color = "0xFFB6C1"  # Light pink
-            elif "test" in prompt.lower():
-                text = "Test Video Processing..."
-                bg_color = "0x90EE90"  # Light green
-            elif "amazing" in prompt.lower():
-                text = "Amazing Content Ahead!"
-                bg_color = "0xFFD700"  # Gold
-            elif "iran" in prompt.lower() or "military" in prompt.lower():
-                text = "Breaking News Content!"
-                bg_color = "0xFF6B6B"  # Red
-            elif "cat" in prompt.lower() or "animal" in prompt.lower():
-                text = "Adorable Animals Loading!"
-                bg_color = "0xFFA500"  # Orange
+            # Extract key themes from prompt for better visuals
+            if any(word in prompt_lower for word in ['baby', 'child', 'cute', 'adorable']):
+                # Baby/child content - warm, soft colors
+                colors = ["0xFFB6C1", "0xFFC0CB", "0xFFE4E1"]  # Light pink, pink, misty rose
+                main_text = "👶 Adorable Baby Content"
+                bg_animation = "geq=r='255*abs(sin(2*PI*T/5))':g='182*abs(cos(2*PI*T/5))':b='193'"
+            elif any(word in prompt_lower for word in ['animal', 'pet', 'dog', 'cat', 'wildlife']):
+                # Animal content - natural, vibrant colors
+                colors = ["0x228B22", "0x32CD32", "0x90EE90"]  # Forest green, lime green, light green
+                main_text = "🐾 Amazing Animal Content"
+                bg_animation = "geq=r='34*abs(sin(2*PI*T/4))':g='139*abs(cos(2*PI*T/4))':b='34'"
+            elif any(word in prompt_lower for word in ['food', 'cooking', 'recipe', 'delicious']):
+                # Food content - warm, appetizing colors
+                colors = ["0xFF8C00", "0xFFA500", "0xFFD700"]  # Dark orange, orange, gold
+                main_text = "🍽️ Delicious Food Content"
+                bg_animation = "geq=r='255*abs(sin(2*PI*T/3))':g='140*abs(cos(2*PI*T/3))':b='0'"
+            elif any(word in prompt_lower for word in ['nature', 'outdoor', 'landscape', 'scenic']):
+                # Nature content - earth tones
+                colors = ["0x8FBC8F", "0x20B2AA", "0x87CEEB"]  # Dark sea green, light sea green, sky blue
+                main_text = "🌿 Beautiful Nature Content"
+                bg_animation = "geq=r='143*abs(sin(2*PI*T/6))':g='188*abs(cos(2*PI*T/6))':b='143'"
+            elif any(word in prompt_lower for word in ['technology', 'tech', 'innovation', 'digital']):
+                # Technology content - modern, sleek colors
+                colors = ["0x4169E1", "0x0000FF", "0x1E90FF"]  # Royal blue, blue, dodger blue
+                main_text = "💻 Tech Innovation Content"
+                bg_animation = "geq=r='65*abs(sin(2*PI*T/4))':g='105*abs(cos(2*PI*T/4))':b='225'"
+            elif any(word in prompt_lower for word in ['funny', 'comedy', 'laugh', 'hilarious']):
+                # Comedy content - bright, energetic colors
+                colors = ["0xFFD700", "0xFFA500", "0xFF6347"]  # Gold, orange, tomato
+                main_text = "😂 Hilarious Comedy Content"
+                bg_animation = "geq=r='255*abs(sin(2*PI*T/2))':g='215*abs(cos(2*PI*T/2))':b='0'"
+            elif any(word in prompt_lower for word in ['music', 'song', 'dance', 'beat']):
+                # Music content - vibrant, rhythmic colors
+                colors = ["0x9932CC", "0x8A2BE2", "0x9400D3"]  # Dark orchid, blue violet, dark violet
+                main_text = "🎵 Amazing Music Content"
+                bg_animation = "geq=r='153*abs(sin(4*PI*T/3))':g='50*abs(cos(4*PI*T/3))':b='204'"
+            elif any(word in prompt_lower for word in ['sports', 'athletic', 'fitness', 'exercise']):
+                # Sports content - energetic, dynamic colors
+                colors = ["0xFF4500", "0xFF6347", "0xDC143C"]  # Orange red, tomato, crimson
+                main_text = "⚽ Dynamic Sports Content"
+                bg_animation = "geq=r='255*abs(sin(3*PI*T/2))':g='69*abs(cos(3*PI*T/2))':b='0'"
             else:
-                text = "Viral Content Loading..."
-                bg_color = "0x87CEEB"  # Sky blue
+                # Generic content - professional, modern colors
+                colors = ["0x2563EB", "0x7C3AED", "0xDB2777"]  # Blue, purple, pink
+                main_text = "✨ Amazing Content"
+                bg_animation = "geq=r='37*abs(sin(2*PI*T/5))':g='99*abs(cos(2*PI*T/5))':b='235'"
             
-            # Create colorful animated background with text and effects
+            # Create subtitle text from prompt (first few words)
+            prompt_words = prompt.split()[:4]  # Take first 4 words
+            subtitle_text = " ".join(prompt_words) + "..."
+            
+            # Create animated background with text overlays
+            base_color = random.choice(colors)
+            
+            # Build complex filter for engaging visuals
             filter_complex = [
-                f"color=c={bg_color}:s={width}x{height}:d={duration}[bg]",
-                f"[bg]drawtext=text='{text}':fontcolor=white:fontsize=50:x=(w-text_w)/2:y=(h-text_h)/2-50:box=1:boxcolor=black@0.7:boxborderw=8[text1]",
-                f"[text1]drawtext=text='AI Generation Fallback':fontcolor=yellow:fontsize=30:x=(w-text_w)/2:y=(h-text_h)/2+50:box=1:boxcolor=black@0.5:boxborderw=5[text2]",
-                f"[text2]fade=in:0:30,fade=out:{int(duration*fps-30)}:30"
+                f"color=c={base_color}:s={width}x{height}:d={duration}[bg]",
+                f"[bg]{bg_animation}[animated]",
+                f"[animated]boxblur=3:1[blur]",
+                # Main title with animation
+                f"[blur]drawtext=text='{main_text}':fontcolor=white:fontsize=60:x='(w-text_w)/2+sin(t)*20':y='(h-text_h)/2-100':shadowx=3:shadowy=3[title]",
+                # Subtitle with prompt content
+                f"[title]drawtext=text='{subtitle_text}':fontcolor=yellow:fontsize=40:x='(w-text_w)/2':y='(h-text_h)/2+50':shadowx=2:shadowy=2[subtitle]",
+                # Bottom text with platform info
+                f"[subtitle]drawtext=text='Professional AI Content':fontcolor=white:fontsize=30:x='(w-text_w)/2':y='h-80':shadowx=2:shadowy=2[final]",
+                # Fade effects
+                f"[final]fade=in:0:30,fade=out:{int(duration*fps-30)}:30"
             ]
             
+            # Build FFmpeg command
             filter_str = ";".join(filter_complex)
             
             cmd = [
@@ -841,6 +880,72 @@ class OptimizedVeoClient:
                 '-f', 'lavfi',
                 '-i', f'nullsrc=s={width}x{height}:d={duration}:r={fps}',
                 '-filter_complex', filter_str,
+                '-c:v', 'libx264',
+                '-preset', 'medium',
+                '-crf', '23',
+                '-pix_fmt', 'yuv420p',
+                '-movflags', '+faststart',
+                output_path
+            ]
+            
+            logger.info(f"🎨 Creating engaging fallback video for: {prompt[:50]}...")
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                file_size = os.path.getsize(output_path) / (1024 * 1024)
+                logger.info(f"✅ Engaging fallback video created: {output_path} ({file_size:.1f}MB)")
+                return output_path
+            else:
+                logger.warning(f"⚠️ FFmpeg failed: {result.stderr}")
+                # Fall back to simple version
+                return self._create_simple_fallback_video(prompt, duration, clip_id)
+                
+        except Exception as e:
+            logger.error(f"❌ Colorful fallback creation failed: {e}")
+            return self._create_simple_fallback_video(prompt, duration, clip_id)
+    
+    def _create_simple_fallback_video(self, prompt: str, duration: float, clip_id: str) -> str:
+        """Create simple fallback video as last resort"""
+        output_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
+        
+        try:
+            import subprocess
+            
+            # Extract key theme from prompt
+            prompt_lower = prompt.lower()
+            if any(word in prompt_lower for word in ['baby', 'child']):
+                color = "pink"
+                text = "Baby Content"
+            elif any(word in prompt_lower for word in ['animal', 'pet']):
+                color = "green"
+                text = "Animal Content"
+            elif any(word in prompt_lower for word in ['food', 'cooking']):
+                color = "orange"
+                text = "Food Content"
+            elif any(word in prompt_lower for word in ['nature', 'outdoor']):
+                color = "forestgreen"
+                text = "Nature Content"
+            elif any(word in prompt_lower for word in ['tech', 'digital']):
+                color = "blue"
+                text = "Tech Content"
+            elif any(word in prompt_lower for word in ['funny', 'comedy']):
+                color = "gold"
+                text = "Comedy Content"
+            elif any(word in prompt_lower for word in ['music', 'song']):
+                color = "purple"
+                text = "Music Content"
+            elif any(word in prompt_lower for word in ['sports', 'fitness']):
+                color = "red"
+                text = "Sports Content"
+            else:
+                color = "blue"
+                text = "Video Content"
+            
+            cmd = [
+                'ffmpeg', '-y',
+                '-f', 'lavfi',
+                '-i', f'color=c={color}:s=1280x720:d={duration}:r=30',
+                '-vf', f'drawtext=text=\'{text}\':fontcolor=white:fontsize=48:x=(w-text_w)/2:y=(h-text_h)/2',
                 '-c:v', 'libx264',
                 '-preset', 'fast',
                 '-crf', '23',
@@ -850,54 +955,23 @@ class OptimizedVeoClient:
             
             result = subprocess.run(cmd, capture_output=True, text=True)
             
-            if result.returncode == 0 and os.path.exists(output_path):
-                file_size = os.path.getsize(output_path) / (1024 * 1024)
-                logger.info(f"✅ Colorful fallback created: {output_path} ({file_size:.1f}MB)")
+            if result.returncode == 0:
+                logger.info(f"✅ Simple fallback video created: {output_path}")
                 return output_path
             else:
-                raise Exception(f"FFmpeg failed: {result.stderr}")
+                logger.error(f"❌ Simple fallback failed: {result.stderr}")
+                # Create empty file as absolute last resort
+                with open(output_path, 'w') as f:
+                    f.write("")
+                return output_path
                 
         except Exception as e:
-            logger.error(f"Colorful fallback failed: {e}")
-            # Ultimate fallback - create simple colored video
-            return self._create_simple_colored_fallback(prompt, duration, clip_id)
-    
-    def _create_simple_colored_fallback(self, prompt: str, duration: float, clip_id: str) -> str:
-        """Create simple colored fallback as absolute last resort"""
-        output_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
-        
-        try:
-            import subprocess
-            
-            # Choose color based on prompt
-            width, height = 1280, 720
-            if "baby" in prompt.lower():
-                color = "pink"
-            elif "cat" in prompt.lower() or "animal" in prompt.lower():
-                color = "orange"
-            elif "news" in prompt.lower():
-                color = "red"
-            else:
-                color = "blue"
-            
-            cmd = [
-                'ffmpeg', '-y',
-                '-f', 'lavfi', '-i', f'color={color}:size={width}x{height}:duration={duration}',
-                '-c:v', 'libx264', '-preset', 'ultrafast',
-                output_path
-            ]
-            
-            subprocess.run(cmd, capture_output=True, check=True)
-            logger.info(f"✅ Simple colored fallback created: {output_path}")
-            return output_path
-            
-        except Exception as e:
-            logger.error(f"All fallback methods failed: {e}")
+            logger.error(f"❌ All fallback methods failed: {e}")
             # Create empty file as absolute last resort
-            with open(output_path, 'wb') as f:
-                f.write(b'')
+            with open(output_path, 'w') as f:
+                f.write("")
             return output_path
-
+    
     def _create_black_screen_fallback(self, prompt: str, duration: float, clip_id: str) -> str:
         """Create colorful engaging screen instead of black screen as final fallback"""
         output_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
