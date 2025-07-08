@@ -28,202 +28,328 @@ def run_video_generation(topic: str, duration: int, category: str, platform: str
             "--frame-continuity", frame_continuity
         ]
         
-        # Run process
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=600  # 10 minute timeout
-        )
+        # Run command
+        start_time = time.time()
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        end_time = time.time()
         
-        # Parse output
-        output = result.stdout + result.stderr
-        
+        # Process output
         if result.returncode == 0:
-            # Find video file
-            video_path = None
-            for line in output.split('\n'):
-                if "outputs/final_video_" in line and ".mp4" in line:
-                    # Extract path from log line
-                    parts = line.split("outputs/final_video_")
-                    if len(parts) > 1:
-                        video_filename = "outputs/final_video_" + parts[1].split()[0].replace(":", "")
-                        if os.path.exists(video_filename):
-                            video_path = video_filename
-                            break
+            # Success
+            output_text = f"✅ Video generated successfully!\n\n"
+            output_text += f"⏱️ Generation time: {end_time - start_time:.1f} seconds\n\n"
+            output_text += "📋 Generation Log:\n"
+            output_text += result.stdout
             
-            # Extract frame continuity decision
-            frame_decision = "Unknown"
-            for line in output.split('\n'):
-                if "Frame Continuity" in line and ("✅ ENABLED" in line or "❌ DISABLED" in line):
-                    frame_decision = "Enabled" if "✅ ENABLED" in line else "Disabled"
-                    break
+            # Try to find the video file
+            video_file = None
+            for line in result.stdout.split('\n'):
+                if 'final_video_' in line and '.mp4' in line:
+                    # Extract file path
+                    if 'Output:' in line:
+                        video_file = line.split('Output:')[-1].strip()
+                    elif 'Video file:' in line:
+                        video_file = line.split('Video file:')[-1].strip()
             
-            # Extract discussion info
-            total_discussions = 0
-            avg_consensus = 0.0
-            
-            for line in output.split('\n'):
-                if "Total Discussions:" in line:
-                    try:
-                        total_discussions = int(line.split("Total Discussions:")[1].strip())
-                    except:
-                        pass
-                elif "Average Consensus:" in line:
-                    try:
-                        avg_consensus = float(line.split("Average Consensus:")[1].strip())
-                    except:
-                        pass
-            
-            summary = f"""
-✅ **Video Generation Successful!**
-
-📁 **Output:** {video_path or 'Video file not found'}
-🎬 **Frame Continuity:** {frame_decision}
-🤖 **AI Discussions:** {total_discussions} discussions, {avg_consensus:.1%} avg consensus
-
-**Settings:**
-- Topic: {topic}
-- Duration: {duration}s
-- Platform: {platform}
-- Category: {category}
-"""
-            
-            return summary, video_path, output
-            
+            return output_text, video_file, "Success"
         else:
-            error_summary = f"""
-❌ **Video Generation Failed**
-
-**Error Code:** {result.returncode}
-**Error Output:**
-{output[-1000:] if len(output) > 1000 else output}
-"""
-            return error_summary, None, output
+            # Error
+            error_text = f"❌ Video generation failed!\n\n"
+            error_text += f"Exit code: {result.returncode}\n\n"
+            error_text += "Error output:\n"
+            error_text += result.stderr
+            error_text += "\n\nStdout:\n"
+            error_text += result.stdout
+            
+            return error_text, None, "Error"
             
     except subprocess.TimeoutExpired:
-        return "❌ Generation timed out (10 minutes)", None, "Process timed out"
+        return "❌ Generation timed out (5 minutes)", None, "Timeout"
     except Exception as e:
-        return f"❌ Error: {str(e)}", None, str(e)
+        return f"❌ Error running generation: {str(e)}", None, "Error"
 
-def get_recent_videos():
-    """Get recent videos info"""
-    if not os.path.exists("outputs"):
-        return "No outputs directory found."
+def run_topic_generation(idea: str, platform: str, audience: str, style: str, 
+                        duration: int, category: str, auto_generate: bool):
+    """Run topic generation via main.py subprocess"""
     
-    videos = []
-    for filename in os.listdir("outputs"):
-        if filename.startswith("final_video_") and filename.endswith(".mp4"):
-            filepath = os.path.join("outputs", filename)
-            if os.path.exists(filepath):
-                stat = os.stat(filepath)
-                videos.append({
-                    "filename": filename,
-                    "size": f"{stat.st_size / 1024 / 1024:.1f}MB",
-                    "created": datetime.fromtimestamp(stat.st_ctime).strftime("%Y-%m-%d %H:%M:%S")
-                })
+    if not idea.strip():
+        return "❌ Please enter an idea!", None, "Error: No idea provided"
     
-    if not videos:
-        return "No recent videos found."
-    
-    # Sort by creation time (newest first)
-    videos.sort(key=lambda x: x["created"], reverse=True)
-    
-    lines = ["**Recent Videos:**"]
-    for video in videos[:5]:  # Show last 5
-        lines.append(f"• {video['filename']} ({video['size']}) - {video['created']}")
-    
-    return "\n".join(lines)
-
-# Create interface
-with gr.Blocks(title="🎬 Viral Video Generator") as app:
-    gr.Markdown("# 🎬 Viral Video Generator")
-    gr.Markdown("Generate viral videos with AI-powered composition and multi-agent discussions")
-    
-    with gr.Row():
-        with gr.Column(scale=2):
-            topic = gr.Textbox(
-                label="Video Topic",
-                placeholder="Enter your video topic (e.g., 'AI revolutionizing content creation')",
-                lines=2
-            )
-            
-            with gr.Row():
-                duration = gr.Slider(
-                    label="Duration (seconds)",
-                    minimum=5,
-                    maximum=60,
-                    value=30,
-                    step=5
-                )
-                
-                category = gr.Dropdown(
-                    label="Category",
-                    choices=["Comedy", "Educational", "Entertainment", "News", "Technology"],
-                    value="Comedy"
-                )
-            
-            with gr.Row():
-                platform = gr.Dropdown(
-                    label="Platform",
-                    choices=["youtube", "tiktok", "instagram", "facebook"],
-                    value="youtube"
-                )
-                
-                discussions = gr.Dropdown(
-                    label="Discussion Mode",
-                    choices=["light", "standard", "deep"],
-                    value="standard"
-                )
-            
-            frame_continuity = gr.Dropdown(
-                label="Frame Continuity",
-                choices=["auto", "on", "off"],
-                value="auto",
-                info="Let AI decide (auto) or force on/off"
-            )
-            
-            generate_btn = gr.Button("🎬 Generate Video", variant="primary", size="lg")
+    try:
+        # Build command
+        cmd = [
+            "python3", "main.py", "generate-topic",
+            "--idea", idea,
+            "--platform", platform,
+            "--duration", str(duration),
+            "--category", category
+        ]
         
-        with gr.Column(scale=1):
-            gr.Markdown("### 📊 System Info")
-            recent_videos = gr.Markdown(get_recent_videos())
+        # Add optional parameters
+        if audience:
+            cmd.extend(["--audience", audience])
+        if style:
+            cmd.extend(["--style", style])
+        if auto_generate:
+            cmd.append("--generate-video")
+        
+        # Run command
+        start_time = time.time()
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        end_time = time.time()
+        
+        # Process output
+        if result.returncode == 0:
+            # Success
+            output_text = f"✅ Topic generated successfully!\n\n"
+            output_text += f"⏱️ Generation time: {end_time - start_time:.1f} seconds\n\n"
+            output_text += "📋 Generation Log:\n"
+            output_text += result.stdout
             
-            refresh_btn = gr.Button("🔄 Refresh", variant="secondary")
+            # Try to extract the generated topic
+            generated_topic = None
+            for line in result.stdout.split('\n'):
+                if 'Generated Topic:' in line:
+                    generated_topic = line.split('Generated Topic:')[-1].strip()
+                    break
+            
+            return output_text, generated_topic, "Success"
+        else:
+            # Error
+            error_text = f"❌ Topic generation failed!\n\n"
+            error_text += f"Exit code: {result.returncode}\n\n"
+            error_text += "Error output:\n"
+            error_text += result.stderr
+            error_text += "\n\nStdout:\n"
+            error_text += result.stdout
+            
+            return error_text, None, "Error"
+            
+    except subprocess.TimeoutExpired:
+        return "❌ Topic generation timed out (5 minutes)", None, "Timeout"
+    except Exception as e:
+        return f"❌ Error running topic generation: {str(e)}", None, "Error"
+
+def create_ui():
+    """Create the Gradio UI"""
     
-    # Results
-    with gr.Row():
-        result_summary = gr.Markdown("Ready to generate videos!")
+    with gr.Blocks(title="🎬 Viral Video Generator", theme=gr.themes.Soft()) as demo:
+        gr.HTML("<h1>🎬 Enhanced Viral Video Generator v2.0</h1>")
+        gr.HTML("<p>Professional-grade viral video generation with AI agents and advanced composition</p>")
+        
+        with gr.Tabs():
+            # Video Generation Tab
+            with gr.TabItem("🎬 Generate Video"):
+                with gr.Row():
+                    with gr.Column(scale=1):
+                        gr.HTML("<h3>📝 Video Configuration</h3>")
+                        
+                        topic = gr.Textbox(
+                            label="Video Topic",
+                            placeholder="Enter your video topic here...",
+                            lines=2
+                        )
+                        
+                        with gr.Row():
+                            duration = gr.Slider(
+                                label="Duration (seconds)",
+                                minimum=10,
+                                maximum=60,
+                                value=30,
+                                step=5
+                            )
+                            
+                            category = gr.Dropdown(
+                                label="Category",
+                                choices=["Comedy", "Educational", "Entertainment", "News", "Technology"],
+                                value="Comedy"
+                            )
+                        
+                        with gr.Row():
+                            platform = gr.Dropdown(
+                                label="Platform",
+                                choices=["youtube", "tiktok", "instagram", "twitter"],
+                                value="youtube"
+                            )
+                            
+                            discussions = gr.Dropdown(
+                                label="AI Discussions",
+                                choices=["light", "standard", "deep"],
+                                value="standard"
+                            )
+                        
+                        frame_continuity = gr.Dropdown(
+                            label="Frame Continuity",
+                            choices=["auto", "on", "off"],
+                            value="auto"
+                        )
+                        
+                        generate_btn = gr.Button("🎬 Generate Video", variant="primary")
+                    
+                    with gr.Column(scale=2):
+                        gr.HTML("<h3>📊 Generation Results</h3>")
+                        
+                        output_text = gr.Textbox(
+                            label="Generation Log",
+                            lines=15,
+                            max_lines=20,
+                            interactive=False
+                        )
+                        
+                        video_file = gr.File(
+                            label="Generated Video",
+                            file_types=[".mp4"]
+                        )
+                        
+                        status = gr.Textbox(
+                            label="Status",
+                            interactive=False
+                        )
+                
+                generate_btn.click(
+                    fn=run_video_generation,
+                    inputs=[topic, duration, category, platform, discussions, frame_continuity],
+                    outputs=[output_text, video_file, status]
+                )
+            
+            # Topic Generation Tab
+            with gr.TabItem("🎯 Generate Topic"):
+                with gr.Row():
+                    with gr.Column(scale=1):
+                        gr.HTML("<h3>💡 AI-Powered Topic Generation</h3>")
+                        gr.HTML("<p>Let AI agents discuss and create the perfect topic for your idea</p>")
+                        
+                        idea = gr.Textbox(
+                            label="High-Level Idea",
+                            placeholder="e.g., 'convince people to vote', 'promote environmental awareness'",
+                            lines=3
+                        )
+                        
+                        with gr.Row():
+                            topic_platform = gr.Dropdown(
+                                label="Target Platform",
+                                choices=["youtube", "tiktok", "instagram", "twitter"],
+                                value="youtube"
+                            )
+                            
+                            topic_category = gr.Dropdown(
+                                label="Category",
+                                choices=["Comedy", "Educational", "Entertainment", "News", "Technology"],
+                                value="Educational"
+                            )
+                        
+                        with gr.Row():
+                            audience = gr.Textbox(
+                                label="Target Audience (Optional)",
+                                placeholder="e.g., 'Young adults', 'Professionals'"
+                            )
+                            
+                            style = gr.Textbox(
+                                label="Content Style (Optional)",
+                                placeholder="e.g., 'Engaging', 'Educational', 'Humorous'"
+                            )
+                        
+                        topic_duration = gr.Slider(
+                            label="Target Duration (seconds)",
+                            minimum=10,
+                            maximum=60,
+                            value=30,
+                            step=5
+                        )
+                        
+                        auto_generate = gr.Checkbox(
+                            label="🎬 Auto-generate video after topic creation",
+                            value=False
+                        )
+                        
+                        generate_topic_btn = gr.Button("🎯 Generate Topic", variant="primary")
+                    
+                    with gr.Column(scale=2):
+                        gr.HTML("<h3>📋 Topic Generation Results</h3>")
+                        
+                        topic_output = gr.Textbox(
+                            label="Generation Log",
+                            lines=15,
+                            max_lines=20,
+                            interactive=False
+                        )
+                        
+                        generated_topic = gr.Textbox(
+                            label="Generated Topic",
+                            interactive=False
+                        )
+                        
+                        topic_status = gr.Textbox(
+                            label="Status",
+                            interactive=False
+                        )
+                
+                generate_topic_btn.click(
+                    fn=run_topic_generation,
+                    inputs=[idea, topic_platform, audience, style, topic_duration, topic_category, auto_generate],
+                    outputs=[topic_output, generated_topic, topic_status]
+                )
+            
+            # Help Tab
+            with gr.TabItem("❓ Help"):
+                gr.HTML("""
+                <h3>🎬 How to Use</h3>
+                
+                <h4>📝 Video Generation</h4>
+                <ul>
+                    <li><strong>Topic:</strong> Enter the main subject of your video</li>
+                    <li><strong>Duration:</strong> Set video length (10-60 seconds)</li>
+                    <li><strong>Category:</strong> Choose content category for optimization</li>
+                    <li><strong>Platform:</strong> Target platform affects video format and style</li>
+                    <li><strong>AI Discussions:</strong> Level of AI agent collaboration</li>
+                    <li><strong>Frame Continuity:</strong> How clips connect visually</li>
+                </ul>
+                
+                <h4>🎯 Topic Generation</h4>
+                <ul>
+                    <li><strong>High-Level Idea:</strong> Your broad goal or message</li>
+                    <li><strong>Target Platform:</strong> Where the video will be published</li>
+                    <li><strong>Target Audience:</strong> Who you want to reach</li>
+                    <li><strong>Content Style:</strong> Tone and approach</li>
+                    <li><strong>Auto-generate:</strong> Automatically create video after topic</li>
+                </ul>
+                
+                <h4>🤖 AI Agent System</h4>
+                <p>The system uses 26+ specialized AI agents across 6 phases:</p>
+                <ul>
+                    <li><strong>Script Development:</strong> Content creation and optimization</li>
+                    <li><strong>Audio Production:</strong> Voice and sound design</li>
+                    <li><strong>Visual Design:</strong> Graphics and visual elements</li>
+                    <li><strong>Platform Optimization:</strong> Platform-specific adjustments</li>
+                    <li><strong>Quality Assurance:</strong> Final review and polish</li>
+                    <li><strong>Advanced Specialists:</strong> Cutting-edge enhancements</li>
+                </ul>
+                
+                <h4>📊 Discussion Modes</h4>
+                <ul>
+                    <li><strong>Light:</strong> Quick consensus, faster generation</li>
+                    <li><strong>Standard:</strong> Balanced discussion and quality</li>
+                    <li><strong>Deep:</strong> Thorough analysis, best quality</li>
+                </ul>
+                
+                <h4>🎬 Frame Continuity</h4>
+                <ul>
+                    <li><strong>Auto:</strong> AI decides based on content and platform</li>
+                    <li><strong>On:</strong> Smooth transitions between clips</li>
+                    <li><strong>Off:</strong> Jump cuts for dynamic pacing</li>
+                </ul>
+                """)
     
-    with gr.Row():
-        video_output = gr.Video(label="Generated Video")
-    
-    with gr.Accordion("📝 Full Output Log", open=False):
-        full_output = gr.Textbox(
-            label="Process Output",
-            lines=15,
-            max_lines=30,
-            show_copy_button=True
-        )
-    
-    # Event handlers
-    generate_btn.click(
-        fn=run_video_generation,
-        inputs=[topic, duration, category, platform, discussions, frame_continuity],
-        outputs=[result_summary, video_output, full_output]
-    )
-    
-    refresh_btn.click(
-        fn=get_recent_videos,
-        outputs=[recent_videos]
-    )
+    return demo
 
 if __name__ == "__main__":
     print("🎬 Starting Simple Viral Video Generator UI...")
     print("🌐 Access at: http://localhost:7860")
     
-    app.launch(
+    demo = create_ui()
+    demo.launch(
         server_name="0.0.0.0",
         server_port=7860,
-        share=False
+        share=False,
+        show_error=True
     ) 

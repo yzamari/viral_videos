@@ -22,6 +22,7 @@ from src.agents.enhanced_orchestrator_with_discussions import (
     create_discussion_enhanced_orchestrator,
     DiscussionEnhancedOrchestrator
 )
+from src.features.topic_generator_simple import TopicGeneratorSystem
 
 logger = get_logger(__name__)
 
@@ -218,7 +219,7 @@ def _generate_traditional(category: str, topic: str, platform: str, duration: in
     
     return {
         'success': True,
-        'final_video_path': result.file_path if result else None,
+        'final_video_path': result if result else None,
         'frame_continuity_decision': frame_continuity_decision,
         'error': None
     }
@@ -401,6 +402,86 @@ def _show_recent_discussions(recent: int):
         click.echo(f"   Discussions: {session['discussions']}")
         click.echo(f"   Avg Consensus: {session['consensus']:.2f}")
         click.echo(f"   Generated: {session['timestamp'][:19]}")
+
+@cli.command()
+@click.option('--idea', required=True, help='High-level idea or goal (e.g., "convince people to vote")')
+@click.option('--platform', type=click.Choice(['youtube', 'tiktok', 'instagram', 'twitter']), 
+              default='youtube', help='Target platform')
+@click.option('--audience', help='Target audience (e.g., "Young adults", "Professionals")')
+@click.option('--style', help='Content style (e.g., "Engaging", "Educational", "Humorous")')
+@click.option('--duration', type=int, default=30, help='Target video duration in seconds')
+@click.option('--category', type=click.Choice(['Comedy', 'Educational', 'Entertainment', 'News', 'Technology']), 
+              default='Educational', help='Video category')
+@click.option('--discussions', type=click.Choice(['light', 'standard', 'deep']), 
+              default='standard', help='Discussion mode for video generation')
+@click.option('--frame-continuity', type=click.Choice(['auto', 'on', 'off']), 
+              default='auto', help='Frame continuity mode for video generation')
+@click.option('--generate-video', is_flag=True, help='Automatically generate video after topic generation')
+def generate_topic(idea: str, platform: str, audience: str, style: str, duration: int, 
+                  category: str, discussions: str, frame_continuity: str, generate_video: bool):
+    """🎯 Generate a topic using AI agents"""
+    try:
+        click.echo(f"🎯 Generating topic for idea: '{idea}'")
+        
+        # Validate API key
+        if not settings.google_api_key:
+            click.echo("❌ Error: GOOGLE_API_KEY not found in environment variables")
+            click.echo("Please set your Google AI API key in the .env file")
+            sys.exit(1)
+        
+        # Prepare context
+        context = {
+            'platform': platform,
+            'audience': audience or 'General',
+            'style': style or 'Engaging',
+            'duration': duration,
+            'category': category
+        }
+        
+        # Generate topic
+        generator = TopicGeneratorSystem(settings.google_api_key)
+        result = generator.generate_topic(idea, context)
+        
+        # Display results
+        final_topic = result['final_topic']
+        click.echo(f"\n✅ Generated Topic: {final_topic['topic']}")
+        click.echo(f"📋 Reasoning: {final_topic['reasoning']}")
+        click.echo(f"🎯 Viral Potential: {final_topic['viral_potential']}")
+        click.echo(f"🛡️ Ethical Considerations: {final_topic['ethical_considerations']}")
+        click.echo(f"📁 Full results saved to: {result.get('session_directory', 'outputs/')}")
+        
+        # If generate flag is set, automatically generate video with this topic
+        if generate_video:
+            click.echo(f"\n🎬 Automatically generating video with topic: '{final_topic['topic']}'")
+            
+            # Call the generate command with the generated topic
+            from click.testing import CliRunner
+            runner = CliRunner()
+            
+            # Prepare arguments for video generation
+            video_args = [
+                'generate',
+                '--topic', final_topic['topic'],
+                '--duration', str(duration),
+                '--category', category,
+                '--platform', platform,
+                '--discussions', discussions,
+                '--frame-continuity', frame_continuity
+            ]
+            
+            # Run the generate command
+            result = runner.invoke(cli, video_args)
+            
+            if result.exit_code != 0:
+                click.echo(f"❌ Video generation failed: {result.output}")
+                return
+            
+            click.echo("✅ Video generation completed successfully!")
+        
+    except Exception as e:
+        click.echo(f"❌ Topic generation failed: {e}")
+        logger.error(f"Topic generation error: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     cli() 

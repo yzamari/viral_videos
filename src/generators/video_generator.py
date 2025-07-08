@@ -86,16 +86,9 @@ class VideoGenerator:
         
         # Initialize VEO-2 client if enabled
         if use_real_veo2 and use_vertex_ai:
-            try:
-                from .veo_client import VeoApiClient
-                self.veo_client = VeoApiClient(
-                    project_id=self.project_id,
-                    location=self.location
-                )
-                logger.info(f"🎬 VEO-2 Client initialized for project: {self.project_id}")
-            except Exception as e:
-                logger.warning(f"VEO-2 client initialization failed: {e}")
-                self.veo_client = None
+            # VEO-2 client is not available in this version
+            logger.info("🎬 VEO-2 client not available, using placeholder clips")
+            self.veo_client = None
         else:
             self.veo_client = None
         
