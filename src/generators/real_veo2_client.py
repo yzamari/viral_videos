@@ -703,7 +703,7 @@ class RealVeo2Client:
                     prompt=prompt_data.get('veo2_prompt', prompt_data.get('description', 'video clip')),
                     duration=duration_per_clip,
                     clip_id=clip_id,
-                    aspect_ratio="9:16" if config.get('platform') == 'TIKTOK' else "16:9"
+                    aspect_ratio="9:16" if config.get('platform') == 'tiktok' else "16:9"
                 )
                 
                 clip_info = {

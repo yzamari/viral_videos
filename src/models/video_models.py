@@ -7,23 +7,46 @@ from pydantic import BaseModel, Field, HttpUrl
 from enum import Enum
 
 class Platform(str, Enum):
-    """Supported social media platforms"""
+    """
+    Target destination platforms for video publishing and optimization.
+    
+    This represents the social media platform where the generated video will be published.
+    The AI agents optimize content, format, duration, and style specifically for each platform's:
+    - Algorithm preferences
+    - Audience behavior patterns  
+    - Technical requirements (aspect ratio, duration limits)
+    - Content policies and trends
+    
+    Example: A TikTok video will be optimized for vertical format, trending sounds, 
+    and quick engagement hooks, while a YouTube video focuses on longer retention 
+    and search optimization.
+    """
     YOUTUBE = "youtube"
-    TIKTOK = "tiktok"
+    TIKTOK = "tiktok" 
     INSTAGRAM = "instagram"
     FACEBOOK = "facebook"
 
 class VideoCategory(str, Enum):
     """Video content categories"""
-    MUSIC = "Music"
-    GAMING = "Gaming"
-    ENTERTAINMENT = "Entertainment"
     COMEDY = "Comedy"
+    ENTERTAINMENT = "Entertainment"
     EDUCATION = "Education"
     TECHNOLOGY = "Technology"
+    GAMING = "Gaming"
+    MUSIC = "Music"
     SPORTS = "Sports"
     NEWS = "News"
     LIFESTYLE = "Lifestyle"
+    FOOD = "Food"
+    TRAVEL = "Travel"
+    FITNESS = "Fitness"
+    FASHION = "Fashion"
+    SCIENCE = "Science"
+    BUSINESS = "Business"
+    HEALTH = "Health"
+    ARTS = "Arts"
+    AUTOMOTIVE = "Automotive"
+    PETS = "Pets"
     OTHER = "Other"
 
 class TrendingVideo(BaseModel):

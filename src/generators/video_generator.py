@@ -490,7 +490,7 @@ class VideoGenerator:
             raise
     
     def _create_veo2_prompts(self, config: GeneratedVideoConfig, script: Union[str, dict]) -> List[str]:
-        """Create VEO-2 prompts based on topic and script content"""
+        """Create VEO-2 prompts based on AI agent decisions and script content"""
         topic = config.topic
         style = config.visual_style
         
@@ -504,64 +504,72 @@ class VideoGenerator:
                 for segment in script['segments']:
                     if isinstance(segment, dict) and 'text' in segment:
                         script_content += segment['text'] + " "
-            script_lower = script_content.lower()
-        elif isinstance(script, str):
-            script_lower = script.lower()
         else:
-            script_lower = ""
+            script_content = str(script)
         
-        # Create prompts based on topic and script content
-        if "persian" in topic.lower() or "goddess" in topic.lower():
-            prompts = [
-                f"Majestic Persian goddess with flowing robes and golden jewelry, ancient palace setting, cinematic lighting, {style}",
-                f"Powerful female deity from Persian mythology, mystical aura, ornate costume, epic fantasy style",
-                f"Beautiful ancient Persian princess transforming into divine goddess, magical effects, cinematic quality"
+        # Let AI agents decide on prompts based on mission and script
+        logger.info(f"🤖 AI agents analyzing mission: {topic}")
+        logger.info(f"🎬 Script content: {script_content[:200]}...")
+        
+        try:
+            # Use Gemini to generate appropriate prompts based on the mission
+            import google.generativeai as genai
+            genai.configure(api_key=self.api_key)
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            
+            prompt_generation_request = f"""
+            MISSION: {topic}
+            SCRIPT CONTENT: {script_content}
+            VISUAL STYLE: {style}
+            PLATFORM: {config.target_platform.value}
+            CATEGORY: {config.category.value}
+            
+            As a professional video director, create 3 distinct visual prompts for this mission.
+            Each prompt should be specific, actionable, and designed to accomplish the mission.
+            
+            Requirements:
+            - Each prompt should be 1-2 sentences maximum
+            - Focus on visual elements that support the mission
+            - Consider the target platform and category
+            - Make prompts diverse but cohesive
+            - No generic templates - be specific to this mission
+            
+            Return only the 3 prompts, one per line, no numbering or formatting.
+            """
+            
+            response = model.generate_content(prompt_generation_request)
+            ai_prompts = response.text.strip().split('\n')
+            
+            # Clean and validate prompts
+            cleaned_prompts = []
+            for prompt in ai_prompts:
+                clean_prompt = prompt.strip()
+                if clean_prompt and len(clean_prompt) > 10:
+                    # Add style suffix if not already present
+                    if style not in clean_prompt.lower():
+                        clean_prompt += f", {style}"
+                    cleaned_prompts.append(clean_prompt)
+            
+            # Ensure we have at least 3 prompts
+            while len(cleaned_prompts) < 3:
+                cleaned_prompts.append(f"Professional visual content supporting: {topic}, {style}")
+            
+            logger.info(f"🎨 AI-generated prompts for '{topic}':")
+            for i, prompt in enumerate(cleaned_prompts[:3], 1):
+                logger.info(f"   Prompt {i}: {prompt}")
+            
+            return cleaned_prompts[:3]
+            
+        except Exception as e:
+            logger.error(f"❌ AI prompt generation failed: {e}")
+            # Fallback: Create generic prompts based on mission analysis
+            fallback_prompts = [
+                f"Professional visual content that supports: {topic}, {style}",
+                f"Engaging scene designed to accomplish: {topic}, {style}",
+                f"Compelling visual narrative for: {topic}, {style}"
             ]
-        elif "unicorn" in topic.lower():
-            prompts = [
-                f"A majestic rainbow unicorn with flowing mane galloping through clouds, cinematic style, {style}",
-                f"Epic battle scene with colorful unicorns using magical powers, fantasy adventure style",
-                f"Dramatic close-up of a unicorn's horn glowing with magical energy, mystical atmosphere"
-            ]
-        elif "comedy" in config.category.value.lower():
-            prompts = [
-                f"Comedic cartoon characters in an absurd situation, exaggerated expressions, colorful animation style",
-                f"Whimsical animated scene with unexpected visual gags, bright colors, playful atmosphere",
-                f"Funny cartoon animals doing silly actions, animated comedy style, vibrant colors"
-            ]
-        else:
-            # Generic engaging prompts
-            prompts = [
-                f"Cinematic establishing shot of an epic adventure, {style}, dramatic lighting",
-                f"Dynamic action sequence with colorful characters, animated style, high energy",
-                f"Emotional climax scene with dramatic music and lighting, cinematic style"
-            ]
-        
-        # Log the prompts being used
-        logger.info(f"🎨 VEO-2 Prompts created for '{topic}':")
-        for i, prompt in enumerate(prompts):
-            logger.info(f"   Prompt {i+1}: {prompt}")
-        
-        # Limit to duration-appropriate number of clips
-        num_clips = min(len(prompts), max(1, config.duration_seconds // 8))
-        selected_prompts = prompts[:num_clips]
-        logger.info(f"📹 Selected {len(selected_prompts)} prompts for {config.duration_seconds}s video")
-        
-        # Log all prompts to session output
-        import json
-        session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
-        prompts_file = os.path.join(session_dir, "veo_prompts.json")
-        with open(prompts_file, 'w') as f:
-            json.dump({
-                "topic": topic,
-                "all_prompts": prompts,
-                "selected_prompts": selected_prompts,
-                "num_clips": num_clips,
-                "duration_per_clip": config.duration_seconds / num_clips
-            }, f, indent=2)
-        logger.info(f"📁 VEO prompts saved to: {prompts_file}")
-        
-        return selected_prompts
+            logger.info(f"🔄 Using fallback prompts for '{topic}'")
+            return fallback_prompts
     
     def _download_veo2_video(self, gcs_uri: str, clip_index: int) -> str:
         """Download VEO-2 generated video from GCS to local storage"""
@@ -596,6 +604,8 @@ class VideoGenerator:
         session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
         veo_clips_dir = os.path.join(self.output_dir, "veo2_clips")
         
+        veo3_audio_path = None
+        
         # Look for VEO clips with audio
         if os.path.exists(veo_clips_dir):
             veo_clips = [f for f in os.listdir(veo_clips_dir) if f.endswith('.mp4') and self.session_id in f]
@@ -607,21 +617,17 @@ class VideoGenerator:
                     clip = VideoFileClip(veo_clip_path)
                     if clip.audio is not None:
                         logger.info(f"🎵 VEO-3 native audio detected in {veo_clip_path}")
-                        logger.info("⚡ Skipping TTS generation - using VEO-3 native audio")
                         
-                        # Extract audio from VEO clip
-                        audio_path = os.path.join(session_dir, f"veo3_native_audio_{self.session_id}.mp3")
-                        clip.audio.write_audiofile(audio_path, verbose=False, logger=None)
-                        clip.close()
-                        
-                        logger.info(f"📁 VEO-3 audio extracted to: {audio_path}")
-                        return audio_path
+                        # Extract VEO-3 audio for background
+                        veo3_audio_path = os.path.join(session_dir, f"veo3_background_audio_{self.session_id}.mp3")
+                        clip.audio.write_audiofile(veo3_audio_path, verbose=False, logger=None)
+                        logger.info(f"📁 VEO-3 background audio extracted to: {veo3_audio_path}")
                     clip.close()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not check VEO clip audio: {e}")
         
-        # Use the advanced voiceover generation with Google Cloud TTS
-        logger.info("🎤 Generating TTS audio (no VEO-3 native audio found)")
+        # Always generate TTS for the mission content
+        logger.info("🎤 Generating TTS audio for mission narration")
         config = {
             'narrative': 'energetic',
             'feeling': 'excited',
@@ -629,7 +635,69 @@ class VideoGenerator:
             'duration_seconds': duration
         }
         
-        return self._generate_voiceover(script, duration, config)
+        tts_audio_path = self._generate_voiceover(script, duration, config)
+        
+        # If we have VEO-3 audio, combine it with TTS
+        if veo3_audio_path and os.path.exists(veo3_audio_path):
+            logger.info("🎵 Combining TTS narration with VEO-3 background audio")
+            
+            try:
+                from moviepy.editor import AudioFileClip, CompositeAudioClip
+                
+                # Load both audio tracks
+                tts_audio = AudioFileClip(tts_audio_path)
+                veo3_audio = AudioFileClip(veo3_audio_path)
+                
+                # Adjust VEO-3 audio volume to be background (30% volume)
+                veo3_background = veo3_audio.volumex(0.3)
+                
+                # Ensure TTS is the target duration
+                if tts_audio.duration < duration:
+                    # Extend TTS if needed
+                    loops_needed = int(duration / tts_audio.duration) + 1
+                    tts_extended = tts_audio
+                    for _ in range(loops_needed - 1):
+                        tts_extended = tts_extended.concatenate(tts_audio)
+                    tts_audio = tts_extended.subclip(0, duration)
+                elif tts_audio.duration > duration:
+                    tts_audio = tts_audio.subclip(0, duration)
+                
+                # Adjust VEO-3 background to match TTS duration
+                if veo3_background.duration < duration:
+                    # Loop VEO-3 audio to match duration
+                    loops_needed = int(duration / veo3_background.duration) + 1
+                    veo3_extended = veo3_background
+                    for _ in range(loops_needed - 1):
+                        veo3_extended = veo3_extended.concatenate(veo3_background)
+                    veo3_background = veo3_extended.subclip(0, duration)
+                elif veo3_background.duration > duration:
+                    veo3_background = veo3_background.subclip(0, duration)
+                
+                # Combine: TTS (main) + VEO-3 (background)
+                combined_audio = CompositeAudioClip([tts_audio, veo3_background])
+                
+                # Save combined audio
+                combined_path = os.path.join(session_dir, f"combined_audio_{self.session_id}.mp3")
+                combined_audio.write_audiofile(combined_path, verbose=False, logger=None)
+                
+                # Clean up
+                tts_audio.close()
+                veo3_audio.close()
+                veo3_background.close()
+                combined_audio.close()
+                
+                logger.info(f"✅ Combined audio created: TTS narration + VEO-3 background")
+                logger.info(f"📁 Combined audio saved to: {combined_path}")
+                
+                return combined_path
+                
+            except Exception as e:
+                logger.error(f"❌ Failed to combine audio: {e}")
+                logger.info("📁 Falling back to TTS-only audio")
+                return tts_audio_path
+        
+        logger.info("📁 Using TTS-only audio (no VEO-3 background available)")
+        return tts_audio_path
     
     def _compose_final_video(self, video_clips: List[str], audio_path: str, 
                            config: GeneratedVideoConfig) -> str:
@@ -640,14 +708,28 @@ class VideoGenerator:
             os.makedirs(session_dir, exist_ok=True)
             final_video_path = os.path.join(session_dir, f"final_video_{self.session_id}.mp4")
             
-            # Load and validate audio first to get target duration
+            # Use the requested duration from config, not audio duration
             target_duration = config.duration_seconds
+            logger.info(f"🎯 Target duration from config: {target_duration}s")
+            
+            # Load and validate audio
             audio_clip = None
             
             if audio_path and os.path.exists(audio_path):
                 audio_clip = AudioFileClip(audio_path)
-                target_duration = audio_clip.duration
-                logger.info(f"🎵 Audio duration: {target_duration:.1f}s - using as target")
+                logger.info(f"🎵 Audio duration: {audio_clip.duration:.1f}s")
+                
+                # Adjust audio to match target duration
+                if audio_clip.duration > target_duration:
+                    audio_clip = audio_clip.subclip(0, target_duration)
+                    logger.info(f"🎵 Audio trimmed to {target_duration}s")
+                elif audio_clip.duration < target_duration:
+                    # Extend audio with silence or loop
+                    from moviepy.audio.AudioClip import AudioClip
+                    silence_duration = target_duration - audio_clip.duration
+                    silence = AudioClip(lambda t: [0, 0], duration=silence_duration)
+                    audio_clip = concatenate_audioclips([audio_clip, silence])
+                    logger.info(f"🎵 Audio extended to {target_duration}s with silence")
             else:
                 logger.warning("⚠️ No audio file found, using config duration")
             
@@ -665,8 +747,9 @@ class VideoGenerator:
                 raise RenderingError("No valid video clips found")
             
             logger.info(f"🎬 Video clips total duration: {total_video_duration:.1f}s")
+            logger.info(f"🎯 Adjusting video to match requested duration: {target_duration}s")
             
-            # Adjust video duration to match audio
+            # Adjust video duration to match target (not audio)
             if abs(total_video_duration - target_duration) > 0.5:
                 logger.info(f"⚖️ Adjusting video duration from {total_video_duration:.1f}s to {target_duration:.1f}s")
                 
@@ -691,7 +774,7 @@ class VideoGenerator:
             # Concatenate video clips
             video = concatenate_videoclips(clips)
             
-            # Final duration adjustment
+            # Final duration adjustment to exact target
             if video.duration > target_duration:
                 video = video.subclip(0, target_duration)
             elif video.duration < target_duration:
@@ -703,7 +786,7 @@ class VideoGenerator:
             # Add text overlays and titles
             video_with_overlays = self._add_comprehensive_text_overlays(video, config)
             
-            # Sync audio
+            # Sync audio to match video duration exactly
             if audio_clip:
                 # Ensure audio matches video duration exactly
                 if audio_clip.duration > video_with_overlays.duration:
@@ -1221,7 +1304,7 @@ class VideoGenerator:
             overlays.append(title_clip)
             
             # PLATFORM-SPECIFIC OVERLAYS
-            if config.target_platform.value.upper() == 'TIKTOK':
+            if config.target_platform.value.lower() == 'tiktok':
                 # TikTok style overlays
                 overlays.extend([
                     TextClip(
@@ -1241,7 +1324,7 @@ class VideoGenerator:
                     ).set_position(('center', 0.85)).set_duration(3).set_start(duration-4)
                 ])
                 
-            elif config.target_platform.value.upper() == 'YOUTUBE':
+            elif config.target_platform.value.lower() == 'youtube':
                 # YouTube style overlays
                 overlays.extend([
                     TextClip(
@@ -1261,7 +1344,7 @@ class VideoGenerator:
                     ).set_position(('center', 0.9)).set_duration(4).set_start(duration-5)
                 ])
                 
-            elif config.target_platform.value.upper() == 'INSTAGRAM':
+            elif config.target_platform.value.lower() == 'instagram':
                 # Instagram style overlays
                 overlays.extend([
                     TextClip(

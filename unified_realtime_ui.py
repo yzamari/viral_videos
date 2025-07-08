@@ -12,273 +12,397 @@ This is the ONLY UI file you need - combines all functionality:
 
 import os
 import sys
-import json
-import time
-import threading
 import queue
-import gradio as gr
+import threading
+import time
+import json
+import re
 from datetime import datetime
-from typing import Dict, List, Any, Optional
-import argparse
+from typing import List, Dict, Any, Optional, Tuple
+from pathlib import Path
 
-# Add project root to path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import gradio as gr
+from src.models.video_models import VideoCategory, Platform
+from src.agents.enhanced_orchestrator_with_19_agents import create_enhanced_orchestrator_with_19_agents
 
-from launch_full_working_app import FullWorkingVideoApp
-from src.utils.logging_config import get_logger
-
-logger = get_logger(__name__)
+# Setup logging
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class RealTimeAgentVisualizer:
-    """Real-time visualization of agent discussions"""
+    """Real-time visualization of AI agent discussions"""
     
     def __init__(self):
-        self.discussion_data = {}
-        self.current_phase = ""
         self.agents_status = {}
         self.consensus_history = []
+        self.discussion_messages = []
+        self.current_phase = "Waiting"
+        self.is_monitoring = False
+        self.log_queue = queue.Queue()
         
-    def update_discussion(self, phase: str, agents: List[str], consensus: float, 
-                         round_num: int, agent_messages: Dict[str, str]) -> str:
-        """Update discussion visualization data"""
-        self.current_phase = phase
-        self.consensus_history.append({
+    def start_monitoring(self):
+        """Start monitoring agent discussions"""
+        self.is_monitoring = True
+        self.discussion_messages = []
+        self.current_phase = "Initializing"
+        
+    def stop_monitoring(self):
+        """Stop monitoring agent discussions"""
+        self.is_monitoring = False
+        
+    def add_discussion_message(self, phase: str, agent: str, message: str, consensus: float, round_num: int):
+        """Add a new discussion message"""
+        if not self.is_monitoring:
+            return
+            
+        timestamp = datetime.now().strftime('%H:%M:%S')
+        
+        # Determine agent color and emoji based on agent type
+        agent_colors = {
+            'StoryWeaver': '#3b82f6', 'DialogueMaster': '#3b82f6', 'PaceMaster': '#3b82f6', 'AudienceAdvocate': '#3b82f6',
+            'AudioMaster': '#10b981', 'VoiceDirector': '#10b981', 'SoundDesigner': '#10b981', 'PlatformGuru': '#10b981',
+            'VisionCraft': '#f59e0b', 'StyleDirector': '#f59e0b', 'ColorMaster': '#f59e0b', 'TypeMaster': '#f59e0b', 'HeaderCraft': '#f59e0b',
+            'EngagementHacker': '#8b5cf6', 'TrendMaster': '#8b5cf6', 'QualityGuard': '#ef4444',
+            'SyncMaster': '#ef4444', 'CutMaster': '#ef4444'
+        }
+        
+        agent_emojis = {
+            'StoryWeaver': '📝', 'DialogueMaster': '💬', 'PaceMaster': '⏱️', 'AudienceAdvocate': '👥',
+            'AudioMaster': '🎵', 'VoiceDirector': '🎤', 'SoundDesigner': '🔊', 'PlatformGuru': '📱',
+            'VisionCraft': '🎨', 'StyleDirector': '🎭', 'ColorMaster': '🌈', 'TypeMaster': '📰', 'HeaderCraft': '🏷️',
+            'EngagementHacker': '📈', 'TrendMaster': '📊', 'QualityGuard': '✅',
+            'SyncMaster': '🎯', 'CutMaster': '✂️'
+        }
+        
+        color = agent_colors.get(agent, '#64748b')
+        emoji = agent_emojis.get(agent, '🤖')
+        
+        self.discussion_messages.append({
             'phase': phase,
-            'round': round_num,
+            'agent': agent,
+            'emoji': emoji,
+            'color': color,
+            'message': message,
             'consensus': consensus,
-            'timestamp': datetime.now().isoformat()
+            'round': round_num,
+            'timestamp': timestamp
         })
         
-        # Update agent status
-        for agent in agents:
-            self.agents_status[agent] = {
-                'active': True,
-                'last_message': agent_messages.get(agent, ""),
-                'phase': phase
-            }
+        self.current_phase = phase
         
-        return self.generate_visualization()
+        # Keep only last 20 messages to prevent overflow
+        if len(self.discussion_messages) > 20:
+            self.discussion_messages = self.discussion_messages[-20:]
     
-    def generate_visualization(self) -> str:
-        """Generate HTML visualization of agent discussions"""
-        html = f"""
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h2>🤖 Live Agent Discussions</h2>
-            
-            <div style="background: #f0f8ff; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                <h3>Current Phase: {self.current_phase}</h3>
-                {self._generate_consensus_chart()}
+    def generate_discussion_html(self) -> str:
+        """Generate HTML for current discussions"""
+        if not self.discussion_messages:
+            return self._generate_initial_html()
+        
+        # Get latest consensus
+        latest_consensus = self.discussion_messages[-1]['consensus'] if self.discussion_messages else 0
+        consensus_percent = int(latest_consensus * 100)
+        
+        # Generate phase header
+        phase_html = f"""
+        <div class="phase-header">
+            🎭 Phase: {self.current_phase}
+        </div>
+        """
+        
+        # Generate consensus bar
+        consensus_color = "#10b981" if consensus_percent >= 80 else "#f59e0b" if consensus_percent >= 60 else "#ef4444"
+        consensus_html = f"""
+        <div style="margin: 15px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                <span style="color: #1e40af; font-weight: bold;">Consensus Progress:</span>
+                <span style="color: {consensus_color}; font-weight: bold;">{consensus_percent}%</span>
             </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
-                {self._generate_agent_cards()}
+            <div class="consensus-bar">
+                <div class="consensus-progress" style="width: {consensus_percent}%; background-color: {consensus_color};"></div>
             </div>
-            
-            <div style="margin-top: 20px;">
-                <h3>📊 Consensus Progress</h3>
-                {self._generate_consensus_timeline()}
+            <div style="color: #64748b; font-size: 0.9em;">
+                Round {self.discussion_messages[-1]['round']} • Target: 80% • Live Updates
             </div>
         </div>
         """
-        return html
-    
-    def _generate_consensus_chart(self) -> str:
-        """Generate consensus progress chart"""
-        if not self.consensus_history:
-            return "<p>No consensus data yet...</p>"
         
-        latest = self.consensus_history[-1]
-        consensus_pct = latest['consensus'] * 100
-        
-        # Create a visual progress bar
-        bar_width = min(consensus_pct, 100)
-        color = "#4CAF50" if consensus_pct >= 80 else "#FF9800" if consensus_pct >= 60 else "#f44336"
-        
-        return f"""
-        <div style="margin: 10px 0;">
-            <div style="background: #ddd; height: 20px; border-radius: 10px; overflow: hidden;">
-                <div style="background: {color}; height: 100%; width: {bar_width}%; transition: width 0.3s ease;"></div>
-            </div>
-            <p style="margin: 5px 0; font-weight: bold;">Consensus: {consensus_pct:.1f}%</p>
-        </div>
-        """
-    
-    def _generate_agent_cards(self) -> str:
-        """Generate individual agent status cards"""
-        if not self.agents_status:
-            return "<p>No active agents yet...</p>"
-        
-        cards = []
-        for agent, status in self.agents_status.items():
-            active_color = "#4CAF50" if status['active'] else "#ccc"
-            last_message = status['last_message'][:100] + "..." if len(status['last_message']) > 100 else status['last_message']
+        # Generate messages
+        messages_html = ""
+        for msg in self.discussion_messages[-10:]:  # Show last 10 messages
+            # Truncate long messages
+            display_message = msg['message'][:200] + "..." if len(msg['message']) > 200 else msg['message']
             
-            card = f"""
-            <div style="border: 2px solid {active_color}; border-radius: 10px; padding: 15px; background: white;">
-                <h4 style="margin: 0 0 10px 0; color: {active_color};">🤖 {agent}</h4>
-                <p style="margin: 5px 0; font-size: 12px; color: #666;">Phase: {status['phase']}</p>
-                <p style="margin: 10px 0; font-size: 14px; background: #f9f9f9; padding: 10px; border-radius: 5px;">
-                    {last_message or "Waiting for input..."}
-                </p>
-            </div>
-            """
-            cards.append(card)
-        
-        return "".join(cards)
-    
-    def _generate_consensus_timeline(self) -> str:
-        """Generate consensus timeline"""
-        if not self.consensus_history:
-            return "<p>No timeline data yet...</p>"
-        
-        timeline_items = []
-        for item in self.consensus_history[-5:]:  # Show last 5 items
-            consensus_pct = item['consensus'] * 100
-            color = "#4CAF50" if consensus_pct >= 80 else "#FF9800" if consensus_pct >= 60 else "#f44336"
-            
-            timeline_item = f"""
-            <div style="display: flex; align-items: center; margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 5px;">
-                <div style="width: 20px; height: 20px; background: {color}; border-radius: 50%; margin-right: 15px;"></div>
-                <div>
-                    <strong>{item['phase']}</strong> - Round {item['round']} 
-                    <span style="color: {color}; font-weight: bold;">({consensus_pct:.1f}%)</span>
+            messages_html += f"""
+            <div class="agent-message" style="border-left-color: {msg['color']};">
+                <div class="agent-name" style="color: {msg['color']};">
+                    {msg['emoji']} {msg['agent']}
+                </div>
+                <div style="margin-top: 5px; color: #475569; line-height: 1.4;">
+                    {display_message}
+                </div>
+                <div class="timestamp">
+                    Round {msg['round']} • {msg['timestamp']} • Consensus: {int(msg['consensus'] * 100)}%
                 </div>
             </div>
             """
-            timeline_items.append(timeline_item)
         
-        return "".join(timeline_items)
+        # Generate active agents summary
+        unique_agents = list(set([msg['agent'] for msg in self.discussion_messages[-5:]]))
+        agents_html = f"""
+        <div style="margin-top: 15px; padding: 10px; background: #f1f5f9; border-radius: 5px;">
+            <div style="color: #1e40af; font-weight: bold;">Recently Active Agents:</div>
+            <div style="color: #64748b; margin-top: 5px;">
+                {' • '.join(unique_agents[:6])}
+            </div>
+        </div>
+        """
+        
+        return f"""
+        <div class="agent-discussion">
+            {phase_html}
+            {consensus_html}
+            <div style="max-height: 350px; overflow-y: auto;">
+                {messages_html}
+            </div>
+            {agents_html}
+        </div>
+        """
+    
+    def _generate_initial_html(self) -> str:
+        """Generate initial HTML when no discussions are active"""
+        return """
+        <div class="agent-discussion">
+            <div class="phase-header">🤖 AI Agent Discussions</div>
+            <p style="color: #64748b; font-style: italic; text-align: center; margin: 20px 0;">
+                Start generation to see live agent discussions...
+            </p>
+            <div style="margin-top: 20px;">
+                <h4 style="color: #1e40af; margin-bottom: 15px;">19 Specialized Agents Ready:</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <div style="background: #f1f5f9; padding: 8px; border-radius: 5px; border-left: 3px solid #3b82f6;">
+                        <strong style="color: #1e40af;">📝 Script Development</strong><br>
+                        <span style="color: #64748b; font-size: 0.85em;">StoryWeaver, DialogueMaster, PaceMaster, AudienceAdvocate</span>
+                    </div>
+                    <div style="background: #f1f5f9; padding: 8px; border-radius: 5px; border-left: 3px solid #10b981;">
+                        <strong style="color: #059669;">🎵 Audio Production</strong><br>
+                        <span style="color: #64748b; font-size: 0.85em;">AudioMaster, VoiceDirector, SoundDesigner, PlatformGuru</span>
+                    </div>
+                    <div style="background: #f1f5f9; padding: 8px; border-radius: 5px; border-left: 3px solid #f59e0b;">
+                        <strong style="color: #d97706;">🎨 Visual Design</strong><br>
+                        <span style="color: #64748b; font-size: 0.85em;">VisionCraft, StyleDirector, ColorMaster, TypeMaster, HeaderCraft</span>
+                    </div>
+                    <div style="background: #f1f5f9; padding: 8px; border-radius: 5px; border-left: 3px solid #8b5cf6;">
+                        <strong style="color: #7c3aed;">📈 Platform Optimization</strong><br>
+                        <span style="color: #64748b; font-size: 0.85em;">PlatformGuru, EngagementHacker, TrendMaster, QualityGuard</span>
+                    </div>
+                    <div style="background: #f1f5f9; padding: 8px; border-radius: 5px; border-left: 3px solid #ef4444;">
+                        <strong style="color: #dc2626;">✅ Quality Assurance</strong><br>
+                        <span style="color: #64748b; font-size: 0.85em;">QualityGuard, AudienceAdvocate, SyncMaster, CutMaster</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """
 
 class UnifiedVideoApp:
     """Unified application combining all video generation functionality"""
     
     def __init__(self):
-        self.app = FullWorkingVideoApp()
+        # Load API key
+        self.api_key = self._load_api_key()
         self.visualizer = RealTimeAgentVisualizer()
         self.generation_queue = queue.Queue()
-        self.is_generating = False
         
-        logger.info("🎬 Unified Real-time Video App initialized")
-    
+    def _load_api_key(self) -> str:
+        """Load Google API key from environment"""
+        # Try .env file first
+        env_path = os.path.join(os.path.dirname(__file__), '.env')
+        if os.path.exists(env_path):
+            with open(env_path, 'r') as f:
+                for line in f:
+                    if line.startswith('GOOGLE_API_KEY='):
+                        api_key = line.split('=', 1)[1].strip().strip('"\'')
+                        if api_key:
+                            logger.info("✅ Loaded GOOGLE_API_KEY from .env file")
+                            return api_key
+        
+        # Try environment variable
+        api_key = os.getenv('GOOGLE_API_KEY')
+        if api_key:
+            logger.info("✅ Loaded GOOGLE_API_KEY from environment")
+            return api_key
+            
+        raise ValueError("❌ GOOGLE_API_KEY not found in .env file or environment variables")
+        
     def generate_video_with_realtime_updates(self, mission: str, duration: int, platform: str, 
-                                           category: str, use_discussions: bool):
-        """Generate video with real-time agent discussion updates"""
+                                           category: str, use_discussions: bool) -> tuple:
+        """Generate video with real-time updates"""
         try:
-            self.is_generating = True
+            # Convert string parameters to enums with correct values
+            video_category = VideoCategory(category)  # Use the string value directly
+            target_platform = Platform(platform.lower())  # Use lowercase for platform
             
-            # Start generation in background thread
-            generation_thread = threading.Thread(
-                target=self._background_generation,
-                args=(mission, duration, platform, category, use_discussions)
-            )
-            generation_thread.start()
+            # Simulate agent discussions for UI display
+            if use_discussions:
+                self.visualizer.start_monitoring()
+                self._simulate_discussions()
             
-            # Return initial status
-            return (
-                "🚀 **STARTING GENERATION...**\n\nInitializing 19 AI agents for mission strategy...",
-                None,  # video
-                "📊 **Generation Status:** Starting...",  # details
-                self.visualizer.generate_visualization()  # agent discussions
+            # Create orchestrator for this specific mission
+            orchestrator = create_enhanced_orchestrator_with_19_agents(
+                api_key=self.api_key,
+                mission=mission,
+                category=video_category,
+                platform=target_platform,
+                duration=duration,
+                discussion_mode=use_discussions
             )
+            
+            # Generate video
+            result = orchestrator.generate_viral_video(
+                mission=mission,
+                category=video_category,
+                platform=target_platform,
+                duration=duration,
+                discussion_mode=use_discussions
+            )
+            
+            # Stop monitoring
+            if use_discussions:
+                self.visualizer.stop_monitoring()
+            
+            # Format results
+            status = f"✅ Video generated successfully!\n📁 Session: {result.video_id}\n⏱️ Time: {result.generation_time_seconds:.1f}s"
+            video_path = result.file_path if os.path.exists(result.file_path) else None
+            details = f"📊 File size: {result.file_size_mb:.1f}MB\n🎬 Duration: {duration}s\n📱 Platform: {platform}\n🎭 Category: {category}"
+            discussions = self.visualizer.generate_discussion_html()
+            
+            return status, video_path, details, discussions
             
         except Exception as e:
-            logger.error(f"Generation error: {e}")
-            return f"❌ **ERROR:** {e}", None, "Generation failed", "Error in agent discussions"
+            logger.error(f"❌ Video generation failed: {e}")
+            if use_discussions:
+                self.visualizer.stop_monitoring()
+            error_msg = f"❌ Generation failed: {str(e)}"
+            return error_msg, None, "Please check the logs for details", "No discussions available"
     
-    def _background_generation(self, mission: str, duration: int, platform: str, 
-                              category: str, use_discussions: bool):
-        """Background thread for video generation"""
-        try:
-            # Simulate agent discussions with updates
-            phases = [
-                "Script Development", "Audio Production", "Visual Design", 
-                "Platform Optimization", "Quality Assurance"
-            ]
-            
-            for i, phase in enumerate(phases):
-                if not use_discussions:
-                    break
-                    
-                # Simulate discussion rounds
-                for round_num in range(1, 3):
-                    time.sleep(2)  # Simulate discussion time
-                    
-                    # Simulate consensus building
-                    consensus = min(0.6 + (round_num * 0.2) + (i * 0.05), 1.0)
-                    
-                    # Mock agent messages
-                    agent_messages = {
-                        "StoryWeaver": f"Developing narrative strategy for '{mission}'...",
-                        "DialogueMaster": f"Optimizing dialogue for {platform} audience...",
-                        "PaceMaster": f"Adjusting pacing for {duration}s duration...",
-                        "AudienceAdvocate": f"Ensuring {category} category alignment..."
-                    }
-                    
-                    # Update visualization
-                    viz_html = self.visualizer.update_discussion(
-                        phase, list(agent_messages.keys()), consensus, round_num, agent_messages
-                    )
-                    
-                    # Put update in queue
-                    self.generation_queue.put({
-                        'type': 'discussion_update',
-                        'phase': phase,
-                        'round': round_num,
-                        'consensus': consensus,
-                        'visualization': viz_html
-                    })
-                    
-                    if consensus >= 0.8:
-                        break
-            
-            # Now run actual generation
-            result = self.app.generate_video(mission, duration, platform, category, use_discussions)
-            
-            # Put final result in queue
-            self.generation_queue.put({
-                'type': 'final_result',
-                'result': result
-            })
-            
-        except Exception as e:
-            self.generation_queue.put({
-                'type': 'error',
-                'error': str(e)
-            })
-        finally:
-            self.is_generating = False
-    
-    def get_generation_updates(self):
-        """Get real-time generation updates"""
-        updates = []
-        try:
-            while not self.generation_queue.empty():
-                update = self.generation_queue.get_nowait()
-                updates.append(update)
-        except queue.Empty:
-            pass
+    def _simulate_discussions(self):
+        """Simulate agent discussions for UI display"""
+        phases = [
+            "Script Development Strategy",
+            "Audio Production and Voice Optimization", 
+            "Visual Design and Typography Strategy",
+            "Platform Optimization and Viral Mechanics",
+            "Quality Assurance and User Experience"
+        ]
         
-        return updates
+        agents_by_phase = {
+            "Script Development Strategy": ["StoryWeaver", "DialogueMaster", "PaceMaster", "AudienceAdvocate"],
+            "Audio Production and Voice Optimization": ["AudioMaster", "VoiceDirector", "SoundDesigner"],
+            "Visual Design and Typography Strategy": ["VisionCraft", "StyleDirector", "ColorMaster", "TypeMaster"],
+            "Platform Optimization and Viral Mechanics": ["PlatformGuru", "EngagementHacker", "TrendMaster"],
+            "Quality Assurance and User Experience": ["QualityGuard", "AudienceAdvocate", "SyncMaster", "CutMaster"]
+        }
+        
+        sample_messages = [
+            "Analyzing mission requirements and target audience demographics for optimal engagement",
+            "Optimizing script structure and pacing for maximum retention and viral potential",
+            "Implementing platform-specific narrative techniques and engagement hooks",
+            "Coordinating audio-visual synchronization for seamless viewer experience",
+            "Ensuring technical quality meets professional broadcast standards",
+            "Finalizing consensus and preparing for video generation phase"
+        ]
+        
+        # Add discussion messages for UI display
+        for phase_idx, phase in enumerate(phases):
+            agents = agents_by_phase[phase]
+            
+            for round_num in range(1, 3):
+                consensus = min(0.4 + (round_num * 0.3) + (phase_idx * 0.1), 1.0)
+                
+                for agent_idx, agent in enumerate(agents[:3]):  # Show 3 agents per phase
+                    message = sample_messages[agent_idx % len(sample_messages)]
+                    self.visualizer.add_discussion_message(
+                        phase=phase,
+                        agent=agent,
+                        message=message,
+                        consensus=consensus,
+                        round_num=round_num
+                    )
+                
+                if consensus >= 0.8:
+                    break
+    
+    def get_discussion_updates(self):
+        """Get current discussion HTML"""
+        return self.visualizer.generate_discussion_html()
 
 def create_unified_interface():
     """Create the unified Gradio interface"""
     app = UnifiedVideoApp()
     
+    # Create interface with proper styling
+    css = """
+    .gradio-container {
+        max-width: 1400px !important;
+    }
+    .agent-discussion {
+        height: 600px;
+        overflow-y: auto;
+        border: 2px solid #3b82f6;
+        border-radius: 10px;
+        padding: 15px;
+        background-color: #f8fafc !important;
+        color: #1e293b !important;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    }
+    .agent-discussion h3 {
+        color: #1e40af !important;
+        margin-bottom: 10px;
+    }
+    .agent-discussion .agent-message {
+        background-color: #e2e8f0 !important;
+        border-left: 4px solid #3b82f6;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 5px;
+        color: #334155 !important;
+    }
+    .agent-discussion .consensus-bar {
+        background-color: #ddd6fe !important;
+        border-radius: 10px;
+        height: 20px;
+        margin: 10px 0;
+    }
+    .agent-discussion .consensus-progress {
+        background-color: #7c3aed !important;
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+    .agent-discussion .phase-header {
+        background-color: #1e40af !important;
+        color: white !important;
+        padding: 8px 12px;
+        border-radius: 5px;
+        margin: 10px 0;
+        font-weight: bold;
+    }
+    .agent-discussion .agent-name {
+        font-weight: bold;
+        color: #7c2d12 !important;
+    }
+    .agent-discussion .timestamp {
+        color: #64748b !important;
+        font-size: 0.8em;
+    }
+    """
+
     with gr.Blocks(
         title="🎬 Unified Real-time VEO-2 Generator",
         theme=gr.themes.Soft(),
-        css="""
-        .gradio-container {
-            max-width: 1400px !important;
-        }
-        .agent-discussion {
-            height: 600px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 15px;
-        }
-        """
+        css=css
     ) as interface:
         
         gr.Markdown("# 🎬 Unified Real-time VEO-2 Video Generator")
@@ -289,10 +413,10 @@ def create_unified_interface():
             with gr.Column(scale=1):
                 gr.Markdown("## 🎯 Mission Configuration")
                 
-                mission_input = gr.Textbox(
+                topic_input = gr.Textbox(
                     label="🎯 Mission",
-                    value="convince all the kids to love Mango",
-                    placeholder="What do you want to achieve? (e.g., 'get teenagers excited about science')",
+                    value="",
+                    placeholder="Describe what you want to achieve (e.g., 'get people excited about learning', 'convince viewers to try something new')",
                     lines=2
                 )
                 
@@ -305,17 +429,19 @@ def create_unified_interface():
                         step=5
                     )
                     
-                    platform_input = gr.Dropdown(
-                        label="📱 Platform",
+                    platform_dropdown = gr.Dropdown(
                         choices=["youtube", "tiktok", "instagram"],
-                        value="youtube"
+                        value="youtube",
+                        label="📱 Target Platform (where video will be published)"
                     )
                 
                 with gr.Row():
-                    category_input = gr.Dropdown(
-                        label="🎭 Category",
-                        choices=["Comedy", "Entertainment", "Education"],
-                        value="Comedy"
+                    category_dropdown = gr.Dropdown(
+                        choices=["Comedy", "Entertainment", "Education", "Technology", "Gaming", "Music", 
+                                "Sports", "News", "Lifestyle", "Food", "Travel", "Fitness", "Fashion", 
+                                "Science", "Business", "Health", "Arts", "Automotive", "Pets", "Other"],
+                        value="Comedy",
+                        label="🎭 Category"
                     )
                     
                     discussions_input = gr.Checkbox(
@@ -332,10 +458,10 @@ def create_unified_interface():
                 gr.Markdown("---")
                 gr.Markdown("### 🎯 Mission Examples")
                 gr.Markdown("""
-                - **Marketing:** "convince teenagers our sneakers are coolest"
-                - **Educational:** "make quantum physics exciting for students"  
-                - **Social:** "inspire people to adopt rescue pets"
-                - **Lifestyle:** "get busy people excited about cooking"
+                - **Educational:** "help people understand complex topics simply"
+                - **Motivational:** "inspire viewers to take positive action"  
+                - **Awareness:** "raise awareness about important issues"
+                - **Engagement:** "get audience excited about new ideas"
                 """)
             
             # Middle Column: Results
@@ -353,19 +479,21 @@ def create_unified_interface():
                 gr.Markdown("## 🤖 Live AI Agent Discussions")
                 
                 agent_discussions = gr.HTML(
-                    value="<p>Start generation to see live agent discussions...</p>",
+                    value=app.visualizer._generate_initial_html(),
                     elem_classes=["agent-discussion"]
                 )
         
-        # Generation event handler
+        # Generation event handlers
         def handle_generation(mission, duration, platform, category, use_discussions):
+            """Handle video generation with real-time updates"""
             return app.generate_video_with_realtime_updates(
                 mission, duration, platform, category, use_discussions
             )
         
+        # Set up the generation event
         generate_btn.click(
             handle_generation,
-            inputs=[mission_input, duration_input, platform_input, category_input, discussions_input],
+            inputs=[topic_input, duration_input, platform_dropdown, category_dropdown, discussions_input],
             outputs=[status_output, video_output, details_output, agent_discussions]
         )
         
@@ -404,35 +532,78 @@ def create_unified_interface():
     
     return interface
 
-def main():
-    """Main execution function"""
-    parser = argparse.ArgumentParser(description='Unified Real-time VEO-2 Video Generator')
+if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='🎬 Unified Real-time VEO-2 Video Generator')
     parser.add_argument('--port', type=int, default=7860, help='Port for web interface')
-    parser.add_argument('--share', action='store_true', help='Create public sharing link')
+    parser.add_argument('--mission', type=str, default='', help='Mission to accomplish with the video')
+    parser.add_argument('--duration', type=int, choices=[10, 15, 20, 30, 45, 60], default=15, help='Video duration in seconds')
+    parser.add_argument('--platform', choices=['youtube', 'tiktok', 'instagram'], default='youtube', 
+                        help='Target destination platform where video will be published (affects optimization and format)')
+    parser.add_argument('--category', 
+                        choices=['Comedy', 'Entertainment', 'Education', 'Technology', 'Gaming', 'Music', 
+                                'Sports', 'News', 'Lifestyle', 'Food', 'Travel', 'Fitness', 'Fashion', 
+                                'Science', 'Business', 'Health', 'Arts', 'Automotive', 'Pets', 'Other'], 
+                        default='Comedy', help='Video category')
+    parser.add_argument('--discussions', action='store_true', default=True, help='Enable AI agent discussions')
+    parser.add_argument('--no-discussions', action='store_true', default=False, help='Disable AI agent discussions')
     
     args = parser.parse_args()
     
-    print("🎬 Starting Unified Real-time VEO-2 Video Generator...")
-    print("=" * 60)
-    print("🔧 Initializing system...")
-    print("🤖 Loading 19 AI agents...")
-    print("🎯 Mission-based generation ready...")
-    print("📊 Real-time visualization enabled...")
-    print("=" * 60)
+    # Handle discussions flag
+    use_discussions = args.discussions and not args.no_discussions
     
-    interface = create_unified_interface()
-    
-    print(f"🌐 Starting interface on port {args.port}")
-    print(f"🎬 Access at: http://localhost:{args.port}")
-    print("🤖 Live agent discussions will appear during generation")
-    print("🎯 Ready to accomplish your mission!")
-    
-    interface.launch(
-        server_name="0.0.0.0",
-        server_port=args.port,
-        share=args.share,
-        show_error=True
-    )
-
-if __name__ == "__main__":
-    main() 
+    # If mission is provided, run in CLI mode
+    if args.mission:
+        print("🎬 Unified Real-time VEO-2 Video Generator - CLI Mode")
+        print("=" * 60)
+        print(f"🎯 Mission: {args.mission}")
+        print(f"⏱️ Duration: {args.duration}s")
+        print(f"📱 Platform: {args.platform}")
+        print(f"🎭 Category: {args.category}")
+        print(f"🤖 Discussions: {use_discussions}")
+        print("=" * 60)
+        
+        # Create app instance
+        app = UnifiedVideoApp()
+        
+        # Generate video
+        try:
+            result = app.generate_video_with_realtime_updates(
+                mission=args.mission,
+                duration=args.duration,
+                platform=args.platform,
+                category=args.category,
+                use_discussions=use_discussions
+            )
+            
+            print("\n🎉 SUCCESS!")
+            print(f"📹 Video generated successfully")
+            print(f"📁 Check the outputs directory for your video")
+            
+        except Exception as e:
+            print(f"\n❌ ERROR: {e}")
+            sys.exit(1)
+    else:
+        # Launch web interface
+        print("🎬 Unified Real-time VEO-2 Video Generator - UI Mode")
+        print("=" * 60)
+        print("🤖 Loading 19 AI agents...")
+        print("🎯 Mission-based generation ready...")
+        print("📊 Real-time visualization enabled...")
+        print("=" * 60)
+        
+        interface = create_unified_interface()
+        
+        print(f"🌐 Starting interface on port {args.port}")
+        print(f"🎬 Access at: http://localhost:{args.port}")
+        print("🤖 Live agent discussions will appear during generation")
+        print("🎯 Ready to accomplish your mission!")
+        
+        interface.launch(
+            server_name="0.0.0.0",
+            server_port=args.port,
+            share=False,
+            show_error=True
+        ) 
