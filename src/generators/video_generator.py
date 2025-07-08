@@ -4,7 +4,7 @@ Video generator using AI and video editing libraries with REAL VEO-2 integration
 import os
 import json
 from datetime import datetime
-from typing import List, Dict, Optional, Tuple, Any
+from typing import List, Dict, Optional, Tuple, Any, Union
 import random
 import time
 import google.generativeai as genai
@@ -489,13 +489,26 @@ class VideoGenerator:
             logger.error(f"❌ Video clip generation failed: {e}")
             raise
     
-    def _create_veo2_prompts(self, config: GeneratedVideoConfig, script: str) -> List[str]:
-        """Create VEO-2 prompts based on the video configuration and script"""
+    def _create_veo2_prompts(self, config: GeneratedVideoConfig, script: Union[str, dict]) -> List[str]:
+        """Create VEO-2 prompts based on topic and script content"""
         topic = config.topic
         style = config.visual_style
         
         # Extract actual content from script if available
-        script_lower = script.lower() if script else ""
+        script_content = ""
+        if isinstance(script, dict):
+            # Extract text content from dictionary script
+            if 'hook' in script and isinstance(script['hook'], dict) and 'text' in script['hook']:
+                script_content += script['hook']['text'] + " "
+            if 'segments' in script and isinstance(script['segments'], list):
+                for segment in script['segments']:
+                    if isinstance(segment, dict) and 'text' in segment:
+                        script_content += segment['text'] + " "
+            script_lower = script_content.lower()
+        elif isinstance(script, str):
+            script_lower = script.lower()
+        else:
+            script_lower = ""
         
         # Create prompts based on topic and script content
         if "persian" in topic.lower() or "goddess" in topic.lower():

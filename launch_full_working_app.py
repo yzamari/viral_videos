@@ -50,7 +50,7 @@ class FullWorkingVideoApp:
         logger.info(f"🔑 API Key: {self.api_key[:20]}...")
         logger.info(f"🏗️ Project: {self.project_id}")
     
-    def generate_video(self, topic: str, duration: int = 15, platform: str = "youtube", 
+    def generate_video(self, mission: str, duration: int = 15, platform: str = "youtube", 
                       category: str = "Comedy", use_discussions: bool = True) -> Dict[str, Any]:
         """
         Generate a complete video with all features using the enhanced orchestrator
@@ -72,7 +72,7 @@ class FullWorkingVideoApp:
             for subdir in subdirs:
                 os.makedirs(os.path.join(session_dir, subdir), exist_ok=True)
             
-            logger.info(f"🎯 Generating video: {topic}")
+            logger.info(f"🎯 Generating video: {mission}")
             logger.info(f"📁 Session: {session_dir}")
             logger.info(f"⏱️ Duration: {duration}s")
             logger.info(f"📱 Platform: {platform}")
@@ -97,7 +97,7 @@ class FullWorkingVideoApp:
             
             # Create configuration for the enhanced orchestrator
             config = GeneratedVideoConfig(
-                topic=topic,
+                topic=mission,
                 duration_seconds=duration,
                 target_platform=target_platform,
                 category=target_category,
@@ -106,7 +106,7 @@ class FullWorkingVideoApp:
                 target_audience="18-35 year olds interested in culture and content",
                 hook="You know what's actually amazing? This will blow your mind!",
                 main_content=[
-                    f"This topic about {topic} is incredibly fascinating",
+                    f"This topic about {mission} is incredibly fascinating",
                     "There are so many amazing details and stories",
                     "The depth and richness of this subject is incredible",
                     "Everyone needs to know about this amazing discovery"
@@ -153,7 +153,7 @@ class FullWorkingVideoApp:
             
             # This is the method that creates real VEO-2 videos and agent discussions
             video_result = orchestrator.generate_viral_video(
-                topic=topic,
+                mission=mission,
                 category=target_category,
                 platform=target_platform,
                 duration=duration,
@@ -559,10 +559,10 @@ class FullWorkingVideoApp:
         try:
             import gradio as gr
             
-            def generate_video_ui(topic, duration, platform, category, use_discussions):
+            def generate_video_ui(mission, duration, platform, category, use_discussions):
                 """UI wrapper for video generation"""
                 try:
-                    result = self.generate_video(topic, int(duration), platform, category, use_discussions)
+                    result = self.generate_video(mission, int(duration), platform, category, use_discussions)
                     
                     if result['success']:
                         details = f"📁 **Session:** {result['session_dir']}\n"
@@ -599,12 +599,12 @@ class FullWorkingVideoApp:
                 
                 with gr.Row():
                     with gr.Column(scale=1):
-                        gr.Markdown("## 🎯 Video Configuration")
+                        gr.Markdown("## 🎯 Mission Configuration")
                         
                         topic_input = gr.Textbox(
-                            label="📝 Video Topic",
-                            value="ancient Persian mythology is amazing and vibrant",
-                            placeholder="Enter your video topic...",
+                            label="🎯 Mission",
+                            value="convince all the kids to love Mango",
+                            placeholder="What do you want to achieve? (e.g., 'get teenagers excited about science', 'make healthy eating fun')",
                             lines=2
                         )
                         
@@ -712,8 +712,8 @@ class FullWorkingVideoApp:
 def main():
     """Main execution function with all CLI parameters"""
     parser = argparse.ArgumentParser(description='Enhanced VEO-2 Video Generator')
-    parser.add_argument('--topic', default='ancient Persian mythology is amazing and vibrant', 
-                       help='Video topic')
+    parser.add_argument('--mission', default='convince all the kids to love Mango', 
+                       help='Mission to accomplish with the video')
     parser.add_argument('--duration', type=int, choices=[10, 15, 20, 30, 45, 60], default=15, 
                        help='Video duration in seconds (10|30|60)')
     parser.add_argument('--platform', choices=['youtube', 'tiktok', 'instagram'], default='youtube',
@@ -771,14 +771,14 @@ def main():
             logger.error("❌ Failed to launch UI")
     else:
         logger.info("🎬 Generating video via command line...")
-        print(f"🎯 Topic: {args.topic}")
+        print(f"🎯 Mission: {args.mission}")
         print(f"⏱️ Duration: {args.duration}s")
         print(f"📱 Platform: {args.platform}")
         print(f"🎭 Category: {args.category}")
         print(f"🤖 Discussions: {use_discussions}")
         
         result = app.generate_video(
-            topic=args.topic,
+            mission=args.mission,
             duration=args.duration,
             platform=args.platform,
             category=args.category,

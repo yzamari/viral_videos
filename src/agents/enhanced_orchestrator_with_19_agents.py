@@ -73,14 +73,14 @@ class EnhancedOrchestratorWith19Agents:
             }
         )
     
-    def generate_viral_video(self, topic: str, category: VideoCategory, 
+    def generate_viral_video(self, mission: str, category: VideoCategory, 
                            platform: Platform, duration: int = 30,
                            discussion_mode: bool = True) -> GeneratedVideo:
         """
         Generate viral video using 19 specialized AI agents
         
         Args:
-            topic: Video topic
+            mission: Mission to accomplish with the video
             category: Video category
             platform: Target platform
             duration: Video duration in seconds
@@ -90,13 +90,13 @@ class EnhancedOrchestratorWith19Agents:
             GeneratedVideo with professional quality
         """
         logger.info(f"🎬 Starting PROFESSIONAL viral video generation with 19 agents")
-        logger.info(f"📋 Topic: {topic}")
+        logger.info(f"🎯 Mission: {mission}")
         logger.info(f"🎯 Platform: {platform.value}, Category: {category.value}")
         logger.info(f"⏱️ Duration: {duration}s, Discussions: {discussion_mode}")
         
         # Create context for discussions
         context = {
-            'topic': topic,
+            'mission': mission,
             'category': category.value,
             'platform': platform.value,
             'duration': duration,
@@ -320,12 +320,12 @@ class EnhancedOrchestratorWith19Agents:
             duration_seconds=context['duration'],
             
             # Script decisions
-            topic=context['topic'],
+            topic=context['mission'],
             style='professional comedy',
             tone='comedic absurdist',
             target_audience='18-34 comedy enthusiasts',
-            hook=f"Professional comedic take on {context['topic']}",
-            main_content=self._extract_main_content_from_actions(script_actions, context['topic']),
+            hook=f"Professional comedic take on {context['mission']}",
+            main_content=self._extract_main_content_from_actions(script_actions, context['mission']),
             call_to_action='Follow for more comedy content',
             
             # Visual decisions
@@ -359,7 +359,7 @@ class EnhancedOrchestratorWith19Agents:
                 return first_decision.get(key, default)
         return default
     
-    def _extract_main_content_from_actions(self, script_actions: List[str], topic: str) -> List[str]:
+    def _extract_main_content_from_actions(self, script_actions: List[str], mission: str) -> List[str]:
         """Extract main content from script actions"""
         content = []
         for action in script_actions[:4]:  # Take first 4 actions
@@ -372,11 +372,11 @@ class EnhancedOrchestratorWith19Agents:
         if not content:
             # Fallback content
             content = [
-                f"Epic comedic introduction to {topic}",
-                f"Absurd visual reveal with {topic}",
-                f"Hilarious character reactions to {topic}",
+                f"Epic comedic introduction to {mission}",
+                f"Absurd visual reveal with {mission}",
+                f"Hilarious character reactions to {mission}",
                 f"Comedic climax and memorable ending"
-        ]
+            ]
         
         return content
     
@@ -427,15 +427,15 @@ class EnhancedOrchestratorWith19Agents:
             target_platform=Platform(context['platform']),
             category=VideoCategory(context['category']),
             duration_seconds=context['duration'],
-            topic=context['topic'],
+            topic=context['mission'],
             style="professional",
             tone="engaging",
             target_audience="18-34 professionals",
-            hook=f"Professional insight about {context['topic']}",
+            hook=f"Professional insight about {context['mission']}",
             main_content=[
-                f"Introduction to {context['topic']}",
-                f"Key points about {context['topic']}",
-                f"Analysis of {context['topic']}",
+                f"Introduction to {context['mission']}",
+                f"Key points about {context['mission']}",
+                f"Analysis of {context['mission']}",
                 f"Conclusion and call to action"
             ],
             call_to_action="Follow for more professional content",
@@ -455,7 +455,7 @@ class EnhancedOrchestratorWith19Agents:
         )
 
 
-def create_enhanced_orchestrator_with_19_agents(api_key: str, topic: str, category: VideoCategory,
+def create_enhanced_orchestrator_with_19_agents(api_key: str, mission: str, category: VideoCategory,
                                                platform: Platform, duration: int = 30,
                                                discussion_mode: bool = True, session_id: str = None,
                                                use_vertex_ai: bool = True, vertex_project_id: str = None,
@@ -466,7 +466,7 @@ def create_enhanced_orchestrator_with_19_agents(api_key: str, topic: str, catego
     
     Args:
         api_key: Google API key
-        topic: Video topic
+        mission: Mission to accomplish with the video
         category: Video category
         platform: Target platform
         duration: Video duration
@@ -486,7 +486,7 @@ def create_enhanced_orchestrator_with_19_agents(api_key: str, topic: str, catego
         session_id = str(uuid.uuid4())[:8]
     
     logger.info(f"🚀 Creating Enhanced Orchestrator with 19 AI Agents")
-    logger.info(f"🎯 Professional video generation for: {topic}")
+    logger.info(f"🎯 Professional video generation for mission: {mission}")
     
     orchestrator = EnhancedOrchestratorWith19Agents(
         api_key=api_key,

@@ -156,17 +156,25 @@ class ComprehensiveLogger:
         logger.info(f"📊 Comprehensive logging initialized for session {session_id}")
         logger.info(f"📁 Logs directory: {self.logs_dir}")
     
-    def log_script_generation(self, script_type: str, content: str, model_used: str, 
+    def log_script_generation(self, script_type: str, content: Union[str, dict], model_used: str, 
                             generation_time: float, topic: str, platform: str, 
                             category: str) -> None:
         """Log script generation details"""
+        # Handle both string and dictionary content
+        if isinstance(content, dict):
+            content_str = json.dumps(content, indent=2)
+            word_count = len(content_str.split())
+        else:
+            content_str = str(content)
+            word_count = len(content_str.split())
+        
         entry = ScriptLogEntry(
             timestamp=datetime.now().isoformat(),
             script_type=script_type,
-            content=content,
-            character_count=len(content),
-            word_count=len(content.split()),
-            estimated_duration=len(content.split()) * 0.5,  # Rough estimate
+            content=content_str,
+            character_count=len(content_str),
+            word_count=word_count,
+            estimated_duration=word_count * 0.5,  # Rough estimate
             model_used=model_used,
             generation_time=generation_time,
             topic=topic,
@@ -177,7 +185,7 @@ class ComprehensiveLogger:
         self.script_logs.append(entry)
         self._save_script_logs()
         
-        logger.info(f"📝 Script logged: {script_type} ({len(content)} chars, {generation_time:.2f}s)")
+        logger.info(f"📝 Script logged: {script_type} ({len(content_str)} chars, {generation_time:.2f}s)")
     
     def log_audio_generation(self, audio_type: str, file_path: str, file_size_mb: float,
                            duration: float, voice_settings: Dict[str, Any], 
