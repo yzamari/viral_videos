@@ -12,7 +12,7 @@ class EditorAgent:
 
     def edit_video(self, video_clips, audio_track):
         self.monitoring_service.log("EditorAgent: Editing final video.")
-        
+
         try:
             # Create video clip objects
             clips = [VideoFileClip(clip) for clip in video_clips]
@@ -29,7 +29,8 @@ class EditorAgent:
 
             self.monitoring_service.log(f"EditorAgent: Final video saved to {final_video_path}")
             return final_video_path
-            
+
         except Exception as e:
             self.monitoring_service.log(f"EditorAgent: Error editing video: {e}")
-            return None 
+            return None
+

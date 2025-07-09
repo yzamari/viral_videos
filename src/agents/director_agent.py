@@ -20,4 +20,5 @@ class DirectorAgent:
         }
         self.file_service.save_json("storyboard.json", storyboard)
         self.monitoring_service.log("DirectorAgent: Storyboard creation complete.")
-        return storyboard 
+        return storyboard
+

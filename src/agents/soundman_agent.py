@@ -12,9 +12,9 @@ class SoundmanAgent:
 
     def generate_audio(self, script):
         self.monitoring_service.log("SoundmanAgent: Generating audio track.")
-        
+
         text_to_speak = ". ".join([scene["description"] for scene in script["scenes"]])
-        
+
         try:
             tts = gTTS(text=text_to_speak, lang='en')
             audio_path = os.path.join(self.file_service.session_path, "audio.mp3")
@@ -23,4 +23,5 @@ class SoundmanAgent:
             return audio_path
         except Exception as e:
             self.monitoring_service.log(f"SoundmanAgent: Error generating audio: {e}")
-            return None 
+            return None
+

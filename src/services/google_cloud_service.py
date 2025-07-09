@@ -14,4 +14,5 @@ class GoogleCloudService:
     def get_veo_client(self):
         self.monitoring_service.log("GoogleCloudService: Initializing VEO client.")
         # Placeholder for VEO client initialization
-        return None 
+        return None
+

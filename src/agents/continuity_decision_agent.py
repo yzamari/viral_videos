@@ -10,17 +10,18 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+
 class ContinuityDecisionAgent:
     """
     AI Agent specialized in analyzing video content and deciding optimal frame continuity strategy
     """
-    
+
     def __init__(self, api_key: str):
         """Initialize the Continuity Decision Agent"""
         self.api_key = api_key
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        
+
         # Agent personality and expertise
         self.agent_profile = {
             'name': 'VisualFlow',
@@ -40,29 +41,29 @@ class ContinuityDecisionAgent:
                 'Visual style coherence'
             ]
         }
-    
-    def analyze_frame_continuity_need(self, 
-                                    topic: str, 
-                                    category: str, 
-                                    platform: str, 
-                                    duration: int,
-                                    style: str = "viral") -> Dict[str, Any]:
+
+    def analyze_frame_continuity_need(self,
+                                      topic: str,
+                                      category: str,
+                                      platform: str,
+                                      duration: int,
+                                      style: str = "viral") -> Dict[str, Any]:
         """
         Analyze whether frame continuity would enhance the video
-        
+
         Args:
             topic: Video topic/content
             category: Video category (Comedy, Educational, etc.)
             platform: Target platform (youtube, tiktok, etc.)
             duration: Video duration in seconds
             style: Video style preference
-            
+
         Returns:
             Dictionary with continuity decision and reasoning
         """
-        
+
         logger.info(f"🎬 VisualFlow Agent analyzing frame continuity for: {topic}")
-        
+
         try:
             # Create comprehensive analysis prompt
             analysis_prompt = f"""
@@ -126,7 +127,7 @@ Respond in JSON format:
 
             # Get AI analysis
             response = self.model.generate_content(analysis_prompt)
-            
+
             # Parse response
             import json
             try:
@@ -136,9 +137,9 @@ Respond in JSON format:
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
                     response_text = response_text[3:-3]
-                
+
                 decision_data = json.loads(response_text)
-                
+
                 # Add metadata
                 decision_data.update({
                     'agent_name': 'VisualFlow',
@@ -151,43 +152,43 @@ Respond in JSON format:
                         'style': style
                     }
                 })
-                
+
                 # Log decision
                 continuity_status = "✅ ENABLED" if decision_data['use_frame_continuity'] else "❌ DISABLED"
                 logger.info(f"🎬 VisualFlow Decision: Frame Continuity {continuity_status}")
                 logger.info(f"   Confidence: {decision_data['confidence']:.2f}")
                 logger.info(f"   Reason: {decision_data['primary_reason']}")
-                
+
                 return decision_data
-                
+
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse VisualFlow response: {e}")
                 # Fallback decision based on heuristics
                 return self._make_fallback_decision(topic, category, platform, duration)
-                
+
         except Exception as e:
             logger.error(f"VisualFlow analysis failed: {e}")
             return self._make_fallback_decision(topic, category, platform, duration)
-    
+
     def _make_fallback_decision(self, topic: str, category: str, platform: str, duration: int) -> Dict[str, Any]:
         """
         Make a fallback decision using heuristics when AI analysis fails
         """
-        
+
         logger.info("🔄 Using fallback heuristics for frame continuity decision")
-        
+
         # Heuristic decision logic
         use_continuity = True
         confidence = 0.6
         reason = "Default continuity enabled"
-        
+
         # Platform-based adjustments
         if platform.lower() == 'tiktok':
             if duration <= 15:
                 use_continuity = False
                 reason = "TikTok short videos benefit from jump cuts"
                 confidence = 0.8
-        
+
         # Category-based adjustments
         if category.lower() == 'comedy':
             if duration <= 20:
@@ -198,7 +199,7 @@ Respond in JSON format:
             use_continuity = True
             reason = "Educational content benefits from visual flow"
             confidence = 0.8
-        
+
         # Duration-based adjustments
         if duration <= 10:
             use_continuity = False
@@ -208,7 +209,7 @@ Respond in JSON format:
             use_continuity = True
             reason = "Longer videos benefit from continuity"
             confidence = 0.8
-        
+
         return {
             'use_frame_continuity': use_continuity,
             'confidence': confidence,
@@ -228,7 +229,7 @@ Respond in JSON format:
                 'style': 'viral'
             }
         }
-    
+
     def get_agent_summary(self) -> Dict[str, Any]:
         """Get summary of this agent's capabilities"""
         return {
@@ -237,4 +238,5 @@ Respond in JSON format:
             'expertise': self.agent_profile['expertise'],
             'decision_factors': self.agent_profile['decision_factors'],
             'primary_function': 'Analyze video content and decide optimal frame continuity strategy'
-        } 
+        }
+

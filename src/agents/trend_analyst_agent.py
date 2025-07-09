@@ -18,7 +18,7 @@ class TrendAnalystAgent:
 
     def analyze(self, topic):
         self.monitoring_service.log(f"TrendAnalystAgent: Analyzing trends for topic - {topic}")
-        
+
         if self.youtube:
             self.monitoring_service.log(f"TrendAnalystAgent: Performing topic search on YouTube for '{topic}'.")
             try:
@@ -31,11 +31,12 @@ class TrendAnalystAgent:
                     maxResults=10
                 )
                 search_response = search_request.execute()
-                
+
                 video_ids = [item['id']['videoId'] for item in search_response.get("items", [])]
 
                 if not video_ids:
-                    self.monitoring_service.log(f"TrendAnalystAgent: No videos found for topic '{topic}'. Using mock data.")
+                    self.monitoring_service.log(
+                        f"TrendAnalystAgent: No videos found for topic '{topic}'. Using mock data.")
                     return self._get_mock_data(topic)
 
                 # Get details for the found videos
@@ -45,7 +46,12 @@ class TrendAnalystAgent:
                 )
                 video_response = video_request.execute()
 
-                trends = {"topic": topic, "youtube_trending": video_response.get("items", []), "source": "YouTube Search"}
+                trends = {
+                    "topic": topic,
+                    "youtube_trending": video_response.get(
+                        "items",
+                        []),
+                    "source": "YouTube Search"}
             except Exception as e:
                 self.monitoring_service.log(f"TrendAnalystAgent: Error fetching from YouTube API: {e}")
                 trends = self._get_mock_data(topic)
@@ -58,4 +64,5 @@ class TrendAnalystAgent:
         return trends
 
     def _get_mock_data(self, topic):
-        return {"topic": topic, "related_keywords": ["viral", "video", "trends"], "source": "Mock Data"} 
+        return {"topic": topic, "related_keywords": ["viral", "video", "trends"], "source": "Mock Data"}
+

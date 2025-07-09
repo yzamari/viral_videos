@@ -17,12 +17,12 @@ class VideoGeneratorAgent:
 
     def generate_clips(self, storyboard):
         self.monitoring_service.log("VideoGeneratorAgent: Generating video clips.")
-        
+
         video_clips = []
         video_id = str(uuid.uuid4())
-        
+
         prompts = [scene["description"] for scene in storyboard["scenes"]]
-        
+
         generated_clips = self.video_client.generate_batch_clips(
             prompts=[{"description": p} for p in prompts],
             config={"duration_seconds": 15, "platform": "youtube"},
@@ -34,4 +34,5 @@ class VideoGeneratorAgent:
 
         self.file_service.save_json("video_clips.json", {"clips": video_clips})
         self.monitoring_service.log("VideoGeneratorAgent: Video clip generation complete.")
-        return video_clips 
+        return video_clips
+

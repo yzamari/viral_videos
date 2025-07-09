@@ -1,10 +1,9 @@
+from src.agents.orchestrator_agent import OrchestratorAgent
 import sys
 import os
 
 # Add the project root to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from src.agents.orchestrator_agent import OrchestratorAgent
 
 
 def main():
@@ -17,4 +16,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()
+

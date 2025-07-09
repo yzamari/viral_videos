@@ -18,16 +18,15 @@ class FileService:
     def create_session_folder():
         """Create session folder using centralized session manager"""
         session_id = SessionManager.create_session_id()
-        session_path = SessionManager.create_session_folder(session_id)
         return f"session_{session_id}"  # Return with prefix for backward compatibility
 
     def setup_session_directories(self, session_id: str) -> Dict[str, str]:
         """Setup session directories and ensure they contain data"""
         session_dir = SessionManager.get_session_path(session_id)
-        
+
         # Create main session directory
         os.makedirs(session_dir, exist_ok=True)
-        
+
         # Define all required subdirectories
         directories = {
             'session_dir': session_dir,
@@ -38,26 +37,26 @@ class FileService:
             'scripts': os.path.join(session_dir, 'scripts'),
             'analysis': os.path.join(session_dir, 'analysis')
         }
-        
+
         # Only create directories that will actually be used
         essential_dirs = ['audio', 'veo2_clips', 'comprehensive_logs', 'agent_discussions', 'scripts']
         for dir_name in essential_dirs:
             os.makedirs(directories[dir_name], exist_ok=True)
-            
+
             # Create placeholder files to prevent empty directories
             placeholder_file = os.path.join(directories[dir_name], '.gitkeep')
             if not os.path.exists(placeholder_file):
                 with open(placeholder_file, 'w') as f:
                     f.write(f"# {dir_name.title()} directory for session {session_id}\n")
-        
+
         logger.info(f"📁 Session directories setup: session_{session_id}")
         return directories
-    
+
     def save_session_metadata(self, session_id: str, config: Dict, start_time: datetime) -> str:
         """Save comprehensive session metadata"""
         session_dir = SessionManager.get_session_path(session_id)
         metadata_file = os.path.join(session_dir, 'session_metadata.json')
-        
+
         metadata = {
             'session_id': session_id,
             'start_time': start_time.isoformat(),
@@ -70,7 +69,7 @@ class FileService:
                 'tone': config.get('tone', '')
             },
             'directories_created': [
-                'audio', 'veo2_clips', 'comprehensive_logs', 
+                'audio', 'veo2_clips', 'comprehensive_logs',
                 'agent_discussions', 'scripts', 'analysis'
             ],
             'expected_outputs': [
@@ -83,18 +82,18 @@ class FileService:
                 'scripts/*.txt'
             ]
         }
-        
+
         with open(metadata_file, 'w', encoding='utf-8') as f:
             json.dump(metadata, f, indent=2, ensure_ascii=False)
-        
+
         logger.info(f"📄 Session metadata saved: {metadata_file}")
         return metadata_file
-    
+
     def cleanup_empty_directories(self, session_id: str) -> int:
         """Remove empty directories and log what was cleaned up"""
         session_dir = SessionManager.get_session_path(session_id)
         cleaned_count = 0
-        
+
         # Walk through all subdirectories
         for root, dirs, files in os.walk(session_dir, topdown=False):
             for dir_name in dirs:
@@ -112,10 +111,10 @@ class FileService:
                             logger.info(f"🗑️ Removed empty directory: {dir_path}")
                 except OSError:
                     pass  # Directory not empty or permission issue
-        
+
         if cleaned_count > 0:
             logger.info(f"🧹 Cleaned up {cleaned_count} empty directories from session {session_id}")
-        
+
         return cleaned_count
 
     def save_json(self, filename, data):
@@ -125,8 +124,8 @@ class FileService:
     @staticmethod
     def save_video(session_id, video_data):
         # Placeholder for saving video data
-        session_path = SessionManager.get_session_path(session_id)
         video_path = os.path.join(session_path, "final_video.mp4")
         with open(video_path, "w") as f:
             f.write("video data")
-        return video_path 
+        return video_path
+

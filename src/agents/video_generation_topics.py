@@ -5,9 +5,10 @@ Video Generation Topics for Enhanced Multi-Agent Discussions
 from typing import Dict, Any
 from .enhanced_multi_agent_discussion import DiscussionTopic
 
+
 class VideoGenerationTopics:
     """Pre-defined discussion topics for video generation phases"""
-    
+
     @staticmethod
     def script_optimization(context: Dict[str, Any]) -> DiscussionTopic:
         """Script content and structure optimization topic"""
@@ -18,7 +19,7 @@ class VideoGenerationTopics:
             context=context,
             required_decisions=[
                 "narrative_structure",
-                "content_pacing", 
+                "content_pacing",
                 "viral_hooks",
                 "audience_engagement",
                 "platform_optimization"
@@ -26,7 +27,7 @@ class VideoGenerationTopics:
             max_rounds=5,
             min_consensus=0.7
         )
-    
+
     @staticmethod
     def visual_strategy(context: Dict[str, Any]) -> DiscussionTopic:
         """Visual style and video generation strategy topic"""
@@ -45,7 +46,7 @@ class VideoGenerationTopics:
             max_rounds=5,
             min_consensus=0.7
         )
-    
+
     @staticmethod
     def audio_sync(context: Dict[str, Any]) -> DiscussionTopic:
         """Audio generation and synchronization strategy topic"""
@@ -64,12 +65,12 @@ class VideoGenerationTopics:
             max_rounds=5,
             min_consensus=0.7
         )
-    
+
     @staticmethod
     def audio_synchronization(context: Dict[str, Any]) -> DiscussionTopic:
         """Audio generation and synchronization strategy topic (alias)"""
         return VideoGenerationTopics.audio_sync(context)
-    
+
     @staticmethod
     def final_assembly(context: Dict[str, Any]) -> DiscussionTopic:
         """Final video assembly strategy topic"""
@@ -87,4 +88,5 @@ class VideoGenerationTopics:
             ],
             max_rounds=3,
             min_consensus=0.8
-        ) 
+        )
+

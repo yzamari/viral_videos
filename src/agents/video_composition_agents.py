@@ -11,17 +11,18 @@ import json
 
 logger = logging.getLogger(__name__)
 
+
 class VideoStructureAgent:
     """
     AI Agent specialized in video structure and clip composition strategy
     Decides how to break down video into segments with different continuity approaches
     """
-    
+
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        
+
         self.agent_profile = {
             'name': 'StructureMaster',
             'role': 'Video Structure Strategist',
@@ -33,14 +34,14 @@ class VideoStructureAgent:
                 'Platform-specific pacing'
             ]
         }
-    
-    def analyze_video_structure(self, topic: str, category: str, platform: str, 
-                              total_duration: int, style: str = "viral") -> Dict[str, Any]:
+
+    def analyze_video_structure(self, topic: str, category: str, platform: str,
+                                total_duration: int, style: str = "viral") -> Dict[str, Any]:
         """
         Analyze and decide optimal video structure with mixed continuity approaches
         """
         logger.info(f"🏗️ StructureMaster analyzing video structure for: {topic}")
-        
+
         try:
             analysis_prompt = f"""
 You are StructureMaster, an expert AI agent specializing in video structure and composition strategy.
@@ -106,16 +107,16 @@ Respond in JSON format:
 """
 
             response = self.model.generate_content(analysis_prompt)
-            
+
             try:
                 response_text = response.text.strip()
                 if response_text.startswith('```json'):
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
                     response_text = response_text[3:-3]
-                
+
                 structure_data = json.loads(response_text)
-                
+
                 structure_data.update({
                     'agent_name': 'StructureMaster',
                     'analysis_timestamp': datetime.now().isoformat(),
@@ -127,23 +128,23 @@ Respond in JSON format:
                         'style': style
                     }
                 })
-                
+
                 logger.info(f"🏗️ StructureMaster Decision: {structure_data['total_segments']} segments")
                 logger.info(f"   Strategy: {structure_data['structure_strategy']}")
-                
+
                 return structure_data
-                
+
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse StructureMaster response: {e}")
                 return self._create_fallback_structure(total_duration)
-                
+
         except Exception as e:
             logger.error(f"StructureMaster analysis failed: {e}")
             return self._create_fallback_structure(total_duration)
-    
+
     def _create_fallback_structure(self, total_duration: int) -> Dict[str, Any]:
         """Create fallback structure when AI analysis fails"""
-        
+
         # Simple 3-segment structure
         segments = []
         if total_duration <= 15:
@@ -205,28 +206,30 @@ Respond in JSON format:
                     "narrative_function": "Conclusion"
                 }
             ]
-        
-        return {
-            'total_segments': len(segments),
-            'structure_strategy': 'Fallback balanced structure',
-            'segments': segments,
-            'continuity_groups': [{'group_id': 1, 'segments': [2], 'total_duration': segments[1]['duration'], 'flow_strategy': 'Continuous flow'}] if len(segments) > 2 else [],
-            'engagement_strategy': 'Balanced pacing with hook and resolution',
-            'platform_optimization': 'Generic optimization',
-            'agent_name': 'StructureMaster (Fallback)',
-            'analysis_timestamp': datetime.now().isoformat()
-        }
+
+        return {'total_segments': len(segments),
+                'structure_strategy': 'Fallback balanced structure',
+                'segments': segments,
+                'continuity_groups': [{'group_id': 1,
+                                       'segments': [2],
+                                       'total_duration': segments[1]['duration'],
+                                       'flow_strategy': 'Continuous flow'}] if len(segments) > 2 else [],
+                'engagement_strategy': 'Balanced pacing with hook and resolution',
+                'platform_optimization': 'Generic optimization',
+                'agent_name': 'StructureMaster (Fallback)',
+                'analysis_timestamp': datetime.now().isoformat()}
+
 
 class ClipTimingAgent:
     """
     AI Agent specialized in determining optimal timing for individual clips
     """
-    
+
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        
+
         self.agent_profile = {
             'name': 'TimingMaster',
             'role': 'Clip Timing Specialist',
@@ -238,14 +241,14 @@ class ClipTimingAgent:
                 'Narrative pacing control'
             ]
         }
-    
-    def analyze_clip_timings(self, video_structure: Dict[str, Any], 
-                           content_details: Dict[str, Any]) -> Dict[str, Any]:
+
+    def analyze_clip_timings(self, video_structure: Dict[str, Any],
+                             content_details: Dict[str, Any]) -> Dict[str, Any]:
         """
         Analyze and decide optimal timing for each individual clip
         """
         logger.info(f"⏱️ TimingMaster analyzing clip timings for {video_structure['total_segments']} segments")
-        
+
         try:
             timing_prompt = f"""
 You are TimingMaster, an expert AI agent specializing in clip timing and pacing optimization.
@@ -298,46 +301,46 @@ Respond in JSON format:
 """
 
             response = self.model.generate_content(timing_prompt)
-            
+
             try:
                 response_text = response.text.strip()
                 if response_text.startswith('```json'):
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
                     response_text = response_text[3:-3]
-                
+
                 timing_data = json.loads(response_text)
-                
+
                 timing_data.update({
                     'agent_name': 'TimingMaster',
                     'analysis_timestamp': datetime.now().isoformat()
                 })
-                
+
                 logger.info(f"⏱️ TimingMaster Decision: {timing_data['total_clips']} clips")
                 logger.info(f"   Strategy: {timing_data['timing_strategy']}")
-                
+
                 return timing_data
-                
+
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse TimingMaster response: {e}")
                 return self._create_fallback_timing(video_structure)
-                
+
         except Exception as e:
             logger.error(f"TimingMaster analysis failed: {e}")
             return self._create_fallback_timing(video_structure)
-    
+
     def _create_fallback_timing(self, video_structure: Dict[str, Any]) -> Dict[str, Any]:
         """Create fallback timing when AI analysis fails"""
-        
+
         clips = []
         clip_id = 1
         current_time = 0
-        
+
         for segment in video_structure['segments']:
             clip_count = segment['clip_count']
             segment_duration = segment['duration']
             clip_duration = segment_duration / clip_count
-            
+
             for i in range(clip_count):
                 clips.append({
                     "clip_id": clip_id,
@@ -351,7 +354,7 @@ Respond in JSON format:
                 })
                 clip_id += 1
                 current_time += clip_duration
-        
+
         return {
             'timing_strategy': 'Fallback equal distribution',
             'total_clips': len(clips),
@@ -362,16 +365,17 @@ Respond in JSON format:
             'analysis_timestamp': datetime.now().isoformat()
         }
 
+
 class VisualElementsAgent:
     """
     AI Agent specialized in visual elements design (headers, titles, subtitles)
     """
-    
+
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        
+
         self.agent_profile = {
             'name': 'VisualDesigner',
             'role': 'Visual Elements Specialist',
@@ -383,14 +387,14 @@ class VisualElementsAgent:
                 'Accessibility and readability'
             ]
         }
-    
-    def design_visual_elements(self, video_structure: Dict[str, Any], 
-                             content_theme: str, platform: str) -> Dict[str, Any]:
+
+    def design_visual_elements(self, video_structure: Dict[str, Any],
+                               content_theme: str, platform: str) -> Dict[str, Any]:
         """
         Design headers, titles, subtitles with optimal positioning and styling
         """
         logger.info(f"🎨 VisualDesigner designing visual elements for {platform}")
-        
+
         try:
             design_prompt = f"""
 You are VisualDesigner, an expert AI agent specializing in visual elements and typography design.
@@ -432,7 +436,7 @@ Respond in JSON format:
     "design_strategy": "overall visual approach",
     "color_palette": {{
         "primary": "#hex",
-        "secondary": "#hex", 
+        "secondary": "#hex",
         "accent": "#hex",
         "text": "#hex",
         "background": "#hex"
@@ -467,42 +471,42 @@ Respond in JSON format:
 """
 
             response = self.model.generate_content(design_prompt)
-            
+
             try:
                 response_text = response.text.strip()
                 if response_text.startswith('```json'):
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
                     response_text = response_text[3:-3]
-                
+
                 design_data = json.loads(response_text)
-                
+
                 design_data.update({
                     'agent_name': 'VisualDesigner',
                     'analysis_timestamp': datetime.now().isoformat()
                 })
-                
+
                 logger.info(f"🎨 VisualDesigner Decision: {len(design_data['text_elements'])} text elements")
                 logger.info(f"   Strategy: {design_data['design_strategy']}")
-                
+
                 return design_data
-                
+
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse VisualDesigner response: {e}")
                 return self._create_fallback_design(platform)
-                
+
         except Exception as e:
             logger.error(f"VisualDesigner analysis failed: {e}")
             return self._create_fallback_design(platform)
-    
+
     def _create_fallback_design(self, platform: str) -> Dict[str, Any]:
         """Create fallback design when AI analysis fails"""
-        
+
         # Platform-specific defaults
         if platform.lower() == 'tiktok':
             color_palette = {
                 "primary": "#FF0050",
-                "secondary": "#00F2EA", 
+                "secondary": "#00F2EA",
                 "accent": "#FFFF00",
                 "text": "#FFFFFF",
                 "background": "#000000"
@@ -523,7 +527,7 @@ Respond in JSON format:
                 "text": "#FFFFFF",
                 "background": "#000000"
             }
-        
+
         return {
             'design_strategy': f'Fallback design optimized for {platform}',
             'color_palette': color_palette,
@@ -557,16 +561,17 @@ Respond in JSON format:
             'analysis_timestamp': datetime.now().isoformat()
         }
 
+
 class MediaTypeAgent:
     """
     AI Agent specialized in deciding between VEO2 video clips vs static images
     """
-    
+
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        
+
         self.agent_profile = {
             'name': 'MediaStrategist',
             'role': 'Media Type Decision Specialist',
@@ -578,14 +583,14 @@ class MediaTypeAgent:
                 'Platform media preferences'
             ]
         }
-    
-    def analyze_media_types(self, clip_plan: Dict[str, Any], 
-                          content_analysis: Dict[str, Any]) -> Dict[str, Any]:
+
+    def analyze_media_types(self, clip_plan: Dict[str, Any],
+                            content_analysis: Dict[str, Any]) -> Dict[str, Any]:
         """
         Decide whether each clip should be VEO2 video or static images
         """
         logger.info(f"📱 MediaStrategist analyzing media types for {clip_plan['total_clips']} clips")
-        
+
         try:
             media_prompt = f"""
 You are MediaStrategist, an expert AI agent specializing in media type optimization.
@@ -647,42 +652,45 @@ Respond in JSON format:
 """
 
             response = self.model.generate_content(media_prompt)
-            
+
             try:
                 response_text = response.text.strip()
                 if response_text.startswith('```json'):
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
                     response_text = response_text[3:-3]
-                
+
                 media_data = json.loads(response_text)
-                
+
                 media_data.update({
                     'agent_name': 'MediaStrategist',
                     'analysis_timestamp': datetime.now().isoformat()
                 })
-                
+
                 allocation = media_data['resource_allocation']
-                logger.info(f"📱 MediaStrategist Decision: {allocation['veo2_clips']} VEO2 clips, {allocation['static_images']} images")
+                logger.info(
+                    f"📱 MediaStrategist Decision: {
+                        allocation['veo2_clips']} VEO2 clips, {
+                        allocation['static_images']} images")
                 logger.info(f"   Strategy: {media_data['media_strategy']}")
-                
+
                 return media_data
-                
+
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse MediaStrategist response: {e}")
                 return self._create_fallback_media_plan(clip_plan)
-                
+
         except Exception as e:
             logger.error(f"MediaStrategist analysis failed: {e}")
             return self._create_fallback_media_plan(clip_plan)
-    
+
     def _create_fallback_media_plan(self, clip_plan: Dict[str, Any]) -> Dict[str, Any]:
         """Create fallback media plan when AI analysis fails"""
-        
+
         clip_decisions = []
         veo2_count = 0
         image_count = 0
-        
+
         for clip in clip_plan['clips']:
             # Default: use VEO2 for most clips, images for very short ones
             if clip['duration'] < 3 and clip['purpose'] in ['transition', 'text']:
@@ -691,7 +699,7 @@ Respond in JSON format:
             else:
                 media_type = 'veo2_video'
                 veo2_count += 1
-            
+
             clip_decisions.append({
                 "clip_id": clip['clip_id'],
                 "media_type": media_type,
@@ -705,7 +713,7 @@ Respond in JSON format:
                     "effects": []
                 }
             })
-        
+
         return {
             'media_strategy': 'Fallback mixed media approach',
             'resource_allocation': {
@@ -720,6 +728,7 @@ Respond in JSON format:
             'analysis_timestamp': datetime.now().isoformat()
         }
 
+
 def get_composition_agents_summary() -> Dict[str, Any]:
     """Get summary of all video composition agents"""
     return {
@@ -728,7 +737,7 @@ def get_composition_agents_summary() -> Dict[str, Any]:
             'decisions': ['Video segmentation', 'Continuity strategy', 'Narrative flow']
         },
         'TimingMaster': {
-            'role': 'Clip Timing Specialist', 
+            'role': 'Clip Timing Specialist',
             'decisions': ['Individual clip durations', 'Pacing optimization', 'Attention management']
         },
         'VisualDesigner': {
@@ -739,4 +748,5 @@ def get_composition_agents_summary() -> Dict[str, Any]:
             'role': 'Media Type Decision Specialist',
             'decisions': ['VEO2 vs. images', 'Resource allocation', 'Visual impact optimization']
         }
-    } 
+    }
+

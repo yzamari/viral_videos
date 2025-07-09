@@ -17,15 +17,16 @@ class ScriptWriterAgent:
             self.gemini_model = genai.GenerativeModel('gemini-2.5-flash')
 
     def write_script(self, trends, sentiment, style):
-        self.monitoring_service.log(f"ScriptWriterAgent: Writing script with sentiment '{sentiment}' and style '{style}'.")
-        
+        self.monitoring_service.log(
+            f"ScriptWriterAgent: Writing script with sentiment '{sentiment}' and style '{style}'.")
+
         topic = trends.get("topic", "general trends")
         youtube_trends = trends.get("youtube_trending")
 
         if self.gemini_model and youtube_trends:
             top_video = youtube_trends[0]
             video_title = top_video["snippet"]["title"]
-            
+
             prompt = f"""
             Create a script for a short viral video about '{topic}'.
             The video should be in a '{style}' style with a '{sentiment}' sentiment.
@@ -33,18 +34,19 @@ class ScriptWriterAgent:
             The script should have 3 scenes.
             Provide the output in JSON format with a "title" and a list of "scenes", where each scene has a "scene" number and a "description".
             """
-            
+
             try:
                 response = self.gemini_model.generate_content(prompt)
-                
+
                 # Use regex to find the JSON object in the response
                 json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
-                
+
                 if json_match:
                     json_string = json_match.group(0)
                     script = json.loads(json_string)
                 else:
-                    self.monitoring_service.log(f"ScriptWriterAgent: No JSON object found in the response. Using fallback.")
+                    self.monitoring_service.log(
+                        f"ScriptWriterAgent: No JSON object found in the response. Using fallback.")
                     script = self._get_fallback_script(topic, sentiment, style)
 
             except Exception as e:
@@ -57,10 +59,9 @@ class ScriptWriterAgent:
         if isinstance(script, str):
             try:
                 script = eval(script)
-            except:
+            except BaseException:
                 self.monitoring_service.log(f"ScriptWriterAgent: Failed to parse script from string. Using fallback.")
                 script = self._get_fallback_script(topic, sentiment, style)
-
 
         self.file_service.save_json("script.json", script)
         self.monitoring_service.log("ScriptWriterAgent: Script writing complete.")
@@ -74,4 +75,5 @@ class ScriptWriterAgent:
                 {"scene": 2, "description": "Middle scene developing the story."},
                 {"scene": 3, "description": "Closing scene with a call to action."},
             ],
-        } 
+        }
+
