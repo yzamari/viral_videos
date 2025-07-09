@@ -549,10 +549,10 @@ class VideoGenerator:
             # Calculate proper clip timing
             num_clips = max(1, config.duration_seconds // 8)
             clip_duration = config.duration_seconds / num_clips
-                
-                # Create VEO-2 prompts based on the topic and script
-                veo_prompts = self._create_veo2_prompts(config, script)
-                
+            
+            # Create VEO-2 prompts based on the topic and script
+            veo_prompts = self._create_veo2_prompts(config, script)
+            
             logger.info(f"🎬 Starting video generation with {len(veo_prompts)} clips (duration: {clip_duration:.1f}s each)")
             
             # Handle different force generation modes
@@ -581,7 +581,7 @@ class VideoGenerator:
         logger.info("🎬 FORCE VEO-3 MODE: Using VEO-3 exclusively")
         
         clips = []
-                for i, prompt in enumerate(veo_prompts):
+        for i, prompt in enumerate(veo_prompts):
             clip_id = f"{self.session_id}_veo3_clip_{i}"
             
             try:
@@ -851,7 +851,7 @@ class VideoGenerator:
                             logger.warning(f"⚠️ VEO-2 clip too small: {file_size} bytes")
                             if os.path.exists(clip_path):
                                 os.remove(clip_path)
-                    except Exception as e:
+                except Exception as e:
                     logger.warning(f"⚠️ VEO-2 failed for clip {i+1}: {e}")
             
             # STEP 3: Try Gemini Image Generation fallback
@@ -878,7 +878,7 @@ class VideoGenerator:
                                 logger.info(f"✅ Gemini Image clip {i+1} generated: {clip_path} ({file_size/1024/1024:.1f}MB)")
                                 clips.append(clip_path)
                                 continue
-            else:
+                            else:
                                 logger.warning(f"⚠️ Image clip too small: {file_size} bytes")
                                 if os.path.exists(clip_path):
                                     os.remove(clip_path)
@@ -894,7 +894,7 @@ class VideoGenerator:
                     file_size = os.path.getsize(clip_path)
                     if file_size > 100000:  # At least 100KB
                         logger.info(f"✅ Enhanced local clip {i+1} generated: {clip_path} ({file_size/1024/1024:.1f}MB)")
-                    clips.append(clip_path)
+                        clips.append(clip_path)
                         continue
                     else:
                         logger.warning(f"⚠️ Local clip too small: {file_size} bytes")
@@ -921,8 +921,8 @@ class VideoGenerator:
                 clips.append(emergency_path)
         
         logger.info(f"🎬 Generated {len(clips)} clips total")
-            return clips
-            
+        return clips
+    
     def _create_emergency_clip(self, output_path: str, text: str, duration: float, aspect_ratio: str):
         """Create emergency clip when all else fails"""
         try:
@@ -1287,7 +1287,7 @@ class VideoGenerator:
             final_script = ' '.join(words[:target_words])
         # Ensure it ends properly
             if not final_script.endswith(('.', '!', '?')):
-            final_script += '.'
+                final_script += '.'
         elif len(words) < target_words * 0.7:
             # Extend if too short (but avoid generic content)
             if hasattr(self, 'current_config') and self.current_config:
