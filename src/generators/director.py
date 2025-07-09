@@ -150,11 +150,12 @@ class Director:
             3. Promises value or entertainment
             4. Uses pattern that works for this topic
             
+            CRITICAL: Return ONLY spoken dialogue. NO visual descriptions, stage directions, or camera instructions.
+            
             Return JSON:
             {{
-                "text": "hook text",
+                "text": "ONLY the words to be spoken aloud",
                 "type": "question/shock/promise/story",
-                "visual_cue": "what should be shown",
                 "duration_seconds": 3
             }}
             """
@@ -193,15 +194,15 @@ class Director:
             1. Deliver value or entertainment
             2. Build on previous segment
             3. Maintain viewer attention
-            4. Include visual variety
+            4. Include ONLY spoken dialogue content
+            
+            CRITICAL: Return ONLY spoken words. NO visual descriptions, camera directions, or stage instructions.
             
             Return JSON array:
             [
                 {{
-                    "text": "segment narration",
-                    "visual": "what to show",
-                    "duration": seconds,
-                    "transition": "cut/fade/zoom"
+                    "text": "ONLY words to be spoken aloud",
+                    "duration": seconds
                 }}
             ]
             """
