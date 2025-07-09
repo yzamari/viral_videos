@@ -1571,26 +1571,30 @@ class VideoGenerator:
                     position = overlay_data['position']
                     style = overlay_data.get('style', 'normal')
                     
+                    # Use AI agent decisions for font, color, and styling
+                    ai_font = overlay_data.get('font', 'Arial-Bold')
+                    ai_color = overlay_data.get('color', 'white')
+                    
                     # Determine font size based on style
                     if style == 'title':
                         fontsize = title_fontsize
-                        color = 'white'
-                        font = 'Arial-Bold'
+                        color = ai_color
+                        font = ai_font
                         stroke_width = 4
                     elif style == 'subtitle':
                         fontsize = subtitle_fontsize
-                        color = 'yellow'
-                        font = 'Arial-Bold'
+                        color = ai_color
+                        font = ai_font
                         stroke_width = 3
                     elif style == 'highlight':
                         fontsize = overlay_fontsize
-                        color = overlay_data.get('color', 'cyan')
-                        font = 'Impact'
+                        color = ai_color
+                        font = ai_font
                         stroke_width = 3
                     else:
                         fontsize = subtitle_fontsize
-                        color = overlay_data.get('color', 'white')
-                        font = 'Arial-Bold'
+                        color = ai_color
+                        font = ai_font
                         stroke_width = 2
                     
                     # Create text clip with better readability
@@ -1645,56 +1649,91 @@ class VideoGenerator:
             return video_clip
     
     def _generate_intelligent_text_overlays(self, config: GeneratedVideoConfig, duration: float) -> List[Dict]:
-        """Generate intelligent, content-specific text overlays"""
+        """Generate intelligent, content-specific text overlays with AI agents making decisions about content, font, colors, position, and style"""
         overlays = []
         
         try:
-            # Use AI to generate content-specific text overlays
+            # Use AI agents to analyze the mission and make overlay decisions
             topic = config.topic
             category = config.category.value
             platform = config.target_platform.value
             
-            # Generate AI-powered overlays
+            logger.info(f"🤖 AI AGENTS: Analyzing mission for intelligent text overlay decisions")
+            logger.info(f"🎯 Mission: {topic}")
+            logger.info(f"📱 Platform: {platform} | Category: {category} | Duration: {duration:.0f}s")
+            
+            # AI Agent-powered overlay generation with comprehensive decision making
             ai_prompt = f"""
-            Create engaging text overlays for a {duration:.0f}-second video about: {topic}
+            You are a team of AI agents specializing in viral video text overlays. Analyze this mission and make intelligent decisions:
             
-            Video details:
-            - Platform: {platform}
-            - Category: {category}
-            - Duration: {duration:.0f}s
+            MISSION: {topic}
+            PLATFORM: {platform}
+            CATEGORY: {category}
+            DURATION: {duration:.0f}s
             
-            Generate 6-8 text overlays that:
-            1. Are specific to the topic (not generic)
-            2. Create engagement and interest
-            3. Use emojis appropriately
-            4. Are timed throughout the video
-            5. Vary in style (title, subtitle, highlight, call-to-action)
+            AI AGENTS TEAM:
+            1. CONTENT STRATEGIST: Decides overlay text content based on mission psychology
+            2. VISUAL DESIGNER: Chooses fonts, colors, and visual hierarchy
+            3. PLATFORM EXPERT: Optimizes for platform-specific engagement patterns
+            4. TIMING SPECIALIST: Determines optimal positioning and timing
+            5. PSYCHOLOGY EXPERT: Ensures emotional impact and persuasion
             
-            Return as JSON array with this format:
+            AGENT DECISIONS REQUIRED:
+            - Content: What specific text will accomplish the mission?
+            - Font: Which font style creates the desired psychological impact?
+            - Color: What colors will maximize engagement and readability?
+            - Position: Where should text be placed for maximum impact?
+            - Style: What visual treatment enhances the message?
+            - Timing: When should each overlay appear for optimal effect?
+            
+            Generate 6-8 text overlays with AI agent reasoning for each decision:
+            
             [
                 {{
-                    "text": "🔥 Specific engaging text about the topic",
+                    "text": "🔥 Specific mission-focused text",
                     "start_time": 0.0,
                     "end_time": 4.0,
                     "position": "top",
                     "style": "title",
-                    "color": "white"
+                    "font": "Impact",
+                    "color": "red",
+                    "reasoning": {{
+                        "content_strategy": "Opens with shock value to grab attention",
+                        "visual_design": "Bold red color creates urgency and importance",
+                        "platform_optimization": "Top placement works well on mobile vertical scroll",
+                        "timing_logic": "First 4 seconds are critical for hook retention",
+                        "psychology": "Red color triggers fight-or-flight response, increasing engagement"
+                    }}
                 }},
                 {{
-                    "text": "🤯 Another specific overlay",
+                    "text": "🤯 Another strategic overlay",
                     "start_time": 5.0,
-                    "end_time": 8.0,
+                    "end_time": 9.0,
                     "position": "center",
                     "style": "highlight",
-                    "color": "cyan"
+                    "font": "Arial-Bold",
+                    "color": "yellow",
+                    "reasoning": {{
+                        "content_strategy": "Builds on initial hook with emotional amplification",
+                        "visual_design": "Yellow stands out against most backgrounds",
+                        "platform_optimization": "Center position captures focus on mobile",
+                        "timing_logic": "Mid-video placement maintains engagement",
+                        "psychology": "Mind-blown emoji creates curiosity and shareability"
+                    }}
                 }}
             ]
             
-            Position options: top, center, bottom, upper_center, lower_center
-            Style options: title, subtitle, highlight, normal
-            Color options: white, yellow, cyan, orange, red, green, magenta
+            REQUIREMENTS:
+            1. Text must be SPECIFIC to the mission "{topic}" - no generic content
+            2. Each overlay needs complete AI agent reasoning
+            3. Colors: red, yellow, white, cyan, orange, green, magenta, blue
+            4. Fonts: Impact, Arial-Bold, Comic Sans MS, Times-Bold, Helvetica-Bold
+            5. Positions: top, center, bottom, upper_center, lower_center
+            6. Styles: title, subtitle, highlight, normal
+            7. Timing must fit within {duration:.0f} seconds
+            8. Focus on MISSION ACCOMPLISHMENT, not just engagement
             
-            Make sure text is specific to "{topic}" and not generic.
+            Return ONLY the JSON array, no other text.
             """
             
             try:
@@ -1713,40 +1752,52 @@ class VideoGenerator:
                 if json_match:
                     overlay_data = json.loads(json_match.group())
                     
-                    # Validate and process overlays
-                    for overlay in overlay_data:
+                    # Process AI agent decisions
+                    for i, overlay in enumerate(overlay_data):
                         if isinstance(overlay, dict) and 'text' in overlay:
                             # Ensure timing is within video duration
                             start_time = min(float(overlay.get('start_time', 0)), duration - 2)
                             end_time = min(float(overlay.get('end_time', start_time + 3)), duration)
                             
                             if end_time > start_time:
+                                # Log AI agent reasoning
+                                reasoning = overlay.get('reasoning', {})
+                                logger.info(f"🤖 AI AGENT OVERLAY {i+1}: {overlay['text'][:30]}...")
+                                logger.info(f"   📝 Content Strategy: {reasoning.get('content_strategy', 'N/A')}")
+                                logger.info(f"   🎨 Visual Design: {reasoning.get('visual_design', 'N/A')}")
+                                logger.info(f"   📱 Platform Optimization: {reasoning.get('platform_optimization', 'N/A')}")
+                                logger.info(f"   ⏰ Timing Logic: {reasoning.get('timing_logic', 'N/A')}")
+                                logger.info(f"   🧠 Psychology: {reasoning.get('psychology', 'N/A')}")
+                                
                                 overlays.append({
                                     'text': overlay['text'],
                                     'start_time': start_time,
                                     'end_time': end_time,
                                     'position': overlay.get('position', 'center'),
                                     'style': overlay.get('style', 'normal'),
-                                    'color': overlay.get('color', 'white')
+                                    'font': overlay.get('font', 'Arial-Bold'),
+                                    'color': overlay.get('color', 'white'),
+                                    'reasoning': reasoning
                                 })
                     
-                    logger.info(f"🤖 AI generated {len(overlays)} intelligent text overlays")
+                    logger.info(f"🤖 AI AGENTS generated {len(overlays)} intelligent text overlays with complete reasoning")
                     
             except Exception as e:
-                logger.warning(f"⚠️ AI text generation failed: {e}")
+                logger.warning(f"⚠️ AI agent text generation failed: {e}")
                 overlays = []
             
-            # Fallback: Create topic-specific overlays if AI fails
+            # Fallback: Create mission-specific overlays if AI fails
             if not overlays:
-                overlays = self._create_topic_specific_overlays(config, duration)
+                logger.info("🔄 AI agents failed, using mission-specific fallback")
+                overlays = self._create_mission_specific_overlays(config, duration)
             
             return overlays
             
         except Exception as e:
-            logger.error(f"❌ Intelligent text overlay generation failed: {e}")
-            return self._create_topic_specific_overlays(config, duration)
+            logger.error(f"❌ AI agent text overlay generation failed: {e}")
+            return self._create_mission_specific_overlays(config, duration)
     
-    def _create_topic_specific_overlays(self, config: GeneratedVideoConfig, duration: float) -> List[Dict]:
+    def _create_mission_specific_overlays(self, config: GeneratedVideoConfig, duration: float) -> List[Dict]:
         """Create topic-specific text overlays as fallback"""
         overlays = []
         topic = config.topic.lower()
@@ -2128,5 +2179,87 @@ class VideoGenerator:
         except Exception as e:
             logger.error(f"❌ Video composition failed: {e}")
             raise RenderingError(f"Video composition failed: {str(e)}")
+
+    def _create_veo2_prompts(self, config: GeneratedVideoConfig, script: Union[str, dict]) -> List[str]:
+        """Create VEO-2 prompts based on AI agent decisions and script content"""
+        topic = config.topic
+        style = config.visual_style
+        
+        # Extract actual content from script if available
+        script_content = ""
+        if isinstance(script, dict):
+            # Extract text content from dictionary script
+            if 'hook' in script and isinstance(script['hook'], dict) and 'text' in script['hook']:
+                script_content += script['hook']['text'] + " "
+            if 'segments' in script and isinstance(script['segments'], list):
+                for segment in script['segments']:
+                    if isinstance(segment, dict) and 'text' in segment:
+                        script_content += segment['text'] + " "
+        else:
+            script_content = str(script)
+        
+        # Let AI agents decide on prompts based on mission and script
+        logger.info(f"🤖 AI agents analyzing mission: {topic}")
+        logger.info(f"🎬 Script content: {script_content[:200]}...")
+        
+        try:
+            # Use Gemini to generate appropriate prompts based on the mission
+            import google.generativeai as genai
+            genai.configure(api_key=self.api_key)
+            model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            
+            prompt_generation_request = f"""
+            MISSION: {topic}
+            SCRIPT CONTENT: {script_content}
+            VISUAL STYLE: {style}
+            PLATFORM: {config.target_platform.value}
+            CATEGORY: {config.category.value}
+            
+            As a professional video director, create 3 distinct visual prompts for this mission.
+            Each prompt should be specific, actionable, and designed to accomplish the mission.
+            
+            Requirements:
+            - Each prompt should be 1-2 sentences maximum
+            - Focus on visual elements that support the mission
+            - Consider the target platform and category
+            - Make prompts diverse but cohesive
+            - No generic templates - be specific to this mission
+            
+            Return only the 3 prompts, one per line, no numbering or formatting.
+            """
+            
+            response = model.generate_content(prompt_generation_request)
+            ai_prompts = response.text.strip().split('\n')
+            
+            # Clean and validate prompts
+            cleaned_prompts = []
+            for prompt in ai_prompts:
+                clean_prompt = prompt.strip()
+                if clean_prompt and len(clean_prompt) > 10:
+                    # Add style suffix if not already present
+                    if style not in clean_prompt.lower():
+                        clean_prompt += f", {style}"
+                    cleaned_prompts.append(clean_prompt)
+            
+            # Ensure we have at least 3 prompts
+            while len(cleaned_prompts) < 3:
+                cleaned_prompts.append(f"Professional visual content supporting: {topic}, {style}")
+            
+            logger.info(f"🎨 AI-generated prompts for '{topic}':")
+            for i, prompt in enumerate(cleaned_prompts[:3], 1):
+                logger.info(f"   Prompt {i}: {prompt}")
+            
+            return cleaned_prompts[:3]
+            
+        except Exception as e:
+            logger.error(f"❌ AI prompt generation failed: {e}")
+            # Fallback: Create generic prompts based on mission analysis
+            fallback_prompts = [
+                f"Professional visual content that supports: {topic}, {style}",
+                f"Engaging scene designed to accomplish: {topic}, {style}",
+                f"Compelling visual narrative for: {topic}, {style}"
+            ]
+            logger.info(f"🔄 Using fallback prompts for '{topic}'")
+            return fallback_prompts
 
 # NO MOCK CLIENTS - ONLY REAL VEO GENERATION ALLOWED!
