@@ -147,7 +147,39 @@ class VertexAIVeo2Client:
             # Poll for completion
             video_uri = self._poll_for_completion(operation_name, clip_id)
             
-            if not video_uri:
+            if video_uri == "SENSITIVE_CONTENT_ERROR":
+                logger.warning("🚫 VEO rejected prompt due to sensitive content, attempting rephrasing...")
+                rephrased_prompt = self._rephrase_prompt_with_gemini(prompt, "VEO rejected prompt due to sensitive content")
+                logger.info(f"   Rephrased prompt: {rephrased_prompt}")
+                
+                # Retry generation with rephrased prompt
+                operation_name = self._create_video_generation_request(
+                    model_name, rephrased_prompt, duration, aspect_ratio, image_path
+                )
+                
+                if not operation_name:
+                    logger.warning("❌ Failed to create video generation request after rephrasing")
+                    return self._create_fallback_clip(prompt, duration, clip_id)
+                
+                video_uri = self._poll_for_completion(operation_name, clip_id)
+                
+                if not video_uri:
+                    logger.warning("❌ Video generation failed or timed out after rephrasing")
+                    return self._create_fallback_clip(prompt, duration, clip_id)
+                
+                # Download video from GCS
+                local_path = self._download_video_from_gcs(video_uri, clip_id)
+                
+                if local_path and os.path.exists(local_path):
+                    file_size = os.path.getsize(local_path) / (1024 * 1024)
+                    model_used = "VEO-3" if model_name == self.veo3_model else "VEO-2"
+                    audio_status = " with audio" if model_name == self.veo3_model and enable_audio else ""
+                    logger.info(f"✅ {model_used} video generated{audio_status}: {local_path} ({file_size:.1f}MB)")
+                    return local_path
+                else:
+                    logger.warning("❌ Failed to download generated video after rephrasing")
+                    return self._create_fallback_clip(prompt, duration, clip_id)
+            elif not video_uri:
                 logger.warning("❌ Video generation failed or timed out")
                 return self._create_fallback_clip(prompt, duration, clip_id)
             
@@ -452,6 +484,20 @@ class VertexAIVeo2Client:
                     # Debug: Log the full response structure
                     logger.debug(f"🔍 Full response: {json.dumps(result, indent=2)}")
                     
+                    # Check for sensitive content error
+                    if "error" in result:
+                        error_info = result["error"]
+                        error_message = error_info.get("message", "")
+                        
+                        if ("sensitive words" in error_message.lower() or 
+                            "responsible ai" in error_message.lower() or
+                            "violate" in error_message.lower()):
+                            
+                            logger.warning(f"🚫 VEO rejected prompt due to sensitive content: {error_message}")
+                            
+                            # Return special error code to trigger rephrasing
+                            return "SENSITIVE_CONTENT_ERROR"
+                    
                     # Extract video URI from response - Try multiple possible structures
                     response_data = result.get("response", {})
                     video_uri = None
@@ -524,6 +570,124 @@ class VertexAIVeo2Client:
         except Exception as e:
             logger.error(f"❌ Polling failed: {e}")
             return None
+    
+    def _rephrase_prompt_with_gemini(self, original_prompt: str, error_message: str) -> str:
+        """Use Gemini to rephrase prompts that were rejected for sensitive content"""
+        try:
+            import os
+            
+            logger.info(f"🔄 Rephrasing prompt with Gemini to avoid sensitive content...")
+            
+            # Check if we have a Gemini API key available
+            gemini_api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+            
+            if not gemini_api_key:
+                logger.warning("⚠️ No Gemini API key available, using simple cleanup")
+                return self._simple_prompt_cleanup(original_prompt)
+            
+            # Configure Gemini using requests (to avoid import issues)
+            import requests
+            
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}"
+            
+            rephrase_prompt = f"""
+            The following video generation prompt was rejected by Google's VEO AI for containing sensitive words:
+            
+            ORIGINAL PROMPT: "{original_prompt}"
+            ERROR MESSAGE: "{error_message}"
+            
+            Please rephrase this prompt to:
+            1. Remove any sensitive, violent, or inappropriate language
+            2. Maintain the core visual concept and intent
+            3. Use family-friendly, positive language
+            4. Focus on the visual storytelling aspects
+            5. Ensure it's suitable for all audiences
+            6. Keep it engaging and cinematic
+            
+            IMPORTANT GUIDELINES:
+            - Replace any words related to violence, conflict, or harm with peaceful alternatives
+            - Remove references to weapons, fighting, or dangerous activities
+            - Use positive, uplifting language
+            - Focus on beauty, creativity, and artistic expression
+            - Maintain the original scene's visual essence
+            - Keep it concise and clear
+            
+            Return ONLY the rephrased prompt, no explanations or additional text.
+            """
+            
+            # Make request to Gemini API
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": rephrase_prompt
+                            }
+                        ]
+                    }
+                ]
+            }
+            
+            response = requests.post(gemini_url, json=payload, timeout=30)
+            
+            if response.status_code == 200:
+                result = response.json()
+                rephrased_prompt = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+            else:
+                logger.error(f"❌ Gemini API request failed: {response.status_code}")
+                return self._simple_prompt_cleanup(original_prompt)
+            
+            # Add our standard no-text instruction
+            rephrased_prompt += ". No text overlays, captions, or written words in the video"
+            
+            logger.info(f"✅ Prompt rephrased successfully:")
+            logger.info(f"   Original: {original_prompt[:100]}...")
+            logger.info(f"   Rephrased: {rephrased_prompt[:100]}...")
+            
+            return rephrased_prompt
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to rephrase prompt with Gemini: {e}")
+            
+            # Fallback: Simple word replacement
+            return self._simple_prompt_cleanup(original_prompt)
+    
+    def _simple_prompt_cleanup(self, prompt: str) -> str:
+        """Simple fallback prompt cleanup when Gemini rephrasing fails"""
+        import re
+        
+        # Simple word replacements for common sensitive terms
+        replacements = {
+            'violent': 'dynamic',
+            'attack': 'approach',
+            'fight': 'dance',
+            'battle': 'competition',
+            'war': 'adventure',
+            'weapon': 'tool',
+            'gun': 'device',
+            'knife': 'utensil',
+            'blood': 'liquid',
+            'death': 'transformation',
+            'kill': 'stop',
+            'hurt': 'affect',
+            'pain': 'emotion',
+            'dangerous': 'exciting',
+            'threat': 'challenge',
+            'aggressive': 'energetic',
+            'destroy': 'change',
+            'damage': 'modify',
+            'harm': 'influence'
+        }
+        
+        cleaned_prompt = prompt
+        for sensitive, replacement in replacements.items():
+            cleaned_prompt = re.sub(r'\b' + re.escape(sensitive) + r'\b', replacement, cleaned_prompt, flags=re.IGNORECASE)
+        
+        # Add safety instruction
+        cleaned_prompt += ". No text overlays, captions, or written words in the video"
+        
+        logger.info(f"🧹 Applied simple cleanup to prompt")
+        return cleaned_prompt
     
     def _download_video_from_gcs(self, gcs_uri: str, clip_id: str) -> Optional[str]:
         """Download video from Google Cloud Storage"""

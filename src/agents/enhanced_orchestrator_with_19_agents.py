@@ -356,8 +356,8 @@ class EnhancedOrchestratorWith19Agents:
     def _extract_decision_value(self, decisions: Union[Dict, List], key: str, default: Any) -> Any:
         """Extract decision value with fallback"""
         if isinstance(decisions, dict):
-            return decisions.get('recommended_actions', {}).get(key, 
-                   decisions.get('consensus_points', {}).get(key, default))
+        return decisions.get('recommended_actions', {}).get(key, 
+               decisions.get('consensus_points', {}).get(key, default))
         elif isinstance(decisions, list) and decisions:
             # If decisions is a list, look for the key in the first item
             first_decision = decisions[0] if decisions else {}
@@ -382,14 +382,14 @@ class EnhancedOrchestratorWith19Agents:
                 f"Absurd visual reveal with {mission}",
                 f"Hilarious character reactions to {mission}",
                 f"Comedic climax and memorable ending"
-            ]
+        ]
         
         return content
     
     def _extract_color_scheme(self, visual_decisions: Union[Dict, List]) -> List[str]:
         """Extract color scheme from visual decisions"""
         if isinstance(visual_decisions, dict):
-            recommended_actions = visual_decisions.get('recommended_actions', [])
+        recommended_actions = visual_decisions.get('recommended_actions', [])
         elif isinstance(visual_decisions, list):
             recommended_actions = visual_decisions
         else:

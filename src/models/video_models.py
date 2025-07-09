@@ -23,7 +23,7 @@ class Platform(str, Enum):
     and search optimization.
     """
     YOUTUBE = "youtube"
-    TIKTOK = "tiktok" 
+    TIKTOK = "tiktok"
     INSTAGRAM = "instagram"
     FACEBOOK = "facebook"
 
