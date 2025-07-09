@@ -1451,6 +1451,41 @@ def create_unified_realtime_interface():
                     label="⏱️ Video Duration (seconds)"
                 )
                 
+                # Multi-Language Selection
+                gr.HTML('<div class="force-generation-section">')
+                gr.HTML('<div class="force-generation-title">🌍 Multi-Language Video Generation</div>')
+                
+                enable_multilang = gr.Checkbox(
+                    label="🌍 Enable Multi-Language Generation",
+                    value=False,
+                    info="Generate the same video in multiple languages with shared visual content"
+                )
+                
+                language_selection = gr.CheckboxGroup(
+                    choices=[
+                        ("🇺🇸 American English", "en-US"),
+                        ("🇬🇧 British English", "en-GB"),
+                        ("🇮🇳 Indian English", "en-IN"),
+                        ("🇫🇷 French (Français)", "fr"),
+                        ("🇩🇪 German (Deutsch)", "de"),
+                        ("🇸🇦 Arabic (العربية)", "ar"),
+                        ("🇮🇷 Persian (فارسی)", "fa"),
+                        ("🇮🇱 Hebrew (עברית)", "he"),
+                        ("🇹🇭 Thai (ไทย)", "th")
+                    ],
+                    label="📋 Select Languages",
+                    value=["en-US"],
+                    info="Choose languages for video generation. RTL languages (Arabic, Persian, Hebrew) are fully supported.",
+                    visible=False
+                )
+                
+                multilang_info = gr.HTML(
+                    value='<div class="orientation-indicator">🌍 Multi-language generation creates the same video content with different audio tracks and culturally adapted scripts</div>',
+                    visible=False
+                )
+                
+                gr.HTML('</div>')
+                
                 # Force Generation Controls
                 gr.HTML('<div class="force-generation-section">')
                 gr.HTML('<div class="force-generation-title">🎛️ Force Generation Controls</div>')
@@ -1859,6 +1894,19 @@ def create_unified_realtime_interface():
             outputs=[orientation_info]
         )
         
+        # Multi-language event handler
+        def toggle_multilang_options(enabled):
+            return (
+                gr.update(visible=enabled),  # language_selection
+                gr.update(visible=enabled)   # multilang_info
+            )
+        
+        enable_multilang.change(
+            toggle_multilang_options,
+            inputs=[enable_multilang],
+            outputs=[language_selection, multilang_info]
+        )
+        
         refresh_logs_btn.click(
             refresh_agent_logs,
             inputs=[],
@@ -1873,7 +1921,7 @@ def create_unified_realtime_interface():
         )
         
         # Main generation function
-        def generate_video_with_force_controls(mission, category, platform, duration, force_mode, orientation_mode):
+        def generate_video_with_force_controls(mission, category, platform, duration, force_mode, orientation_mode, enable_multilang, selected_languages):
             try:
                 if not mission or not mission.strip():
                     return (
@@ -1894,6 +1942,212 @@ def create_unified_realtime_interface():
                         gr.update(interactive=True)  # Re-enable button
                     )
                 
+                # Check if multi-language is enabled
+                if enable_multilang and selected_languages:
+                    # Multi-language generation
+                    from src.generators.multi_language_generator import MultiLanguageVideoGenerator
+                    from src.models.video_models import Language
+                    
+                    # Convert language codes to Language enum
+                    languages = []
+                    for lang_code in selected_languages:
+                        try:
+                            if lang_code == "en-US":
+                                languages.append(Language.ENGLISH_US)
+                            elif lang_code == "en-GB":
+                                languages.append(Language.ENGLISH_UK)
+                            elif lang_code == "en-IN":
+                                languages.append(Language.ENGLISH_IN)
+                            elif lang_code == "fr":
+                                languages.append(Language.FRENCH)
+                            elif lang_code == "de":
+                                languages.append(Language.GERMAN)
+                            elif lang_code == "ar":
+                                languages.append(Language.ARABIC)
+                            elif lang_code == "fa":
+                                languages.append(Language.PERSIAN)
+                            elif lang_code == "he":
+                                languages.append(Language.HEBREW)
+                            elif lang_code == "th":
+                                languages.append(Language.THAI)
+                        except:
+                            pass
+                    
+                    if not languages:
+                        return (
+                            "❌ No valid languages selected",
+                            get_enhanced_css() + '<div class="discussions-container">❌ No valid languages selected</div>',
+                            "No valid languages selected",
+                            gr.update(visible=False),
+                            "<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #dc3545;'>No valid languages selected</div>",
+                            gr.update(visible=False),
+                            "<div style='padding: 20px; text-align: center; color: #dc3545;'>No valid languages selected</div>",
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(interactive=True)
+                        )
+                    
+                    # Initialize multi-language generator
+                    api_key = os.getenv('GOOGLE_API_KEY') or ""
+                    multilang_generator = MultiLanguageVideoGenerator(api_key=api_key)
+                    
+                    # Create config for multi-language generation
+                    from src.models.video_models import GeneratedVideoConfig, VideoCategory, Platform, ForceGenerationMode, VideoOrientation
+                    
+                    try:
+                        video_category = VideoCategory(category)
+                        target_platform = Platform(platform)
+                        
+                        # Convert force mode
+                        if force_mode == "auto":
+                            force_generation_mode = ForceGenerationMode.AUTO
+                        elif force_mode == "force_veo3":
+                            force_generation_mode = ForceGenerationMode.FORCE_VEO3
+                        elif force_mode == "force_veo2":
+                            force_generation_mode = ForceGenerationMode.FORCE_VEO2
+                        elif force_mode == "force_image_gen":
+                            force_generation_mode = ForceGenerationMode.FORCE_IMAGE_GEN
+                        elif force_mode == "force_continuous":
+                            force_generation_mode = ForceGenerationMode.FORCE_CONTINUOUS
+                        else:
+                            force_generation_mode = ForceGenerationMode.AUTO
+                        
+                        # Convert orientation mode
+                        if orientation_mode == "auto":
+                            video_orientation = VideoOrientation.AUTO
+                        elif orientation_mode == "portrait":
+                            video_orientation = VideoOrientation.PORTRAIT
+                        elif orientation_mode == "landscape":
+                            video_orientation = VideoOrientation.LANDSCAPE
+                        elif orientation_mode == "square":
+                            video_orientation = VideoOrientation.SQUARE
+                        else:
+                            video_orientation = VideoOrientation.AUTO
+                    
+                    except ValueError as e:
+                        return (
+                            f"❌ Invalid selection: {e}",
+                            get_enhanced_css() + '<div class="discussions-container">❌ Invalid category or platform</div>',
+                            f"Error: {e}",
+                            gr.update(visible=False),
+                            f"<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #dc3545;'>Invalid selection: {e}</div>",
+                            gr.update(visible=False),
+                            f"<div style='padding: 20px; text-align: center; color: #dc3545;'>Invalid selection: {e}</div>",
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(interactive=True)
+                        )
+                    
+                    # Create config
+                    config = GeneratedVideoConfig(
+                        topic=mission,
+                        duration_seconds=duration,
+                        target_platform=target_platform,
+                        category=video_category,
+                        force_generation_mode=force_generation_mode,
+                        video_orientation=video_orientation,
+                        realistic_audio=True
+                    )
+                    
+                    # Start monitoring
+                    global_visualizer.start_monitoring()
+                    
+                    # Generate multi-language video
+                    result = multilang_generator.generate_multilingual_video(config, languages)
+                    
+                    # Stop monitoring
+                    global_visualizer.stop_monitoring()
+                    
+                    # Get final discussion HTML and logs
+                    final_discussion_html = get_enhanced_css() + global_visualizer.generate_discussion_html()
+                    final_logs = refresh_agent_logs()
+                    
+                    if result and result.language_versions:
+                        # Get the first language version for display
+                        first_lang = list(result.language_versions.keys())[0]
+                        first_version = result.language_versions[first_lang]
+                        
+                        final_status = f"✅ Multi-language video generated successfully!\n🌍 Languages: {len(result.language_versions)}\n📁 Primary: {first_version.video_path}"
+                        
+                        # Generate metadata for multi-language video
+                        multilang_metadata = f"""
+                        <div style='padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;'>
+                            <h4 style='margin-top: 0; color: #495057;'>🌍 Multi-Language Video</h4>
+                            
+                            <div style='margin-bottom: 15px;'>
+                                <strong>📋 Languages Generated:</strong><br>
+                                {', '.join([version.language_name for version in result.language_versions.values()])}
+                            </div>
+                            
+                            <div style='margin-bottom: 15px;'>
+                                <strong>⏱️ Total Generation Time:</strong><br>
+                                <span style='color: #28a745;'>{result.total_generation_time:.1f}s</span>
+                            </div>
+                            
+                            <div style='margin-bottom: 15px;'>
+                                <strong>🎬 Shared Video Clips:</strong><br>
+                                <span style='color: #17a2b8;'>{len(result.veo2_clips)} clips</span>
+                            </div>
+                            
+                            <div style='margin-bottom: 15px;'>
+                                <strong>📱 Platform:</strong><br>
+                                <span style='color: #ffc107;'>{result.master_config.target_platform.value}</span>
+                            </div>
+                            
+                            <div style='margin-bottom: 10px;'>
+                                <strong>📅 Generated:</strong><br>
+                                <small style='color: #6c757d;'>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</small>
+                            </div>
+                        </div>
+                        """
+                        
+                        return (
+                            final_status,
+                            final_discussion_html,
+                            final_logs,
+                            gr.update(value=first_version.video_path, visible=True),
+                            multilang_metadata,
+                            gr.update(value=first_version.video_path, visible=True),
+                            generate_video_analytics(first_version.video_path),
+                            gr.update(visible=True),
+                            gr.update(visible=True),
+                            gr.update(visible=True),
+                            gr.update(visible=True),
+                            gr.update(visible=True),
+                            gr.update(visible=True),
+                            gr.update(visible=True),
+                            gr.update(interactive=True)
+                        )
+                    else:
+                        return (
+                            "❌ Multi-language video generation failed",
+                            final_discussion_html,
+                            final_logs,
+                            gr.update(visible=False),
+                            "<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #dc3545;'>Multi-language generation failed</div>",
+                            gr.update(visible=False),
+                            "<div style='padding: 20px; text-align: center; color: #dc3545;'>Multi-language generation failed</div>",
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(visible=False),
+                            gr.update(interactive=True)
+                        )
+                
+                # Regular single-language generation (existing code)
                 # Import the enhanced orchestrator
                 from src.agents.enhanced_orchestrator_with_19_agents import create_enhanced_orchestrator_with_19_agents
                 from src.models.video_models import VideoCategory, Platform, ForceGenerationMode, VideoOrientation
@@ -2094,7 +2348,9 @@ def create_unified_realtime_interface():
                 platform_dropdown,
                 duration_slider,
                 force_mode,
-                orientation_mode
+                orientation_mode,
+                enable_multilang,
+                language_selection
             ],
             outputs=[
                 status_output,

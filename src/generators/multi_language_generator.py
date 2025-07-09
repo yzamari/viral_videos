@@ -1,5 +1,5 @@
 """
-Multi-language video generator - Generate same video in multiple languages
+Multi-language video generator - Generate same video in multiple languages with RTL support
 """
 import os
 import json
@@ -22,7 +22,7 @@ from .video_generator import VideoGenerator
 logger = get_logger(__name__)
 
 class MultiLanguageVideoGenerator:
-    """Generate the same video content in multiple languages"""
+    """Generate the same video content in multiple languages with RTL support"""
     
     def __init__(self, api_key: str, output_dir: str = "outputs"):
         self.api_key = api_key
@@ -30,32 +30,112 @@ class MultiLanguageVideoGenerator:
         self.translation_model = genai.GenerativeModel('gemini-2.5-pro')
         genai.configure(api_key=api_key)
         
-        # Language configuration
+        # Enhanced language configuration with proper display names
         self.language_names = {
-            Language.ENGLISH: "English",
+            # English variants
+            Language.ENGLISH_US: "American English",
+            Language.ENGLISH_UK: "British English", 
+            Language.ENGLISH_IN: "Indian English",
+            
+            # European languages
+            Language.FRENCH: "French (Français)",
+            Language.GERMAN: "German (Deutsch)",
+            
+            # Middle Eastern languages (RTL)
             Language.ARABIC: "Arabic (العربية)",
-            Language.HEBREW: "Hebrew (עברית)"
+            Language.PERSIAN: "Persian (فارسی)",
+            Language.HEBREW: "Hebrew (עברית)",
+            
+            # Asian languages
+            Language.THAI: "Thai (ไทย)",
+            
+            # Additional languages
+            Language.SPANISH: "Spanish (Español)",
+            Language.ITALIAN: "Italian (Italiano)",
+            Language.PORTUGUESE: "Portuguese (Português)",
+            Language.RUSSIAN: "Russian (Русский)",
+            Language.CHINESE: "Chinese (中文)",
+            Language.JAPANESE: "Japanese (日本語)"
         }
         
-        # Enhanced TTS configuration for more natural speech
+        # RTL language detection
+        self.rtl_languages = {
+            Language.ARABIC, Language.PERSIAN, Language.HEBREW
+        }
+        
+        # Enhanced TTS configuration with proper language codes
         self.tts_voice_config = {
-            Language.ENGLISH: {'lang': 'en', 'tld': 'com', 'slow': False},
+            # English variants
+            Language.ENGLISH_US: {'lang': 'en', 'tld': 'com', 'slow': False},
+            Language.ENGLISH_UK: {'lang': 'en', 'tld': 'co.uk', 'slow': False},
+            Language.ENGLISH_IN: {'lang': 'en', 'tld': 'co.in', 'slow': False},
+            
+            # European languages
+            Language.FRENCH: {'lang': 'fr', 'tld': 'fr', 'slow': False},
+            Language.GERMAN: {'lang': 'de', 'tld': 'de', 'slow': False},
+            
+            # Middle Eastern languages (RTL)
             Language.ARABIC: {'lang': 'ar', 'tld': 'com', 'slow': False},
-            Language.HEBREW: {'lang': 'iw', 'tld': 'co.il', 'slow': False}
+            Language.PERSIAN: {'lang': 'fa', 'tld': 'com', 'slow': False},  # Persian/Farsi
+            Language.HEBREW: {'lang': 'iw', 'tld': 'co.il', 'slow': False},
+            
+            # Asian languages
+            Language.THAI: {'lang': 'th', 'tld': 'com', 'slow': False},
+            
+            # Additional languages
+            Language.SPANISH: {'lang': 'es', 'tld': 'es', 'slow': False},
+            Language.ITALIAN: {'lang': 'it', 'tld': 'it', 'slow': False},
+            Language.PORTUGUESE: {'lang': 'pt', 'tld': 'com.br', 'slow': False},
+            Language.RUSSIAN: {'lang': 'ru', 'tld': 'ru', 'slow': False},
+            Language.CHINESE: {'lang': 'zh', 'tld': 'cn', 'slow': False},
+            Language.JAPANESE: {'lang': 'ja', 'tld': 'jp', 'slow': False}
         }
         
-        logger.info(f"🌍 Multi-language generator initialized")
+        # Cultural context for better translations
+        self.cultural_context = {
+            Language.ENGLISH_US: "American culture, casual tone, American expressions",
+            Language.ENGLISH_UK: "British culture, formal tone, British expressions",
+            Language.ENGLISH_IN: "Indian culture, respectful tone, Indian English expressions",
+            Language.FRENCH: "French culture, elegant tone, French expressions",
+            Language.GERMAN: "German culture, direct tone, German expressions",
+            Language.ARABIC: "Arabic culture, respectful tone, Middle Eastern context",
+            Language.PERSIAN: "Persian culture, poetic tone, Iranian context",
+            Language.HEBREW: "Hebrew culture, modern Israeli context",
+            Language.THAI: "Thai culture, polite tone, Thai expressions",
+            Language.SPANISH: "Spanish culture, warm tone, Spanish expressions",
+            Language.ITALIAN: "Italian culture, expressive tone, Italian expressions",
+            Language.PORTUGUESE: "Portuguese/Brazilian culture, friendly tone",
+            Language.RUSSIAN: "Russian culture, formal tone, Russian expressions",
+            Language.CHINESE: "Chinese culture, respectful tone, Chinese expressions",
+            Language.JAPANESE: "Japanese culture, polite tone, Japanese expressions"
+        }
+        
+        logger.info(f"🌍 Multi-language generator initialized with {len(self.language_names)} languages")
+        logger.info(f"📜 RTL support enabled for: {', '.join([self.language_names[lang] for lang in self.rtl_languages])}")
     
-    def generate_multilingual_video(self, config: GeneratedVideoConfig) -> MultiLanguageVideo:
-        """Generate video in multiple languages with shared video clips"""
+    def generate_multilingual_video(self, config: GeneratedVideoConfig, 
+                                  selected_languages: List[Language]) -> MultiLanguageVideo:
+        """Generate video in multiple selected languages with shared video clips"""
         start_time = time.time()
+        
+        # Validate selected languages
+        valid_languages = []
+        for lang in selected_languages:
+            if lang in self.language_names:
+                valid_languages.append(lang)
+            else:
+                logger.warning(f"⚠️ Language {lang} not supported, skipping...")
+        
+        if not valid_languages:
+            raise ValueError("No valid languages selected for multi-language generation")
         
         # Set configuration for TTS generation
         self.use_realistic_audio = getattr(config, 'realistic_audio', False)
         self.current_feeling = getattr(config, 'feeling', 'neutral')
         self.current_narrative = getattr(config, 'narrative', 'neutral')
         
-        logger.info(f"🌍 Generating video in {len(config.additional_languages) + 1} languages")
+        logger.info(f"🌍 Generating video in {len(valid_languages)} languages")
+        logger.info(f"📋 Selected languages: {', '.join([self.language_names[lang] for lang in valid_languages])}")
         logger.info(f"🎤 Realistic audio: {'Yes' if self.use_realistic_audio else 'No'}")
         
         base_video_id = str(uuid.uuid4())
@@ -66,8 +146,9 @@ class MultiLanguageVideoGenerator:
         os.makedirs(session_dir, exist_ok=True)
         os.makedirs(shared_clips_dir, exist_ok=True)
         
-        # Generate master script (in primary language)
-        logger.info("📝 Generating master script...")
+        # Generate master script (in first selected language)
+        primary_language = valid_languages[0]
+        logger.info(f"📝 Generating master script in {self.language_names[primary_language]}...")
         generator = VideoGenerator(api_key=self.api_key, use_real_veo2=True)
         master_script = generator._generate_creative_script(config, base_video_id)
         
@@ -76,8 +157,7 @@ class MultiLanguageVideoGenerator:
         veo_prompts = generator._generate_veo2_prompts(config, master_script)
         
         # Ensure we have enough clips for the duration
-        # Calculate clips needed: aim for 5-8 seconds per clip
-        clips_needed = max(2, config.duration_seconds // 6)  # At least 2 clips, ~6s each
+        clips_needed = max(2, config.duration_seconds // 6)
         
         if len(veo_prompts) < clips_needed:
             logger.warning(f"Only {len(veo_prompts)} prompts for {config.duration_seconds}s, generating more...")
@@ -104,18 +184,17 @@ class MultiLanguageVideoGenerator:
                 os.rename(clip['clip_path'], new_path)
                 clip['clip_path'] = new_path
         
-        # Generate versions for each language
-        all_languages = [config.primary_language] + config.additional_languages
+        # Generate versions for each selected language
         language_versions = {}
         
-        for language in all_languages:
+        for language in valid_languages:
             lang_version = self._generate_language_version(
                 language, master_script, config, veo_clips,
                 base_video_id, session_dir, shared_clips_dir
             )
             language_versions[language] = lang_version
         
-        total_time = (datetime.now() - start_time).total_seconds()
+        total_time = time.time() - start_time
         
         multilang_video = MultiLanguageVideo(
             base_video_id=base_video_id,
@@ -126,12 +205,12 @@ class MultiLanguageVideoGenerator:
             total_generation_time=total_time,
             master_script=master_script,
             total_languages=len(language_versions),
-            primary_language=config.primary_language,
+            primary_language=primary_language,
             supported_languages=list(language_versions.keys())
         )
         
         self._save_multilingual_project_info(multilang_video, session_dir)
-        logger.info(f"🎉 Multi-language generation complete: {len(language_versions)} languages")
+        logger.info(f"🎉 Multi-language generation complete: {len(language_versions)} languages in {total_time:.1f}s")
         
         return multilang_video
     
@@ -179,12 +258,16 @@ class MultiLanguageVideoGenerator:
     
     def _translate_script(self, master_script: str, target_language: Language, 
                          config: GeneratedVideoConfig) -> str:
-        """Translate script maintaining timing and emotional impact"""
+        """Translate script maintaining timing and emotional impact with cultural context"""
         
         lang_name = self.language_names[target_language]
         target_words = int(config.duration_seconds * 2.5)
+        is_rtl = target_language in self.rtl_languages
+        cultural_context = self.cultural_context.get(target_language, "neutral tone")
         
         logger.info(f"📝 Translating to {lang_name} ({target_words} words)")
+        if is_rtl:
+            logger.info(f"📜 RTL language detected - applying right-to-left formatting")
         
         translation_prompt = f"""
         Translate this video script to {lang_name} maintaining exact timing and emotion.
@@ -196,9 +279,16 @@ class MultiLanguageVideoGenerator:
         - Target language: {lang_name}
         - Duration: {config.duration_seconds} seconds
         - Target words: {target_words} (for precise timing)
-        - Emotional tone: {config.feeling.value}
-        - Keep natural speaking rhythm
-        - Cultural sensitivity for {lang_name} speakers
+        - Cultural context: {cultural_context}
+        - Keep natural speaking rhythm for {lang_name} speakers
+        - Cultural sensitivity and appropriate expressions
+        {"- RIGHT-TO-LEFT (RTL) language - ensure proper text direction" if is_rtl else ""}
+        
+        CULTURAL ADAPTATION:
+        - Use culturally appropriate expressions and idioms
+        - Adapt humor and references to local context
+        - Maintain emotional impact while respecting cultural norms
+        - Use natural speech patterns for {lang_name}
         
         Return ONLY the translated script with exactly {target_words} words.
         """
@@ -213,26 +303,64 @@ class MultiLanguageVideoGenerator:
                 words = translated_script.split()[:target_words]
                 translated_script = ' '.join(words) + "."
             elif actual_words < target_words * 0.8:
-                # Extend naturally
+                # Extend naturally with culturally appropriate phrases
                 extensions = {
-                    Language.ENGLISH: ["This is incredible!", "Amazing!", "Don't miss this!"],
+                    Language.ENGLISH_US: ["This is incredible!", "Amazing!", "Don't miss this!"],
+                    Language.ENGLISH_UK: ["This is brilliant!", "Absolutely brilliant!", "Quite remarkable!"],
+                    Language.ENGLISH_IN: ["This is fantastic!", "Very good!", "Most excellent!"],
+                    Language.FRENCH: ["C'est incroyable!", "Magnifique!", "Ne ratez pas ça!"],
+                    Language.GERMAN: ["Das ist unglaublich!", "Fantastisch!", "Verpassen Sie das nicht!"],
                     Language.ARABIC: ["هذا مذهل!", "رائع!", "لا تفوت هذا!"],
-                    Language.HEBREW: ["זה מדהים!", "מהמם!", "אל תפספסו!"]
+                    Language.PERSIAN: ["این عالی است!", "عالی!", "این را از دست ندهید!"],
+                    Language.HEBREW: ["זה מדהים!", "מהמם!", "אל תפספסו!"],
+                    Language.THAI: ["นี่น่าทึ่งมาก!", "ยอดเยี่ยม!", "อย่าพลาด!"],
+                    Language.SPANISH: ["¡Esto es increíble!", "¡Asombroso!", "¡No te lo pierdas!"],
+                    Language.ITALIAN: ["È incredibile!", "Fantastico!", "Non perdertelo!"],
+                    Language.PORTUGUESE: ["Isso é incrível!", "Fantástico!", "Não perca!"],
+                    Language.RUSSIAN: ["Это невероятно!", "Потрясающе!", "Не пропустите!"],
+                    Language.CHINESE: ["这太不可思议了!", "太棒了!", "不要错过!"],
+                    Language.JAPANESE: ["これは信じられない!", "素晴らしい!", "見逃すな!"]
                 }
                 
-                ext_list = extensions.get(target_language, extensions[Language.ENGLISH])
+                ext_list = extensions.get(target_language, extensions[Language.ENGLISH_US])
                 while len(translated_script.split()) < target_words:
                     translated_script += " " + ext_list[len(translated_script.split()) % len(ext_list)]
                 
                 words = translated_script.split()[:target_words]
                 translated_script = ' '.join(words) + "."
             
+            # Apply RTL formatting if needed
+            if is_rtl:
+                translated_script = self._apply_rtl_formatting(translated_script, target_language)
+            
             logger.info(f"✅ {lang_name} translation: {len(translated_script.split())} words")
+            if is_rtl:
+                logger.info(f"📜 RTL formatting applied")
+            
             return translated_script
             
         except Exception as e:
             logger.error(f"❌ Translation failed: {e}")
             return master_script
+    
+    def _apply_rtl_formatting(self, text: str, language: Language) -> str:
+        """Apply RTL formatting and ensure proper text direction"""
+        
+        # Add RTL marker at the beginning for proper text direction
+        rtl_marker = "\u202E"  # Right-to-Left Override
+        
+        # Language-specific RTL handling
+        if language == Language.ARABIC:
+            # Ensure proper Arabic text formatting
+            text = rtl_marker + text
+        elif language == Language.HEBREW:
+            # Ensure proper Hebrew text formatting
+            text = rtl_marker + text
+        elif language == Language.PERSIAN:
+            # Ensure proper Persian text formatting
+            text = rtl_marker + text
+        
+        return text
     
     def _generate_multilingual_tts(self, script: str, language: Language, 
                                  duration: int, video_id: str, session_dir: str) -> str:

@@ -220,12 +220,25 @@ class Feeling(str, Enum):
 
 class Language(str, Enum):
     """Supported languages for multi-language video generation"""
-    ENGLISH = "en"
-    ARABIC = "ar"
-    HEBREW = "he"
-    SPANISH = "es"
+    # English variants
+    ENGLISH_US = "en-US"  # American English
+    ENGLISH_UK = "en-GB"  # British English
+    ENGLISH_IN = "en-IN"  # Indian English
+    
+    # European languages
     FRENCH = "fr"
     GERMAN = "de"
+    
+    # Middle Eastern languages (RTL support)
+    ARABIC = "ar"
+    PERSIAN = "fa"  # Persian/Farsi
+    HEBREW = "he"
+    
+    # Asian languages
+    THAI = "th"
+    
+    # Additional supported languages
+    SPANISH = "es"
     ITALIAN = "it"
     PORTUGUESE = "pt"
     RUSSIAN = "ru"
@@ -234,19 +247,53 @@ class Language(str, Enum):
 
 class TTSVoice(str, Enum):
     """TTS voice types for different languages and emotions"""
-    # English voices
+    # American English voices
     EN_US_MALE_NATURAL = "en-US-male-natural"
     EN_US_FEMALE_NATURAL = "en-US-female-natural"
-    EN_UK_MALE_NATURAL = "en-UK-male-natural"
-    EN_UK_FEMALE_NATURAL = "en-UK-female-natural"
+    EN_US_MALE_WAVENET = "en-US-Wavenet-D"
+    EN_US_FEMALE_WAVENET = "en-US-Wavenet-F"
     
-    # Arabic voices
-    AR_MALE_NATURAL = "ar-male-natural"
-    AR_FEMALE_NATURAL = "ar-female-natural"
+    # British English voices
+    EN_GB_MALE_NATURAL = "en-GB-male-natural"
+    EN_GB_FEMALE_NATURAL = "en-GB-female-natural"
+    EN_GB_MALE_WAVENET = "en-GB-Wavenet-B"
+    EN_GB_FEMALE_WAVENET = "en-GB-Wavenet-A"
     
-    # Hebrew voices
-    HE_MALE_NATURAL = "he-male-natural"
-    HE_FEMALE_NATURAL = "he-female-natural"
+    # Indian English voices
+    EN_IN_MALE_NATURAL = "en-IN-male-natural"
+    EN_IN_FEMALE_NATURAL = "en-IN-female-natural"
+    EN_IN_MALE_WAVENET = "en-IN-Wavenet-B"
+    EN_IN_FEMALE_WAVENET = "en-IN-Wavenet-A"
+    
+    # French voices
+    FR_MALE_NATURAL = "fr-FR-male-natural"
+    FR_FEMALE_NATURAL = "fr-FR-female-natural"
+    FR_MALE_WAVENET = "fr-FR-Wavenet-B"
+    FR_FEMALE_WAVENET = "fr-FR-Wavenet-A"
+    
+    # German voices
+    DE_MALE_NATURAL = "de-DE-male-natural"
+    DE_FEMALE_NATURAL = "de-DE-female-natural"
+    DE_MALE_WAVENET = "de-DE-Wavenet-B"
+    DE_FEMALE_WAVENET = "de-DE-Wavenet-A"
+    
+    # Arabic voices (RTL)
+    AR_MALE_NATURAL = "ar-XA-male-natural"
+    AR_FEMALE_NATURAL = "ar-XA-female-natural"
+    AR_MALE_WAVENET = "ar-XA-Wavenet-B"
+    AR_FEMALE_WAVENET = "ar-XA-Wavenet-A"
+    
+    # Persian voices (RTL)
+    FA_MALE_NATURAL = "fa-IR-male-natural"
+    FA_FEMALE_NATURAL = "fa-IR-female-natural"
+    
+    # Hebrew voices (RTL)
+    HE_MALE_NATURAL = "he-IL-male-natural"
+    HE_FEMALE_NATURAL = "he-IL-female-natural"
+    
+    # Thai voices
+    TH_MALE_NATURAL = "th-TH-male-natural"
+    TH_FEMALE_NATURAL = "th-TH-female-natural"
     
     # Auto-select based on language and emotion
     AUTO = "auto"
