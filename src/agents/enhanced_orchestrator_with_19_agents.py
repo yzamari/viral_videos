@@ -286,7 +286,8 @@ class EnhancedOrchestratorWith19Agents:
                 "Opening hook scene with dramatic visuals",
                 "Main content with comedic elements",
                 "Call to action with engaging visuals"
-            ]
+            ],
+            audio_transcript=enhanced_config.hook + " " + " ".join(enhanced_config.main_content) + " " + enhanced_config.call_to_action
         )
         
         # Log success metrics

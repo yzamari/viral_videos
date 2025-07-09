@@ -2877,18 +2877,9 @@ class VideoGenerator:
                         # Try with slow speech as last resort
                         tts = gTTS(text=clean_script, lang='en', slow=True)
                     
-                    # Save with timeout
-                    import signal
-                    
-                    def timeout_handler(signum, frame):
-                        raise TimeoutError("TTS save timeout")
-                    
-                    signal.signal(signal.SIGALRM, timeout_handler)
-                    signal.alarm(30)  # 30 second timeout
-                    
+                    # Save with simple approach (no signal timeout in threads)
                     try:
                         tts.save(audio_path)
-                        signal.alarm(0)  # Cancel timeout
                         
                         # Verify the audio file was created and has content
                         if os.path.exists(audio_path) and os.path.getsize(audio_path) > 1000:  # At least 1KB
@@ -2912,9 +2903,8 @@ class VideoGenerator:
                                 os.remove(audio_path)
                             continue
                             
-                    except TimeoutError:
-                        signal.alarm(0)
-                        logger.warning(f"⚠️ TTS save timeout (attempt {attempt + 1})")
+                    except Exception as save_error:
+                        logger.warning(f"⚠️ TTS save failed (attempt {attempt + 1}): {save_error}")
                         continue
                         
                 except Exception as e:
