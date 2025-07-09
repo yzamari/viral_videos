@@ -254,6 +254,9 @@ class SmartVeo2Client:
         if "cinematic" not in enhanced.lower():
             enhanced += ", cinematic quality, natural lighting"
         
+        # CRITICAL: No text overlays instruction
+        enhanced += ". No text overlays, captions, subtitles, or written words in the video"
+        
         return enhanced
     
     def _create_simulation_clip(self, prompt: str, duration: float, clip_id: str) -> str:

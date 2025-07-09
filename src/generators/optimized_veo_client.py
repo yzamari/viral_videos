@@ -628,6 +628,9 @@ class OptimizedVeoClient:
         if not any(term in prompt.lower() for term in ["cinematic", "professional", "quality"]):
             prompt += f", {enhancements[0]}"
         
+        # CRITICAL: No text overlays instruction
+        prompt += ". No text overlays, captions, subtitles, or written words in the video"
+        
         return prompt
     
     def _create_enhanced_fallback(self, prompt: str, duration: float, clip_id: str) -> str:

@@ -234,6 +234,9 @@ class VertexAIVeo2Client:
         # Clean up extra spaces
         sanitized = re.sub(r'\s+', ' ', sanitized).strip()
         
+        # Add no-text instruction to prevent VEO from adding its own text overlays
+        sanitized += ". No text overlays, captions, or written words in the video"
+        
         logger.info(f"🧹 Prompt sanitized: '{prompt[:50]}...' -> '{sanitized[:50]}...'")
         return sanitized
     
@@ -306,6 +309,9 @@ class VertexAIVeo2Client:
         # Add physics realism for VEO-3
         if "realistic" not in enhanced_prompt.lower():
             enhanced_prompt += ", realistic physics and movement"
+            
+        # CRITICAL: No text overlays instruction
+        enhanced_prompt += ". IMPORTANT: No text overlays, captions, subtitles, or written words should appear in the video. Pure visual content only"
             
         return enhanced_prompt
     

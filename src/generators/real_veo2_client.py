@@ -134,6 +134,9 @@ class RealVeo2Client:
         if "baby" in prompt.lower():
             enhanced += ", heartwarming family moment, natural home environment"
         
+        # CRITICAL: No text overlays instruction
+        enhanced += ". No text overlays, captions, subtitles, or written words in the video"
+        
         return enhanced
     
     def _generate_real_veo2_video(self, prompt: str, duration: float, clip_id: str) -> str:

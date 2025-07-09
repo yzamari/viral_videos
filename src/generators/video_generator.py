@@ -3305,6 +3305,13 @@ class VideoGenerator:
             - Use positive, educational, and family-friendly language
             - Focus on visual storytelling rather than potentially sensitive scenarios
             
+            IMPORTANT - NO TEXT OVERLAYS:
+            - NO text overlays, captions, subtitles, or written words in the video
+            - NO on-screen text, labels, or typography
+            - Focus ONLY on visual content, actions, and scenes
+            - The video should be pure visual storytelling without any text elements
+            - We will add our own custom text overlays later
+            
             Return only the 3 prompts, one per line, no numbering or formatting.
             """
             
