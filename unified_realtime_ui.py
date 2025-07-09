@@ -1496,18 +1496,29 @@ def create_unified_realtime_interface():
                         ("🤖 Auto (Normal Fallback Chain)", "auto"),
                         ("🎬 Force VEO-3 Only", "force_veo3"),
                         ("🎥 Force VEO-2 Only", "force_veo2"),
-                        ("🎨 Force Image Generation Only", "force_image_gen"),
-                        ("🔄 Force Continuous Generation", "force_continuous")
+                        ("🎨 Force Image Generation Only", "force_image_gen")
                     ],
                     label="Generation Mode",
                     value="auto",
                     info="Choose how you want videos to be generated"
                 )
                 
+                # Continuous Generation (VEO-2 Only)
+                continuous_generation = gr.Checkbox(
+                    label="🔄 Force Continuous Generation (VEO-2 Only)",
+                    value=False,
+                    info="Keep generating videos continuously until stopped. Only works with VEO-2 mode."
+                )
+                
+                continuous_info = gr.HTML(
+                    value='<div class="orientation-indicator">🔄 Continuous generation will keep producing videos until manually stopped. This feature only works with VEO-2 for cost efficiency.</div>',
+                    visible=False
+                )
+                
                 # Video Orientation Controls
                 orientation_mode = gr.Radio(
                     choices=[
-                        ("�� AI Agents Decide", "auto"),
+                        ("🤖 AI Agents Decide", "auto"),
                         ("📱 Force Portrait (9:16)", "portrait"),
                         ("🖥️ Force Landscape (16:9)", "landscape"),
                         ("⬜ Force Square (1:1)", "square")
@@ -1908,6 +1919,16 @@ def create_unified_realtime_interface():
             outputs=[language_selection, multilang_info]
         )
         
+        # Continuous generation event handler
+        def toggle_continuous_info(enabled):
+            return gr.update(visible=enabled)
+        
+        continuous_generation.change(
+            toggle_continuous_info,
+            inputs=[continuous_generation],
+            outputs=[continuous_info]
+        )
+        
         refresh_logs_btn.click(
             refresh_agent_logs,
             inputs=[],
@@ -1922,7 +1943,7 @@ def create_unified_realtime_interface():
         )
         
         # Main generation function
-        def generate_video_with_force_controls(mission, category, platform, duration, force_mode, orientation_mode, enable_multilang, selected_languages):
+        def generate_video_with_force_controls(mission, category, platform, duration, force_mode, orientation_mode, continuous_generation, enable_multilang, selected_languages):
             try:
                 if not mission or not mission.strip():
                     return (
@@ -2013,10 +2034,28 @@ def create_unified_realtime_interface():
                             force_generation_mode = ForceGenerationMode.FORCE_VEO2
                         elif force_mode == "force_image_gen":
                             force_generation_mode = ForceGenerationMode.FORCE_IMAGE_GEN
-                        elif force_mode == "force_continuous":
-                            force_generation_mode = ForceGenerationMode.FORCE_CONTINUOUS
                         else:
                             force_generation_mode = ForceGenerationMode.AUTO
+                        
+                        # Handle continuous generation - only for VEO-2
+                        if continuous_generation and force_mode != "force_veo2":
+                            return (
+                                "❌ Continuous generation only works with VEO-2 mode",
+                                get_enhanced_css() + '<div class="discussions-container">❌ Continuous generation requires VEO-2 mode</div>',
+                                "Continuous generation only works with VEO-2",
+                                gr.update(visible=False),  # video_output
+                                "<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #dc3545;'>Continuous generation only works with VEO-2</div>",  # video_metadata
+                                gr.update(visible=False),  # download_output
+                                "<div style='padding: 20px; text-align: center; color: #dc3545;'>Continuous generation only works with VEO-2</div>",  # analytics_output
+                                gr.update(visible=False),  # play_btn
+                                gr.update(visible=False),  # pause_btn
+                                gr.update(visible=False),  # restart_btn
+                                gr.update(visible=False),  # fullscreen_btn
+                                gr.update(visible=False),  # download_mp4_btn
+                                gr.update(visible=False),  # download_gif_btn
+                                gr.update(visible=False),  # download_audio_btn
+                                gr.update(interactive=True)  # Re-enable button
+                            )
                         
                         # Convert orientation mode
                         if orientation_mode == "auto":
@@ -2035,18 +2074,18 @@ def create_unified_realtime_interface():
                             f"❌ Invalid selection: {e}",
                             get_enhanced_css() + '<div class="discussions-container">❌ Invalid category or platform</div>',
                             f"Error: {e}",
-                            gr.update(visible=False),
-                            f"<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #dc3545;'>Invalid selection: {e}</div>",
-                            gr.update(visible=False),
-                            f"<div style='padding: 20px; text-align: center; color: #dc3545;'>Invalid selection: {e}</div>",
-                            gr.update(visible=False),
-                            gr.update(visible=False),
-                            gr.update(visible=False),
-                            gr.update(visible=False),
-                            gr.update(visible=False),
-                            gr.update(visible=False),
-                            gr.update(visible=False),
-                            gr.update(interactive=True)
+                            gr.update(visible=False),  # video_output
+                            f"<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #dc3545;'>Invalid selection: {e}</div>",  # video_metadata
+                            gr.update(visible=False),  # download_output
+                            f"<div style='padding: 20px; text-align: center; color: #dc3545;'>Invalid selection: {e}</div>",  # analytics_output
+                            gr.update(visible=False),  # play_btn
+                            gr.update(visible=False),  # pause_btn
+                            gr.update(visible=False),  # restart_btn
+                            gr.update(visible=False),  # fullscreen_btn
+                            gr.update(visible=False),  # download_mp4_btn
+                            gr.update(visible=False),  # download_gif_btn
+                            gr.update(visible=False),  # download_audio_btn
+                            gr.update(interactive=True)  # Re-enable button
                         )
                     
                     # Create config
@@ -2167,8 +2206,6 @@ def create_unified_realtime_interface():
                         force_generation_mode = ForceGenerationMode.FORCE_VEO2
                     elif force_mode == "force_image_gen":
                         force_generation_mode = ForceGenerationMode.FORCE_IMAGE_GEN
-                    elif force_mode == "force_continuous":
-                        force_generation_mode = ForceGenerationMode.FORCE_CONTINUOUS
                     else:
                         force_generation_mode = ForceGenerationMode.AUTO
                     
@@ -2208,14 +2245,14 @@ def create_unified_realtime_interface():
                 
                 # Create the orchestrator with force generation settings
                 orchestrator = create_enhanced_orchestrator_with_19_agents(
-                    api_key=os.getenv('GOOGLE_API_KEY') or "",
+                    api_key=os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY') or "",
                     mission=mission,
                     category=video_category,
                     platform=target_platform,
                     duration=duration,
                     enable_discussions=True,
                     force_generation_mode=force_generation_mode,
-                    continuous_generation=False,
+                    continuous_generation=continuous_generation,
                     video_orientation=video_orientation
                 )
                 
@@ -2350,6 +2387,7 @@ def create_unified_realtime_interface():
                 duration_slider,
                 force_mode,
                 orientation_mode,
+                continuous_generation,
                 enable_multilang,
                 language_selection
             ],
