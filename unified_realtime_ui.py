@@ -1451,7 +1451,7 @@ def create_unified_realtime_interface():
                     label="⏱️ Video Duration (seconds)"
                 )
                 
-                # Multi-Language Selection
+                # Multi-Language Selection - Always visible
                 gr.HTML('<div class="force-generation-section">')
                 gr.HTML('<div class="force-generation-title">🌍 Multi-Language Video Generation</div>')
                 
@@ -1461,23 +1461,24 @@ def create_unified_realtime_interface():
                     info="Generate the same video in multiple languages with shared visual content"
                 )
                 
-                language_selection = gr.CheckboxGroup(
-                    choices=[
-                        ("🇺🇸 American English", "en-US"),
-                        ("🇬🇧 British English", "en-GB"),
-                        ("🇮🇳 Indian English", "en-IN"),
-                        ("🇫🇷 French (Français)", "fr"),
-                        ("🇩🇪 German (Deutsch)", "de"),
-                        ("🇸🇦 Arabic (العربية)", "ar"),
-                        ("🇮🇷 Persian (فارسی)", "fa"),
-                        ("🇮🇱 Hebrew (עברית)", "he"),
-                        ("🇹🇭 Thai (ไทย)", "th")
-                    ],
-                    label="📋 Select Languages",
-                    value=["en-US"],
-                    info="Choose languages for video generation. RTL languages (Arabic, Persian, Hebrew) are fully supported.",
-                    visible=False
-                )
+                with gr.Row():
+                    language_selection = gr.CheckboxGroup(
+                        choices=[
+                            ("🇺🇸 American English", "en-US"),
+                            ("🇬🇧 British English", "en-GB"),
+                            ("🇮🇳 Indian English", "en-IN"),
+                            ("🇫🇷 French (Français)", "fr"),
+                            ("🇩🇪 German (Deutsch)", "de"),
+                            ("🇸🇦 Arabic (العربية)", "ar"),
+                            ("🇮🇷 Persian (فارسی)", "fa"),
+                            ("🇮🇱 Hebrew (עברית)", "he"),
+                            ("🇹🇭 Thai (ไทย)", "th")
+                        ],
+                        label="📋 Select Languages",
+                        value=["en-US"],
+                        info="Choose languages for video generation. RTL languages (Arabic, Persian, Hebrew) are fully supported.",
+                        visible=False
+                    )
                 
                 multilang_info = gr.HTML(
                     value='<div class="orientation-indicator">🌍 Multi-language generation creates the same video content with different audio tracks and culturally adapted scripts</div>',
