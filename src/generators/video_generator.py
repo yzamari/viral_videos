@@ -2407,10 +2407,10 @@ class VideoGenerator:
         return '. '.join(sentences)
     
     def _add_text_overlays(self, video_clip, config: GeneratedVideoConfig, duration: float):
-        """Add professional text overlays with larger, more readable text and better positioning"""
+        """Add modern social media style text overlays with smart positioning to avoid hiding important content"""
         from moviepy.editor import TextClip, CompositeVideoClip
         
-        logger.info(f"📝 Adding enhanced text overlays to {duration:.1f}s video")
+        logger.info(f"📝 Adding modern social media text overlays to {duration:.1f}s video")
         
         try:
             overlays = []
@@ -2418,19 +2418,19 @@ class VideoGenerator:
             # Get video dimensions
             video_width, video_height = video_clip.size
             
-            # Calculate much larger font sizes for better readability
-            # For 1080px width: title=120px, subtitle=80px, overlay=100px
-            title_fontsize = max(80, int(video_width * 0.11))  # 11% of video width
-            subtitle_fontsize = max(60, int(video_width * 0.08))  # 8% of video width
-            overlay_fontsize = max(70, int(video_width * 0.09))  # 9% of video width
+            # Modern social media font sizes (larger and bolder)
+            # Optimized for mobile viewing and engagement
+            title_fontsize = max(90, int(video_width * 0.12))    # 12% of video width - very bold
+            subtitle_fontsize = max(70, int(video_width * 0.10))  # 10% of video width - bold
+            overlay_fontsize = max(80, int(video_width * 0.11))   # 11% of video width - engaging
             
-            # Calculate safe text areas with more generous margins
-            safe_width = int(video_width * 0.9)  # 90% of video width
+            # Safe text areas with strategic positioning
+            safe_width = int(video_width * 0.85)  # 85% of video width for text wrapping
             
-            # Generate intelligent text overlays based on content
-            intelligent_overlays = self._generate_intelligent_text_overlays(config, duration)
+            # Generate intelligent text overlays with modern styling
+            intelligent_overlays = self._generate_modern_text_overlays(config, duration)
             
-            # Add overlays with proper timing and positioning
+            # Add overlays with modern social media styling
             for i, overlay_data in enumerate(intelligent_overlays):
                 try:
                     text = overlay_data['text']
@@ -2439,33 +2439,64 @@ class VideoGenerator:
                     position = overlay_data['position']
                     style = overlay_data.get('style', 'normal')
                     
-                    # Use AI agent decisions for font, color, and styling
-                    ai_font = overlay_data.get('font', 'Arial-Bold')
-                    ai_color = overlay_data.get('color', 'white')
+                    # Modern social media fonts (trendy and engaging)
+                    modern_font = overlay_data.get('font', 'Impact')
+                    modern_color = overlay_data.get('color', 'white')
                     
-                    # Determine font size based on style
+                    # Determine styling based on modern social media trends
                     if style == 'title':
                         fontsize = title_fontsize
-                        color = ai_color
-                        font = ai_font
-                        stroke_width = 4
+                        color = modern_color
+                        font = modern_font
+                        stroke_width = 6  # Thicker stroke for better readability
+                        shadow_offset = (3, 3)  # Drop shadow effect
                     elif style == 'subtitle':
                         fontsize = subtitle_fontsize
-                        color = ai_color
-                        font = ai_font
-                        stroke_width = 3
+                        color = modern_color
+                        font = modern_font
+                        stroke_width = 4
+                        shadow_offset = (2, 2)
                     elif style == 'highlight':
                         fontsize = overlay_fontsize
-                        color = ai_color
-                        font = ai_font
-                        stroke_width = 3
+                        color = modern_color
+                        font = modern_font
+                        stroke_width = 5
+                        shadow_offset = (2, 2)
                     else:
                         fontsize = subtitle_fontsize
-                        color = ai_color
-                        font = ai_font
-                        stroke_width = 2
+                        color = modern_color
+                        font = modern_font
+                        stroke_width = 3
+                        shadow_offset = (1, 1)
                     
-                    # Create text clip with better readability
+                    # Smart positioning to avoid hiding important video content
+                    # Use strategic safe zones that don't interfere with main content
+                    if position == 'top_safe':
+                        # Top area but not blocking faces/main content
+                        text_position = ('center', video_height * 0.08)
+                    elif position == 'upper_third':
+                        # Upper third rule - less intrusive
+                        text_position = ('center', video_height * 0.25)
+                    elif position == 'center_safe':
+                        # Center but slightly offset to avoid main action
+                        text_position = ('center', video_height * 0.45)
+                    elif position == 'lower_third':
+                        # Lower third - traditional safe zone
+                        text_position = ('center', video_height * 0.75)
+                    elif position == 'bottom_safe':
+                        # Bottom but above UI elements
+                        text_position = ('center', video_height * 0.88)
+                    elif position == 'left_edge':
+                        # Left edge for portrait videos
+                        text_position = (video_width * 0.15, video_height * 0.5)
+                    elif position == 'right_edge':
+                        # Right edge for portrait videos
+                        text_position = (video_width * 0.85, video_height * 0.5)
+                    else:
+                        # Default to lower third
+                        text_position = ('center', video_height * 0.75)
+                    
+                    # Create modern text clip with enhanced styling
                     text_clip = TextClip(
                         text,
                         fontsize=fontsize,
@@ -2474,134 +2505,142 @@ class VideoGenerator:
                         stroke_color='black',
                         stroke_width=stroke_width,
                         method='caption',
-                        size=(safe_width, None),  # Allow height to auto-adjust
-                        align='center'
+                        size=(safe_width, None),  # Auto-adjust height
+                        align='center',
+                        # Add modern effects
+                        interline=-5,  # Tighter line spacing for impact
                     )
                     
-                    # Position text based on specified position
-                    if position == 'top':
-                        text_position = ('center', video_height * 0.1)
-                    elif position == 'center':
-                        text_position = 'center'
-                    elif position == 'bottom':
-                        text_position = ('center', video_height * 0.8)
-                    elif position == 'upper_center':
-                        text_position = ('center', video_height * 0.3)
-                    elif position == 'lower_center':
-                        text_position = ('center', video_height * 0.7)
-                    else:
-                        text_position = 'center'
+                    # Apply drop shadow effect for modern look
+                    try:
+                        # Create shadow layer
+                        shadow_clip = TextClip(
+                            text,
+                            fontsize=fontsize,
+                            color='black',
+                            font=font,
+                            method='caption',
+                            size=(safe_width, None),
+                            align='center',
+                            interline=-5,
+                        )
+                        
+                        # Position shadow slightly offset
+                        shadow_position = (
+                            text_position[0] + shadow_offset[0] if isinstance(text_position, tuple) else 'center',
+                            text_position[1] + shadow_offset[1] if isinstance(text_position, tuple) else text_position
+                        )
+                        
+                        shadow_clip = shadow_clip.set_position(shadow_position).set_start(start_time).set_duration(end_time - start_time).set_opacity(0.5)
+                        text_clip = text_clip.set_position(text_position).set_start(start_time).set_duration(end_time - start_time)
+                        
+                        # Add both shadow and main text
+                        overlays.extend([shadow_clip, text_clip])
+                        
+                    except:
+                        # Fallback to just main text if shadow fails
+                        text_clip = text_clip.set_position(text_position).set_start(start_time).set_duration(end_time - start_time)
+                        overlays.append(text_clip)
                     
-                    # Set timing and position
-                    text_clip = text_clip.set_position(text_position).set_start(start_time).set_duration(end_time - start_time)
-                    
-                    overlays.append(text_clip)
-                    logger.info(f"✅ Added text overlay: '{text[:30]}...' ({fontsize}px) at {start_time:.1f}s-{end_time:.1f}s")
+                    logger.info(f"✅ Added modern overlay: '{text[:30]}...' ({fontsize}px {font}) at {start_time:.1f}s-{end_time:.1f}s")
                     
                 except Exception as e:
-                    logger.error(f"❌ Failed to create text overlay {i}: {e}")
+                    logger.error(f"❌ Failed to create modern text overlay {i}: {e}")
                     continue
             
-            # Combine video with all overlays
+            # Combine video with all modern overlays
             if overlays:
                 final_video = CompositeVideoClip([video_clip] + overlays)
-                logger.info(f"✅ Added {len(overlays)} enhanced text overlays")
+                logger.info(f"✅ Added {len(overlays)} modern social media text overlays")
                 return final_video
             else:
-                logger.warning("⚠️ No overlays created, returning original video")
+                logger.warning("⚠️ No modern overlays created, returning original video")
                 return video_clip
                 
         except Exception as e:
-            logger.error(f"❌ Enhanced text overlay creation failed: {e}")
+            logger.error(f"❌ Modern text overlay creation failed: {e}")
             logger.info("🔄 Returning video without overlays")
             return video_clip
     
-    def _generate_intelligent_text_overlays(self, config: GeneratedVideoConfig, duration: float) -> List[Dict]:
-        """Generate intelligent, content-specific text overlays with AI agents making decisions about content, font, colors, position, and style"""
+    def _generate_modern_text_overlays(self, config: GeneratedVideoConfig, duration: float) -> List[Dict]:
+        """Generate modern social media style text overlays with trendy fonts and smart positioning"""
         overlays = []
         
         try:
-            # Use AI agents to analyze the mission and make overlay decisions
+            # Modern social media AI prompt for trendy overlays
             topic = config.topic
             category = config.category.value
             platform = config.target_platform.value
             
-            logger.info(f"🤖 AI AGENTS: Analyzing mission for intelligent text overlay decisions")
+            logger.info(f"🎨 MODERN AI: Generating trendy social media overlays")
             logger.info(f"🎯 Mission: {topic}")
             logger.info(f"📱 Platform: {platform} | Category: {category} | Duration: {duration:.0f}s")
             
-            # AI Agent-powered overlay generation with comprehensive decision making
+            # Modern social media AI prompt
             ai_prompt = f"""
-            You are a team of AI agents specializing in viral video text overlays. Analyze this mission and make intelligent decisions:
+            You are a team of Gen Z social media experts creating viral text overlays. Make them TRENDY and ENGAGING:
             
             MISSION: {topic}
             PLATFORM: {platform}
             CATEGORY: {category}
             DURATION: {duration:.0f}s
             
-            AI AGENTS TEAM:
-            1. CONTENT STRATEGIST: Decides overlay text content based on mission psychology
-            2. VISUAL DESIGNER: Chooses fonts, colors, and visual hierarchy
-            3. PLATFORM EXPERT: Optimizes for platform-specific engagement patterns
-            4. TIMING SPECIALIST: Determines optimal positioning and timing
-            5. PSYCHOLOGY EXPERT: Ensures emotional impact and persuasion
+            MODERN SOCIAL MEDIA REQUIREMENTS:
+            1. Use TRENDY fonts that are popular on TikTok/Instagram
+            2. Position text to NOT HIDE important video content
+            3. Use VIBRANT colors that pop on mobile screens
+            4. Include relevant emojis for engagement
+            5. Make text SHORT and PUNCHY for quick consumption
+            6. Use social media slang and trending phrases
             
-            AGENT DECISIONS REQUIRED:
-            - Content: What specific text will accomplish the mission?
-            - Font: Which font style creates the desired psychological impact?
-            - Color: What colors will maximize engagement and readability?
-            - Position: Where should text be placed for maximum impact?
-            - Style: What visual treatment enhances the message?
-            - Timing: When should each overlay appear for optimal effect?
+            TRENDY FONT OPTIONS:
+            - "Impact" (bold, attention-grabbing)
+            - "Arial Black" (clean, modern)
+            - "Helvetica-Bold" (sleek, professional)
+            - "Futura-Bold" (futuristic, trendy)
+            - "Montserrat-Bold" (Instagram favorite)
             
-            Generate 6-8 text overlays with AI agent reasoning for each decision:
+            SMART POSITIONING (avoid hiding content):
+            - "top_safe" (top but not blocking faces)
+            - "upper_third" (upper third rule)
+            - "lower_third" (traditional safe zone)
+            - "bottom_safe" (bottom but above UI)
+            - "left_edge" (side positioning)
+            - "right_edge" (side positioning)
+            
+            VIBRANT COLORS:
+            - "yellow" (high engagement)
+            - "cyan" (modern, trendy)
+            - "orange" (energetic)
+            - "magenta" (eye-catching)
+            - "lime" (fresh, young)
+            - "white" (clean, readable)
+            
+            Generate 6-8 trendy overlays in JSON format:
             
             [
                 {{
-                    "text": "🔥 Specific mission-focused text",
+                    "text": "🔥 VIRAL CONTENT ALERT",
                     "start_time": 0.0,
-                    "end_time": 4.0,
-                    "position": "top",
+                    "end_time": 3.0,
+                    "position": "top_safe",
                     "style": "title",
                     "font": "Impact",
-                    "color": "red",
-                    "reasoning": {{
-                        "content_strategy": "Opens with shock value to grab attention",
-                        "visual_design": "Bold red color creates urgency and importance",
-                        "platform_optimization": "Top placement works well on mobile vertical scroll",
-                        "timing_logic": "First 4 seconds are critical for hook retention",
-                        "psychology": "Red color triggers fight-or-flight response, increasing engagement"
-                    }}
+                    "color": "yellow"
                 }},
                 {{
-                    "text": "🤯 Another strategic overlay",
-                    "start_time": 5.0,
-                    "end_time": 9.0,
-                    "position": "center",
+                    "text": "💀 This hits different",
+                    "start_time": 4.0,
+                    "end_time": 7.0,
+                    "position": "upper_third",
                     "style": "highlight",
-                    "font": "Arial-Bold",
-                    "color": "yellow",
-                    "reasoning": {{
-                        "content_strategy": "Builds on initial hook with emotional amplification",
-                        "visual_design": "Yellow stands out against most backgrounds",
-                        "platform_optimization": "Center position captures focus on mobile",
-                        "timing_logic": "Mid-video placement maintains engagement",
-                        "psychology": "Mind-blown emoji creates curiosity and shareability"
-                    }}
+                    "font": "Arial Black",
+                    "color": "cyan"
                 }}
             ]
             
-            REQUIREMENTS:
-            1. Text must be SPECIFIC to the mission "{topic}" - no generic content
-            2. Each overlay needs complete AI agent reasoning
-            3. Colors: red, yellow, white, cyan, orange, green, magenta, blue
-            4. Fonts: Impact, Arial-Bold, Comic Sans MS, Times-Bold, Helvetica-Bold
-            5. Positions: top, center, bottom, upper_center, lower_center
-            6. Styles: title, subtitle, highlight, normal
-            7. Timing must fit within {duration:.0f} seconds
-            8. Focus on MISSION ACCOMPLISHMENT, not just engagement
-            
-            Return ONLY the JSON array, no other text.
+            Make it TRENDY, ENGAGING, and MISSION-SPECIFIC to "{topic}"!
+            Return ONLY the JSON array.
             """
             
             try:
@@ -2615,12 +2654,10 @@ class VideoGenerator:
                 import json
                 import re
                 
-                # Find JSON array in response
                 json_match = re.search(r'\[.*\]', response.text, re.DOTALL)
                 if json_match:
                     overlay_data = json.loads(json_match.group())
                     
-                    # Process AI agent decisions
                     for i, overlay in enumerate(overlay_data):
                         if isinstance(overlay, dict) and 'text' in overlay:
                             # Ensure timing is within video duration
@@ -2628,223 +2665,196 @@ class VideoGenerator:
                             end_time = min(float(overlay.get('end_time', start_time + 3)), duration)
                             
                             if end_time > start_time:
-                                # Log AI agent reasoning
-                                reasoning = overlay.get('reasoning', {})
-                                logger.info(f"🤖 AI AGENT OVERLAY {i+1}: {overlay['text'][:30]}...")
-                                logger.info(f"   📝 Content Strategy: {reasoning.get('content_strategy', 'N/A')}")
-                                logger.info(f"   🎨 Visual Design: {reasoning.get('visual_design', 'N/A')}")
-                                logger.info(f"   📱 Platform Optimization: {reasoning.get('platform_optimization', 'N/A')}")
-                                logger.info(f"   ⏰ Timing Logic: {reasoning.get('timing_logic', 'N/A')}")
-                                logger.info(f"   🧠 Psychology: {reasoning.get('psychology', 'N/A')}")
+                                logger.info(f"🎨 MODERN OVERLAY {i+1}: {overlay['text'][:30]}...")
+                                logger.info(f"   🎯 Font: {overlay.get('font', 'Impact')} | Color: {overlay.get('color', 'white')}")
+                                logger.info(f"   📍 Position: {overlay.get('position', 'lower_third')} (smart content-aware)")
                                 
                                 overlays.append({
                                     'text': overlay['text'],
                                     'start_time': start_time,
                                     'end_time': end_time,
-                                    'position': overlay.get('position', 'center'),
+                                    'position': overlay.get('position', 'lower_third'),
                                     'style': overlay.get('style', 'normal'),
-                                    'font': overlay.get('font', 'Arial-Bold'),
-                                    'color': overlay.get('color', 'white'),
-                                    'reasoning': reasoning
+                                    'font': overlay.get('font', 'Impact'),
+                                    'color': overlay.get('color', 'white')
                                 })
                     
-                    logger.info(f"🤖 AI AGENTS generated {len(overlays)} intelligent text overlays with complete reasoning")
+                    logger.info(f"🎨 Generated {len(overlays)} modern social media overlays")
                     
             except Exception as e:
-                logger.warning(f"⚠️ AI agent text generation failed: {e}")
+                logger.warning(f"⚠️ Modern AI overlay generation failed: {e}")
                 overlays = []
             
-            # Fallback: Create mission-specific overlays if AI fails
+            # Fallback: Create trendy mission-specific overlays
             if not overlays:
-                logger.info("🔄 AI agents failed, using mission-specific fallback")
-                overlays = self._create_mission_specific_overlays(config, duration)
+                logger.info("🔄 AI failed, using trendy fallback overlays")
+                overlays = self._create_trendy_fallback_overlays(config, duration)
             
             return overlays
             
         except Exception as e:
-            logger.error(f"❌ AI agent text overlay generation failed: {e}")
-            return self._create_mission_specific_overlays(config, duration)
+            logger.error(f"❌ Modern overlay generation failed: {e}")
+            return self._create_trendy_fallback_overlays(config, duration)
     
-    def _create_mission_specific_overlays(self, config: GeneratedVideoConfig, duration: float) -> List[Dict]:
-        """Create topic-specific text overlays as fallback"""
+    def _create_trendy_fallback_overlays(self, config: GeneratedVideoConfig, duration: float) -> List[Dict]:
+        """Create trendy social media style fallback overlays"""
         overlays = []
         topic = config.topic.lower()
         
         try:
-            # Persian mythology specific overlays
-            if 'persian' in topic and 'mythology' in topic:
+            # Trendy social media overlays based on topic
+            if 'shake' in topic and 'bar' in topic:
                 overlays = [
                     {
-                        'text': '🏺 Ancient Persian Mythology',
+                        'text': '🍹 SHAKE BAR VIBES',
                         'start_time': 0.0,
-                        'end_time': 4.0,
-                        'position': 'top',
+                        'end_time': 3.0,
+                        'position': 'top_safe',
                         'style': 'title',
-                        'color': 'white'
-                    },
-                    {
-                        'text': '⚔️ Epic Battle of Deities',
-                        'start_time': 5.0,
-                        'end_time': 9.0,
-                        'position': 'center',
-                        'style': 'highlight',
+                        'font': 'Impact',
                         'color': 'yellow'
                     },
                     {
-                        'text': '🌟 Ahura Mazda vs Angra Mainyu',
-                        'start_time': 10.0,
-                        'end_time': 14.0,
-                        'position': 'upper_center',
-                        'style': 'subtitle',
+                        'text': '☀️ Day Mode: Fresh Shakes',
+                        'start_time': 4.0,
+                        'end_time': 8.0,
+                        'position': 'upper_third',
+                        'style': 'highlight',
+                        'font': 'Arial Black',
                         'color': 'cyan'
                     },
                     {
-                        'text': '🥤 The Sacred Cola Wars',
-                        'start_time': 15.0,
-                        'end_time': 19.0,
-                        'position': 'center',
+                        'text': '🌙 Night Mode: Boozy Shakes',
+                        'start_time': 9.0,
+                        'end_time': 13.0,
+                        'position': 'lower_third',
                         'style': 'highlight',
-                        'color': 'orange'
-                    },
-                    {
-                        'text': '✨ Choose Your Divine Drink',
-                        'start_time': 20.0,
-                        'end_time': 24.0,
-                        'position': 'lower_center',
-                        'style': 'subtitle',
+                        'font': 'Helvetica-Bold',
                         'color': 'magenta'
                     },
                     {
-                        'text': '🔥 Ancient Wisdom Revealed',
-                        'start_time': 25.0,
-                        'end_time': 29.0,
-                        'position': 'center',
-                        'style': 'highlight',
-                        'color': 'red'
-                    },
-                    {
-                        'text': '👆 Follow for More Mythology',
-                        'start_time': max(0, duration - 8),
-                        'end_time': duration,
-                        'position': 'bottom',
-                        'style': 'normal',
-                        'color': 'white'
-                    }
-                ]
-            
-            # Comedy specific overlays
-            elif 'comedy' in topic or 'funny' in topic:
-                overlays = [
-                    {
-                        'text': '😂 Prepare to Laugh!',
-                        'start_time': 0.0,
-                        'end_time': 4.0,
-                        'position': 'top',
-                        'style': 'title',
-                        'color': 'yellow'
-                    },
-                    {
-                        'text': '🤣 This is Hilarious!',
-                        'start_time': 8.0,
-                        'end_time': 12.0,
-                        'position': 'center',
-                        'style': 'highlight',
-                        'color': 'cyan'
-                    },
-                    {
-                        'text': '💀 I Can\'t Even...',
-                        'start_time': 16.0,
-                        'end_time': 20.0,
-                        'position': 'upper_center',
+                        'text': '🔥 Ages 18-31 Only',
+                        'start_time': 14.0,
+                        'end_time': 18.0,
+                        'position': 'upper_third',
                         'style': 'subtitle',
+                        'font': 'Impact',
                         'color': 'orange'
                     },
                     {
-                        'text': '🔥 Comedy Gold!',
-                        'start_time': 24.0,
-                        'end_time': 28.0,
-                        'position': 'center',
-                        'style': 'highlight',
-                        'color': 'red'
-                    },
-                    {
-                        'text': '👆 Follow for More Laughs',
-                        'start_time': max(0, duration - 6),
-                        'end_time': duration,
-                        'position': 'bottom',
-                        'style': 'normal',
-                        'color': 'white'
-                    }
-                ]
-            
-            # Generic engaging overlays
-            else:
-                clean_topic = config.topic.replace('_', ' ').title()
-                overlays = [
-                    {
-                        'text': f'✨ {clean_topic}',
-                        'start_time': 0.0,
-                        'end_time': 4.0,
-                        'position': 'top',
-                        'style': 'title',
-                        'color': 'white'
-                    },
-                    {
-                        'text': '🤯 Mind-Blowing!',
-                        'start_time': 6.0,
-                        'end_time': 10.0,
-                        'position': 'center',
-                        'style': 'highlight',
-                        'color': 'cyan'
-                    },
-                    {
-                        'text': '🔥 This is Amazing!',
-                        'start_time': 12.0,
-                        'end_time': 16.0,
-                        'position': 'upper_center',
+                        'text': '🇮🇱 Israel Exclusive',
+                        'start_time': 19.0,
+                        'end_time': 23.0,
+                        'position': 'lower_third',
                         'style': 'subtitle',
-                        'color': 'orange'
-                    },
-                    {
-                        'text': '⚡ Incredible Content!',
-                        'start_time': 18.0,
-                        'end_time': 22.0,
-                        'position': 'center',
-                        'style': 'highlight',
-                        'color': 'yellow'
-                    },
-                    {
-                        'text': '💫 Don\'t Miss This!',
-                        'start_time': 24.0,
-                        'end_time': 28.0,
-                        'position': 'lower_center',
-                        'style': 'subtitle',
-                        'color': 'magenta'
+                        'font': 'Futura-Bold',
+                        'color': 'lime'
                     },
                     {
                         'text': '👆 Follow for More',
-                        'start_time': max(0, duration - 6),
+                        'start_time': max(0, duration - 5),
                         'end_time': duration,
-                        'position': 'bottom',
+                        'position': 'bottom_safe',
                         'style': 'normal',
+                        'font': 'Montserrat-Bold',
+                        'color': 'white'
+                    }
+                ]
+            
+            elif 'toys' in topic and 'bed' in topic:
+                overlays = [
+                    {
+                        'text': '🧸 TOYS IN BED?!',
+                        'start_time': 0.0,
+                        'end_time': 3.0,
+                        'position': 'top_safe',
+                        'style': 'title',
+                        'font': 'Impact',
+                        'color': 'orange'
+                    },
+                    {
+                        'text': '😴 Sleep Sabotage Alert',
+                        'start_time': 4.0,
+                        'end_time': 7.0,
+                        'position': 'upper_third',
+                        'style': 'highlight',
+                        'font': 'Arial Black',
+                        'color': 'yellow'
+                    },
+                    {
+                        'text': '🦠 Dust Mite Hotels',
+                        'start_time': 8.0,
+                        'end_time': 11.0,
+                        'position': 'lower_third',
+                        'style': 'highlight',
+                        'font': 'Helvetica-Bold',
+                        'color': 'cyan'
+                    },
+                    {
+                        'text': '🚫 Keep Beds Toy-Free',
+                        'start_time': 12.0,
+                        'end_time': duration,
+                        'position': 'bottom_safe',
+                        'style': 'subtitle',
+                        'font': 'Montserrat-Bold',
+                        'color': 'lime'
+                    }
+                ]
+            
+            else:
+                # Generic trendy overlays
+                clean_topic = config.topic.replace('_', ' ').title()
+                overlays = [
+                    {
+                        'text': f'🔥 {clean_topic[:20]}',
+                        'start_time': 0.0,
+                        'end_time': 4.0,
+                        'position': 'top_safe',
+                        'style': 'title',
+                        'font': 'Impact',
+                        'color': 'yellow'
+                    },
+                    {
+                        'text': '💀 This hits different',
+                        'start_time': 5.0,
+                        'end_time': 9.0,
+                        'position': 'upper_third',
+                        'style': 'highlight',
+                        'font': 'Arial Black',
+                        'color': 'cyan'
+                    },
+                    {
+                        'text': '🤯 Mind = Blown',
+                        'start_time': 10.0,
+                        'end_time': 14.0,
+                        'position': 'lower_third',
+                        'style': 'highlight',
+                        'font': 'Helvetica-Bold',
+                        'color': 'magenta'
+                    },
+                    {
+                        'text': '👆 Follow for more fire',
+                        'start_time': max(0, duration - 5),
+                        'end_time': duration,
+                        'position': 'bottom_safe',
+                        'style': 'normal',
+                        'font': 'Montserrat-Bold',
                         'color': 'white'
                     }
                 ]
             
             # Adjust timing for shorter videos
-            if duration < 30:
-                # Remove some overlays and adjust timing
-                overlays = overlays[:4]  # Keep only first 4 overlays
+            if duration < 20:
+                overlays = overlays[:3]  # Keep only first 3 overlays
                 for i, overlay in enumerate(overlays):
-                    # Distribute overlays evenly
                     overlay['start_time'] = (duration / len(overlays)) * i
                     overlay['end_time'] = min(overlay['start_time'] + 4, duration)
             
-            logger.info(f"📝 Created {len(overlays)} topic-specific text overlays")
+            logger.info(f"🎨 Created {len(overlays)} trendy fallback overlays")
             return overlays
             
         except Exception as e:
-            logger.error(f"❌ Topic-specific overlay creation failed: {e}")
+            logger.error(f"❌ Trendy fallback overlay creation failed: {e}")
             return []
 
     def _generate_audio(self, script: str, duration: int) -> str:
