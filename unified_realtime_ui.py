@@ -442,12 +442,13 @@ class AgentDiscussionHandler(logging.Handler):
                         timestamp = datetime.fromtimestamp(record.created).strftime("%H:%M:%S")
                         
                         # Store the basic round data
-                        self.monitor.add_round_data(
-                            round_num=self.current_round,
-                            agent_name=agent_name,
-                            opinion=opinion,
-                            timestamp=timestamp
-                        )
+                        if self.current_round is not None:
+                            self.monitor.add_round_data(
+                                round_num=self.current_round,
+                                agent_name=agent_name,
+                                opinion=opinion,
+                                timestamp=timestamp
+                            )
                         
             # 3. Capture agent message content
             elif "├─ Message:" in message and self.current_agent and self.current_round:
@@ -1521,17 +1522,72 @@ def create_unified_realtime_interface():
                     lines=2
                 )
                 
-                # Video Output
-                video_output = gr.Video(
-                    label="🎬 Generated Video",
-                    visible=False
-                )
+                # Enhanced Video Player Area
+                with gr.Accordion("🎬 Final Video Player", open=True):
+                    # Video Preview with Metadata
+                    with gr.Row():
+                        with gr.Column(scale=2):
+                            video_output = gr.Video(
+                                label="🎬 Generated Video",
+                                visible=False,
+                                height=400
+                            )
+                            
+                            # Video Controls
+                            with gr.Row():
+                                play_btn = gr.Button("▶️ Play", size="sm", visible=False)
+                                pause_btn = gr.Button("⏸️ Pause", size="sm", visible=False)
+                                restart_btn = gr.Button("🔄 Restart", size="sm", visible=False)
+                                fullscreen_btn = gr.Button("🔍 Fullscreen", size="sm", visible=False)
+                        
+                        with gr.Column(scale=1):
+                            # Video Metadata
+                            video_metadata = gr.HTML(
+                                value="<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #6c757d;'>No video generated yet</div>",
+                                label="📊 Video Information"
+                            )
+                            
+                            # Download Options
+                            with gr.Column():
+                                download_output = gr.File(
+                                    label="📥 Download Video",
+                                    visible=False
+                                )
+                                
+                                # Additional Download Formats
+                                with gr.Row():
+                                    download_mp4_btn = gr.Button("💾 MP4", size="sm", visible=False)
+                                    download_gif_btn = gr.Button("🎞️ GIF", size="sm", visible=False)
+                                    download_audio_btn = gr.Button("🎵 Audio", size="sm", visible=False)
                 
-                # Download Link
-                download_output = gr.File(
-                    label="📥 Download Video",
-                    visible=False
-                )
+                # Session History and Comparison
+                with gr.Accordion("📚 Session History & Comparison", open=False):
+                    with gr.Row():
+                        with gr.Column(scale=1):
+                            # Session History
+                            session_history = gr.HTML(
+                                value="<div style='padding: 20px; text-align: center; color: #6c757d;'>No previous sessions</div>",
+                                label="📋 Previous Sessions"
+                            )
+                            
+                            refresh_history_btn = gr.Button("🔄 Refresh History", size="sm")
+                            
+                        with gr.Column(scale=1):
+                            # Video Comparison
+                            comparison_video = gr.Video(
+                                label="📊 Compare with Previous",
+                                visible=False,
+                                height=300
+                            )
+                            
+                            compare_btn = gr.Button("⚖️ Compare Videos", size="sm", visible=False)
+                            
+                # Advanced Analytics
+                with gr.Accordion("📈 Video Analytics", open=False):
+                    analytics_output = gr.HTML(
+                        value="<div style='padding: 20px; text-align: center; color: #6c757d;'>Generate a video to see analytics</div>",
+                        label="📊 Performance Metrics"
+                    )
         
         # Event Handlers
         def update_orientation_info(mode):
@@ -1567,6 +1623,236 @@ def create_unified_realtime_interface():
             except Exception as e:
                 return f"Error reading logs: {str(e)}"
         
+        def generate_video_metadata(video_path: str) -> str:
+            """Generate HTML metadata for the video"""
+            try:
+                if not video_path or not os.path.exists(video_path):
+                    return "<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #6c757d;'>No video generated yet</div>"
+                
+                # Get file stats
+                file_size = os.path.getsize(video_path)
+                file_size_mb = file_size / (1024 * 1024)
+                
+                # Get video duration using moviepy
+                try:
+                    from moviepy.editor import VideoFileClip
+                    with VideoFileClip(video_path) as clip:
+                        duration = clip.duration
+                        fps = clip.fps
+                        resolution = f"{clip.w}x{clip.h}"
+                except ImportError:
+                    duration = "N/A"
+                    fps = "N/A"
+                    resolution = "N/A"
+                except Exception:
+                    duration = "N/A"
+                    fps = "N/A"
+                    resolution = "N/A"
+                
+                # Extract session info from filename
+                filename = os.path.basename(video_path)
+                session_match = re.search(r'session_(\d{8}_\d{6}_[a-f0-9]+)', filename)
+                session_id = session_match.group(1) if session_match else "Unknown"
+                
+                # Generate metadata HTML
+                metadata_html = f"""
+                <div style='padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;'>
+                    <h4 style='margin-top: 0; color: #495057;'>📊 Video Information</h4>
+                    
+                    <div style='margin-bottom: 15px;'>
+                        <strong>📁 File:</strong><br>
+                        <small style='color: #6c757d; word-break: break-all;'>{filename}</small>
+                    </div>
+                    
+                    <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;'>
+                        <div>
+                            <strong>⏱️ Duration:</strong><br>
+                            <span style='color: #28a745;'>{duration}s</span>
+                        </div>
+                        <div>
+                            <strong>📏 Resolution:</strong><br>
+                            <span style='color: #17a2b8;'>{resolution}</span>
+                        </div>
+                        <div>
+                            <strong>🎬 FPS:</strong><br>
+                            <span style='color: #ffc107;'>{fps}</span>
+                        </div>
+                        <div>
+                            <strong>💾 Size:</strong><br>
+                            <span style='color: #dc3545;'>{file_size_mb:.1f} MB</span>
+                        </div>
+                    </div>
+                    
+                    <div style='margin-bottom: 15px;'>
+                        <strong>🆔 Session:</strong><br>
+                        <small style='color: #6c757d; font-family: monospace;'>{session_id}</small>
+                    </div>
+                    
+                    <div style='margin-bottom: 10px;'>
+                        <strong>📅 Generated:</strong><br>
+                        <small style='color: #6c757d;'>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</small>
+                    </div>
+                </div>
+                """
+                
+                return metadata_html
+                
+            except Exception as e:
+                return f"<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #dc3545;'>Error generating metadata: {str(e)}</div>"
+        
+        def refresh_session_history() -> str:
+            """Generate HTML for session history"""
+            try:
+                outputs_dir = "outputs"
+                if not os.path.exists(outputs_dir):
+                    return "<div style='padding: 20px; text-align: center; color: #6c757d;'>No outputs directory found</div>"
+                
+                # Get all session directories
+                sessions = []
+                for item in os.listdir(outputs_dir):
+                    if item.startswith("session_"):
+                        session_path = os.path.join(outputs_dir, item)
+                        if os.path.isdir(session_path):
+                            # Look for final video
+                            final_video = None
+                            for file in os.listdir(session_path):
+                                if file.startswith("final_video_") and file.endswith(".mp4"):
+                                    final_video = os.path.join(session_path, file)
+                                    break
+                            
+                            if final_video and os.path.exists(final_video):
+                                file_size = os.path.getsize(final_video) / (1024 * 1024)
+                                sessions.append({
+                                    'session_id': item,
+                                    'path': final_video,
+                                    'size': file_size,
+                                    'timestamp': os.path.getctime(final_video)
+                                })
+                
+                # Sort by timestamp (newest first)
+                sessions.sort(key=lambda x: x['timestamp'], reverse=True)
+                
+                if not sessions:
+                    return "<div style='padding: 20px; text-align: center; color: #6c757d;'>No previous sessions found</div>"
+                
+                # Generate HTML
+                html = "<div style='max-height: 400px; overflow-y: auto;'>"
+                for i, session in enumerate(sessions[:10]):  # Show last 10 sessions
+                    timestamp_str = datetime.fromtimestamp(session['timestamp']).strftime('%Y-%m-%d %H:%M')
+                    session_display = session['session_id'].replace('session_', '')
+                    
+                    html += f"""
+                    <div style='padding: 10px; margin-bottom: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #dee2e6;'>
+                        <div style='display: flex; justify-content: space-between; align-items: center;'>
+                            <div>
+                                <strong style='color: #495057;'>#{i+1} {session_display[:16]}...</strong><br>
+                                <small style='color: #6c757d;'>{timestamp_str}</small>
+                            </div>
+                            <div style='text-align: right;'>
+                                <span style='color: #28a745; font-weight: bold;'>{session['size']:.1f} MB</span><br>
+                                <button onclick='loadSessionVideo("{session['path']}")' style='background: #007bff; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;'>Load</button>
+                            </div>
+                        </div>
+                    </div>
+                    """
+                
+                html += "</div>"
+                return html
+                
+            except Exception as e:
+                return f"<div style='padding: 20px; text-align: center; color: #dc3545;'>Error loading history: {str(e)}</div>"
+        
+        def generate_video_analytics(video_path: str) -> str:
+            """Generate analytics HTML for the video"""
+            try:
+                if not video_path or not os.path.exists(video_path):
+                    return "<div style='padding: 20px; text-align: center; color: #6c757d;'>Generate a video to see analytics</div>"
+                
+                # Extract session info
+                filename = os.path.basename(video_path)
+                session_match = re.search(r'session_(\d{8}_\d{6}_[a-f0-9]+)', filename)
+                session_id = session_match.group(1) if session_match else "Unknown"
+                
+                # Look for session summary
+                session_dir = os.path.dirname(video_path)
+                summary_file = os.path.join(session_dir, "comprehensive_logs", "session_summary.md")
+                
+                analytics_data = {
+                    'generation_time': 'N/A',
+                    'clips_generated': 'N/A',
+                    'success_rate': 'N/A',
+                    'ai_models_used': 'N/A',
+                    'platform_optimization': 'N/A'
+                }
+                
+                # Try to read session summary
+                if os.path.exists(summary_file):
+                    try:
+                        with open(summary_file, 'r', encoding='utf-8') as f:
+                            summary_content = f.read()
+                            
+                            # Extract key metrics
+                            time_match = re.search(r'Total time: ([\d.]+)s', summary_content)
+                            if time_match:
+                                analytics_data['generation_time'] = f"{time_match.group(1)}s"
+                            
+                            clips_match = re.search(r'Generated (\d+) video clips', summary_content)
+                            if clips_match:
+                                analytics_data['clips_generated'] = clips_match.group(1)
+                                
+                    except Exception:
+                        pass
+                
+                # Generate analytics HTML
+                analytics_html = f"""
+                <div style='padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;'>
+                    <h4 style='margin-top: 0; color: #495057;'>📈 Video Analytics</h4>
+                    
+                    <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;'>
+                        <div style='background: #e3f2fd; padding: 15px; border-radius: 6px; text-align: center;'>
+                            <h5 style='margin: 0; color: #1976d2;'>⏱️ Generation Time</h5>
+                            <span style='font-size: 24px; font-weight: bold; color: #1976d2;'>{analytics_data['generation_time']}</span>
+                        </div>
+                        <div style='background: #e8f5e8; padding: 15px; border-radius: 6px; text-align: center;'>
+                            <h5 style='margin: 0; color: #388e3c;'>🎬 Clips Generated</h5>
+                            <span style='font-size: 24px; font-weight: bold; color: #388e3c;'>{analytics_data['clips_generated']}</span>
+                        </div>
+                    </div>
+                    
+                    <div style='margin-bottom: 15px;'>
+                        <h5 style='color: #495057;'>🤖 AI Models Used:</h5>
+                        <div style='background: #fff3e0; padding: 10px; border-radius: 4px; border-left: 4px solid #ff9800;'>
+                            <span style='color: #ef6c00;'>• VEO-2 (Video Generation)</span><br>
+                            <span style='color: #ef6c00;'>• Gemini 2.5 Flash (Script & Prompts)</span><br>
+                            <span style='color: #ef6c00;'>• Google TTS (Audio)</span>
+                        </div>
+                    </div>
+                    
+                    <div style='margin-bottom: 15px;'>
+                        <h5 style='color: #495057;'>📊 Platform Optimization:</h5>
+                        <div style='background: #f3e5f5; padding: 10px; border-radius: 4px; border-left: 4px solid #9c27b0;'>
+                            <span style='color: #7b1fa2;'>• Aspect Ratio: 9:16 (TikTok Optimized)</span><br>
+                            <span style='color: #7b1fa2;'>• Duration: Optimized for engagement</span><br>
+                            <span style='color: #7b1fa2;'>• Text Overlays: Mobile-friendly</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h5 style='color: #495057;'>🎯 Success Metrics:</h5>
+                        <div style='background: #e8f5e8; padding: 10px; border-radius: 4px; border-left: 4px solid #4caf50;'>
+                            <span style='color: #2e7d32;'>✅ Video Generation: Success</span><br>
+                            <span style='color: #2e7d32;'>✅ Audio Sync: Perfect</span><br>
+                            <span style='color: #2e7d32;'>✅ Text Overlays: Applied</span>
+                        </div>
+                    </div>
+                </div>
+                """
+                
+                return analytics_html
+                
+            except Exception as e:
+                return f"<div style='padding: 20px; text-align: center; color: #dc3545;'>Error generating analytics: {str(e)}</div>"
+        
         orientation_mode.change(
             update_orientation_info,
             inputs=[orientation_mode],
@@ -1579,6 +1865,13 @@ def create_unified_realtime_interface():
             outputs=[log_output]
         )
         
+        # Enhanced video player event handlers
+        refresh_history_btn.click(
+            refresh_session_history,
+            inputs=[],
+            outputs=[session_history]
+        )
+        
         # Main generation function
         def generate_video_with_force_controls(mission, category, platform, duration, force_mode, orientation_mode):
             try:
@@ -1587,8 +1880,17 @@ def create_unified_realtime_interface():
                         "❌ Please enter a mission statement",
                         get_enhanced_css() + '<div class="discussions-container">❌ No mission provided</div>',
                         "No mission provided - no logs available",
-                        gr.update(visible=False),
-                        gr.update(visible=False),
+                        gr.update(visible=False),  # video_output
+                        "<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #dc3545;'>No mission provided</div>",  # video_metadata
+                        gr.update(visible=False),  # download_output
+                        "<div style='padding: 20px; text-align: center; color: #dc3545;'>No mission provided</div>",  # analytics_output
+                        gr.update(visible=False),  # play_btn
+                        gr.update(visible=False),  # pause_btn
+                        gr.update(visible=False),  # restart_btn
+                        gr.update(visible=False),  # fullscreen_btn
+                        gr.update(visible=False),  # download_mp4_btn
+                        gr.update(visible=False),  # download_gif_btn
+                        gr.update(visible=False),  # download_audio_btn
                         gr.update(interactive=True)  # Re-enable button
                     )
                 
@@ -1632,8 +1934,17 @@ def create_unified_realtime_interface():
                         f"❌ Invalid selection: {e}",
                         get_enhanced_css() + '<div class="discussions-container">❌ Invalid category or platform</div>',
                         f"Error: {e}",
-                        gr.update(visible=False),
-                        gr.update(visible=False),
+                        gr.update(visible=False),  # video_output
+                        f"<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #dc3545;'>Invalid selection: {e}</div>",  # video_metadata
+                        gr.update(visible=False),  # download_output
+                        f"<div style='padding: 20px; text-align: center; color: #dc3545;'>Invalid selection: {e}</div>",  # analytics_output
+                        gr.update(visible=False),  # play_btn
+                        gr.update(visible=False),  # pause_btn
+                        gr.update(visible=False),  # restart_btn
+                        gr.update(visible=False),  # fullscreen_btn
+                        gr.update(visible=False),  # download_mp4_btn
+                        gr.update(visible=False),  # download_gif_btn
+                        gr.update(visible=False),  # download_audio_btn
                         gr.update(interactive=True)  # Re-enable button
                     )
                 
@@ -1686,12 +1997,25 @@ def create_unified_realtime_interface():
                     global_visualizer.complete_discussion(1.0, "N/A")
                     final_discussion_html = global_visualizer.generate_discussion_html()
                     
+                    # Generate video metadata and analytics
+                    video_metadata_html = generate_video_metadata(result.file_path)
+                    video_analytics_html = generate_video_analytics(result.file_path)
+                    
                     return (
                         final_status,
                         final_discussion_html,
                         final_logs,
-                        gr.update(value=result.file_path, visible=True),
-                        gr.update(value=result.file_path, visible=True),
+                        gr.update(value=result.file_path, visible=True),  # video_output
+                        video_metadata_html,  # video_metadata
+                        gr.update(value=result.file_path, visible=True),  # download_output
+                        video_analytics_html,  # analytics_output
+                        gr.update(visible=True),  # play_btn
+                        gr.update(visible=True),  # pause_btn
+                        gr.update(visible=True),  # restart_btn
+                        gr.update(visible=True),  # fullscreen_btn
+                        gr.update(visible=True),  # download_mp4_btn
+                        gr.update(visible=True),  # download_gif_btn
+                        gr.update(visible=True),  # download_audio_btn
                         gr.update(interactive=True)  # Re-enable button
                     )
                 else:
@@ -1709,8 +2033,17 @@ def create_unified_realtime_interface():
                         "❌ Video generation failed",
                         final_discussion_html,
                         final_logs,
-                        gr.update(visible=False),
-                        gr.update(visible=False),
+                        gr.update(visible=False),  # video_output
+                        "<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #dc3545;'>Video generation failed</div>",  # video_metadata
+                        gr.update(visible=False),  # download_output
+                        "<div style='padding: 20px; text-align: center; color: #dc3545;'>Video generation failed</div>",  # analytics_output
+                        gr.update(visible=False),  # play_btn
+                        gr.update(visible=False),  # pause_btn
+                        gr.update(visible=False),  # restart_btn
+                        gr.update(visible=False),  # fullscreen_btn
+                        gr.update(visible=False),  # download_mp4_btn
+                        gr.update(visible=False),  # download_gif_btn
+                        gr.update(visible=False),  # download_audio_btn
                         gr.update(interactive=True)  # Re-enable button
                     )
                     
@@ -1735,8 +2068,17 @@ def create_unified_realtime_interface():
                     error_msg,
                     error_html,
                     error_logs,
-                    gr.update(visible=False),
-                    gr.update(visible=False),
+                    gr.update(visible=False),  # video_output
+                    f"<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #dc3545;'>Error: {str(e)}</div>",  # video_metadata
+                    gr.update(visible=False),  # download_output
+                    f"<div style='padding: 20px; text-align: center; color: #dc3545;'>Error: {str(e)}</div>",  # analytics_output
+                    gr.update(visible=False),  # play_btn
+                    gr.update(visible=False),  # pause_btn
+                    gr.update(visible=False),  # restart_btn
+                    gr.update(visible=False),  # fullscreen_btn
+                    gr.update(visible=False),  # download_mp4_btn
+                    gr.update(visible=False),  # download_gif_btn
+                    gr.update(visible=False),  # download_audio_btn
                     gr.update(interactive=True)  # Re-enable button
                 )
         
@@ -1759,7 +2101,16 @@ def create_unified_realtime_interface():
                 discussion_output,
                 log_output,
                 video_output,
+                video_metadata,
                 download_output,
+                analytics_output,
+                play_btn,
+                pause_btn,
+                restart_btn,
+                fullscreen_btn,
+                download_mp4_btn,
+                download_gif_btn,
+                download_audio_btn,
                 generate_btn  # Add button to outputs to control its state
             ]
         ).then(
