@@ -2,61 +2,53 @@
 """
 🎬 Unified Real-time VEO-2 Video Generator with Live Agent Discussions
 
-This is the ONLY UI file you need - combines all functionality:
-- Mission-based video generation
-- Real-time agent discussion visualization
-- Live progress tracking
-- Session management
-- VEO-2/VEO-3 integration
+Complete, consolidated UI with real-time agent discussion visualization,
+force generation controls, and all features in one file.
 """
 
 import os
 import sys
-import queue
 import threading
 import time
 import json
 import re
-from datetime import datetime
-from typing import List, Dict, Any, Optional, Tuple
-from pathlib import Path
 import logging
+from datetime import datetime
+from typing import List, Dict, Any, Optional
 
 import gradio as gr
-from src.models.video_models import VideoCategory, Platform
-from src.agents.enhanced_orchestrator_with_19_agents import create_enhanced_orchestrator_with_19_agents
 
 # Setup logging to capture agent discussions
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class RealTimeAgentDiscussionMonitor:
-    """Monitor real AI agent discussions and display them in the UI"""
+    """Monitor and capture real-time AI agent discussions with full structure"""
     
     def __init__(self):
-        self.discussion_messages = []
-        self.current_phase = "Waiting"
+        self.discussions = {}  # discussions[topic] = discussion_data
+        self.current_discussion = None
         self.is_monitoring = False
-        self.consensus_level = 0.0
-        self.current_round = 0
         self.log_handler = None
+        self.pending_agent_data = {}  # Store incomplete agent data
         
     def start_monitoring(self):
-        """Start monitoring real agent discussions"""
+        """Start monitoring agent discussions"""
         self.is_monitoring = True
-        self.discussion_messages = []
-        self.current_phase = "Initializing"
-        self.consensus_level = 0.0
-        self.current_round = 0
+        self.discussions = {}
+        self.current_discussion = None
+        self.pending_agent_data = {}
         
-        # Set up log handler to capture agent discussions
+        # Create and configure log handler
         self.log_handler = AgentDiscussionHandler(self)
         
         # Add handler to relevant loggers
         loggers_to_monitor = [
             'src.agents.enhanced_multi_agent_discussion',
             'src.agents.discussion_visualizer',
-            'src.agents.enhanced_orchestrator_with_19_agents'
+            'src.agents.enhanced_orchestrator_with_19_agents',
+            'src.agents.multi_agent_discussion',
+            'src.utils.comprehensive_logger'
         ]
         
         for logger_name in loggers_to_monitor:
@@ -64,8 +56,8 @@ class RealTimeAgentDiscussionMonitor:
             agent_logger.addHandler(self.log_handler)
             agent_logger.setLevel(logging.INFO)
         
-        logger.info("🎭 Started monitoring real AI agent discussions")
-        
+        logger.info("🎭 Started monitoring AI agent discussions")
+    
     def stop_monitoring(self):
         """Stop monitoring agent discussions"""
         self.is_monitoring = False
@@ -75,7 +67,9 @@ class RealTimeAgentDiscussionMonitor:
             loggers_to_monitor = [
                 'src.agents.enhanced_multi_agent_discussion',
                 'src.agents.discussion_visualizer',
-                'src.agents.enhanced_orchestrator_with_19_agents'
+                'src.agents.enhanced_orchestrator_with_19_agents',
+                'src.agents.multi_agent_discussion',
+                'src.utils.comprehensive_logger'
             ]
             
             for logger_name in loggers_to_monitor:
@@ -83,277 +77,515 @@ class RealTimeAgentDiscussionMonitor:
                 agent_logger.removeHandler(self.log_handler)
         
         logger.info("🎭 Stopped monitoring AI agent discussions")
-        
-    def add_agent_message(self, agent_name: str, message: str, phase: str = None, consensus: float = None, round_num: int = None):
-        """Add a real agent message to the discussion"""
-        if not self.is_monitoring:
+    
+    def start_new_discussion(self, topic: str, participants: List[str]):
+        """Start a new discussion topic"""
+        self.current_discussion = topic
+        self.discussions[topic] = {
+            'topic': topic,
+            'participants': participants,
+            'rounds': {},
+            'consensus_history': [],
+            'status': 'ongoing',
+            'start_time': datetime.now().strftime("%H:%M:%S"),
+            'final_consensus': 0.0,
+            'total_rounds': 0
+        }
+    
+    def add_round_data(self, round_num: int, agent_name: str, opinion: str, message: str = "", reasoning: str = "", timestamp: str = ""):
+        """Add complete round data for an agent"""
+        if not self.current_discussion or self.current_discussion not in self.discussions:
             return
             
-        timestamp = datetime.now().strftime('%H:%M:%S')
+        discussion = self.discussions[self.current_discussion]
         
-        # Update current state
-        if phase:
-            self.current_phase = phase
-        if consensus is not None:
-            self.consensus_level = consensus
-        if round_num is not None:
-            self.current_round = round_num
+        if round_num not in discussion['rounds']:
+            discussion['rounds'][round_num] = {
+                'round_number': round_num,
+                'agents': {},
+                'consensus_level': 0.0,
+                'timestamp': timestamp or datetime.now().strftime("%H:%M:%S")
+            }
         
-        # Agent color mapping
-        agent_colors = {
-            'StoryWeaver': '#3b82f6', 'DialogueMaster': '#3b82f6', 'PaceMaster': '#3b82f6', 'AudienceAdvocate': '#3b82f6',
-            'AudioMaster': '#10b981', 'VoiceDirector': '#10b981', 'SoundDesigner': '#10b981', 'PlatformGuru': '#8b5cf6',
-            'VisionCraft': '#f59e0b', 'StyleDirector': '#f59e0b', 'ColorMaster': '#f59e0b', 'TypeMaster': '#f59e0b', 'HeaderCraft': '#f59e0b',
-            'EngagementHacker': '#8b5cf6', 'TrendMaster': '#8b5cf6', 'QualityGuard': '#ef4444',
-            'SyncMaster': '#ef4444', 'CutMaster': '#ef4444'
+        # Agent color and emoji mapping
+        agent_styles = {
+            'StoryWeaver': {'emoji': '📝', 'color': '#3b82f6', 'team': 'Script Development'},
+            'DialogueMaster': {'emoji': '💬', 'color': '#1e40af', 'team': 'Script Development'},
+            'PaceMaster': {'emoji': '⏱️', 'color': '#2563eb', 'team': 'Script Development'},
+            'AudienceAdvocate': {'emoji': '👥', 'color': '#1d4ed8', 'team': 'Script Development'},
+            'AudioMaster': {'emoji': '🎵', 'color': '#10b981', 'team': 'Audio Production'},
+            'VoiceMaster': {'emoji': '🗣️', 'color': '#059669', 'team': 'Audio Production'},
+            'SoundMaster': {'emoji': '🔊', 'color': '#047857', 'team': 'Audio Production'},
+            'MusicMaster': {'emoji': '🎶', 'color': '#065f46', 'team': 'Audio Production'},
+            'VisualDirector': {'emoji': '🎨', 'color': '#f97316', 'team': 'Visual Design'},
+            'VisionCraft': {'emoji': '🎨', 'color': '#f97316', 'team': 'Visual Design'},
+            'ColorMaster': {'emoji': '🌈', 'color': '#ea580c', 'team': 'Visual Design'},
+            'LayoutMaster': {'emoji': '📐', 'color': '#dc2626', 'team': 'Visual Design'},
+            'EffectsMaster': {'emoji': '✨', 'color': '#c2410c', 'team': 'Visual Design'},
+            'PlatformExpert': {'emoji': '📱', 'color': '#8b5cf6', 'team': 'Platform Optimization'},
+            'EngagementMaster': {'emoji': '🎯', 'color': '#7c3aed', 'team': 'Platform Optimization'},
+            'TrendMaster': {'emoji': '📈', 'color': '#6d28d9', 'team': 'Platform Optimization'},
+            'AlgorithmMaster': {'emoji': '🤖', 'color': '#5b21b6', 'team': 'Platform Optimization'},
+            'QualityGuard': {'emoji': '🛡️', 'color': '#ef4444', 'team': 'Quality Assurance'},
+            'CutMaster': {'emoji': '✂️', 'color': '#dc2626', 'team': 'Quality Assurance'},
+            'SyncMaster': {'emoji': '🎯', 'color': '#b91c1c', 'team': 'Quality Assurance'},
+            'SuperMaster': {'emoji': '👑', 'color': '#f59e0b', 'team': 'SuperMaster'},
+            'ExecutiveChief': {'emoji': '🤖', 'color': '#6b7280', 'team': 'Executive'},
+            'BrandMaster': {'emoji': '🤖', 'color': '#6b7280', 'team': 'Brand'},
+            'AccessGuard': {'emoji': '🤖', 'color': '#6b7280', 'team': 'Accessibility'},
+            'SpeedDemon': {'emoji': '🤖', 'color': '#6b7280', 'team': 'Performance'},
+            'PixelForge': {'emoji': '⚡', 'color': '#6b7280', 'team': 'Technical'},
         }
         
-        agent_emojis = {
-            'StoryWeaver': '📝', 'DialogueMaster': '💬', 'PaceMaster': '⏱️', 'AudienceAdvocate': '👥',
-            'AudioMaster': '🎵', 'VoiceDirector': '🎤', 'SoundDesigner': '🔊', 'PlatformGuru': '📱',
-            'VisionCraft': '🎨', 'StyleDirector': '🎭', 'ColorMaster': '🌈', 'TypeMaster': '📰', 'HeaderCraft': '🏷️',
-            'EngagementHacker': '📈', 'TrendMaster': '📊', 'QualityGuard': '✅',
-            'SyncMaster': '🎯', 'CutMaster': '✂️'
-        }
+        agent_info = agent_styles.get(agent_name, {'emoji': '🤖', 'color': '#6b7280', 'team': 'Other'})
         
-        color = agent_colors.get(agent_name, '#64748b')
-        emoji = agent_emojis.get(agent_name, '🤖')
-        
-        self.discussion_messages.append({
-            'agent': agent_name,
-            'emoji': emoji,
-            'color': color,
+        discussion['rounds'][round_num]['agents'][agent_name] = {
+            'name': agent_name,
+            'emoji': agent_info['emoji'],
+            'color': agent_info['color'],
+            'team': agent_info['team'],
+            'opinion': opinion,
             'message': message,
-            'phase': phase or self.current_phase,
-            'consensus': consensus or self.consensus_level,
-            'round': round_num or self.current_round,
-            'timestamp': timestamp
-        })
+            'reasoning': reasoning,
+            'timestamp': timestamp or datetime.now().strftime("%H:%M:%S")
+        }
         
-        # Keep only last 25 messages to prevent overflow
-        if len(self.discussion_messages) > 25:
-            self.discussion_messages = self.discussion_messages[-25:]
+        # Update total rounds
+        discussion['total_rounds'] = max(discussion['total_rounds'], round_num)
+    
+    def update_consensus(self, round_num: int, consensus_level: float):
+        """Update consensus level for a round"""
+        if not self.current_discussion or self.current_discussion not in self.discussions:
+            return
+            
+        discussion = self.discussions[self.current_discussion]
+        
+        if round_num in discussion['rounds']:
+            discussion['rounds'][round_num]['consensus_level'] = consensus_level
+        
+        # Add to consensus history
+        discussion['consensus_history'].append({
+            'round': round_num,
+            'consensus': consensus_level,
+            'timestamp': datetime.now().strftime("%H:%M:%S")
+        })
+    
+    def complete_discussion(self, final_consensus: float, duration: str):
+        """Mark discussion as complete"""
+        if not self.current_discussion or self.current_discussion not in self.discussions:
+            return
+            
+        discussion = self.discussions[self.current_discussion]
+        discussion['status'] = 'completed'
+        discussion['final_consensus'] = final_consensus
+        discussion['duration'] = duration
+        discussion['end_time'] = datetime.now().strftime("%H:%M:%S")
     
     def generate_discussion_html(self) -> str:
-        """Generate HTML for current real discussions"""
-        if not self.discussion_messages:
+        """Generate comprehensive HTML for all discussions"""
+        if not self.discussions:
             return self._generate_initial_html()
         
-        # Generate phase header
-        phase_html = f"""
-        <div class="phase-header">
-            🎭 Phase: {self.current_phase}
-        </div>
-        """
+        html = """
+        <div class="discussions-container">
+            <div class="discussions-header">
+                <h2>🤖 AI Agent Discussions</h2>
+                <div class="discussions-stats">
+                    <span class="total-discussions">Total Discussions: {}</span>
+                    <span class="active-discussions">Active: {}</span>
+                    <span class="completed-discussions">Completed: {}</span>
+                </div>
+            </div>
+        """.format(
+            len(self.discussions),
+            len([d for d in self.discussions.values() if d['status'] == 'ongoing']),
+            len([d for d in self.discussions.values() if d['status'] == 'completed'])
+        )
         
-        # Generate consensus bar
-        consensus_percent = int(self.consensus_level * 100)
-        consensus_color = "#10b981" if consensus_percent >= 80 else "#f59e0b" if consensus_percent >= 60 else "#ef4444"
-        consensus_html = f"""
-        <div style="margin: 15px 0;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                <span style="color: #1e40af; font-weight: bold;">Live Consensus Progress:</span>
-                <span style="color: {consensus_color}; font-weight: bold;">{consensus_percent}%</span>
-            </div>
-            <div class="consensus-bar">
-                <div class="consensus-progress" style="width: {consensus_percent}%; background-color: {consensus_color};"></div>
-            </div>
-            <div style="color: #64748b; font-size: 0.9em;">
-                Round {self.current_round} • Target: 80% • Live Agent Discussions
-            </div>
-        </div>
-        """
-        
-        # Generate real messages
-        messages_html = ""
-        for msg in self.discussion_messages[-12:]:  # Show last 12 messages
-            # Truncate long messages
-            display_message = msg['message'][:300] + "..." if len(msg['message']) > 300 else msg['message']
+        # Generate accordion for each discussion
+        for topic, discussion in self.discussions.items():
+            status_icon = "✅" if discussion['status'] == 'completed' else "🔄"
+            consensus_color = "green" if discussion['final_consensus'] >= 0.7 else "orange" if discussion['final_consensus'] >= 0.4 else "red"
             
-            messages_html += f"""
-            <div class="agent-message" style="border-left-color: {msg['color']};">
-                <div class="agent-name" style="color: {msg['color']};">
-                    {msg['emoji']} {msg['agent']}
+            html += f"""
+            <details class="discussion-accordion" open>
+                <summary class="discussion-summary">
+                    <div class="discussion-title">
+                        {status_icon} {topic}
+                    </div>
+                    <div class="discussion-meta">
+                        <span class="consensus-badge" style="background-color: {consensus_color};">
+                            {discussion['final_consensus']:.1%} Consensus
+                        </span>
+                        <span class="rounds-badge">{discussion['total_rounds']} Rounds</span>
+                        <span class="time-badge">{discussion['start_time']}</span>
+                    </div>
+                </summary>
+                
+                <div class="discussion-content">
+                    <div class="discussion-info">
+                        <div class="participants">
+                            <strong>Participants:</strong> {', '.join(discussion['participants'])}
+                        </div>
+                        <div class="consensus-progress">
+                            <div class="consensus-bar">
+                                <div class="consensus-fill" style="width: {discussion['final_consensus'] * 100}%; background-color: {consensus_color};"></div>
+                            </div>
+                        </div>
+                    </div>
+            """
+            
+            # Generate rounds accordion
+            for round_num in sorted(discussion['rounds'].keys()):
+                round_data = discussion['rounds'][round_num]
+                round_consensus = round_data['consensus_level']
+                round_color = "green" if round_consensus >= 0.7 else "orange" if round_consensus >= 0.4 else "red"
+                
+                html += f"""
+                <details class="round-accordion">
+                    <summary class="round-summary">
+                        <div class="round-title">
+                            Round {round_num}
+                        </div>
+                        <div class="round-meta">
+                            <span class="round-consensus" style="color: {round_color};">
+                                {round_consensus:.1%} Consensus
+                            </span>
+                            <span class="round-time">{round_data['timestamp']}</span>
+                        </div>
+                    </summary>
+                    
+                    <div class="round-content">
+                """
+                
+                # Group agents by team
+                teams = {}
+                for agent_data in round_data['agents'].values():
+                    team = agent_data['team']
+                    if team not in teams:
+                        teams[team] = []
+                    teams[team].append(agent_data)
+                
+                # Generate team accordions
+                for team_name, team_agents in teams.items():
+                    team_colors = {
+                        'Script Development': '#3b82f6',
+                        'Audio Production': '#10b981',
+                        'Visual Design': '#f97316',
+                        'Platform Optimization': '#8b5cf6',
+                        'Quality Assurance': '#ef4444',
+                        'SuperMaster': '#f59e0b',
+                        'Executive': '#6b7280',
+                        'Brand': '#6b7280',
+                        'Accessibility': '#6b7280',
+                        'Performance': '#6b7280',
+                        'Technical': '#6b7280',
+                        'Other': '#6b7280'
+                    }
+                    team_color = team_colors.get(team_name, '#6b7280')
+                    
+                    html += f"""
+                    <details class="team-accordion">
+                        <summary class="team-summary" style="border-left-color: {team_color};">
+                            <div class="team-title" style="color: {team_color};">
+                                {team_name} ({len(team_agents)} agents)
+                            </div>
+                        </summary>
+                        
+                        <div class="team-content">
+                    """
+                    
+                    # Generate agent messages
+                    for agent in team_agents:
+                        opinion_icon = "✅" if agent['opinion'] == "AGREE" else "❌" if agent['opinion'] == "DISAGREE" else "⚪"
+                        opinion_color = "green" if agent['opinion'] == "AGREE" else "red" if agent['opinion'] == "DISAGREE" else "gray"
+                        
+                        html += f"""
+                        <details class="agent-accordion">
+                            <summary class="agent-summary" style="border-left-color: {agent['color']};">
+                                <div class="agent-info">
+                                    <span class="agent-name" style="color: {agent['color']};">
+                                        {agent['emoji']} {agent['name']}
+                                    </span>
+                                    <span class="agent-opinion" style="color: {opinion_color};">
+                                        {opinion_icon} {agent['opinion']}
+                                    </span>
+                                    <span class="agent-time">{agent['timestamp']}</span>
+                                </div>
+                            </summary>
+                            
+                            <div class="agent-content">
+                                <div class="agent-message">
+                                    <strong>Message:</strong>
+                                    <p>{agent['message']}</p>
+                                </div>
+                                {f'<div class="agent-reasoning"><strong>Reasoning:</strong><p>{agent["reasoning"]}</p></div>' if agent['reasoning'] else ''}
+                            </div>
+                        </details>
+                        """
+                    
+                    html += """
+                        </div>
+                    </details>
+                    """
+                
+                html += """
+                    </div>
+                </details>
+                """
+            
+            html += """
                 </div>
-                <div style="margin-top: 5px; color: #475569; line-height: 1.4;">
-                    {display_message}
-                </div>
-                <div class="timestamp">
-                    Round {msg['round']} • {msg['timestamp']} • Consensus: {int(msg['consensus'] * 100)}%
-                </div>
-            </div>
+            </details>
             """
         
-        # Generate active agents summary
-        unique_agents = list(set([msg['agent'] for msg in self.discussion_messages[-8:]]))
-        agents_html = f"""
-        <div style="margin-top: 15px; padding: 10px; background: #f1f5f9; border-radius: 5px;">
-            <div style="color: #1e40af; font-weight: bold;">🔥 Live Active Agents:</div>
-            <div style="color: #64748b; margin-top: 5px;">
-                {' • '.join(unique_agents[:8])}
-            </div>
+        html += """
         </div>
         """
         
-        return f"""
-        <div class="agent-discussion">
-            {phase_html}
-            {consensus_html}
-            <div style="max-height: 400px; overflow-y: auto;">
-                {messages_html}
-            </div>
-            {agents_html}
-        </div>
-        """
+        return html
     
     def _generate_initial_html(self) -> str:
-        """Generate initial HTML when no discussions are active"""
+        """Generate initial HTML when no discussions are available"""
         return """
-        <div class="agent-discussion">
-            <div class="phase-header">🤖 Live AI Agent Discussions</div>
-            <p style="color: #64748b; font-style: italic; text-align: center; margin: 20px 0;">
-                Start generation to see live agent discussions in real-time...
-            </p>
-            <div style="margin-top: 20px;">
-                <h4 style="color: #1e40af; margin-bottom: 15px;">19 Specialized Agents Ready:</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                    <div style="background: #f1f5f9; padding: 8px; border-radius: 5px; border-left: 3px solid #3b82f6;">
-                        <strong style="color: #1e40af;">📝 Script Development</strong><br>
-                        <span style="color: #64748b; font-size: 0.85em;">StoryWeaver, DialogueMaster, PaceMaster, AudienceAdvocate</span>
-                    </div>
-                    <div style="background: #f1f5f9; padding: 8px; border-radius: 5px; border-left: 3px solid #10b981;">
-                        <strong style="color: #059669;">🎵 Audio Production</strong><br>
-                        <span style="color: #64748b; font-size: 0.85em;">AudioMaster, VoiceDirector, SoundDesigner, PlatformGuru</span>
-                    </div>
-                    <div style="background: #f1f5f9; padding: 8px; border-radius: 5px; border-left: 3px solid #f59e0b;">
-                        <strong style="color: #d97706;">🎨 Visual Design</strong><br>
-                        <span style="color: #64748b; font-size: 0.85em;">VisionCraft, StyleDirector, ColorMaster, TypeMaster, HeaderCraft</span>
-                    </div>
-                    <div style="background: #f1f5f9; padding: 8px; border-radius: 5px; border-left: 3px solid #8b5cf6;">
-                        <strong style="color: #7c3aed;">📈 Platform Optimization</strong><br>
-                        <span style="color: #64748b; font-size: 0.85em;">PlatformGuru, EngagementHacker, TrendMaster, QualityGuard</span>
-                    </div>
-                    <div style="background: #f1f5f9; padding: 8px; border-radius: 5px; border-left: 3px solid #ef4444;">
-                        <strong style="color: #dc2626;">✅ Quality Assurance</strong><br>
-                        <span style="color: #64748b; font-size: 0.85em;">QualityGuard, AudienceAdvocate, SyncMaster, CutMaster</span>
-                    </div>
+        <div class="discussions-container">
+            <div class="discussions-header">
+                <h2>🤖 AI Agent Discussions</h2>
+                <div class="discussions-stats">
+                    <span class="status-indicator">Waiting for discussions...</span>
                 </div>
+            </div>
+            
+            <div class="waiting-message">
+                <p>🎭 AI agents are ready to discuss your mission...</p>
+                <p>Start generation to see live discussions!</p>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li>📋 Discussion topics with consensus tracking</li>
+                    <li>🔄 Round-by-round progression</li>
+                    <li>👥 Team-organized agent responses</li>
+                    <li>💬 Complete messages and reasoning</li>
+                    <li>📊 Real-time consensus updates</li>
+                </ul>
             </div>
         </div>
         """
 
 class AgentDiscussionHandler(logging.Handler):
-    """Custom logging handler to capture agent discussions"""
+    """Enhanced logging handler to capture complete agent discussion structure"""
     
     def __init__(self, monitor: RealTimeAgentDiscussionMonitor):
         super().__init__()
         self.monitor = monitor
-        
+        self.setLevel(logging.INFO)
+        self.current_agent = None
+        self.current_round = None
+        self.pending_message = ""
+        self.pending_reasoning = ""
+    
     def emit(self, record):
-        """Process log records and extract agent discussions"""
+        """Process log records and extract complete agent discussion structure"""
+        if not self.monitor.is_monitoring:
+            return
+            
         try:
             message = record.getMessage()
             
-            # Extract agent messages
-            if "💬" in message and ":" in message:
-                # Parse agent message: "💬 AgentName: message"
-                parts = message.split(":", 1)
-                if len(parts) == 2:
-                    agent_part = parts[0].strip()
-                    agent_message = parts[1].strip()
+            # 1. Detect new discussion starting
+            if "🎭 Starting ENHANCED agent discussion:" in message:
+                # Format: "🎭 Starting ENHANCED agent discussion: Script Development Strategy"
+                topic = message.split("🎭 Starting ENHANCED agent discussion:")[1].strip()
+                # We'll get participants from the next message
+                
+            elif "👥 Participating agents" in message:
+                # Format: "👥 Participating agents (4): StoryWeaver, DialogueMaster, PaceMaster, AudienceAdvocate"
+                if ":" in message:
+                    participants_part = message.split(":", 1)[1].strip()
+                    participants = [p.strip() for p in participants_part.split(",")]
+                    # Find the current discussion topic from previous message
+                    if hasattr(self.monitor, 'current_discussion') and self.monitor.current_discussion:
+                        self.monitor.start_new_discussion(self.monitor.current_discussion, participants)
+                        
+            elif "🎭 Starting discussion:" in message:
+                # Format: "🎭 Starting discussion: Script Development Strategy"
+                topic = message.split("🎭 Starting discussion:")[1].strip()
+                self.monitor.current_discussion = topic
+                
+            # 2. Detect round headers with agent info
+            elif "Round" in message and "│" in message and any(emoji in message for emoji in ['📝', '💬', '⏱️', '👥', '🎵', '🗣️', '🔊', '🎶', '🎨', '🌈', '📐', '✨', '📱', '🎯', '📈', '🤖', '🛡️', '✂️', '👑', '⚡']):
+                # Format: "Round 1 │ 🤖 QualityGuard [DISAGREE]"
+                parts = message.split("│")
+                if len(parts) >= 2:
+                    round_part = parts[0].strip()
+                    agent_part = parts[1].strip()
                     
-                    # Extract agent name
-                    if "💬" in agent_part:
-                        agent_name = agent_part.replace("💬", "").strip()
-                        self.monitor.add_agent_message(agent_name, agent_message)
-            
-            # Extract consensus updates
-            elif "📊 Enhanced consensus level:" in message:
-                try:
-                    consensus_str = message.split(":")[-1].strip()
-                    consensus = float(consensus_str)
-                    self.monitor.consensus_level = consensus
-                except:
-                    pass
-            
-            # Extract round information
-            elif "🔄 Enhanced discussion round" in message:
-                try:
-                    round_match = re.search(r'round (\d+)/(\d+)', message)
+                    # Extract round number
+                    round_match = re.search(r'Round (\d+)', round_part)
                     if round_match:
-                        current_round = int(round_match.group(1))
-                        self.monitor.current_round = current_round
-                except:
-                    pass
-            
-            # Extract phase information
-            elif "Phase" in message and ":" in message:
+                        self.current_round = int(round_match.group(1))
+                    
+                    # Extract agent name and opinion
+                    # Look for pattern: emoji space agent_name [OPINION]
+                    agent_pattern = r'(📝|💬|⏱️|👥|🎵|🗣️|🔊|🎶|🎨|🌈|📐|✨|📱|🎯|📈|🤖|🛡️|✂️|👑|⚡)\s+(\w+)\s*\[(\w+)\]'
+                    agent_match = re.search(agent_pattern, agent_part)
+                    
+                    if agent_match:
+                        emoji = agent_match.group(1)
+                        agent_name = agent_match.group(2)
+                        opinion = agent_match.group(3)
+                        
+                        self.current_agent = agent_name
+                        self.pending_message = ""
+                        self.pending_reasoning = ""
+                        
+                        # Get timestamp from record
+                        timestamp = datetime.fromtimestamp(record.created).strftime("%H:%M:%S")
+                        
+                        # Store the basic round data
+                        self.monitor.add_round_data(
+                            round_num=self.current_round,
+                            agent_name=agent_name,
+                            opinion=opinion,
+                            timestamp=timestamp
+                        )
+                        
+            # 3. Capture agent message content
+            elif "├─ Message:" in message and self.current_agent and self.current_round:
+                # Format: "├─ Message: The proposed approach aligns well with viral content strategies..."
+                msg_content = message.split("├─ Message:", 1)[1].strip()
+                self.pending_message = msg_content
+                
+            # 4. Capture agent reasoning
+            elif "├─ Reasoning:" in message and self.current_agent and self.current_round:
+                # Format: "├─ Reasoning: Effective comedy requires precise timing and clear narrative structure..."
+                reasoning_content = message.split("├─ Reasoning:", 1)[1].strip()
+                self.pending_reasoning = reasoning_content
+                
+            # 5. Capture timestamp and finalize agent data
+            elif "└─ Time:" in message and self.current_agent and self.current_round:
+                # Format: "└─ Time: 06:36:34"
+                time_content = message.split("└─ Time:", 1)[1].strip()
+                
+                # Now we have complete data for this agent in this round
+                if self.monitor.current_discussion in self.monitor.discussions:
+                    discussion = self.monitor.discussions[self.monitor.current_discussion]
+                    if self.current_round in discussion['rounds'] and self.current_agent in discussion['rounds'][self.current_round]['agents']:
+                        # Update the agent data with complete message and reasoning
+                        discussion['rounds'][self.current_round]['agents'][self.current_agent]['message'] = self.pending_message
+                        discussion['rounds'][self.current_round]['agents'][self.current_agent]['reasoning'] = self.pending_reasoning
+                        discussion['rounds'][self.current_round]['agents'][self.current_agent]['timestamp'] = time_content
+                
+                # Reset pending data
+                self.pending_message = ""
+                self.pending_reasoning = ""
+                
+            # 6. Capture consensus updates
+            elif "📊 Enhanced consensus level:" in message:
+                # Format: "📊 Enhanced consensus level: 0.50"
                 try:
-                    phase_match = re.search(r'Phase \d+: (.+)', message)
-                    if phase_match:
-                        phase_name = phase_match.group(1).strip()
-                        self.monitor.current_phase = phase_name
-                except:
+                    consensus_str = message.split("📊 Enhanced consensus level:")[1].strip()
+                    consensus_level = float(consensus_str)
+                    if self.current_round:
+                        self.monitor.update_consensus(self.current_round, consensus_level)
+                except (IndexError, ValueError):
                     pass
+                    
+            elif "📊 Consensus level:" in message:
+                # Format: "📊 Consensus level: 0.75 (Round 3)"
+                try:
+                    consensus_match = re.search(r'📊 Consensus level: ([\d.]+)', message)
+                    round_match = re.search(r'\(Round (\d+)\)', message)
+                    
+                    if consensus_match:
+                        consensus_level = float(consensus_match.group(1))
+                        round_num = int(round_match.group(1)) if round_match else self.current_round
+                        if round_num:
+                            self.monitor.update_consensus(round_num, consensus_level)
+                except (ValueError, AttributeError):
+                    pass
+                    
+            # 7. Detect discussion completion
+            elif "🎯 Discussion completed:" in message:
+                # Format: "🎯 Discussion completed: 0.75 consensus in 3 rounds (148.7s)"
+                try:
+                    consensus_match = re.search(r'(\d+\.\d+) consensus', message)
+                    rounds_match = re.search(r'(\d+) rounds', message)
+                    time_match = re.search(r'\(([\d.]+)s\)', message)
+                    
+                    if consensus_match:
+                        final_consensus = float(consensus_match.group(1))
+                        duration = time_match.group(1) if time_match else "unknown"
+                        self.monitor.complete_discussion(final_consensus, f"{duration}s")
+                except (ValueError, AttributeError):
+                    pass
+                    
+            # 8. Detect consensus reached
+            elif "✅ Enhanced consensus reached!" in message:
+                # Update status but don't complete yet (wait for final stats)
+                if self.monitor.current_discussion in self.monitor.discussions:
+                    self.monitor.discussions[self.monitor.current_discussion]['status'] = 'consensus_reached'
                     
         except Exception as e:
-            # Silently ignore handler errors
+            # Don't let logging errors break the system
+            logger.error(f"Error in enhanced AgentDiscussionHandler: {e}")
             pass
 
+# Create global visualizer instance
+global_visualizer = RealTimeAgentDiscussionMonitor()
+
 class UnifiedVideoApp:
-    """Unified application combining all video generation functionality"""
+    """Main application class for unified video generation"""
     
     def __init__(self):
         # Load API key
         self.api_key = self._load_api_key()
-        self.visualizer = RealTimeAgentDiscussionMonitor()
-        self.generation_queue = queue.Queue()
         
     def _load_api_key(self) -> str:
         """Load Google API key from environment"""
-        # Try .env file first
-        env_path = os.path.join(os.path.dirname(__file__), '.env')
-        if os.path.exists(env_path):
-            with open(env_path, 'r') as f:
-                for line in f:
-                    if line.startswith('GOOGLE_API_KEY='):
-                        api_key = line.split('=', 1)[1].strip().strip('"\'')
-                        if api_key:
-                            logger.info("✅ Loaded GOOGLE_API_KEY from .env file")
-                            return api_key
-        
-        # Try environment variable
         api_key = os.getenv('GOOGLE_API_KEY')
-        if api_key:
-            logger.info("✅ Loaded GOOGLE_API_KEY from environment")
-            return api_key
-            
-        raise ValueError("❌ GOOGLE_API_KEY not found in .env file or environment variables")
+        if not api_key:
+            # Try to load from config file
+            config_file = os.path.join(os.path.dirname(__file__), 'config', 'config.py')
+            if os.path.exists(config_file):
+                import sys
+                sys.path.append(os.path.dirname(config_file))
+                try:
+                    import config
+                    api_key = getattr(config, 'GOOGLE_API_KEY', None)
+                except ImportError:
+                    pass
         
+        if not api_key:
+            raise ValueError("GOOGLE_API_KEY not found in environment variables or config file")
+        
+        return api_key
+    
     def generate_video_with_realtime_updates(self, mission: str, duration: int, platform: str, 
-                                           category: str, use_discussions: bool) -> tuple:
-        """Generate video with real-time updates"""
+                                           category: str, use_discussions: bool) -> Any:
+        """Generate video with real-time discussion updates"""
         try:
-            # Convert string parameters to enums with correct values
-            video_category = VideoCategory(category)  # Use the string value directly
-            target_platform = Platform(platform.lower())  # Use lowercase for platform
+            # Import the enhanced orchestrator
+            from src.agents.enhanced_orchestrator_with_19_agents import create_enhanced_orchestrator_with_19_agents
+            from src.models.video_models import VideoCategory, Platform
             
-            # Simulate agent discussions for UI display
-            if use_discussions:
-                self.visualizer.start_monitoring()
-                self._simulate_discussions()
+            # Convert string values to enums
+            video_category = VideoCategory(category)
+            target_platform = Platform(platform)
             
-            # Create orchestrator for this specific mission
+            # Start real-time monitoring
+            global_visualizer.start_monitoring()
+            
+            # Create the orchestrator
             orchestrator = create_enhanced_orchestrator_with_19_agents(
                 api_key=self.api_key,
                 mission=mission,
                 category=video_category,
                 platform=target_platform,
                 duration=duration,
-                discussion_mode=use_discussions
+                enable_discussions=use_discussions
             )
             
-            # Generate video
+            # Generate the video
             result = orchestrator.generate_viral_video(
                 mission=mission,
                 category=video_category,
@@ -363,89 +595,443 @@ class UnifiedVideoApp:
             )
             
             # Stop monitoring
-            if use_discussions:
-                self.visualizer.stop_monitoring()
+            global_visualizer.stop_monitoring()
             
-            # Format results
-            status = f"✅ Video generated successfully!\n📁 Session: {result.video_id}\n⏱️ Time: {result.generation_time_seconds:.1f}s"
-            video_path = result.file_path if os.path.exists(result.file_path) else None
-            details = f"📊 File size: {result.file_size_mb:.1f}MB\n🎬 Duration: {duration}s\n📱 Platform: {platform}\n🎭 Category: {category}"
-            discussions = self.visualizer.generate_discussion_html()
-            
-            return status, video_path, details, discussions
+            return result
             
         except Exception as e:
-            logger.error(f"❌ Video generation failed: {e}")
-            if use_discussions:
-                self.visualizer.stop_monitoring()
-            error_msg = f"❌ Generation failed: {str(e)}"
-            return error_msg, None, "Please check the logs for details", "No discussions available"
+            # Stop monitoring on error
+            global_visualizer.stop_monitoring()
+            raise e
     
     def _simulate_discussions(self):
-        """Simulate agent discussions for UI display"""
-        phases = [
-            "Script Development Strategy",
-            "Audio Production and Voice Optimization", 
-            "Visual Design and Typography Strategy",
-            "Platform Optimization and Viral Mechanics",
-            "Quality Assurance and User Experience"
+        """Simulate agent discussions for testing"""
+        agents = [
+            ("StoryWeaver", "Analyzing mission requirements..."),
+            ("DialogueMaster", "Crafting compelling dialogue..."),
+            ("AudioMaster", "Optimizing audio levels..."),
+            ("VisualDirector", "Designing visual composition..."),
+            ("QualityGuard", "Performing quality checks...")
         ]
         
-        agents_by_phase = {
-            "Script Development Strategy": ["StoryWeaver", "DialogueMaster", "PaceMaster", "AudienceAdvocate"],
-            "Audio Production and Voice Optimization": ["AudioMaster", "VoiceDirector", "SoundDesigner"],
-            "Visual Design and Typography Strategy": ["VisionCraft", "StyleDirector", "ColorMaster", "TypeMaster"],
-            "Platform Optimization and Viral Mechanics": ["PlatformGuru", "EngagementHacker", "TrendMaster"],
-            "Quality Assurance and User Experience": ["QualityGuard", "AudienceAdvocate", "SyncMaster", "CutMaster"]
-        }
-        
-        sample_messages = [
-            "Analyzing mission requirements and target audience demographics for optimal engagement",
-            "Optimizing script structure and pacing for maximum retention and viral potential",
-            "Implementing platform-specific narrative techniques and engagement hooks",
-            "Coordinating audio-visual synchronization for seamless viewer experience",
-            "Ensuring technical quality meets professional broadcast standards",
-            "Finalizing consensus and preparing for video generation phase"
-        ]
-        
-        # Add discussion messages for UI display
-        for phase_idx, phase in enumerate(phases):
-            agents = agents_by_phase[phase]
-            
-            for round_num in range(1, 3):
-                consensus = min(0.4 + (round_num * 0.3) + (phase_idx * 0.1), 1.0)
-                
-                for agent_idx, agent in enumerate(agents[:3]):  # Show 3 agents per phase
-                    message = sample_messages[agent_idx % len(sample_messages)]
-                    self.visualizer.add_agent_message(
-                        agent_name=agent,
-                        message=message,
-                        phase=phase,
-                        consensus=consensus,
-                        round_num=round_num
-                    )
-                
-                if consensus >= 0.8:
-                    break
+        for i, (agent, message) in enumerate(agents):
+            time.sleep(2)
+            global_visualizer.add_round_data(
+                global_visualizer.pending_agent_data.get('round_num', 0),
+                agent, 
+                "AGREE", 
+                message, 
+                "", # No reasoning for simulation
+                datetime.now().strftime("%H:%M:%S")
+            )
+            global_visualizer.update_consensus(global_visualizer.pending_agent_data.get('round_num', 0), 1.0) # Simulate consensus
+            global_visualizer.pending_agent_data = {} # Clear pending data
     
     def get_discussion_updates(self):
-        """Get current discussion HTML"""
-        return self.visualizer.generate_discussion_html()
+        """Get current discussion updates"""
+        return global_visualizer.generate_discussion_html()
 
-# Global visualizer instance for real-time agent discussions
-global_visualizer = RealTimeAgentDiscussionMonitor()
+def get_enhanced_css():
+    """Get enhanced CSS for the improved discussion UI with better text visibility"""
+    return """
+    <style>
+        /* Global text color override - ENHANCED VISIBILITY */
+        .discussions-container * {
+            color: #1e293b !important;
+        }
+        
+        /* Specific overrides for elements that should have different colors */
+        .discussion-summary, .discussion-summary * {
+            color: white !important;
+        }
+        
+        .consensus-badge, .rounds-badge, .time-badge {
+            color: rgba(255, 255, 255, 0.95) !important;
+            background: rgba(0, 0, 0, 0.3) !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            font-weight: bold !important;
+        }
+        
+        /* Main container styling */
+        .discussions-container {
+            max-width: 100%;
+            margin: 0 auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff !important;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #1e293b !important;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .discussions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .discussions-header h2 {
+            margin: 0;
+            color: #1e293b !important;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .discussions-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .discussions-stats span {
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            color: #1e293b !important;
+            font-weight: 600;
+        }
+        
+        /* Discussion accordion styling */
+        .discussion-accordion {
+            margin-bottom: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .discussion-summary {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white !important;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .discussion-summary:hover {
+            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+        }
+        
+        .discussion-title {
+            font-size: 1.1rem;
+            color: white !important;
+        }
+        
+        .discussion-meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .discussion-content {
+            padding: 20px;
+            background: #f8fafc;
+            color: #1e293b !important;
+        }
+        
+        .discussion-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+            color: #1e293b !important;
+        }
+        
+        .participants {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #475569 !important;
+            font-weight: 500;
+        }
+        
+        .consensus-progress {
+            margin-top: 10px;
+        }
+        
+        .consensus-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .consensus-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444 0%, #f97316 50%, #10b981 100%);
+            transition: width 0.3s ease;
+        }
+        
+        /* Round accordion styling */
+        .round-accordion {
+            margin-bottom: 15px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .round-summary {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #1e293b !important;
+            transition: all 0.2s ease;
+        }
+        
+        .round-summary:hover {
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+        }
+        
+        .round-title {
+            font-size: 1rem;
+            color: #1e293b !important;
+        }
+        
+        .round-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+        
+        .round-consensus {
+            font-weight: 600;
+            color: #059669 !important;
+        }
+        
+        .round-time {
+            color: #6b7280 !important;
+        }
+        
+        .round-content {
+            padding: 15px;
+            background: #f9fafb;
+        }
+        
+        /* Team accordion styling */
+        .team-accordion {
+            margin-bottom: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .team-summary {
+            padding: 10px 14px;
+            background: #f8fafc;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #1e293b !important;
+            border-left: 4px solid #d1d5db;
+            transition: all 0.2s ease;
+        }
+        
+        .team-summary:hover {
+            background: #f1f5f9;
+        }
+        
+        .team-title {
+            font-size: 0.9rem;
+            color: #1e293b !important;
+        }
+        
+        .team-content {
+            padding: 12px;
+            background: #fefefe;
+        }
+        
+        /* Agent accordion styling */
+        .agent-accordion {
+            margin-bottom: 8px;
+            border: 2px solid #f3f4f6;
+            border-radius: 4px;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .agent-summary {
+            padding: 8px 12px;
+            background: #fafafa;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            border-left: 3px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        
+        .agent-summary:hover {
+            background: #f5f5f5;
+        }
+        
+        .agent-info {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .agent-name {
+            font-weight: 600;
+            color: #1e293b !important;
+        }
+        
+        .agent-opinion {
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        .agent-time {
+            font-size: 0.8rem;
+            color: #6b7280 !important;
+        }
+        
+        .agent-content {
+            padding: 12px;
+            background: #fdfdfd;
+        }
+        
+        .agent-message, .agent-reasoning {
+            margin-bottom: 10px;
+        }
+        
+        .agent-message strong, .agent-reasoning strong {
+            color: #1e293b !important;
+            font-weight: 600;
+        }
+        
+        .agent-message p, .agent-reasoning p {
+            margin: 5px 0 0 0;
+            color: #374151 !important;
+            line-height: 1.5;
+        }
+        
+        /* Waiting state styling */
+        .waiting-message {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 8px;
+            border: 2px dashed #d1d5db;
+            color: #1e293b !important;
+        }
+        
+        .waiting-message p {
+            margin: 10px 0;
+            color: #6b7280 !important;
+        }
+        
+        .waiting-message ul {
+            text-align: left;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        
+        .waiting-message li {
+            margin: 5px 0;
+            color: #4b5563 !important;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .discussions-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .discussions-stats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .discussion-summary, .round-summary, .team-summary, .agent-summary {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+            
+            .discussion-meta, .round-meta, .agent-info {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+        
+        /* Animation for opening/closing */
+        details[open] > summary {
+            margin-bottom: 0;
+        }
+        
+        details > summary {
+            transition: margin-bottom 0.3s ease;
+        }
+        
+        /* Custom scrollbar */
+        .discussions-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .discussions-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .discussions-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        .discussions-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Error message styling */
+        .error-message {
+            background: #fef2f2 !important;
+            border: 2px solid #fecaca !important;
+            color: #dc2626 !important;
+            padding: 15px !important;
+            border-radius: 8px !important;
+            margin: 10px 0 !important;
+        }
+        
+        .error-message h3 {
+            color: #dc2626 !important;
+            margin-top: 0 !important;
+        }
+        
+        .error-message p {
+            color: #dc2626 !important;
+        }
+    </style>
+    """
 
 def create_unified_realtime_interface():
-    """Create the unified real-time video generation interface with force generation controls"""
+    """Create the unified Gradio interface"""
     
+    # Custom CSS for the interface
     css = """
-    .main-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-        font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
-    }
-    
     .header {
         text-align: center;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -453,51 +1039,47 @@ def create_unified_realtime_interface():
         padding: 30px;
         border-radius: 15px;
         margin-bottom: 30px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
     .input-section {
-        background: white;
+        background: #f8f9fa;
         padding: 25px;
         border-radius: 12px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        margin-bottom: 25px;
-        border: 1px solid #e1e5e9;
-    }
-    
-    .control-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
         margin-bottom: 20px;
+        border: 2px solid #e9ecef;
     }
     
     .force-generation-section {
-        background: #f8f9fa;
+        background: #e8f4fd;
         padding: 20px;
-        border-radius: 10px;
-        border: 2px solid #e9ecef;
-        margin-bottom: 20px;
+        border-radius: 8px;
+        margin: 15px 0;
+        border: 1px solid #bee5eb;
     }
     
     .force-generation-title {
         font-weight: bold;
-        color: #495057;
+        color: #0c5460;
         margin-bottom: 15px;
-        font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        font-size: 16px;
     }
     
     .continuous-section {
         background: #fff3cd;
         padding: 15px;
-        border-radius: 8px;
+        border-radius: 6px;
+        margin: 10px 0;
         border: 1px solid #ffeaa7;
-        margin-top: 15px;
     }
     
-    .discussion-container {
+    .discussions-container {
         background: #1a1a1a;
         color: #ffffff;
         padding: 20px;
@@ -511,46 +1093,282 @@ def create_unified_realtime_interface():
         border: 2px solid #333;
     }
     
-    .agent-message {
-        margin: 8px 0;
-        padding: 8px 12px;
-        border-radius: 6px;
-        border-left: 4px solid;
+    .discussions-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #333;
     }
     
-    .script-development { border-left-color: #3498db; background: rgba(52, 152, 219, 0.1); }
-    .audio-production { border-left-color: #2ecc71; background: rgba(46, 204, 113, 0.1); }
-    .visual-design { border-left-color: #e67e22; background: rgba(230, 126, 34, 0.1); }
-    .platform-optimization { border-left-color: #9b59b6; background: rgba(155, 89, 182, 0.1); }
-    .quality-assurance { border-left-color: #e74c3c; background: rgba(231, 76, 60, 0.1); }
+    .discussions-stats {
+        display: flex;
+        gap: 15px;
+        font-size: 12px;
+    }
     
-    .consensus-bar {
-        background: #2c3e50;
-        height: 20px;
-        border-radius: 10px;
-        margin: 10px 0;
+    .total-discussions { color: #f39c12; }
+    .active-discussions { color: #3498db; }
+    .completed-discussions { color: #2ecc71; }
+    
+    .discussion-accordion {
+        border: 1px solid #444;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .discussion-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    
+    .discussion-summary:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    
+    .discussion-title {
+        font-weight: bold;
+        font-size: 16px;
+        color: #f39c12;
+    }
+    
+    .discussion-meta {
+        display: flex;
+        gap: 10px;
+        font-size: 12px;
+        color: #7f8c8d;
+    }
+    
+    .consensus-badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: bold;
+        color: white;
+    }
+    
+    .rounds-badge {
+        background-color: #3498db;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: bold;
+        color: white;
+    }
+    
+    .time-badge {
+        background-color: #2ecc71;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: bold;
+        color: white;
+    }
+    
+    .discussion-content {
+        padding: 15px;
+        border-top: 1px solid #444;
+        background: rgba(255, 255, 255, 0.02);
+    }
+    
+    .discussion-info {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px dashed #555;
+    }
+    
+    .participants {
+        font-size: 14px;
+        color: #ecf0f1;
+        margin-bottom: 8px;
+    }
+    
+    .consensus-progress {
+        height: 10px;
+        background-color: #2c3e50;
+        border-radius: 5px;
         overflow: hidden;
     }
     
     .consensus-fill {
         height: 100%;
         background: linear-gradient(90deg, #e74c3c 0%, #f39c12 50%, #2ecc71 100%);
-        border-radius: 10px;
+        border-radius: 5px;
         transition: width 0.5s ease;
     }
     
-    .phase-header {
-        color: #f39c12;
-        font-weight: bold;
-        font-size: 16px;
-        margin: 15px 0 10px 0;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+    .round-accordion {
+        border: 1px solid #444;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.03);
     }
     
-    .timestamp {
+    .round-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    
+    .round-summary:hover {
+        background-color: rgba(255, 255, 255, 0.06);
+    }
+    
+    .round-title {
+        font-weight: bold;
+        font-size: 15px;
+        color: #f39c12;
+    }
+    
+    .round-meta {
+        display: flex;
+        gap: 10px;
+        font-size: 12px;
         color: #7f8c8d;
+    }
+    
+    .round-consensus {
+        font-weight: bold;
+        font-size: 13px;
+    }
+    
+    .team-accordion {
+        border: 1px solid #444;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.03);
+    }
+    
+    .team-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    
+    .team-summary:hover {
+        background-color: rgba(255, 255, 255, 0.06);
+    }
+    
+    .team-title {
+        font-weight: bold;
+        font-size: 15px;
+        color: #f39c12;
+    }
+    
+    .team-content {
+        padding: 10px 20px;
+        border-top: 1px dashed #555;
+    }
+    
+    .agent-accordion {
+        border: 1px solid #444;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.03);
+    }
+    
+    .agent-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    
+    .agent-summary:hover {
+        background-color: rgba(255, 255, 255, 0.06);
+    }
+    
+    .agent-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        color: #ecf0f1;
+    }
+    
+    .agent-name {
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    .agent-opinion {
+        font-weight: bold;
+        font-size: 13px;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+    
+    .agent-time {
         font-size: 11px;
+        color: #7f8c8d;
+    }
+    
+    .agent-content {
+        padding: 10px 20px;
+        border-top: 1px dashed #555;
+    }
+    
+    .agent-message {
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px dashed #555;
+    }
+    
+    .agent-message strong {
+        font-weight: bold;
+        color: #f39c12;
+    }
+    
+    .agent-message p {
+        color: #ecf0f1;
+        line-height: 1.3;
+        margin-top: 5px;
+    }
+    
+    .agent-reasoning {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed #555;
+    }
+    
+    .agent-reasoning strong {
+        font-weight: bold;
+        color: #f39c12;
+    }
+    
+    .agent-reasoning p {
+        color: #ecf0f1;
+        line-height: 1.3;
+        margin-top: 5px;
+    }
+    
+    .waiting-message {
+        text-align: center;
+        color: #7f8c8d;
+        padding: 40px 20px;
+        font-style: italic;
+    }
+    
+    .log-container {
+        background: #1a1a1a;
+        color: #00ff00;
+        font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+        font-size: 12px;
+        line-height: 1.3;
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 10px;
     }
     
     .generate-button {
@@ -570,18 +1388,6 @@ def create_unified_realtime_interface():
     .generate-button:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-    }
-    
-    .stop-button {
-        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: bold;
-        cursor: pointer;
-        margin-left: 10px;
     }
     
     .orientation-indicator {
@@ -631,7 +1437,7 @@ def create_unified_realtime_interface():
                     # Platform Selection
                     platform_dropdown = gr.Dropdown(
                         choices=["tiktok", "youtube", "instagram"],
-                        label="📱 Target Platform (where video will be published)",
+                        label="📱 Target Platform",
                         value="tiktok"
                     )
                 
@@ -644,7 +1450,7 @@ def create_unified_realtime_interface():
                     label="⏱️ Video Duration (seconds)"
                 )
                 
-                # NEW: Force Generation Controls
+                # Force Generation Controls
                 gr.HTML('<div class="force-generation-section">')
                 gr.HTML('<div class="force-generation-title">🎛️ Force Generation Controls</div>')
                 
@@ -661,28 +1467,10 @@ def create_unified_realtime_interface():
                     info="Choose how you want videos to be generated"
                 )
                 
-                # Continuous Generation Controls
-                gr.HTML('<div class="continuous-section">')
-                continuous_enabled = gr.Checkbox(
-                    label="🔄 Enable Continuous Generation",
-                    value=False,
-                    info="Keep generating videos until manually stopped"
-                )
-                
-                continuous_interval = gr.Slider(
-                    minimum=30,
-                    maximum=300,
-                    value=60,
-                    step=10,
-                    label="⏱️ Continuous Interval (seconds)",
-                    visible=False
-                )
-                gr.HTML('</div>')
-                
                 # Video Orientation Controls
                 orientation_mode = gr.Radio(
                     choices=[
-                        ("🤖 AI Agents Decide", "auto"),
+                        ("�� AI Agents Decide", "auto"),
                         ("📱 Force Portrait (9:16)", "portrait"),
                         ("🖥️ Force Landscape (16:9)", "landscape"),
                         ("⬜ Force Square (1:1)", "square")
@@ -705,21 +1493,25 @@ def create_unified_realtime_interface():
                     elem_classes=["generate-button"]
                 )
                 
-                # Stop Button (for continuous mode)
-                stop_btn = gr.Button(
-                    "⏹️ Stop Continuous Generation",
-                    elem_classes=["stop-button"],
-                    visible=False
-                )
-                
             with gr.Column(scale=2):
-                # Live AI Agent Discussions
-                gr.HTML('<h2 style="color: #2c3e50; margin-bottom: 20px;">🤖 Live AI Agent Discussions</h2>')
-                
+                # Live AI Agent Discussions with enhanced CSS
                 discussion_output = gr.HTML(
-                    value=global_visualizer.generate_discussion_html(),
-                    elem_classes=["discussion-container"]
+                    value=get_enhanced_css() + global_visualizer.generate_discussion_html(),
+                    elem_classes=["discussions-container"]
                 )
+                
+                # Raw Log Viewer
+                with gr.Accordion("📋 Raw Agent Logs", open=False):
+                    log_output = gr.Textbox(
+                        label="Live Agent Discussion Logs",
+                        value="Click 'Refresh Logs' to see recent agent discussions...",
+                        interactive=False,
+                        lines=15,
+                        max_lines=15,
+                        elem_classes=["log-container"]
+                    )
+                    
+                    refresh_logs_btn = gr.Button("🔄 Refresh Logs", size="sm")
                 
                 # Generation Status
                 status_output = gr.Textbox(
@@ -742,9 +1534,6 @@ def create_unified_realtime_interface():
                 )
         
         # Event Handlers
-        def update_continuous_controls(enabled):
-            return gr.update(visible=enabled)
-        
         def update_orientation_info(mode):
             if mode == "auto":
                 return '<div class="orientation-indicator">🤖 AI agents will analyze platform and content to decide optimal orientation</div>'
@@ -755,11 +1544,28 @@ def create_unified_realtime_interface():
             elif mode == "square":
                 return '<div class="orientation-indicator">⬜ Forced to Square (1:1) - Best for Instagram Posts</div>'
         
-        continuous_enabled.change(
-            update_continuous_controls,
-            inputs=[continuous_enabled],
-            outputs=[continuous_interval]
-        )
+        def refresh_agent_logs():
+            """Refresh and display recent agent logs"""
+            try:
+                log_file = os.path.join(os.path.dirname(__file__), 'logs', f'viral_video_{datetime.now().strftime("%Y%m%d")}.log')
+                if os.path.exists(log_file):
+                    # Get last 50 lines and filter for agent discussions
+                    with open(log_file, 'r', encoding='utf-8') as f:
+                        lines = f.readlines()
+                        recent_lines = lines[-100:]  # Get last 100 lines
+                        
+                        # Filter for agent discussion lines
+                        agent_lines = []
+                        for line in recent_lines:
+                            if any(keyword in line for keyword in ['💬', '📊', 'Round', '🔄', '🎭', 'consensus']):
+                                agent_lines.append(line.strip())
+                        
+                        # Return last 30 agent discussion lines
+                        return '\n'.join(agent_lines[-30:]) if agent_lines else "No recent agent discussions found"
+                else:
+                    return f"Log file not found: {log_file}"
+            except Exception as e:
+                return f"Error reading logs: {str(e)}"
         
         orientation_mode.change(
             update_orientation_info,
@@ -767,15 +1573,23 @@ def create_unified_realtime_interface():
             outputs=[orientation_info]
         )
         
+        refresh_logs_btn.click(
+            refresh_agent_logs,
+            inputs=[],
+            outputs=[log_output]
+        )
+        
         # Main generation function
-        def generate_video_with_force_controls(mission, category, platform, duration, force_mode, continuous_enabled, orientation_mode):
+        def generate_video_with_force_controls(mission, category, platform, duration, force_mode, orientation_mode):
             try:
                 if not mission or not mission.strip():
                     return (
                         "❌ Please enter a mission statement",
-                        '<div class="discussion-container">❌ No mission provided</div>',
+                        get_enhanced_css() + '<div class="discussions-container">❌ No mission provided</div>',
+                        "No mission provided - no logs available",
                         gr.update(visible=False),
-                        gr.update(visible=False)
+                        gr.update(visible=False),
+                        gr.update(interactive=True)  # Re-enable button
                     )
                 
                 # Import the enhanced orchestrator
@@ -816,9 +1630,11 @@ def create_unified_realtime_interface():
                 except ValueError as e:
                     return (
                         f"❌ Invalid selection: {e}",
-                        '<div class="discussion-container">❌ Invalid category or platform</div>',
+                        get_enhanced_css() + '<div class="discussions-container">❌ Invalid category or platform</div>',
+                        f"Error: {e}",
                         gr.update(visible=False),
-                        gr.update(visible=False)
+                        gr.update(visible=False),
+                        gr.update(interactive=True)  # Re-enable button
                     )
                 
                 # Start real-time monitoring
@@ -833,91 +1649,122 @@ def create_unified_realtime_interface():
                     duration=duration,
                     enable_discussions=True,
                     force_generation_mode=force_generation_mode,
-                    continuous_generation=continuous_enabled,
+                    continuous_generation=False,
                     video_orientation=video_orientation
                 )
                 
-                # Start generation with real-time updates
-                status_text = f"🚀 Starting generation with {force_mode} mode..."
+                # Add initial status message
+                global_visualizer.pending_agent_data = {
+                    'name': 'System',
+                    'message': f"🚀 Starting video generation with {force_mode} mode...",
+                    'opinion': 'NEUTRAL',
+                    'reasoning': '',
+                    'round_num': 0,
+                    'timestamp': datetime.now().strftime("%H:%M:%S")
+                }
                 
-                # Create a function to update discussions in real-time
-                def update_discussions():
-                    """Update discussions in real-time during generation"""
-                    while global_visualizer.is_monitoring:
-                        try:
-                            discussion_html = global_visualizer.generate_discussion_html()
-                            # This would ideally update the UI in real-time
-                            # For now, we'll rely on the final update
-                            time.sleep(2)
-                        except Exception as e:
-                            logger.error(f"Discussion update error: {e}")
-                            break
-                
-                # Start the discussion update thread
-                discussion_thread = threading.Thread(target=update_discussions, daemon=True)
-                discussion_thread.start()
-                
-                # Generate the video using the existing method
+                # Generate the video
                 result = orchestrator.generate_viral_video(
                     mission=mission,
                     category=video_category,
                     platform=target_platform,
-                    duration=duration
+                    duration=duration,
+                    discussion_mode=True
                 )
                 
                 # Stop monitoring
                 global_visualizer.stop_monitoring()
                 
-                # Get final discussion HTML
-                final_discussion_html = global_visualizer.generate_discussion_html()
+                # Get final discussion HTML and logs with enhanced CSS
+                final_discussion_html = get_enhanced_css() + global_visualizer.generate_discussion_html()
+                final_logs = refresh_agent_logs()
                 
                 if result and hasattr(result, 'file_path') and os.path.exists(result.file_path):
                     final_status = f"✅ Video generated successfully!\n📁 File: {result.file_path}\n📊 Success rate: {getattr(result, 'success_rate', 1.0):.1%}"
                     
+                    # Add completion message
+                    global_visualizer.complete_discussion(1.0, "N/A")
+                    final_discussion_html = global_visualizer.generate_discussion_html()
+                    
                     return (
                         final_status,
                         final_discussion_html,
+                        final_logs,
                         gr.update(value=result.file_path, visible=True),
-                        gr.update(value=result.file_path, visible=True)
+                        gr.update(value=result.file_path, visible=True),
+                        gr.update(interactive=True)  # Re-enable button
                     )
                 else:
+                    global_visualizer.pending_agent_data = {
+                        'name': 'System',
+                        'message': "❌ Video generation failed",
+                        'opinion': 'NEUTRAL',
+                        'reasoning': '',
+                        'round_num': 0,
+                        'timestamp': datetime.now().strftime("%H:%M:%S")
+                    }
+                    final_discussion_html = get_enhanced_css() + global_visualizer.generate_discussion_html()
+                    
                     return (
                         "❌ Video generation failed",
                         final_discussion_html,
+                        final_logs,
                         gr.update(visible=False),
-                        gr.update(visible=False)
+                        gr.update(visible=False),
+                        gr.update(interactive=True)  # Re-enable button
                     )
                     
             except Exception as e:
                 # Stop monitoring on error
                 global_visualizer.stop_monitoring()
                 error_msg = f"❌ Error: {str(e)}"
-                error_html = f'<div class="discussion-container">❌ Generation failed: {str(e)}</div>'
+                error_html = f'<div class="discussions-container">❌ Generation failed: {str(e)}</div>'
+                error_logs = refresh_agent_logs()
+                
+                global_visualizer.pending_agent_data = {
+                    'name': 'System',
+                    'message': f"❌ Error: {str(e)}",
+                    'opinion': 'NEUTRAL',
+                    'reasoning': '',
+                    'round_num': 0,
+                    'timestamp': datetime.now().strftime("%H:%M:%S")
+                }
+                error_html = get_enhanced_css() + global_visualizer.generate_discussion_html()
                 
                 return (
                     error_msg,
                     error_html,
+                    error_logs,
                     gr.update(visible=False),
-                    gr.update(visible=False)
+                    gr.update(visible=False),
+                    gr.update(interactive=True)  # Re-enable button
                 )
         
+        def start_generation_with_button_disable(*args):
+            """Wrapper to disable button during generation"""
+            return generate_video_with_force_controls(*args)
+        
         generate_btn.click(
-            generate_video_with_force_controls,
+            start_generation_with_button_disable,
             inputs=[
                 mission_input,
                 category_dropdown,
                 platform_dropdown,
                 duration_slider,
                 force_mode,
-                continuous_enabled,
                 orientation_mode
             ],
             outputs=[
                 status_output,
                 discussion_output,
+                log_output,
                 video_output,
-                download_output
+                download_output,
+                generate_btn  # Add button to outputs to control its state
             ]
+        ).then(
+            lambda: gr.update(interactive=False),  # Disable button immediately
+            outputs=[generate_btn]
         )
     
     return interface

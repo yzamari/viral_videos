@@ -106,11 +106,25 @@ class GeneratedVideoConfig:
     visual_style: str = "cinematic"
     tone: str = "engaging"
     style: str = "professional"
+    target_audience: str = "general audience"  # Add target_audience parameter
     
     # Content structure
     hook: str = "Amazing content ahead!"
     main_content: Optional[List[str]] = None
     call_to_action: str = "Subscribe for more!"
+    
+    # Visual design parameters
+    color_scheme: Optional[List[str]] = None
+    text_overlays: Optional[List[Dict]] = None
+    transitions: Optional[List[str]] = None
+    
+    # Audio parameters
+    background_music_style: str = "upbeat"
+    voiceover_style: str = "natural"
+    sound_effects: Optional[List[str]] = None
+    
+    # Inspiration and scoring
+    inspired_by_videos: Optional[List[str]] = None
     
     # Technical settings
     use_real_veo2: bool = True
@@ -129,9 +143,25 @@ class GeneratedVideoConfig:
     frame_continuity: bool = False
     predicted_viral_score: float = 0.0
     
+    # Generation mode settings
+    image_only_mode: bool = False
+    fallback_only: bool = False
+    use_image_fallback: bool = True
+    images_per_second: int = 2
+    
     def __post_init__(self):
         if self.main_content is None:
             self.main_content = []
+        if self.color_scheme is None:
+            self.color_scheme = ["#FF6B6B", "#4ECDC4", "#FFFFFF"]
+        if self.text_overlays is None:
+            self.text_overlays = []
+        if self.transitions is None:
+            self.transitions = ["fade", "slide"]
+        if self.sound_effects is None:
+            self.sound_effects = []
+        if self.inspired_by_videos is None:
+            self.inspired_by_videos = []
     
     def get_aspect_ratio(self) -> str:
         """Get aspect ratio based on orientation and platform"""
@@ -146,23 +176,23 @@ class GeneratedVideoConfig:
             if self.target_platform == Platform.TIKTOK:
                 return "9:16"
             elif self.target_platform == Platform.YOUTUBE:
-                return "16:9"
+                return "9:16"  # YouTube Shorts are also 9:16
             elif self.target_platform == Platform.INSTAGRAM:
-                return "1:1"
+                return "9:16"  # Instagram Reels are 9:16
             else:
-                return "16:9"  # Default landscape
+                return "16:9"  # Facebook defaults to landscape
     
     def get_resolution(self) -> tuple:
-        """Get video resolution based on orientation"""
+        """Get video resolution based on orientation and platform"""
         aspect_ratio = self.get_aspect_ratio()
         if aspect_ratio == "9:16":
-            return (1080, 1920)  # Portrait
+            return (1080, 1920)  # Portrait - TikTok, Instagram Reels, YouTube Shorts
         elif aspect_ratio == "16:9":
-            return (1920, 1080)  # Landscape
+            return (1920, 1080)  # Landscape - Facebook, traditional video
         elif aspect_ratio == "1:1":
-            return (1080, 1080)  # Square
+            return (1080, 1080)  # Square - Instagram Posts
         else:
-            return (1920, 1080)  # Default landscape
+            return (1080, 1920)  # Default to portrait for modern social media
 
 class Narrative(str, Enum):
     """Video narrative/viewpoint options"""

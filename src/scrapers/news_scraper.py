@@ -26,7 +26,7 @@ class NewsArticle:
     category: str = "general"
     viral_score: float = 0.0
 
-class HotNewsScaper:
+class HotNewsScraper:
     """Scrape hot trending news from multiple sources"""
     
     def __init__(self):
@@ -291,7 +291,7 @@ def get_hot_news_video_prompt(topic: str, angle: str = "breaking") -> str:
     Returns:
         Ready-to-use video prompt based on hot news
     """
-    scraper = HotNewsScaper()
+    scraper = HotNewsScraper()
     articles = scraper.get_trending_news(topic, max_articles=1)
     
     if articles:

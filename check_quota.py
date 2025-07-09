@@ -69,4 +69,4 @@ try:
 except ImportError as e:
     print(f'❌ Import error: {e}')
 except Exception as e:
-    print(f'❌ Error checking quota: {e}') 
+    print(f'❌ Error checking quota: {e}')

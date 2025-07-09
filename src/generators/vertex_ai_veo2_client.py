@@ -113,6 +113,11 @@ class VertexAIVeo2Client:
             return self._create_fallback_clip(prompt, duration, clip_id)
         
         try:
+            # VEO-3 currently only supports 16:9 aspect ratio
+            if aspect_ratio == "9:16" and prefer_veo3:
+                logger.info("📱 VEO-3 doesn't support 9:16, using VEO-2 for portrait video")
+                prefer_veo3 = False
+            
             # Smart model selection based on requirements and preferences
             model_name, max_duration = self._select_optimal_model(duration, prefer_veo3, enable_audio)
             
@@ -358,6 +363,7 @@ class VertexAIVeo2Client:
                 
                 if response.status_code != 200:
                     logger.error(f"❌ Failed to poll operation: {response.status_code}")
+                    logger.error(f"Response: {response.text}")
                     return None
                 
                 result = response.json()
@@ -365,16 +371,69 @@ class VertexAIVeo2Client:
                 if result.get("done", False):
                     logger.info("✅ Video generation completed!")
                     
-                    # Extract video URI from response
-                    response_data = result.get("response", {})
-                    videos = response_data.get("videos", [])
+                    # Debug: Log the full response structure
+                    logger.debug(f"🔍 Full response: {json.dumps(result, indent=2)}")
                     
+                    # Extract video URI from response - Try multiple possible structures
+                    response_data = result.get("response", {})
+                    video_uri = None
+                    
+                    # Structure 1: Check for videos array
+                    videos = response_data.get("videos", [])
                     if videos and len(videos) > 0:
                         video_uri = videos[0].get("gcsUri")
-                        logger.info(f"📹 Generated video URI: {video_uri}")
+                        logger.info(f"📹 Found video URI in videos[0]: {video_uri}")
+                    
+                    # Structure 2: Check for predictions array (common in Vertex AI)
+                    if not video_uri:
+                        predictions = response_data.get("predictions", [])
+                        if predictions and len(predictions) > 0:
+                            prediction = predictions[0]
+                            # Check multiple possible keys
+                            for key in ['gcsUri', 'uri', 'video_uri', 'output_uri', 'generated_video']:
+                                if key in prediction:
+                                    video_uri = prediction[key]
+                                    logger.info(f"📹 Found video URI in predictions[0].{key}: {video_uri}")
+                                    break
+                    
+                    # Structure 3: Check direct in response
+                    if not video_uri:
+                        for key in ['gcsUri', 'uri', 'video_uri', 'output_uri', 'generated_video']:
+                            if key in response_data:
+                                video_uri = response_data[key]
+                                logger.info(f"📹 Found video URI in response.{key}: {video_uri}")
+                                break
+                    
+                    # Structure 4: Check for nested output
+                    if not video_uri:
+                        output_data = response_data.get("output", {})
+                        if isinstance(output_data, dict):
+                            for key in ['gcsUri', 'uri', 'video_uri', 'output_uri', 'generated_video']:
+                                if key in output_data:
+                                    video_uri = output_data[key]
+                                    logger.info(f"📹 Found video URI in output.{key}: {video_uri}")
+                                    break
+                    
+                    # Structure 5: Check for results array
+                    if not video_uri:
+                        results = response_data.get("results", [])
+                        if results and len(results) > 0:
+                            result_item = results[0]
+                            if isinstance(result_item, dict):
+                                for key in ['gcsUri', 'uri', 'video_uri', 'output_uri', 'generated_video']:
+                                    if key in result_item:
+                                        video_uri = result_item[key]
+                                        logger.info(f"📹 Found video URI in results[0].{key}: {video_uri}")
+                                        break
+                    
+                    if video_uri:
+                        logger.info(f"✅ Successfully extracted video URI: {video_uri}")
                         return video_uri
                     else:
-                        logger.error("❌ No videos found in response")
+                        logger.error("❌ No video URI found in response")
+                        logger.error(f"Available keys in response: {list(response_data.keys())}")
+                        if response_data:
+                            logger.error(f"Response data structure: {json.dumps(response_data, indent=2)}")
                         return None
                 
                 # Wait before next poll

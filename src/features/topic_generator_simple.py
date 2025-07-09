@@ -16,6 +16,7 @@ from typing import Dict, List, Any, Optional
 import google.generativeai as genai
 
 from ..utils.logging_config import get_logger
+from ..utils.session_manager import SessionManager
 
 logger = get_logger(__name__)
 
@@ -145,9 +146,9 @@ class TopicGeneratorSystem:
         
         logger.info(f"🎯 Starting topic generation for idea: '{idea}'")
         
-        # Create session directory
-        session_dir = os.path.join(self.output_dir, f"topic_session_{self.session_id}")
-        os.makedirs(session_dir, exist_ok=True)
+        # Create session directory using SessionManager
+        session_dir = SessionManager.create_session_folder(self.session_id)
+        self.session_dir = session_dir
         
         try:
             # Phase 1: Individual agent topic suggestions

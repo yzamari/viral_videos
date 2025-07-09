@@ -18,7 +18,7 @@ from ..utils.exceptions import (
     GenerationFailedError, APIException, 
     ContentPolicyViolation, NetworkError
 )
-from ..scrapers.news_scraper import HotNewsScaper
+from ..scrapers.news_scraper import HotNewsScraper
 
 logger = get_logger(__name__)
 
@@ -37,7 +37,7 @@ class Director:
         """Initialize Director with AI model"""
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model_name)
-        self.news_scraper = HotNewsScaper()
+        self.news_scraper = HotNewsScraper()
         self.hook_templates = self._load_hook_templates()
         self.content_structures = self._load_content_structures()
         

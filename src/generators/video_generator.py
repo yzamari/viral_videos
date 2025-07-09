@@ -1,26 +1,38 @@
 """
-Video generator using AI and video editing libraries with REAL VEO-2 integration
+Video generator using AI and video editing libraries
 """
 import os
 import json
-from datetime import datetime
-from typing import List, Dict, Optional, Tuple, Any, Union
-import random
+import subprocess
 import time
-import google.generativeai as genai
-from moviepy.editor import *
-from moviepy.video.fx.fadein import fadein
-from moviepy.video.fx.fadeout import fadeout
-from moviepy.video.tools.subtitles import SubtitlesClip
+import uuid
+from datetime import datetime
+from typing import List, Dict, Optional, Union, Any
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 from gtts import gTTS
 import tempfile
-import uuid
-import subprocess
 import requests
+import random
 
-# Import VEO client for real video generation
+# MoviePy imports
+from moviepy.editor import *
+try:
+    from moviepy.video.fx.fadein import fadein
+    from moviepy.video.fx.fadeout import fadeout
+    from moviepy.audio.fx.audio_fadein import audio_fadein
+    from moviepy.audio.fx.audio_fadeout import audio_fadeout
+except ImportError:
+    # Fallback for different moviepy versions
+    fadein = None
+    fadeout = None
+    audio_fadein = None
+    audio_fadeout = None
+
+# Google AI imports
+import google.generativeai as genai
+
+# Add project root to path for fallback imports
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from veo_client import VeoApiClient
@@ -31,6 +43,7 @@ try:
         Platform, VideoCategory, VideoOrientation, ForceGenerationMode
     )
     from ..utils.logging_config import get_logger
+    from ..utils.session_manager import SessionManager
     from ..utils.exceptions import (
         GenerationFailedError, RenderingError, 
         StorageError, ContentPolicyViolation
@@ -45,6 +58,7 @@ except ImportError:
         Platform, VideoCategory, VideoOrientation, ForceGenerationMode
     )
     from utils.logging_config import get_logger
+    from utils.session_manager import SessionManager
     from utils.exceptions import (
         GenerationFailedError, RenderingError, 
         StorageError, ContentPolicyViolation
@@ -101,6 +115,7 @@ def ensure_gcloud_auth():
         
         # Alternative: Try to activate service account if available
         try:
+            import os
             # Check if service account key exists
             service_account_paths = [
                 os.path.expanduser("~/.config/gcloud/application_default_credentials.json"),
@@ -156,16 +171,18 @@ class VideoGenerator:
         self.gcs_bucket = gcs_bucket or "viral-veo2-results"
         self.use_real_veo2 = use_real_veo2
         
-        # Initialize session - use provided session_id or generate one
-        self.session_id = session_id or str(uuid.uuid4())[:8]
+        # Initialize session using centralized SessionManager
+        if session_id:
+            self.session_id = session_id
+            self.session_dir = SessionManager.get_session_path(session_id)
+            os.makedirs(self.session_dir, exist_ok=True)
+        else:
+            self.session_id = SessionManager.create_session_id()
+            self.session_dir = SessionManager.create_session_folder(self.session_id)
         
         # UNIFIED OUTPUT STRUCTURE - All files go in session directory
         self.base_output_dir = "outputs"
-        self.session_dir = os.path.join(self.base_output_dir, f"session_{self.session_id}")
         self.output_dir = self.session_dir  # Main output directory for this session
-        
-        # Create unified directory structure
-        os.makedirs(self.session_dir, exist_ok=True)
         
         # Subdirectories within session
         self.clips_dir = os.path.join(self.session_dir, "clips")
@@ -396,14 +413,23 @@ class VideoGenerator:
                 incorporate_news=False  # Simplify for now
             )
             
-            # Keep script as dict if it's a dict (for proper extraction later)
+            # Always return string for TTS processing
             if isinstance(script_data, dict):
-                logger.info(f"📝 Script generated: {len(str(script_data))} characters")
-                return script_data  # Return dict directly for proper extraction
+                # Extract text from dict structure
+                script_text = ""
+                if 'hook' in script_data:
+                    script_text += str(script_data['hook']) + " "
+                if 'segments' in script_data:
+                    for segment in script_data['segments']:
+                        script_text += str(segment) + " "
+                if 'call_to_action' in script_data:
+                    script_text += str(script_data['call_to_action'])
+                script = script_text.strip() or str(script_data)
             else:
                 script = str(script_data)
-                logger.info(f"📝 Script generated: {len(script)} characters")
-                return script
+            
+            logger.info(f"📝 Script generated: {len(script)} characters")
+            return script
             
         except Exception as e:
             logger.error(f"❌ Script generation failed: {e}")
@@ -413,7 +439,7 @@ class VideoGenerator:
             
             {config.hook}
             
-            {' '.join(config.main_content)}
+            {' '.join(config.main_content or [])}
             
             {config.call_to_action}
             
@@ -429,8 +455,15 @@ class VideoGenerator:
             
             # Apply AI agents orientation decision if enabled
             if config.ai_decide_orientation and config.video_orientation == VideoOrientation.AUTO:
-                from ..agents.enhanced_orchestrator_with_19_agents import EnhancedOrchestrator
-                orchestrator = EnhancedOrchestrator(self.api_key)
+                from ..agents.enhanced_orchestrator_with_19_agents import EnhancedOrchestratorWith19Agents
+                orchestrator = EnhancedOrchestratorWith19Agents(
+                    api_key=self.api_key,
+                    session_id=getattr(self, 'session_id', 'temp_session'),
+                    use_vertex_ai=getattr(self, 'use_vertex_ai', True),
+                    vertex_project_id=getattr(self, 'project_id', 'viralgen-464411'),
+                    vertex_location=getattr(self, 'location', 'us-central1'),
+                    vertex_gcs_bucket=getattr(self, 'gcs_bucket', 'viral-veo2-results')
+                )
                 optimal_orientation = orchestrator._ai_agents_decide_video_orientation(config)
                 config = orchestrator._apply_orientation_to_config(config, optimal_orientation)
             
@@ -932,743 +965,6 @@ class VideoGenerator:
             logger.error(f"❌ Text overlay clip creation failed: {e}")
             self._create_placeholder_clip(output_path, int(duration))
     
-    def _create_veo2_prompts(self, config: GeneratedVideoConfig, script: Union[str, dict]) -> List[str]:
-        """Create VEO-2 prompts based on AI agent decisions and script content"""
-        topic = config.topic
-        style = config.visual_style
-        
-        # Extract actual content from script if available
-        script_content = ""
-        if isinstance(script, dict):
-            # Extract text content from dictionary script
-            if 'hook' in script and isinstance(script['hook'], dict) and 'text' in script['hook']:
-                script_content += script['hook']['text'] + " "
-            if 'segments' in script and isinstance(script['segments'], list):
-                for segment in script['segments']:
-                    if isinstance(segment, dict) and 'text' in segment:
-                        script_content += segment['text'] + " "
-        else:
-            script_content = str(script)
-        
-        # Let AI agents decide on prompts based on mission and script
-        logger.info(f"🤖 AI agents analyzing mission: {topic}")
-        logger.info(f"🎬 Script content: {script_content[:200]}...")
-        
-        try:
-            # Use Gemini to generate appropriate prompts based on the mission
-            import google.generativeai as genai
-            genai.configure(api_key=self.api_key)
-            model = genai.GenerativeModel('gemini-2.5-flash')
-            
-            prompt_generation_request = f"""
-            MISSION: {topic}
-            SCRIPT CONTENT: {script_content}
-            VISUAL STYLE: {style}
-            PLATFORM: {config.target_platform.value}
-            CATEGORY: {config.category.value}
-            
-            As a professional video director, create 3 distinct visual prompts for this mission.
-            Each prompt should be specific, actionable, and designed to accomplish the mission.
-            
-            Requirements:
-            - Each prompt should be 1-2 sentences maximum
-            - Focus on visual elements that support the mission
-            - Consider the target platform and category
-            - Make prompts diverse but cohesive
-            - No generic templates - be specific to this mission
-            
-            Return only the 3 prompts, one per line, no numbering or formatting.
-            """
-            
-            response = model.generate_content(prompt_generation_request)
-            ai_prompts = response.text.strip().split('\n')
-            
-            # Clean and validate prompts
-            cleaned_prompts = []
-            for prompt in ai_prompts:
-                clean_prompt = prompt.strip()
-                if clean_prompt and len(clean_prompt) > 10:
-                    # Add style suffix if not already present
-                    if style not in clean_prompt.lower():
-                        clean_prompt += f", {style}"
-                    cleaned_prompts.append(clean_prompt)
-            
-            # Ensure we have at least 3 prompts
-            while len(cleaned_prompts) < 3:
-                cleaned_prompts.append(f"Professional visual content supporting: {topic}, {style}")
-            
-            logger.info(f"🎨 AI-generated prompts for '{topic}':")
-            for i, prompt in enumerate(cleaned_prompts[:3], 1):
-                logger.info(f"   Prompt {i}: {prompt}")
-            
-            return cleaned_prompts[:3]
-            
-        except Exception as e:
-            logger.error(f"❌ AI prompt generation failed: {e}")
-            # Fallback: Create generic prompts based on mission analysis
-            fallback_prompts = [
-                f"Professional visual content that supports: {topic}, {style}",
-                f"Engaging scene designed to accomplish: {topic}, {style}",
-                f"Compelling visual narrative for: {topic}, {style}"
-            ]
-            logger.info(f"🔄 Using fallback prompts for '{topic}'")
-            return fallback_prompts
-    
-    def _download_veo2_video(self, gcs_uri: str, clip_index: int) -> str:
-        """Download VEO-2 generated video from GCS to local storage"""
-        try:
-            import subprocess
-            
-            # Create local path in session directory
-            session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
-            os.makedirs(session_dir, exist_ok=True)
-            local_path = os.path.join(session_dir, f"veo2_clip_{clip_index}_{self.session_id}.mp4")
-            
-            # Use gsutil to download the file
-            cmd = ["gsutil", "cp", gcs_uri, local_path]
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            
-            if result.returncode == 0:
-                logger.info(f"✅ Downloaded VEO-2 video: {gcs_uri} -> {local_path}")
-                return local_path
-            else:
-                logger.error(f"❌ Failed to download VEO-2 video: {result.stderr}")
-                raise Exception(f"Download failed: {result.stderr}")
-                
-        except Exception as e:
-            logger.error(f"❌ Error downloading VEO-2 video: {e}")
-            raise
-    
-    def _generate_audio(self, script: str, duration: int) -> str:
-        """Generate audio from script using Google TTS with enhanced naturalness"""
-        try:
-            # Clean the script for TTS
-            clean_script = self._clean_script_for_tts(script, duration)
-            
-            # Create unique filename in the audio directory
-            audio_filename = f"google_tts_voice_{uuid.uuid4()}.mp3"
-            audio_path = os.path.join(self.audio_dir, audio_filename)
-            
-            # Generate speech using Google TTS
-            tts = gTTS(text=clean_script, lang='en', slow=False)
-            tts.save(audio_path)
-            
-            # Verify the audio file was created
-            if not os.path.exists(audio_path):
-                raise Exception("Audio file was not created")
-            
-            # Get actual duration
-            try:
-                audio_clip = AudioFileClip(audio_path)
-                actual_duration = audio_clip.duration
-                audio_clip.close()
-                
-                logger.info(f"🎵 Audio generated: {audio_path}")
-                logger.info(f"🎵 Duration: {actual_duration:.1f}s (target: {duration}s)")
-                
-                return audio_path
-            except Exception as e:
-                logger.warning(f"⚠️ Could not get audio duration: {e}")
-                return audio_path
-                
-        except Exception as e:
-            logger.error(f"❌ Audio generation failed: {e}")
-            
-            # Create a fallback silent audio file
-            try:
-                fallback_audio = os.path.join(self.audio_dir, f"fallback_audio_{uuid.uuid4()}.mp3")
-                
-                # Create silent audio using FFmpeg
-                import subprocess
-                cmd = [
-                    'ffmpeg', '-f', 'lavfi', '-i', f'anullsrc=r=44100:cl=stereo:d={duration}',
-                    '-acodec', 'mp3', '-y', fallback_audio
-                ]
-                
-                result = subprocess.run(cmd, capture_output=True, text=True)
-                if result.returncode == 0:
-                    logger.info(f"🔇 Created fallback silent audio: {fallback_audio}")
-                    return fallback_audio
-                else:
-                    logger.error(f"❌ Fallback audio creation failed: {result.stderr}")
-                    raise Exception("Both audio generation and fallback failed")
-                    
-            except Exception as fallback_error:
-                logger.error(f"❌ Fallback audio creation failed: {fallback_error}")
-                raise Exception("All audio generation methods failed")
-    
-    def _compose_final_video(self, video_clips: List[str], audio_path: str, 
-                           config: GeneratedVideoConfig) -> str:
-        """Compose final video with proper duration alignment and text overlays"""
-        try:
-            # Create session directory path
-            session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
-            os.makedirs(session_dir, exist_ok=True)
-            final_video_path = os.path.join(session_dir, f"final_video_{self.session_id}.mp4")
-            
-            # Use the requested duration from config, not audio duration
-            target_duration = config.duration_seconds
-            logger.info(f"🎯 Target duration from config: {target_duration}s")
-            
-            # Load and validate audio
-            audio_clip = None
-            
-            if audio_path and os.path.exists(audio_path):
-                audio_clip = AudioFileClip(audio_path)
-                logger.info(f"🎵 Audio duration: {audio_clip.duration:.1f}s")
-                
-                # Adjust audio to match target duration
-                if audio_clip.duration > target_duration:
-                    audio_clip = audio_clip.subclip(0, target_duration)
-                    logger.info(f"🎵 Audio trimmed to {target_duration}s")
-                elif audio_clip.duration < target_duration:
-                    # Extend audio with silence or loop
-                    from moviepy.audio.AudioClip import AudioClip
-                    silence_duration = target_duration - audio_clip.duration
-                    silence = AudioClip(lambda t: [0, 0], duration=silence_duration)
-                    audio_clip = concatenate_audioclips([audio_clip, silence])
-                    logger.info(f"🎵 Audio extended to {target_duration}s with silence")
-            else:
-                logger.warning("⚠️ No audio file found, using config duration")
-            
-            # Load video clips and ensure they match target duration
-            clips = []
-            total_video_duration = 0
-            
-            for clip_path in video_clips:
-                if os.path.exists(clip_path):
-                    clip = VideoFileClip(clip_path)
-                    clips.append(clip)
-                    total_video_duration += clip.duration
-            
-            if not clips:
-                raise RenderingError("No valid video clips found")
-            
-            logger.info(f"🎬 Video clips total duration: {total_video_duration:.1f}s")
-            logger.info(f"🎯 Adjusting video to match requested duration: {target_duration}s")
-            
-            # Adjust video duration to match target (not audio)
-            if abs(total_video_duration - target_duration) > 0.5:
-                logger.info(f"⚖️ Adjusting video duration from {total_video_duration:.1f}s to {target_duration:.1f}s")
-                
-                # Calculate speed factor
-                speed_factor = total_video_duration / target_duration
-                
-                if speed_factor > 1.1:  # Video too long, speed up
-                    from moviepy.video.fx.speedx import speedx
-                    clips = [clip.fx(speedx, speed_factor) for clip in clips]
-                    logger.info(f"⚡ Speeding up video by {speed_factor:.2f}x")
-                elif speed_factor < 0.9:  # Video too short, slow down or loop
-                    if speed_factor > 0.7:
-                        from moviepy.video.fx.speedx import speedx
-                        clips = [clip.fx(speedx, speed_factor) for clip in clips]
-                        logger.info(f"🐌 Slowing down video by {speed_factor:.2f}x")
-                    else:
-                        # Loop clips to reach target duration
-                        loops_needed = int(target_duration / total_video_duration) + 1
-                        clips = clips * loops_needed
-                        logger.info(f"🔄 Looping clips {loops_needed} times")
-            
-            # Concatenate video clips
-            video = concatenate_videoclips(clips)
-            
-            # Final duration adjustment to exact target
-            if video.duration > target_duration:
-                video = video.subclip(0, target_duration)
-            elif video.duration < target_duration:
-                # Extend last frame
-                last_frame = video.get_frame(video.duration - 0.1)
-                extension = ImageClip(last_frame, duration=target_duration - video.duration)
-                video = concatenate_videoclips([video, extension])
-            
-            # Add text overlays and titles
-            video_with_overlays = self._add_comprehensive_text_overlays(video, config)
-            
-            # Sync audio to match video duration exactly
-            if audio_clip:
-                # Ensure audio matches video duration exactly
-                if audio_clip.duration > video_with_overlays.duration:
-                    audio_clip = audio_clip.subclip(0, video_with_overlays.duration)
-                elif audio_clip.duration < video_with_overlays.duration:
-                    # Extend audio with silence
-                    from moviepy.audio.AudioClip import AudioClip
-                    silence_duration = video_with_overlays.duration - audio_clip.duration
-                    silence = AudioClip(lambda t: [0, 0], duration=silence_duration)
-                    audio_clip = concatenate_audioclips([audio_clip, silence])
-                
-                video_with_overlays = video_with_overlays.set_audio(audio_clip)
-                logger.info(f"🎵 Audio synced: {audio_clip.duration:.1f}s")
-            
-            # Write final video
-            video_with_overlays.write_videofile(
-                final_video_path,
-                codec='libx264',
-                audio_codec='aac',
-                fps=30,
-                verbose=False,
-                logger=None
-            )
-            
-            # Clean up
-            for clip in clips:
-                clip.close()
-            if audio_clip:
-                audio_clip.close()
-            video.close()
-            video_with_overlays.close()
-            
-            # Verify final video duration
-            final_clip = VideoFileClip(final_video_path)
-            final_duration = final_clip.duration
-            final_clip.close()
-            
-            logger.info(f"🎬 Final video composed: {final_video_path}")
-            logger.info(f"✅ Final duration: {final_duration:.1f}s (target: {target_duration:.1f}s)")
-            
-            return final_video_path
-            
-        except Exception as e:
-            logger.error(f"❌ Video composition failed: {e}")
-            raise RenderingError("video_composition", f"Video composition failed: {str(e)}")
-    
-    def _add_comprehensive_text_overlays(self, video_clip, config: GeneratedVideoConfig):
-        """Add comprehensive text overlays including titles, hooks, and subtitles with AI agent decision-making"""
-        try:
-            # Use AI agents to determine optimal text layout
-            text_layout = self._get_ai_agent_text_layout(config, video_clip.duration)
-            
-            overlays = []
-            
-            # Create title overlay with intelligent line breaking
-            title_text = self._create_video_title(config.topic)
-            title_lines = self._split_text_intelligently(title_text, max_chars_per_line=25)
-            
-            # Create multi-line title if needed
-            if len(title_lines) > 1:
-                # Multi-line title
-                title_clips = []
-                for i, line in enumerate(title_lines):
-                    line_clip = TextClip(line, 
-                                       fontsize=text_layout['title']['fontsize'],
-                                       color=text_layout['title']['color'],
-                                       font=text_layout['title']['font'],
-                                       stroke_color=text_layout['title']['stroke_color'],
-                                       stroke_width=text_layout['title']['stroke_width'])
-                    
-                    # Position each line with proper spacing
-                    y_offset = text_layout['title']['position'][1] + (i * text_layout['title']['line_spacing'])
-                    line_clip = line_clip.set_position((text_layout['title']['position'][0], y_offset))
-                    line_clip = line_clip.set_duration(text_layout['title']['duration']).set_start(text_layout['title']['start'])
-                    title_clips.append(line_clip)
-                
-                overlays.extend(title_clips)
-            else:
-                # Single line title
-                title = TextClip(title_text, 
-                               fontsize=text_layout['title']['fontsize'],
-                               color=text_layout['title']['color'],
-                               font=text_layout['title']['font'],
-                               stroke_color=text_layout['title']['stroke_color'],
-                               stroke_width=text_layout['title']['stroke_width'])
-                title = title.set_position(text_layout['title']['position']).set_duration(text_layout['title']['duration']).set_start(text_layout['title']['start'])
-                overlays.append(title)
-            
-            # Create hook overlay with intelligent positioning
-            hook_text = getattr(config, 'hook', 'Amazing content ahead!')
-            hook_lines = self._split_text_intelligently(hook_text, max_chars_per_line=40)
-            
-            if len(hook_lines) > 1:
-                # Multi-line hook
-                hook_clips = []
-                for i, line in enumerate(hook_lines):
-                    line_clip = TextClip(line,
-                                       fontsize=text_layout['hook']['fontsize'],
-                                       color=text_layout['hook']['color'],
-                                       font=text_layout['hook']['font'],
-                                       stroke_color=text_layout['hook']['stroke_color'],
-                                       stroke_width=text_layout['hook']['stroke_width'])
-                    
-                    y_offset = text_layout['hook']['position'][1] + (i * text_layout['hook']['line_spacing'])
-                    line_clip = line_clip.set_position((text_layout['hook']['position'][0], y_offset))
-                    line_clip = line_clip.set_duration(text_layout['hook']['duration']).set_start(text_layout['hook']['start'])
-                    hook_clips.append(line_clip)
-                
-                overlays.extend(hook_clips)
-            else:
-                hook = TextClip(hook_text,
-                              fontsize=text_layout['hook']['fontsize'],
-                              color=text_layout['hook']['color'],
-                              font=text_layout['hook']['font'],
-                              stroke_color=text_layout['hook']['stroke_color'],
-                              stroke_width=text_layout['hook']['stroke_width'])
-                hook = hook.set_position(text_layout['hook']['position']).set_duration(text_layout['hook']['duration']).set_start(text_layout['hook']['start'])
-                overlays.append(hook)
-            
-            # Create call-to-action overlay
-            cta_text = getattr(config, 'call_to_action', 'Subscribe for more!')
-            cta_lines = self._split_text_intelligently(cta_text, max_chars_per_line=30)
-            
-            if len(cta_lines) > 1:
-                # Multi-line CTA
-                cta_clips = []
-                for i, line in enumerate(cta_lines):
-                    line_clip = TextClip(line,
-                                       fontsize=text_layout['cta']['fontsize'],
-                                       color=text_layout['cta']['color'],
-                                       font=text_layout['cta']['font'],
-                                       stroke_color=text_layout['cta']['stroke_color'],
-                                       stroke_width=text_layout['cta']['stroke_width'])
-                    
-                    y_offset = text_layout['cta']['position'][1] + (i * text_layout['cta']['line_spacing'])
-                    line_clip = line_clip.set_position((text_layout['cta']['position'][0], y_offset))
-                    line_clip = line_clip.set_duration(text_layout['cta']['duration']).set_start(text_layout['cta']['start'])
-                    cta_clips.append(line_clip)
-                
-                overlays.extend(cta_clips)
-            else:
-                cta = TextClip(cta_text,
-                             fontsize=text_layout['cta']['fontsize'],
-                             color=text_layout['cta']['color'],
-                             font=text_layout['cta']['font'],
-                             stroke_color=text_layout['cta']['stroke_color'],
-                             stroke_width=text_layout['cta']['stroke_width'])
-                cta = cta.set_position(text_layout['cta']['position']).set_duration(text_layout['cta']['duration']).set_start(text_layout['cta']['start'])
-                overlays.append(cta)
-            
-            # Create platform-specific overlay
-            platform_text = f"#{config.target_platform.value.upper()}"
-            platform = TextClip(platform_text,
-                               fontsize=text_layout['platform']['fontsize'],
-                               color=text_layout['platform']['color'],
-                               font=text_layout['platform']['font'])
-            platform = platform.set_position(text_layout['platform']['position']).set_duration(video_clip.duration)
-            overlays.append(platform)
-            
-            # Combine all overlays
-            if overlays:
-                final_video = CompositeVideoClip([video_clip] + overlays)
-                logger.info(f"✅ Added {len(overlays)} intelligent text overlays with AI agent positioning")
-                return final_video
-            else:
-                return video_clip
-            
-        except Exception as e:
-            logger.warning(f"⚠️ Intelligent text overlay creation failed: {e}, returning original video")
-            return video_clip
-    
-    def _get_ai_agent_text_layout(self, config: GeneratedVideoConfig, duration: float) -> dict:
-        """Use AI agents to determine optimal text positioning, colors, and fonts"""
-        try:
-            # Use AI to analyze content and determine optimal layout
-            ai_prompt = f"""
-            You are a team of AI agents specializing in video text overlay design. Analyze this video content and determine optimal text positioning:
-
-            Video Details:
-            - Topic: {config.topic}
-            - Platform: {config.target_platform.value}
-            - Category: {config.category}
-            - Duration: {duration:.1f} seconds
-            - Aspect Ratio: {"9:16" if config.target_platform.value == "tiktok" else "16:9"}
-
-            Create a comprehensive text layout plan in this JSON format:
-            {{
-                "title": {{
-                    "fontsize": 70,
-                    "color": "white",
-                    "font": "Arial-Bold",
-                    "stroke_color": "black",
-                    "stroke_width": 3,
-                    "position": ["center", 100],
-                    "duration": 3,
-                    "start": 0,
-                    "line_spacing": 80
-                }},
-                "hook": {{
-                    "fontsize": 50,
-                    "color": "yellow",
-                    "font": "Arial-Bold",
-                    "stroke_color": "red",
-                    "stroke_width": 2,
-                    "position": ["center", 200],
-                    "duration": 3,
-                    "start": 3,
-                    "line_spacing": 60
-                }},
-                "cta": {{
-                    "fontsize": 60,
-                    "color": "lime",
-                    "font": "Arial-Bold",
-                    "stroke_color": "black",
-                    "stroke_width": 2,
-                    "position": ["center", 600],
-                    "duration": 3,
-                    "start": {duration - 3},
-                    "line_spacing": 70
-                }},
-                "platform": {{
-                    "fontsize": 40,
-                    "color": "cyan",
-                    "font": "Arial-Bold",
-                    "position": [50, 50]
-                }}
-            }}
-
-            Considerations:
-            - TikTok videos need larger fonts and higher contrast
-            - YouTube videos can use more varied positioning
-            - Instagram needs aesthetic, clean layouts
-            - Ensure text doesn't overlap with video content
-            - Use colors that stand out based on the topic
-            - Position text to avoid typical video content areas
-
-            Return ONLY the JSON, no other text.
-            """
-            
-            response = self.refinement_model.generate_content(ai_prompt)
-            layout_data = self._extract_json_safely(response.text)
-            
-            if layout_data:
-                logger.info("🎨 AI agents determined optimal text layout")
-                return layout_data
-            else:
-                logger.warning("⚠️ AI layout generation failed, using platform defaults")
-                
-        except Exception as e:
-            logger.error(f"❌ AI text layout generation failed: {e}")
-        
-        # Fallback to platform-specific defaults
-        return self._get_platform_default_layout(config.target_platform.value, duration)
-    
-    def _get_platform_default_layout(self, platform: str, duration: float) -> dict:
-        """Get platform-specific default text layouts"""
-        if platform == "tiktok":
-            return {
-                "title": {
-                    "fontsize": 80, "color": "white", "font": "Arial-Bold",
-                    "stroke_color": "black", "stroke_width": 4,
-                    "position": ["center", 80], "duration": 3, "start": 0, "line_spacing": 90
-                },
-                "hook": {
-                    "fontsize": 60, "color": "yellow", "font": "Impact",
-                    "stroke_color": "red", "stroke_width": 3,
-                    "position": ["center", 300], "duration": 3, "start": 3, "line_spacing": 70
-                },
-                "cta": {
-                    "fontsize": 70, "color": "lime", "font": "Arial-Bold",
-                    "stroke_color": "black", "stroke_width": 3,
-                    "position": ["center", 1600], "duration": 3, "start": max(0, duration - 3), "line_spacing": 80
-                },
-                "platform": {
-                    "fontsize": 50, "color": "cyan", "font": "Arial-Bold",
-                    "position": [50, 50]
-                }
-            }
-        elif platform == "youtube":
-            return {
-                "title": {
-                    "fontsize": 70, "color": "white", "font": "Arial-Bold",
-                    "stroke_color": "black", "stroke_width": 3,
-                    "position": ["center", 100], "duration": 3, "start": 0, "line_spacing": 80
-                },
-                "hook": {
-                    "fontsize": 50, "color": "yellow", "font": "Arial-Bold",
-                    "stroke_color": "red", "stroke_width": 2,
-                    "position": ["center", 200], "duration": 3, "start": 3, "line_spacing": 60
-                },
-                "cta": {
-                    "fontsize": 60, "color": "red", "font": "Arial-Bold",
-                    "stroke_color": "white", "stroke_width": 2,
-                    "position": ["center", 600], "duration": 3, "start": max(0, duration - 3), "line_spacing": 70
-                },
-                "platform": {
-                    "fontsize": 40, "color": "red", "font": "Arial-Bold",
-                    "position": [50, 50]
-                }
-            }
-        else:  # Instagram
-            return {
-                "title": {
-                    "fontsize": 65, "color": "white", "font": "Arial-Bold",
-                    "stroke_color": "black", "stroke_width": 2,
-                    "position": ["center", 100], "duration": 3, "start": 0, "line_spacing": 75
-                },
-                "hook": {
-                    "fontsize": 45, "color": "magenta", "font": "Arial-Bold",
-                    "stroke_color": "black", "stroke_width": 2,
-                    "position": ["center", 200], "duration": 3, "start": 3, "line_spacing": 55
-                },
-                "cta": {
-                    "fontsize": 55, "color": "white", "font": "Arial-Bold",
-                    "stroke_color": "magenta", "stroke_width": 2,
-                    "position": ["center", 600], "duration": 3, "start": max(0, duration - 3), "line_spacing": 65
-                },
-                "platform": {
-                    "fontsize": 35, "color": "magenta", "font": "Arial-Bold",
-                    "position": [50, 50]
-                }
-            }
-    
-    def _split_text_intelligently(self, text: str, max_chars_per_line: int = 30) -> List[str]:
-        """Split text intelligently at word boundaries for multi-line display"""
-        if len(text) <= max_chars_per_line:
-            return [text]
-        
-        words = text.split()
-        lines = []
-        current_line = ""
-        
-        for word in words:
-            # Check if adding this word would exceed the limit
-            if len(current_line + " " + word) <= max_chars_per_line:
-                current_line += " " + word if current_line else word
-            else:
-                # Start a new line
-                if current_line:
-                    lines.append(current_line)
-                current_line = word
-        
-        # Add the last line if it exists
-        if current_line:
-            lines.append(current_line)
-        
-        # If we have more than 3 lines, truncate and add "..."
-        if len(lines) > 3:
-            lines = lines[:3]
-            if len(lines[2]) > max_chars_per_line - 3:
-                lines[2] = lines[2][:max_chars_per_line - 3] + "..."
-            else:
-                lines[2] += "..."
-        
-        return lines
-    
-    def _extract_json_safely(self, text: str) -> Optional[Dict]:
-        """Extracts a JSON object from a string, safely handling errors."""
-        try:
-            import re
-            # Try to extract JSON from the text using regex
-            json_match = re.search(r'\{.*\}', text, re.DOTALL)
-            if json_match:
-                json_str = json_match.group(0)
-                return json.loads(json_str)
-            else:
-                # Try to parse the entire text as JSON
-                return json.loads(text)
-        except json.JSONDecodeError:
-            logger.warning(f"⚠️ Could not decode JSON from AI response: {text[:100]}...")
-            return None
-
-    def _create_enhanced_local_clip(self, output_path: str, prompt: str, duration: float, aspect_ratio: str = "16:9"):
-        """Create enhanced local clip with proper aspect ratio"""
-        try:
-            import subprocess
-            
-            # Parse aspect ratio to get dimensions
-            if aspect_ratio == "9:16":
-                width, height = 1080, 1920
-            elif aspect_ratio == "16:9":
-                width, height = 1920, 1080
-            elif aspect_ratio == "1:1":
-                width, height = 1080, 1080
-            else:
-                width, height = 1920, 1080
-            
-            # Create animated background based on prompt content
-            prompt_lower = prompt.lower()
-            if any(word in prompt_lower for word in ['baby', 'child', 'cute', 'adorable']):
-                colors = ["0xFFB6C1", "0xFFC0CB", "0xFFE4E1"]
-                main_text = "👶 Adorable Baby Content"
-                bg_animation = "geq=r='255*abs(sin(2*PI*T/5))':g='182*abs(cos(2*PI*T/5))':b='193'"
-            elif any(word in prompt_lower for word in ['animal', 'pet', 'dog', 'cat', 'wildlife']):
-                colors = ["0x228B22", "0x32CD32", "0x90EE90"]
-                main_text = "🐾 Amazing Animal Content"
-                bg_animation = "geq=r='34*abs(sin(2*PI*T/4))':g='139*abs(cos(2*PI*T/4))':b='34'"
-            else:
-                colors = ["0x2563EB", "0x7C3AED", "0xDB2777"]
-                main_text = "✨ Amazing Content"
-                bg_animation = "geq=r='37*abs(sin(2*PI*T/5))':g='99*abs(cos(2*PI*T/5))':b='235'"
-            
-            # Create subtitle text from prompt
-            prompt_words = prompt.split()[:4]
-            subtitle_text = " ".join(prompt_words) + "..."
-            
-            # Build FFmpeg command with proper aspect ratio
-            base_color = random.choice(colors)
-            
-            filter_complex = [
-                f"color=c={base_color}:s={width}x{height}:d={duration}[bg]",
-                f"[bg]{bg_animation}[animated]",
-                f"[animated]boxblur=3:1[blur]",
-                f"[blur]drawtext=text='{main_text}':fontcolor=white:fontsize=60:x='(w-text_w)/2+sin(t)*20':y='(h-text_h)/2-100':shadowx=3:shadowy=3[title]",
-                f"[title]drawtext=text='{subtitle_text}':fontcolor=yellow:fontsize=40:x='(w-text_w)/2':y='(h-text_h)/2+50':shadowx=2:shadowy=2[subtitle]",
-                f"[subtitle]drawtext=text='Professional AI Content':fontcolor=white:fontsize=30:x='(w-text_w)/2':y='h-80':shadowx=2:shadowy=2[final]",
-                f"[final]fade=in:0:30,fade=out:{int(duration*30-30)}:30"
-            ]
-            
-            filter_str = ";".join(filter_complex)
-            
-            cmd = [
-                'ffmpeg', '-y',
-                '-f', 'lavfi',
-                '-i', f'nullsrc=s={width}x{height}:d={duration}:r=30',
-                '-filter_complex', filter_str,
-                '-c:v', 'libx264',
-                '-preset', 'medium',
-                '-crf', '23',
-                '-pix_fmt', 'yuv420p',
-                '-movflags', '+faststart',
-                output_path
-            ]
-            
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            if result.returncode == 0:
-                logger.info(f"✅ Enhanced local clip created: {output_path}")
-            else:
-                logger.error(f"❌ Enhanced local clip failed: {result.stderr}")
-                
-        except Exception as e:
-            logger.error(f"❌ Enhanced local clip creation failed: {e}")
-    
-    def _create_text_overlay_clip(self, output_path: str, prompt: str, duration: float, aspect_ratio: str = "16:9"):
-        """Create text overlay clip with proper aspect ratio"""
-        try:
-            # Parse aspect ratio to get dimensions
-            if aspect_ratio == "9:16":
-                width, height = 1080, 1920
-            elif aspect_ratio == "16:9":
-                width, height = 1920, 1080
-            elif aspect_ratio == "1:1":
-                width, height = 1080, 1080
-            else:
-                width, height = 1920, 1080
-            
-            # Create a gradient background
-            color = (random.randint(50, 150), random.randint(50, 150), random.randint(100, 255))
-            clip = ColorClip(size=(width, height), color=color, duration=duration)
-            
-            # Extract key words from prompt for display
-            words = prompt.split()[:5]
-            display_text = " ".join(words) + "..."
-            
-            # Create main text with proper sizing for aspect ratio
-            font_size = 80 if aspect_ratio == "16:9" else 60
-            txt = TextClip(display_text, 
-                          fontsize=font_size, color='white', font='Arial-Bold',
-                          stroke_color='black', stroke_width=2)
-            txt = txt.set_position('center').set_duration(duration)
-            
-            # Create subtitle
-            subtitle = TextClip("AI Generated Video", 
-                               fontsize=font_size//2, color='lightgray', font='Arial')
-            subtitle = subtitle.set_position(('center', 'bottom')).set_duration(duration)
-            
-            final_clip = CompositeVideoClip([clip, txt, subtitle])
-            final_clip.write_videofile(output_path, fps=30, verbose=False, logger=None)
-            final_clip.close()
-            
-        except Exception as e:
-            logger.error(f"❌ Text overlay clip creation failed: {e}")
-            self._create_placeholder_clip(output_path, int(duration))
-
     def _create_placeholder_clip(self, output_path: str, duration: int):
         """Create a placeholder video clip"""
         try:
@@ -1690,7 +986,7 @@ class VideoGenerator:
             raise
 
     def _clean_script_for_tts(self, script, target_duration: int) -> str:
-        """Clean and optimize script for TTS generation ensuring complete sentences and proper duration"""
+        """Clean and optimize script for TTS generation ensuring ONLY spoken dialogue with proper UTF-8 handling"""
         import re
         import json
         
@@ -1698,111 +994,103 @@ class VideoGenerator:
         
         dialogue_lines = []
         
-        # STEP 1: Extract dialogue content based on script format
+        # STEP 1: Extract ONLY actual dialogue content - NO visual descriptions
         try:
-            # Try to parse as JSON first
+            # Handle both string and dict input
             if isinstance(script, str):
-                script_data = json.loads(script)
+                try:
+                    script_data = json.loads(script)
+                except json.JSONDecodeError:
+                    script_data = None
             else:
                 script_data = script
                 
-            # Extract dialogue from JSON structure
-            if script_data and 'hook' in script_data and isinstance(script_data['hook'], dict):
-                if 'text' in script_data['hook']:
-                    hook_text = script_data['hook']['text']
-                    if hook_text and not any(skip in hook_text for skip in ['Below it', 'Link in Bio', 'animates']):
-                        dialogue_lines.append(hook_text)
-            
-            if script_data and 'segments' in script_data and isinstance(script_data['segments'], list):
-                for segment in script_data['segments']:
-                    if isinstance(segment, dict) and 'text' in segment:
-                        seg_text = segment['text']
-                        if seg_text and not any(skip in seg_text for skip in ['Below it', 'Link in Bio', 'animates']):
-                            dialogue_lines.append(seg_text)
-            
-            if script_data and 'cta' in script_data and isinstance(script_data['cta'], dict):
-                if 'text' in script_data['cta']:
-                    cta_text = script_data['cta']['text']
-                    # Skip generic CTAs
-                    if cta_text and not any(skip in cta_text for skip in ['Subscribe', 'Follow', 'Like', 'Share', 'Save']):
-                        dialogue_lines.append(cta_text)
-            
-            logger.info(f"📝 Extracted {len(dialogue_lines)} dialogue lines from JSON script")
-            
-        except (json.JSONDecodeError, TypeError):
-            # Not JSON, parse as text
-            script_str = str(script)
-            for line in script_str.split('\n'):
-                if '**VOICEOVER:**' in line:
-                    content = line.replace('**VOICEOVER:**', '').strip()
-                    if content and len(content) > 10:
-                        dialogue_lines.append(content)
+            # Extract dialogue from JSON/dict structure
+            if script_data and isinstance(script_data, dict):
+                # Check if it's a direct text response
+                if 'text' in script_data:
+                    text_content = script_data['text']
+                    # Extract only the actual spoken text, not visual descriptions
+                    clean_text = self._extract_spoken_dialogue(text_content)
+                    if clean_text and len(clean_text.strip()) > 10:
+                        dialogue_lines.append(clean_text)
+                
+                # Extract from hook
+                elif 'hook' in script_data and isinstance(script_data['hook'], dict):
+                    if 'text' in script_data['hook']:
+                        hook_text = script_data['hook']['text']
+                        # Extract only spoken content, not visual cues
+                        clean_hook = self._extract_spoken_dialogue(hook_text)
+                        if clean_hook and len(clean_hook.strip()) > 5:
+                            dialogue_lines.append(clean_hook)
+                
+                # Extract from segments
+                if 'segments' in script_data and isinstance(script_data['segments'], list):
+                    for segment in script_data['segments']:
+                        if isinstance(segment, dict) and 'text' in segment:
+                            seg_text = segment['text']
+                            # Extract only spoken content
+                            clean_seg = self._extract_spoken_dialogue(seg_text)
+                            if clean_seg and len(clean_seg.strip()) > 5:
+                                dialogue_lines.append(clean_seg)
+                
+                # Extract from CTA (but skip generic ones)
+                if 'cta' in script_data and isinstance(script_data['cta'], dict):
+                    if 'text' in script_data['cta']:
+                        cta_text = script_data['cta']['text']
+                        # Skip generic CTAs
+                        if cta_text and not any(skip in cta_text.lower() for skip in ['subscribe', 'follow', 'like', 'share', 'save', 'comment']):
+                            clean_cta = self._extract_spoken_dialogue(cta_text)
+                            if clean_cta and len(clean_cta.strip()) > 5:
+                                dialogue_lines.append(clean_cta)
+                
+                logger.info(f"📝 Extracted {len(dialogue_lines)} dialogue lines from structured script")
+                
+        except Exception as e:
+            logger.warning(f"Structured parsing failed: {e}")
+            script_data = None
         
+        # STEP 2: If structured parsing failed, parse as raw text
         if not dialogue_lines:
-            # Fallback: extract any meaningful content that isn't technical
             script_str = str(script)
-            sentences = script_str.split('.')
-            for sentence in sentences:
-                clean_sentence = sentence.strip()
-                # Skip technical lines
-                if not any(skip in clean_sentence.upper() for skip in [
-                    'HOOK', 'TEXT', 'TYPE', 'SHOCK', 'VISUAL', 'SOUND', 'SFX', 
-                    'MUSIC', 'CUT', 'FADE', 'ZOOM', 'TRANSITION', 'OVERLAY',
-                    'DURATION', 'TIMING', 'POSITION', 'STYLE', 'FONT', 'COLOR',
-                    'BELOW IT', 'ANIMATES IN', 'CALL TO ACTION', 'LINK IN BIO',
-                    'FINGER TAP', 'ICON', 'APPEARS', 'FADES IN', 'SLIDES IN',
-                    'BACKGROUND', 'FOREGROUND', 'CAMERA', 'SHOT', 'ANGLE'
-                ]):
-                    if len(clean_sentence) > 15:
-                        dialogue_lines.append(clean_sentence)
-        
-        # STEP 2: Join and clean technical metadata
-        full_dialogue = ' '.join(dialogue_lines)
-        
-        # Remove technical terms that shouldn't be spoken
-        technical_patterns = [
-            r'\b(hook|text|type|shock|visual|sound|sfx|music|cut|fade|zoom)\b',
-            r'\b(transition|overlay|duration|timing|position|style|font|color)\b',
-            r'\b(scene|clip|video|audio|track|layer|effect|filter)\b',
-            r'\[(.*?)\]',  # Remove brackets
-            r'\((.*?)\)',  # Remove parentheses  
-            r'\{(.*?)\}',  # Remove curly braces
-            r'<(.*?)>',    # Remove angle brackets
-            r'\*\*(.*?)\*\*',  # Remove bold markers
-            r'=+',         # Remove equal signs
-            r'-{3,}',      # Remove long dashes
-            r'\d+:\d+',    # Remove timestamps
-            r'\btiming:\s*\w+\b',  # Remove timing specifications
-            r'\bstyle:\s*\w+\b',   # Remove style specifications
-        ]
-        
-        cleaned_text = full_dialogue
-        for pattern in technical_patterns:
-            cleaned_text = re.sub(pattern, '', cleaned_text, flags=re.IGNORECASE)
-        
-        # Clean up whitespace and punctuation
-        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
-        cleaned_text = re.sub(r'^[:\-\s]+', '', cleaned_text)
-        cleaned_text = re.sub(r'[.]+$', '.', cleaned_text)
-        
-        # STEP 3: Calculate optimal word count for natural speech timing
-        # Use 2.2 words per second for more natural pacing (instead of 2.5)
-        target_words = int(target_duration * 2.2)
-        words = cleaned_text.split()
-        
-        # If still no good content, create a natural fallback based on topic
-        if len(words) < 5 or any(tech in cleaned_text.upper() for tech in [
-            'BELOW IT', 'ANIMATES', 'CALL TO ACTION', 'LINK IN BIO', 'FINGER TAP',
-            'SPARKLES', 'VIRAL', 'UNDERSCORE', 'ELEMENTS', 'SUBSCRIBE FOR MORE'
-        ]):
-            logger.warning("⚠️ Script cleaning failed, creating natural speech fallback")
+            logger.info(f"🔍 Parsing raw script text: {script_str[:200]}...")
             
-            # Create natural speech that matches the target duration
-            fallback_script = self._create_natural_fallback_script(target_duration, target_words)
-            logger.info(f"🔄 Using natural speech fallback: {fallback_script[:100]}...")
-            return fallback_script
+            # First, try to extract quoted dialogue (most reliable)
+            quoted_matches = re.findall(r'"([^"]+)"', script_str)
+            for quote in quoted_matches:
+                clean_line = self._extract_spoken_dialogue(quote)
+                if clean_line and len(clean_line.strip()) > 10:
+                    dialogue_lines.append(clean_line)
+            
+            # If no quotes, create natural dialogue based on topic
+            if not dialogue_lines:
+                logger.info("🎯 No quotes found, creating natural dialogue from topic")
+                # Extract topic-based dialogue
+                topic_dialogue = self._create_natural_dialogue_from_topic(script_str, target_duration)
+                if topic_dialogue:
+                    dialogue_lines.append(topic_dialogue)
         
-        # STEP 4: Trim to target length while preserving complete sentences
+        # STEP 3: Create final script with proper UTF-8 handling
+        if dialogue_lines:
+            # Join all dialogue lines
+            full_dialogue = ' '.join(dialogue_lines)
+        else:
+            # Create fallback based on topic
+            logger.warning("⚠️ No dialogue found, creating topic-based fallback")
+            full_dialogue = self._create_engaging_fallback_script(target_duration)
+        
+        # STEP 4: Ensure proper UTF-8 encoding
+        try:
+            # Normalize Unicode characters
+            import unicodedata
+            full_dialogue = unicodedata.normalize('NFKC', full_dialogue)
+        except Exception as e:
+            logger.warning(f"Unicode normalization failed: {e}")
+        
+        # STEP 5: Calculate optimal word count and trim if needed
+        target_words = int(target_duration * 2.2)  # 2.2 words per second for natural pacing
+        words = full_dialogue.split()
+        
         if len(words) > target_words:
             # Find the best cutoff point that ends with complete sentences
             trimmed_words = words[:target_words]
@@ -1813,7 +1101,7 @@ class VideoGenerator:
             search_text = trimmed_text[search_start:]
             
             # Find the last complete sentence
-            sentence_endings = ['.', '!', '?']
+            sentence_endings = ['.', '!', '?', '؟', '۔']  # Include Persian punctuation
             last_sentence_end = -1
             
             for ending in sentence_endings:
@@ -1824,18 +1112,17 @@ class VideoGenerator:
             if last_sentence_end > 0:
                 # Cut at the last complete sentence
                 final_script = trimmed_text[:search_start + last_sentence_end + 1]
-                logger.info(f"✂️ Trimmed to complete sentence ending")
             else:
                 # No good sentence ending found, add proper ending
-                final_script = trimmed_text.rstrip('.,!?') + '.'
-                logger.info(f"✂️ Added proper ending to trimmed text")
+                final_script = trimmed_text.rstrip('.,!?؟۔') + '.'
         else:
             # Script is shorter than target, use as-is but ensure proper ending
-            final_script = cleaned_text
-            if not final_script.endswith(('.', '!', '?')):
+            final_script = full_dialogue
+            if not final_script.endswith(('.', '!', '?', '؟', '۔')):
                 final_script += '.'
         
-        # STEP 5: Validate the final script
+        # STEP 6: Final cleanup and validation
+        final_script = re.sub(r'\s+', ' ', final_script).strip()
         final_words = final_script.split()
         estimated_duration = len(final_words) / 2.2
         
@@ -1846,10 +1133,10 @@ class VideoGenerator:
         logger.info(f"   Estimated duration: {estimated_duration:.1f}s")
         logger.info(f"   Preview: {final_script[:100]}...")
         
-        # Save to session for debugging
+        # Save to session for debugging with proper UTF-8 encoding
         try:
             script_file = os.path.join(self.session_dir, "tts_script.json")
-            with open(script_file, 'w') as f:
+            with open(script_file, 'w', encoding='utf-8') as f:
                 json.dump({
                     "final_script": final_script,
                     "original_length": len(words),
@@ -1857,57 +1144,273 @@ class VideoGenerator:
                     "target_duration": target_duration,
                     "estimated_duration": estimated_duration,
                     "timestamp": str(datetime.now())
-                }, f, indent=2)
+                }, f, indent=2, ensure_ascii=False)  # ensure_ascii=False for proper UTF-8
             logger.info(f"📁 TTS script saved to: {script_file}")
         except Exception as e:
             logger.warning(f"⚠️ Could not save TTS script: {e}")
         
         return final_script
     
-    def _create_natural_fallback_script(self, target_duration: int, target_words: int) -> str:
-        """Create a natural fallback script when cleaning fails"""
-        # Create engaging content that matches the target duration
-        fallback_templates = {
-            15: "This is an amazing story that will blow your mind. Get ready for something incredible that you've never seen before.",
-            30: "Welcome to the most incredible story you'll hear today. This amazing content will completely change how you think about everything. Pay attention because what happens next is absolutely mind-blowing and unforgettable.",
-            45: "Get ready for the most incredible story you've ever heard. This amazing content is going to completely blow your mind and change everything you thought you knew. What you're about to discover is so incredible that you'll want to share it with everyone you know.",
-            60: "Welcome to the most amazing story that will completely change your perspective on everything. This incredible content is so mind-blowing that you won't believe what you're about to discover. Get ready for an experience that will stay with you forever and make you question everything you thought you knew about the world."
-        }
+    def _create_natural_dialogue_from_topic(self, script_text: str, target_duration: int) -> str:
+        """Create natural dialogue from topic information"""
+        # Extract topic keywords
+        topic_keywords = []
+        if hasattr(self, 'config') and self.config:
+            topic = getattr(self.config, 'topic', '')
+            if topic:
+                topic_keywords = topic.lower().split()
         
-        # Find the closest template
-        closest_duration = min(fallback_templates.keys(), key=lambda x: abs(x - target_duration))
-        base_script = fallback_templates[closest_duration]
-        
-        # Adjust to target word count
-        words = base_script.split()
-        if len(words) > target_words:
-            # Trim to target
-            words = words[:target_words]
-            final_script = ' '.join(words)
-            # Ensure proper ending
-            if not final_script.endswith(('.', '!', '?')):
-                final_script = final_script.rstrip('.,!?') + '.'
-        elif len(words) < target_words:
-            # Extend naturally
-            extensions = [
-                "This is truly amazing.", "You won't believe this.", "This changes everything.",
-                "Absolutely incredible.", "This is mind-blowing.", "You need to see this.",
-                "This is extraordinary.", "Simply unbelievable.", "This is phenomenal."
-            ]
-            
-            while len(words) < target_words:
-                extension = extensions[len(words) % len(extensions)]
-                words.extend(extension.split())
-            
-            # Trim to exact target
-            words = words[:target_words]
-            final_script = ' '.join(words)
-            if not final_script.endswith(('.', '!', '?')):
-                final_script = final_script.rstrip('.,!?') + '.'
+        # Create engaging dialogue based on topic
+        if any(word in script_text.lower() for word in ['persian', 'mythology', 'coke', 'pepsi']):
+            return self._create_persian_mythology_dialogue(target_duration)
+        elif any(word in script_text.lower() for word in ['comedy', 'funny', 'humor']):
+            return self._create_comedy_dialogue(target_duration)
         else:
-            final_script = base_script
+            return self._create_generic_engaging_dialogue(target_duration)
+    
+    def _create_persian_mythology_dialogue(self, target_duration: int) -> str:
+        """Create Persian mythology themed dialogue"""
+        base_dialogue = (
+            "In ancient Persian mythology, two powerful deities engaged in an epic battle for supremacy. "
+            "Ahura Mazda, the wise lord of light, championed the sacred cola of wisdom and truth. "
+            "Meanwhile, Angra Mainyu, the destructive spirit, promoted his own dark beverage of chaos. "
+            "The people of ancient Persia watched in amazement as these divine forces clashed. "
+            "Each deity claimed their drink possessed magical properties that would grant eternal happiness. "
+            "The battle raged for centuries, with mortals choosing sides in this cosmic cola war. "
+            "Some say this mythological conflict continues to this day, manifesting in modern brand loyalty. "
+            "Which divine beverage would you choose in this eternal struggle between light and darkness?"
+        )
         
-        return final_script
+        # Adjust length based on target duration
+        words = base_dialogue.split()
+        target_words = int(target_duration * 2.2)
+        
+        if len(words) > target_words:
+            # Trim to target length
+            return ' '.join(words[:target_words]) + '.'
+        elif len(words) < target_words * 0.7:
+            # Extend if too short
+            extension = (
+                " Legend tells of brave warriors who would drink their chosen beverage before battle. "
+                "The taste would reveal their destiny and guide them to victory or defeat. "
+                "Even today, some believe you can taste the ancient magic in every sip."
+            )
+            return base_dialogue + extension
+        else:
+            return base_dialogue
+    
+    def _create_comedy_dialogue(self, target_duration: int) -> str:
+        """Create comedy themed dialogue"""
+        base_dialogue = (
+            "Have you ever wondered what would happen if ancient gods had to choose between cola brands? "
+            "Picture this: Zeus sitting on Mount Olympus, holding two cans and looking completely confused. "
+            "Meanwhile, Thor is arguing with Loki about which drink gives better lightning powers. "
+            "The Egyptian gods are having a heated debate in their pyramid boardroom. "
+            "Even the Buddha is scratching his head, trying to find the middle way between two sodas. "
+            "It's the ultimate divine dilemma that has puzzled deities for millennia. "
+            "Who knew that choosing a beverage could cause such cosmic chaos?"
+        )
+        
+        # Adjust length based on target duration
+        words = base_dialogue.split()
+        target_words = int(target_duration * 2.2)
+        
+        if len(words) > target_words:
+            return ' '.join(words[:target_words]) + '.'
+        elif len(words) < target_words * 0.7:
+            extension = (
+                " The funniest part? They all end up drinking water anyway because immortals have to stay hydrated. "
+                "But don't tell the marketing departments that!"
+            )
+            return base_dialogue + extension
+        else:
+            return base_dialogue
+    
+    def _create_generic_engaging_dialogue(self, target_duration: int) -> str:
+        """Create generic engaging dialogue"""
+        base_dialogue = (
+            "Welcome to an incredible journey that will change how you see the world around you. "
+            "Today we're exploring fascinating stories that have shaped human culture for generations. "
+            "These tales reveal surprising connections between ancient wisdom and modern life. "
+            "You'll discover hidden meanings that most people never notice. "
+            "Every detail has been carefully chosen to create an unforgettable experience. "
+            "By the end of this journey, you'll have a completely new perspective. "
+            "Are you ready to dive into this amazing adventure?"
+        )
+        
+        # Adjust length based on target duration
+        words = base_dialogue.split()
+        target_words = int(target_duration * 2.2)
+        
+        if len(words) > target_words:
+            return ' '.join(words[:target_words]) + '.'
+        elif len(words) < target_words * 0.7:
+            extension = (
+                " This is just the beginning of what promises to be an extraordinary exploration. "
+                "Stay with us as we uncover more incredible insights together."
+            )
+            return base_dialogue + extension
+        else:
+            return base_dialogue
+    
+    def _create_engaging_fallback_script(self, target_duration: int) -> str:
+        """Create engaging fallback script when all else fails"""
+        return self._create_generic_engaging_dialogue(target_duration)
+    
+    def _extract_spoken_dialogue(self, text: str) -> str:
+        """Extract only spoken dialogue from text, removing visual descriptions and stage directions"""
+        import re
+        
+        if not text:
+            return ""
+        
+        # Remove visual cues and stage directions
+        text = re.sub(r'\([^)]*\)', '', text)  # Remove parentheses
+        text = re.sub(r'\[[^\]]*\]', '', text)  # Remove brackets
+        text = re.sub(r'\{[^}]*\}', '', text)  # Remove curly braces
+        text = re.sub(r'<[^>]*>', '', text)   # Remove angle brackets
+        
+        # Remove visual description patterns - ENHANCED
+        text = re.sub(r'Starts with.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Opens with.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Cuts (abruptly )?to.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Shows.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Zoom.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Camera.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Shot of.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Visual.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Scene.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Montage.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Fade.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Transition.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Background.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'As the.*?asked,', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'quickly cuts.*?\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'then back to.*?\.', '', text, flags=re.IGNORECASE)
+        
+        # Remove more visual patterns that got through
+        text = re.sub(r'(Starts|Opens|Cuts|Shows|Begins|Ends)\s+(with|to|at|in)\s+.*?[.!?]', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'(a|an|the)\s+(rapid|quick|slow|gradual|sudden)\s+(cut|transition|fade|zoom)', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'(majestic|ancient|mythological)\s+(Persian|setting|backdrop|scene)', '', text, flags=re.IGNORECASE)
+        
+        # Remove technical directions
+        text = re.sub(r'(Then,?\s*as\s+the\s+punchline|as\s+the\s+punchline)[^,]*,?\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'lands,?\s*the\s+speaker[^,]*,?\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'breaks\s+into[^,]*,?\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'raises\s+an\s+eyebrow[^,]*,?\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'->\s*A\s+single[^.]*\.', '', text, flags=re.IGNORECASE)
+        
+        # Remove timing and technical cues
+        text = re.sub(r'\d+:\d+', '', text)
+        text = re.sub(r'SFX:', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'VISUAL:', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'SOUND:', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'MUSIC:', '', text, flags=re.IGNORECASE)
+        
+        # Remove incomplete sentences that start with visual words
+        sentences = re.split(r'[.!?]+', text)
+        clean_sentences = []
+        
+        for sentence in sentences:
+            sentence = sentence.strip()
+            if sentence:
+                # Skip sentences that start with visual description words
+                visual_starters = [
+                    'starts', 'opens', 'cuts', 'shows', 'begins', 'ends',
+                    'camera', 'shot', 'scene', 'visual', 'montage', 'fade',
+                    'transition', 'background', 'zoom', 'focus', 'pan'
+                ]
+                
+                first_word = sentence.split()[0].lower() if sentence.split() else ''
+                if first_word not in visual_starters:
+                    # Also check if it's a fragment starting with "a rapid", "an ancient", etc.
+                    if not re.match(r'^(a|an|the)\s+(rapid|quick|slow|gradual|sudden|majestic|ancient)', sentence, re.IGNORECASE):
+                        clean_sentences.append(sentence)
+        
+        text = '. '.join(clean_sentences)
+        
+        # Clean up whitespace and punctuation
+        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(r'^[:\-\s,]+', '', text)
+        text = re.sub(r'[,\s]+$', '', text)
+        text = re.sub(r'[.]+$', '.', text)
+        
+        return text
+    
+    def _extract_dialogue_only(self, text: str) -> str:
+        """Extract only actual dialogue from text, removing visual descriptions"""
+        import re
+        
+        if not text:
+            return ""
+        
+        # Remove visual descriptions and stage directions
+        text = re.sub(r'Opens with[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'As the question is asked[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'quickly cuts to[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'then back to[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'with a thought bubble[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'showing[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Zoom to[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Cut to[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Images of[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Visual[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Shot of[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'Camera[^.]*\.', '', text, flags=re.IGNORECASE)
+        
+        # Remove stage directions in parentheses and brackets
+        text = re.sub(r'\([^)]*\)', '', text)
+        text = re.sub(r'\[[^\]]*\]', '', text)
+        text = re.sub(r'\{[^}]*\}', '', text)
+        text = re.sub(r'<[^>]*>', '', text)
+        
+        # Remove technical directions
+        text = re.sub(r'(Then,?\s*as\s+the\s+punchline|as\s+the\s+punchline)[^,]*,?\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'lands,?\s*the\s+speaker[^,]*,?\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'breaks\s+into[^,]*,?\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'raises\s+an\s+eyebrow[^,]*,?\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'->\s*A\s+single[^.]*\.', '', text, flags=re.IGNORECASE)
+        
+        # Clean up whitespace and punctuation
+        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(r'^[:\-\s,]+', '', text)
+        text = re.sub(r'[,\s]+$', '', text)
+        text = re.sub(r'[.]+$', '.', text)
+        
+        return text
+    
+    def _extract_dialogue_from_raw_text(self, text: str) -> List[str]:
+        """Extract dialogue from raw text content"""
+        import re
+        
+        dialogue_lines = []
+        
+        # Look for quoted dialogue
+        quoted_matches = re.findall(r'"([^"]+)"', text)
+        for quote in quoted_matches:
+            clean_quote = self._extract_dialogue_only(quote)
+            if clean_quote and len(clean_quote.strip()) > 10:
+                dialogue_lines.append(clean_quote)
+        
+        # Look for dialogue patterns
+        dialogue_patterns = [
+            r'آیا می‌دانستید[^.]*؟',  # Persian question pattern
+            r'در آغاز[^.]*\.', 
+            r'اهورامزدا[^.]*\.', 
+            r'اما اهریمن[^.]*\.', 
+            r'و نبرد آغاز شد[^.]*\.', 
+            r'از معبد[^.]*\.', 
+            r'امروز هم[^.]*\.', 
+        ]
+        
+        for pattern in dialogue_patterns:
+            matches = re.findall(pattern, text, re.UNICODE)
+            for match in matches:
+                clean_match = self._extract_dialogue_only(match)
+                if clean_match and len(clean_match.strip()) > 5:
+                    dialogue_lines.append(clean_match)
+        
+        return dialogue_lines
     
     def _generate_voiceover(self, script: str, duration: int = 30, config: Dict = None) -> str:
         """Generate high-quality AI voice-over using Google Cloud TTS"""
@@ -2036,7 +1539,7 @@ class VideoGenerator:
         return '. '.join(sentences)
     
     def _add_text_overlays(self, video_clip, config: GeneratedVideoConfig, duration: float):
-        """Add professional text overlays and headers to the video"""
+        """Add professional text overlays with proper width constraints to prevent screen overflow"""
         from moviepy.editor import TextClip, CompositeVideoClip
         
         logger.info(f"📝 Adding professional text overlays to {duration:.1f}s video")
@@ -2044,92 +1547,125 @@ class VideoGenerator:
         try:
             overlays = []
             
-            # HEADER/TITLE - Always show at the beginning
+            # Get video dimensions
+            video_width, video_height = video_clip.size
+            
+            # Calculate safe text area (80% of video width to prevent overflow)
+            safe_text_width = int(video_width * 0.8)
+            safe_text_height = int(video_height * 0.12)  # 12% of video height for each text
+            
+            # HEADER/TITLE - Always show at the beginning with proper width constraint
             title_text = self._create_video_title(config.topic)
+            
+            # Limit title text length to prevent overflow
+            if len(title_text) > 25:
+                title_text = title_text[:22] + "..."
+            
             title_clip = TextClip(
                 title_text,
-                fontsize=70,
+                fontsize=min(70, video_width // 20),  # Dynamic font size based on video width
                 color='white',
                 font='Arial-Bold',
                 stroke_color='black',
-                stroke_width=3
-            ).set_position(('center', 0.1)).set_duration(4).set_start(0)
+                stroke_width=3,
+                size=(safe_text_width, safe_text_height),
+                method='caption'  # Enable text wrapping
+            ).set_position(('center', video_height * 0.1)).set_duration(4).set_start(0)
             overlays.append(title_clip)
             
-            # PLATFORM-SPECIFIC OVERLAYS
+            # PLATFORM-SPECIFIC OVERLAYS with width constraints
             if config.target_platform.value.lower() == 'tiktok':
                 # TikTok style overlays
-                overlays.extend([
-                    TextClip(
-                        "🔥 VIRAL CONTENT",
-                        fontsize=60,
-                        color='orange',
-                        font='Impact'
-                    ).set_position(('center', 0.8)).set_duration(3).set_start(1),
-                    
-                    TextClip(
-                        "👆 FOLLOW FOR MORE",
-                        fontsize=55,
-                        color='white',
-                        font='Arial-Bold',
-                        stroke_color='black',
-                        stroke_width=2
-                    ).set_position(('center', 0.85)).set_duration(3).set_start(duration-4)
-                ])
+                viral_clip = TextClip(
+                    "🔥 VIRAL",
+                    fontsize=min(60, video_width // 25),
+                    color='orange',
+                    font='Impact',
+                    size=(safe_text_width, safe_text_height),
+                    method='caption'
+                ).set_position(('center', video_height * 0.8)).set_duration(3).set_start(1)
+                overlays.append(viral_clip)
+                
+                follow_clip = TextClip(
+                    "👆 FOLLOW",
+                    fontsize=min(55, video_width // 28),
+                    color='white',
+                    font='Arial-Bold',
+                    stroke_color='black',
+                    stroke_width=2,
+                    size=(safe_text_width, safe_text_height),
+                    method='caption'
+                ).set_position(('center', video_height * 0.85)).set_duration(3).set_start(duration-4)
+                overlays.append(follow_clip)
                 
             elif config.target_platform.value.lower() == 'youtube':
                 # YouTube style overlays
-                overlays.extend([
-                    TextClip(
-                        "🎬 MUST WATCH!",
-                        fontsize=65,
-                        color='red',
-                        font='Arial-Bold'
-                    ).set_position(('center', 0.15)).set_duration(3).set_start(2),
-                    
-                    TextClip(
-                        "LIKE & SUBSCRIBE",
-                        fontsize=50,
-                        color='white',
-                        font='Arial-Bold',
-                        stroke_color='red',
-                        stroke_width=2
-                    ).set_position(('center', 0.9)).set_duration(4).set_start(duration-5)
-                ])
+                watch_clip = TextClip(
+                    "🎬 WATCH!",
+                    fontsize=min(65, video_width // 22),
+                    color='red',
+                    font='Arial-Bold',
+                    size=(safe_text_width, safe_text_height),
+                    method='caption'
+                ).set_position(('center', video_height * 0.15)).set_duration(3).set_start(2)
+                overlays.append(watch_clip)
+                
+                subscribe_clip = TextClip(
+                    "SUBSCRIBE",
+                    fontsize=min(50, video_width // 30),
+                    color='white',
+                    font='Arial-Bold',
+                    stroke_color='red',
+                    stroke_width=2,
+                    size=(safe_text_width, safe_text_height),
+                    method='caption'
+                ).set_position(('center', video_height * 0.9)).set_duration(4).set_start(duration-5)
+                overlays.append(subscribe_clip)
                 
             elif config.target_platform.value.lower() == 'instagram':
                 # Instagram style overlays
-                overlays.extend([
-                    TextClip(
-                        "✨ AMAZING!",
-                        fontsize=60,
-                        color='magenta',
-                        font='Arial-Bold'
-                    ).set_position(('center', 0.2)).set_duration(3).set_start(1.5),
-                    
-                    TextClip(
-                        "💖 DOUBLE TAP",
-                        fontsize=55,
-                        color='white',
-                        font='Arial-Bold',
-                        stroke_color='magenta',
-                        stroke_width=2
-                    ).set_position(('center', 0.85)).set_duration(3).set_start(duration-4)
-                ])
+                amazing_clip = TextClip(
+                    "✨ AMAZING!",
+                    fontsize=min(60, video_width // 25),
+                    color='magenta',
+                    font='Arial-Bold',
+                    size=(safe_text_width, safe_text_height),
+                    method='caption'
+                ).set_position(('center', video_height * 0.2)).set_duration(3).set_start(1.5)
+                overlays.append(amazing_clip)
+                
+                tap_clip = TextClip(
+                    "💖 TAP",
+                    fontsize=min(55, video_width // 28),
+                    color='white',
+                    font='Arial-Bold',
+                    stroke_color='magenta',
+                    stroke_width=2,
+                    size=(safe_text_width, safe_text_height),
+                    method='caption'
+                ).set_position(('center', video_height * 0.85)).set_duration(3).set_start(duration-4)
+                overlays.append(tap_clip)
             
-            # MIDDLE ENGAGEMENT OVERLAY
+            # MIDDLE ENGAGEMENT OVERLAY with width constraint
             if duration > 8:
                 middle_text = self._get_engagement_text(config.category.value)
+                
+                # Limit middle text length
+                if len(middle_text) > 15:
+                    middle_text = middle_text[:12] + "!"
+                
                 middle_clip = TextClip(
                     middle_text,
-                    fontsize=65,
+                    fontsize=min(65, video_width // 22),
                     color='cyan',
-                    font='Impact'
+                    font='Impact',
+                    size=(safe_text_width, safe_text_height),
+                    method='caption'
                 ).set_position('center').set_duration(2).set_start(duration/2)
                 overlays.append(middle_clip)
             
-            # CATEGORY-SPECIFIC OVERLAY
-            category_overlay = self._get_category_overlay(config.category.value, duration)
+            # CATEGORY-SPECIFIC OVERLAY with width constraint
+            category_overlay = self._get_category_overlay_constrained(config.category.value, duration, safe_text_width, safe_text_height, video_width)
             if category_overlay:
                 overlays.append(category_overlay)
             
@@ -2180,8 +1716,8 @@ class VideoGenerator:
         }
         return engagement_texts.get(category, '🔥 WOW!')
     
-    def _get_category_overlay(self, category: str, duration: float):
-        """Get category-specific overlay"""
+    def _get_category_overlay_constrained(self, category: str, duration: float, safe_text_width: int, safe_text_height: int, video_width: int):
+        """Get category-specific overlay with width constraints"""
         from moviepy.editor import TextClip
         
         try:
@@ -2196,16 +1732,315 @@ class VideoGenerator:
             
             config = category_configs.get(category)
             if config:
-                return TextClip(
+                # Calculate text size based on safe text area
+                text_size = TextClip(
                     config['text'],
-                    fontsize=45,
+                    fontsize=min(45, safe_text_height // 2),  # Dynamic font size based on safe text height
                     color=config['color'],
                     font=config['font']
-                ).set_position(('left', 'top')).set_duration(3).set_start(0.5)
+                )
+                
+                # Calculate text width
+                text_width = text_size.size[0]
+                
+                # Calculate position based on safe text area
+                x = (safe_text_width - text_width) // 2
+                y = safe_text_height // 2
+                
+                return TextClip(
+                    config['text'],
+                    fontsize=min(45, safe_text_height // 2),  # Dynamic font size based on safe text height
+                    color=config['color'],
+                    font=config['font'],
+                    size=(safe_text_width, safe_text_height),
+                    method='caption'  # Enable text wrapping
+                ).set_position((x, y)).set_duration(3).set_start(0.5)
             
         except Exception as e:
             logger.warning(f"Category overlay creation failed: {e}")
         
         return None
+
+    def _create_veo2_prompts(self, config: GeneratedVideoConfig, script: Union[str, dict]) -> List[str]:
+        """Create VEO-2 prompts based on AI agent decisions and script content"""
+        topic = config.topic
+        style = config.visual_style
+        
+        # Extract actual content from script if available
+        script_content = ""
+        if isinstance(script, dict):
+            # Extract text content from dictionary script
+            if 'hook' in script and isinstance(script['hook'], dict) and 'text' in script['hook']:
+                script_content += script['hook']['text'] + " "
+            if 'segments' in script and isinstance(script['segments'], list):
+                for segment in script['segments']:
+                    if isinstance(segment, dict) and 'text' in segment:
+                        script_content += segment['text'] + " "
+        else:
+            script_content = str(script)
+        
+        # Let AI agents decide on prompts based on mission and script
+        logger.info(f"🤖 AI agents analyzing mission: {topic}")
+        logger.info(f"🎬 Script content: {script_content[:200]}...")
+        
+        try:
+            # Use Gemini to generate appropriate prompts based on the mission
+            genai.configure(api_key=self.api_key)
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            
+            prompt_generation_request = f"""
+            MISSION: {topic}
+            SCRIPT CONTENT: {script_content}
+            VISUAL STYLE: {style}
+            PLATFORM: {config.target_platform.value}
+            CATEGORY: {config.category.value}
+            
+            As a professional video director, create 3 distinct visual prompts for this mission.
+            Each prompt should be specific, actionable, and designed to accomplish the mission.
+            
+            Requirements:
+            - Each prompt should be 1-2 sentences maximum
+            - Focus on visual elements that support the mission
+            - Consider the target platform and category
+            - Make prompts diverse but cohesive
+            - No generic templates - be specific to this mission
+            
+            Return only the 3 prompts, one per line, no numbering or formatting.
+            """
+            
+            response = model.generate_content(prompt_generation_request)
+            ai_prompts = response.text.strip().split('\n')
+            
+            # Clean and validate prompts
+            cleaned_prompts = []
+            for prompt in ai_prompts:
+                clean_prompt = prompt.strip()
+                if clean_prompt and len(clean_prompt) > 10:
+                    # Add style suffix if not already present
+                    if style not in clean_prompt.lower():
+                        clean_prompt += f", {style}"
+                    cleaned_prompts.append(clean_prompt)
+            
+            # Ensure we have at least 3 prompts
+            while len(cleaned_prompts) < 3:
+                cleaned_prompts.append(f"Professional visual content supporting: {topic}, {style}")
+            
+            logger.info(f"🎨 AI-generated prompts for '{topic}':")
+            for i, prompt in enumerate(cleaned_prompts[:3], 1):
+                logger.info(f"   Prompt {i}: {prompt}")
+            
+            return cleaned_prompts[:3]
+            
+        except Exception as e:
+            logger.error(f"❌ AI prompt generation failed: {e}")
+            # Fallback: Create generic prompts based on mission analysis
+            fallback_prompts = [
+                f"Professional visual content that supports: {topic}, {style}",
+                f"Engaging scene designed to accomplish: {topic}, {style}",
+                f"Compelling visual narrative for: {topic}, {style}"
+            ]
+            logger.info(f"🔄 Using fallback prompts for '{topic}'")
+            return fallback_prompts
+
+    def _generate_audio(self, script: str, duration: int) -> str:
+        """Generate audio from script using Google TTS with enhanced naturalness"""
+        try:
+            # Clean the script for TTS
+            clean_script = self._clean_script_for_tts(script, duration)
+            
+            # Create unique filename in the audio directory
+            audio_filename = f"google_tts_voice_{uuid.uuid4()}.mp3"
+            audio_path = os.path.join(self.audio_dir, audio_filename)
+            
+            # Generate speech using Google TTS
+            tts = gTTS(text=clean_script, lang='en', slow=False)
+            tts.save(audio_path)
+            
+            # Verify the audio file was created
+            if not os.path.exists(audio_path):
+                raise Exception("Audio file was not created")
+            
+            # Get actual duration
+            try:
+                audio_clip = AudioFileClip(audio_path)
+                actual_duration = audio_clip.duration
+                audio_clip.close()
+                
+                logger.info(f"🎵 Audio generated: {audio_path}")
+                logger.info(f"🎵 Duration: {actual_duration:.1f}s (target: {duration}s)")
+                
+                return audio_path
+            except Exception as e:
+                logger.warning(f"⚠️ Could not get audio duration: {e}")
+                return audio_path
+                
+        except Exception as e:
+            logger.error(f"❌ Audio generation failed: {e}")
+            
+            # Create a fallback silent audio file
+            try:
+                fallback_audio = os.path.join(self.audio_dir, f"fallback_audio_{uuid.uuid4()}.mp3")
+                
+                # Create silent audio using FFmpeg
+                cmd = [
+                    'ffmpeg', '-f', 'lavfi', '-i', f'anullsrc=r=44100:cl=stereo:d={duration}',
+                    '-acodec', 'mp3', '-y', fallback_audio
+                ]
+                
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                if result.returncode == 0:
+                    logger.info(f"🔇 Created fallback silent audio: {fallback_audio}")
+                    return fallback_audio
+                else:
+                    logger.error(f"❌ Fallback audio creation failed: {result.stderr}")
+                    raise Exception("Both audio generation and fallback failed")
+                    
+            except Exception as fallback_error:
+                logger.error(f"❌ Fallback audio creation failed: {fallback_error}")
+                raise Exception("All audio generation methods failed")
+
+    def _compose_final_video(self, video_clips: List[str], audio_path: str, 
+                           config: GeneratedVideoConfig) -> str:
+        """Compose final video with proper duration alignment and text overlays"""
+        try:
+            # Create session directory path
+            final_video_path = os.path.join(self.session_dir, f"final_video_{self.session_id}.mp4")
+            
+            # Use the requested duration from config, not audio duration
+            target_duration = config.duration_seconds
+            logger.info(f"🎯 Target duration from config: {target_duration}s")
+            
+            # Load and validate audio
+            audio_clip = None
+            
+            if audio_path and os.path.exists(audio_path):
+                audio_clip = AudioFileClip(audio_path)
+                logger.info(f"🎵 Audio duration: {audio_clip.duration:.1f}s")
+                
+                # Adjust audio to match target duration
+                if audio_clip.duration > target_duration:
+                    audio_clip = audio_clip.subclip(0, target_duration)
+                    logger.info(f"🎵 Audio trimmed to {target_duration}s")
+                elif audio_clip.duration < target_duration:
+                    # Extend audio with silence or loop
+                    from moviepy.audio.AudioClip import AudioClip
+                    silence_duration = target_duration - audio_clip.duration
+                    silence = AudioClip(lambda t: [0, 0], duration=silence_duration)
+                    audio_clip = concatenate_audioclips([audio_clip, silence])
+                    logger.info(f"🎵 Audio extended to {target_duration}s with silence")
+            else:
+                logger.warning("⚠️ No audio file found, using config duration")
+            
+            # Load video clips and ensure they match target duration
+            clips = []
+            total_video_duration = 0
+            
+            for clip_path in video_clips:
+                if os.path.exists(clip_path):
+                    clip = VideoFileClip(clip_path)
+                    clips.append(clip)
+                    total_video_duration += clip.duration
+            
+            if not clips:
+                raise RenderingError("No valid video clips found")
+            
+            logger.info(f"🎬 Video clips total duration: {total_video_duration:.1f}s")
+            logger.info(f"🎯 Adjusting video to match requested duration: {target_duration}s")
+            
+            # Adjust video duration to match target (not audio)
+            if abs(total_video_duration - target_duration) > 0.5:
+                logger.info(f"⚖️ Adjusting video duration from {total_video_duration:.1f}s to {target_duration:.1f}s")
+                
+                # Calculate speed factor
+                speed_factor = total_video_duration / target_duration
+                
+                if speed_factor > 1.1:  # Video too long, speed up
+                    from moviepy.video.fx.speedx import speedx
+                    clips = [clip.fx(speedx, speed_factor) for clip in clips]
+                    logger.info(f"⚡ Speeding up video by {speed_factor:.2f}x")
+                elif speed_factor < 0.9:  # Video too short, slow down or loop
+                    if speed_factor > 0.7:
+                        from moviepy.video.fx.speedx import speedx
+                        clips = [clip.fx(speedx, speed_factor) for clip in clips]
+                        logger.info(f"🐌 Slowing down video by {speed_factor:.2f}x")
+                    else:
+                        # Loop clips to reach target duration
+                        loops_needed = int(target_duration / total_video_duration) + 1
+                        clips = clips * loops_needed
+                        logger.info(f"🔄 Looping clips {loops_needed} times")
+            
+            # Concatenate video clips
+            video = concatenate_videoclips(clips)
+            
+            # Final duration adjustment to exact target
+            if video.duration > target_duration:
+                video = video.subclip(0, target_duration)
+            elif video.duration < target_duration:
+                # Extend last frame
+                last_frame = video.get_frame(video.duration - 0.1)
+                extension = ImageClip(last_frame, duration=target_duration - video.duration)
+                video = concatenate_videoclips([video, extension])
+            
+            # Add text overlays
+            video_with_overlays = self._add_text_overlays(video, config, video.duration)
+            
+            # Add fade-out effect (1-2 seconds)
+            fade_duration = min(2.0, video_with_overlays.duration * 0.1)  # 1-2 seconds or 10% of video, whichever is smaller
+            if fade_duration > 0.5:  # Only apply if video is long enough
+                if fadeout:
+                    video_with_overlays = video_with_overlays.fx(fadeout, fade_duration)
+                    logger.info(f"🌅 Added {fade_duration:.1f}s fade-out effect")
+            
+            # Sync audio to match video duration exactly
+            if audio_clip:
+                # Ensure audio matches video duration exactly
+                if audio_clip.duration > video_with_overlays.duration:
+                    audio_clip = audio_clip.subclip(0, video_with_overlays.duration)
+                elif audio_clip.duration < video_with_overlays.duration:
+                    # Extend audio with silence
+                    from moviepy.audio.AudioClip import AudioClip
+                    silence_duration = video_with_overlays.duration - audio_clip.duration
+                    silence = AudioClip(lambda t: [0, 0], duration=silence_duration)
+                    audio_clip = concatenate_audioclips([audio_clip, silence])
+                
+                # Apply fade-out to audio as well to match video
+                if fade_duration > 0.5 and audio_fadeout:
+                    audio_clip = audio_clip.fx(audio_fadeout, fade_duration)
+                    logger.info(f"🔊 Added {fade_duration:.1f}s audio fade-out effect")
+                
+                video_with_overlays = video_with_overlays.set_audio(audio_clip)
+                logger.info(f"🎵 Audio synced: {audio_clip.duration:.1f}s")
+            
+            # Write final video
+            video_with_overlays.write_videofile(
+                final_video_path,
+                codec='libx264',
+                audio_codec='aac',
+                fps=30,
+                verbose=False,
+                logger=None
+            )
+            
+            # Clean up
+            for clip in clips:
+                clip.close()
+            if audio_clip:
+                audio_clip.close()
+            video.close()
+            video_with_overlays.close()
+            
+            # Verify final video duration
+            final_clip = VideoFileClip(final_video_path)
+            final_duration = final_clip.duration
+            final_clip.close()
+            
+            logger.info(f"🎬 Final video composed: {final_video_path}")
+            logger.info(f"✅ Final duration: {final_duration:.1f}s (target: {target_duration:.1f}s)")
+            
+            return final_video_path
+            
+        except Exception as e:
+            logger.error(f"❌ Video composition failed: {e}")
+            raise RenderingError(f"Video composition failed: {str(e)}")
 
 # NO MOCK CLIENTS - ONLY REAL VEO GENERATION ALLOWED!

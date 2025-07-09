@@ -229,9 +229,9 @@ def _generate_with_discussions(category: str, topic: str, platform: str, duratio
                               discussion_log: bool, frame_continuity: str) -> dict:
     """Generate video using enhanced method with agent discussions"""
     
-    # CRITICAL FIX: Create session_id first and pass it to orchestrator
-    import uuid
-    session_id = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{str(uuid.uuid4())[:8]}"
+    # Create session_id using SessionManager
+    from src.utils.session_manager import SessionManager
+    session_id = SessionManager.create_session_id()
     
     # Create discussion-enhanced orchestrator with shared session_id
     orchestrator = create_discussion_enhanced_orchestrator(

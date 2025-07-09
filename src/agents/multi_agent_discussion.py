@@ -15,6 +15,7 @@ from dataclasses import dataclass, asdict
 from enum import Enum
 
 from ..utils.logging_config import get_logger
+from ..utils.session_manager import SessionManager
 from ..services.monitoring_service import MonitoringService
 from ..services.file_service import FileService
 from .discussion_visualizer import DiscussionVisualizer
@@ -74,12 +75,11 @@ class MultiAgentDiscussionSystem:
         self.api_key = api_key
         self.session_id = session_id
         
-        # CRITICAL FIX: Find existing session directory instead of creating new one
-        self.session_dir = self._find_existing_session_directory(session_id)
+        # Use SessionManager to find or create session directory
+        self.session_dir = SessionManager.find_most_recent_session()
         if not self.session_dir:
-            # Fallback: create basic session directory
-            self.session_dir = f"outputs/session_{session_id}"
-            os.makedirs(self.session_dir, exist_ok=True)
+            # Create new session directory if none exists
+            self.session_dir = SessionManager.create_session_folder(session_id)
         
         # Initialize Gemini models for different agent personalities
         genai.configure(api_key=api_key)
