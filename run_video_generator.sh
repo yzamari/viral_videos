@@ -21,9 +21,8 @@ fi
 
 # Check dependencies
 echo "📦 Checking dependencies..."
-python -c "import streamlit, google.generativeai" 2>/dev/null || {
+python -c "import gradio, google.generativeai" 2>/dev/null || {
     echo "📦 Installing missing dependencies..."
-    pip install streamlit
     pip install -r requirements.txt
 }
 
@@ -91,7 +90,7 @@ done
 # Launch appropriate mode
 if [ "$UI_MODE" = true ]; then
     echo "🚀 Launching Unified Real-time UI with Modern Text Overlays..."
-    echo "🌐 Interface will be available at http://localhost:8501"
+    echo "🌐 Interface will be available at http://localhost:7860"
     echo "✅ Mission-based video generation ready"
     echo "🤖 Live agent discussions with real-time visualization"
     echo "🎬 VEO-2/VEO-3 integration with modern text overlays"
@@ -99,8 +98,8 @@ if [ "$UI_MODE" = true ]; then
     echo "🎨 Modern social media fonts and smart positioning"
     echo "📱 Mobile-optimized for viral content"
     echo ""
-    echo "🔄 Starting Streamlit server..."
-    python -m streamlit run realtime_ui_with_video.py --server.port 8501 --server.headless false --browser.gatherUsageStats false
+    echo "🔄 Starting Gradio server..."
+    python unified_realtime_ui.py
 elif [ "$CLI_MODE" = true ]; then
     echo "🚀 Launching CLI Mode..."
     if [ -z "$MISSION" ]; then
