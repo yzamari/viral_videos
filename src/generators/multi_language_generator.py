@@ -154,7 +154,7 @@ class MultiLanguageVideoGenerator:
         
         # Generate sufficient video clips for the full duration
         logger.info("🎬 Generating shared video clips...")
-        veo_prompts = generator._generate_veo2_prompts(config, master_script)
+        veo_prompts = generator._create_veo2_prompts(config, master_script)
         
         # Ensure we have enough clips for the duration
         clips_needed = max(2, config.duration_seconds // 6)
@@ -175,11 +175,23 @@ class MultiLanguageVideoGenerator:
             logger.info(f"Added {additional_prompts} additional prompts for full duration")
         
         # Generate shared video clips that all language versions will use
-        veo_clips = generator._generate_veo2_clips(veo_prompts, config, base_video_id)
+        video_clip_paths = generator._generate_video_clips(config, master_script)
+        
+        # Convert file paths to clip dictionaries with metadata
+        veo_clips = []
+        for i, clip_path in enumerate(video_clip_paths):
+            veo_clips.append({
+                'clip_path': clip_path,
+                'clip_id': f"shared_clip_{i}_{base_video_id}",
+                'duration': min(8, config.duration_seconds / len(video_clip_paths)),
+                'scene_index': i,
+                'prompt': f"Scene {i+1}",
+                'success': os.path.exists(clip_path) if clip_path else False
+            })
         
         # Move clips to shared directory
         for clip in veo_clips:
-            if os.path.exists(clip['clip_path']):
+            if clip['clip_path'] and os.path.exists(clip['clip_path']):
                 new_path = os.path.join(shared_clips_dir, os.path.basename(clip['clip_path']))
                 os.rename(clip['clip_path'], new_path)
                 clip['clip_path'] = new_path

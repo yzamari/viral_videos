@@ -459,6 +459,66 @@ class VideoGenerator:
             logger.info(f"🔄 Using fallback script: {len(fallback_script)} characters")
             return fallback_script
     
+    def _generate_creative_script(self, config: GeneratedVideoConfig, video_id: str) -> str:
+        """Generate creative script for multi-language video generation - compatibility method"""
+        # This method is called by the multi-language generator
+        # We'll use the existing _generate_script method but with enhanced creativity
+        try:
+            logger.info(f"🎭 Generating creative script for video {video_id}")
+            
+            # Use the Director class for creative script generation
+            director = Director(self.api_key)
+            
+            # Create a more creative prompt for multi-language content
+            script_data = director.write_script(
+                topic=config.topic,
+                style=getattr(config, 'style', 'engaging'),
+                duration=config.duration_seconds,
+                platform=config.target_platform,
+                category=config.category,
+                patterns={
+                    'hooks': ['attention-grabbing', 'curiosity-driven', 'emotional'],
+                    'themes': [getattr(config, 'tone', 'energetic'), 'viral', 'engaging'],
+                    'success_factors': ['shareable', 'memorable', 'impactful']
+                },
+                incorporate_news=False
+            )
+            
+            # Convert to string format for compatibility
+            if isinstance(script_data, dict):
+                script_text = ""
+                
+                # Extract hook
+                if 'hook' in script_data and isinstance(script_data['hook'], dict):
+                    hook_text = script_data['hook'].get('text', '')
+                    if hook_text:
+                        script_text += hook_text + " "
+                
+                # Extract main content
+                if 'segments' in script_data and isinstance(script_data['segments'], list):
+                    for segment in script_data['segments']:
+                        if isinstance(segment, dict) and 'text' in segment:
+                            script_text += segment['text'] + " "
+                
+                # Extract CTA
+                if 'cta' in script_data and isinstance(script_data['cta'], dict):
+                    cta_text = script_data['cta'].get('text', '')
+                    if cta_text:
+                        script_text += cta_text + " "
+                
+                script = script_text.strip() if script_text.strip() else str(script_data)
+            else:
+                script = str(script_data)
+            
+            logger.info(f"✅ Creative script generated: {len(script)} characters")
+            return script
+            
+        except Exception as e:
+            logger.error(f"❌ Creative script generation failed: {e}")
+            
+            # Fallback to basic script generation
+            return self._generate_script(config)
+    
     def _generate_video_clips(self, config: GeneratedVideoConfig, script: str) -> List[str]:
         """Generate video clips with force generation modes and proper orientation"""
         try:
