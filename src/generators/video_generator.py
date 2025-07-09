@@ -1539,10 +1539,10 @@ class VideoGenerator:
         return '. '.join(sentences)
     
     def _add_text_overlays(self, video_clip, config: GeneratedVideoConfig, duration: float):
-        """Add professional text overlays with proper width constraints to prevent screen overflow"""
+        """Add professional text overlays with larger, more readable text and better positioning"""
         from moviepy.editor import TextClip, CompositeVideoClip
         
-        logger.info(f"📝 Adding professional text overlays to {duration:.1f}s video")
+        logger.info(f"📝 Adding enhanced text overlays to {duration:.1f}s video")
         
         try:
             overlays = []
@@ -1550,297 +1550,383 @@ class VideoGenerator:
             # Get video dimensions
             video_width, video_height = video_clip.size
             
-            # Calculate safe text area (80% of video width to prevent overflow)
-            safe_text_width = int(video_width * 0.8)
-            safe_text_height = int(video_height * 0.12)  # 12% of video height for each text
+            # Calculate much larger font sizes for better readability
+            # For 1080px width: title=120px, subtitle=80px, overlay=100px
+            title_fontsize = max(80, int(video_width * 0.11))  # 11% of video width
+            subtitle_fontsize = max(60, int(video_width * 0.08))  # 8% of video width
+            overlay_fontsize = max(70, int(video_width * 0.09))  # 9% of video width
             
-            # HEADER/TITLE - Always show at the beginning with proper width constraint
-            title_text = self._create_video_title(config.topic)
+            # Calculate safe text areas with more generous margins
+            safe_width = int(video_width * 0.9)  # 90% of video width
             
-            # Limit title text length to prevent overflow
-            if len(title_text) > 25:
-                title_text = title_text[:22] + "..."
+            # Generate intelligent text overlays based on content
+            intelligent_overlays = self._generate_intelligent_text_overlays(config, duration)
             
-            title_clip = TextClip(
-                title_text,
-                fontsize=min(70, video_width // 20),  # Dynamic font size based on video width
-                color='white',
-                font='Arial-Bold',
-                stroke_color='black',
-                stroke_width=3,
-                size=(safe_text_width, safe_text_height),
-                method='caption'  # Enable text wrapping
-            ).set_position(('center', video_height * 0.1)).set_duration(4).set_start(0)
-            overlays.append(title_clip)
-            
-            # PLATFORM-SPECIFIC OVERLAYS with width constraints
-            if config.target_platform.value.lower() == 'tiktok':
-                # TikTok style overlays
-                viral_clip = TextClip(
-                    "🔥 VIRAL",
-                    fontsize=min(60, video_width // 25),
-                    color='orange',
-                    font='Impact',
-                    size=(safe_text_width, safe_text_height),
-                    method='caption'
-                ).set_position(('center', video_height * 0.8)).set_duration(3).set_start(1)
-                overlays.append(viral_clip)
-                
-                follow_clip = TextClip(
-                    "👆 FOLLOW",
-                    fontsize=min(55, video_width // 28),
-                    color='white',
-                    font='Arial-Bold',
-                    stroke_color='black',
-                    stroke_width=2,
-                    size=(safe_text_width, safe_text_height),
-                    method='caption'
-                ).set_position(('center', video_height * 0.85)).set_duration(3).set_start(duration-4)
-                overlays.append(follow_clip)
-                
-            elif config.target_platform.value.lower() == 'youtube':
-                # YouTube style overlays
-                watch_clip = TextClip(
-                    "🎬 WATCH!",
-                    fontsize=min(65, video_width // 22),
-                    color='red',
-                    font='Arial-Bold',
-                    size=(safe_text_width, safe_text_height),
-                    method='caption'
-                ).set_position(('center', video_height * 0.15)).set_duration(3).set_start(2)
-                overlays.append(watch_clip)
-                
-                subscribe_clip = TextClip(
-                    "SUBSCRIBE",
-                    fontsize=min(50, video_width // 30),
-                    color='white',
-                    font='Arial-Bold',
-                    stroke_color='red',
-                    stroke_width=2,
-                    size=(safe_text_width, safe_text_height),
-                    method='caption'
-                ).set_position(('center', video_height * 0.9)).set_duration(4).set_start(duration-5)
-                overlays.append(subscribe_clip)
-                
-            elif config.target_platform.value.lower() == 'instagram':
-                # Instagram style overlays
-                amazing_clip = TextClip(
-                    "✨ AMAZING!",
-                    fontsize=min(60, video_width // 25),
-                    color='magenta',
-                    font='Arial-Bold',
-                    size=(safe_text_width, safe_text_height),
-                    method='caption'
-                ).set_position(('center', video_height * 0.2)).set_duration(3).set_start(1.5)
-                overlays.append(amazing_clip)
-                
-                tap_clip = TextClip(
-                    "💖 TAP",
-                    fontsize=min(55, video_width // 28),
-                    color='white',
-                    font='Arial-Bold',
-                    stroke_color='magenta',
-                    stroke_width=2,
-                    size=(safe_text_width, safe_text_height),
-                    method='caption'
-                ).set_position(('center', video_height * 0.85)).set_duration(3).set_start(duration-4)
-                overlays.append(tap_clip)
-            
-            # MIDDLE ENGAGEMENT OVERLAY with width constraint
-            if duration > 8:
-                middle_text = self._get_engagement_text(config.category.value)
-                
-                # Limit middle text length
-                if len(middle_text) > 15:
-                    middle_text = middle_text[:12] + "!"
-                
-                middle_clip = TextClip(
-                    middle_text,
-                    fontsize=min(65, video_width // 22),
-                    color='cyan',
-                    font='Impact',
-                    size=(safe_text_width, safe_text_height),
-                    method='caption'
-                ).set_position('center').set_duration(2).set_start(duration/2)
-                overlays.append(middle_clip)
-            
-            # CATEGORY-SPECIFIC OVERLAY with width constraint
-            category_overlay = self._get_category_overlay_constrained(config.category.value, duration, safe_text_width, safe_text_height, video_width)
-            if category_overlay:
-                overlays.append(category_overlay)
+            # Add overlays with proper timing and positioning
+            for i, overlay_data in enumerate(intelligent_overlays):
+                try:
+                    text = overlay_data['text']
+                    start_time = overlay_data['start_time']
+                    end_time = overlay_data['end_time']
+                    position = overlay_data['position']
+                    style = overlay_data.get('style', 'normal')
+                    
+                    # Determine font size based on style
+                    if style == 'title':
+                        fontsize = title_fontsize
+                        color = 'white'
+                        font = 'Arial-Bold'
+                        stroke_width = 4
+                    elif style == 'subtitle':
+                        fontsize = subtitle_fontsize
+                        color = 'yellow'
+                        font = 'Arial-Bold'
+                        stroke_width = 3
+                    elif style == 'highlight':
+                        fontsize = overlay_fontsize
+                        color = overlay_data.get('color', 'cyan')
+                        font = 'Impact'
+                        stroke_width = 3
+                    else:
+                        fontsize = subtitle_fontsize
+                        color = overlay_data.get('color', 'white')
+                        font = 'Arial-Bold'
+                        stroke_width = 2
+                    
+                    # Create text clip with better readability
+                    text_clip = TextClip(
+                        text,
+                        fontsize=fontsize,
+                        color=color,
+                        font=font,
+                        stroke_color='black',
+                        stroke_width=stroke_width,
+                        method='caption',
+                        size=(safe_width, None),  # Allow height to auto-adjust
+                        align='center'
+                    )
+                    
+                    # Position text based on specified position
+                    if position == 'top':
+                        text_position = ('center', video_height * 0.1)
+                    elif position == 'center':
+                        text_position = 'center'
+                    elif position == 'bottom':
+                        text_position = ('center', video_height * 0.8)
+                    elif position == 'upper_center':
+                        text_position = ('center', video_height * 0.3)
+                    elif position == 'lower_center':
+                        text_position = ('center', video_height * 0.7)
+                    else:
+                        text_position = 'center'
+                    
+                    # Set timing and position
+                    text_clip = text_clip.set_position(text_position).set_start(start_time).set_duration(end_time - start_time)
+                    
+                    overlays.append(text_clip)
+                    logger.info(f"✅ Added text overlay: '{text[:30]}...' ({fontsize}px) at {start_time:.1f}s-{end_time:.1f}s")
+                    
+                except Exception as e:
+                    logger.error(f"❌ Failed to create text overlay {i}: {e}")
+                    continue
             
             # Combine video with all overlays
             if overlays:
                 final_video = CompositeVideoClip([video_clip] + overlays)
-                logger.info(f"✅ Added {len(overlays)} professional text overlays")
+                logger.info(f"✅ Added {len(overlays)} enhanced text overlays")
                 return final_video
             else:
                 logger.warning("⚠️ No overlays created, returning original video")
                 return video_clip
                 
         except Exception as e:
-            logger.error(f"❌ Text overlay creation failed: {e}")
+            logger.error(f"❌ Enhanced text overlay creation failed: {e}")
             logger.info("🔄 Returning video without overlays")
             return video_clip
     
-    def _create_video_title(self, topic: str) -> str:
-        """Create an engaging title for the video"""
-        # Clean and format the topic
-        clean_topic = topic.replace('_', ' ').title()
-        
-        # Add engaging elements based on content
-        if any(word in topic.lower() for word in ['funny', 'comedy', 'laugh']):
-            return f"😂 {clean_topic}"
-        elif any(word in topic.lower() for word in ['amazing', 'incredible', 'mind']):
-            return f"🤯 {clean_topic}"
-        elif any(word in topic.lower() for word in ['secret', 'hidden', 'truth']):
-            return f"🔥 {clean_topic}"
-        elif any(word in topic.lower() for word in ['new', 'latest', 'breaking']):
-            return f"🚨 {clean_topic}"
-        else:
-            return f"✨ {clean_topic}"
-    
-    def _get_engagement_text(self, category: str) -> str:
-        """Get engagement text based on category"""
-        engagement_texts = {
-            'Comedy': '😂 SO FUNNY!',
-            'Entertainment': '🎉 AMAZING!',
-            'Education': '🧠 LEARN THIS!',
-            'News': '📰 BREAKING!',
-            'Sports': '⚽ INCREDIBLE!',
-            'Music': '🎵 EPIC!',
-            'Gaming': '🎮 LEGENDARY!',
-            'Food': '🍕 DELICIOUS!',
-            'Travel': '✈️ WANDERLUST!',
-            'Fashion': '👗 STUNNING!'
-        }
-        return engagement_texts.get(category, '🔥 WOW!')
-    
-    def _get_category_overlay_constrained(self, category: str, duration: float, safe_text_width: int, safe_text_height: int, video_width: int):
-        """Get category-specific overlay with width constraints"""
-        from moviepy.editor import TextClip
+    def _generate_intelligent_text_overlays(self, config: GeneratedVideoConfig, duration: float) -> List[Dict]:
+        """Generate intelligent, content-specific text overlays"""
+        overlays = []
         
         try:
-            category_configs = {
-                'Comedy': {'text': '🎭 COMEDY', 'color': 'yellow', 'font': 'Comic Sans MS'},
-                'Entertainment': {'text': '🎪 ENTERTAINMENT', 'color': 'purple', 'font': 'Arial-Bold'},
-                'Education': {'text': '📚 EDUCATIONAL', 'color': 'blue', 'font': 'Times-Bold'},
-                'News': {'text': '📺 NEWS', 'color': 'red', 'font': 'Arial-Bold'},
-                'Sports': {'text': '🏆 SPORTS', 'color': 'green', 'font': 'Impact'},
-                'Music': {'text': '🎼 MUSIC', 'color': 'gold', 'font': 'Arial-Bold'}
-            }
+            # Use AI to generate content-specific text overlays
+            topic = config.topic
+            category = config.category.value
+            platform = config.target_platform.value
             
-            config = category_configs.get(category)
-            if config:
-                # Calculate text size based on safe text area
-                text_size = TextClip(
-                    config['text'],
-                    fontsize=min(45, safe_text_height // 2),  # Dynamic font size based on safe text height
-                    color=config['color'],
-                    font=config['font']
-                )
-                
-                # Calculate text width
-                text_width = text_size.size[0]
-                
-                # Calculate position based on safe text area
-                x = (safe_text_width - text_width) // 2
-                y = safe_text_height // 2
-                
-                return TextClip(
-                    config['text'],
-                    fontsize=min(45, safe_text_height // 2),  # Dynamic font size based on safe text height
-                    color=config['color'],
-                    font=config['font'],
-                    size=(safe_text_width, safe_text_height),
-                    method='caption'  # Enable text wrapping
-                ).set_position((x, y)).set_duration(3).set_start(0.5)
+            # Generate AI-powered overlays
+            ai_prompt = f"""
+            Create engaging text overlays for a {duration:.0f}-second video about: {topic}
             
-        except Exception as e:
-            logger.warning(f"Category overlay creation failed: {e}")
-        
-        return None
-
-    def _create_veo2_prompts(self, config: GeneratedVideoConfig, script: Union[str, dict]) -> List[str]:
-        """Create VEO-2 prompts based on AI agent decisions and script content"""
-        topic = config.topic
-        style = config.visual_style
-        
-        # Extract actual content from script if available
-        script_content = ""
-        if isinstance(script, dict):
-            # Extract text content from dictionary script
-            if 'hook' in script and isinstance(script['hook'], dict) and 'text' in script['hook']:
-                script_content += script['hook']['text'] + " "
-            if 'segments' in script and isinstance(script['segments'], list):
-                for segment in script['segments']:
-                    if isinstance(segment, dict) and 'text' in segment:
-                        script_content += segment['text'] + " "
-        else:
-            script_content = str(script)
-        
-        # Let AI agents decide on prompts based on mission and script
-        logger.info(f"🤖 AI agents analyzing mission: {topic}")
-        logger.info(f"🎬 Script content: {script_content[:200]}...")
-        
-        try:
-            # Use Gemini to generate appropriate prompts based on the mission
-            genai.configure(api_key=self.api_key)
-            model = genai.GenerativeModel('gemini-2.5-flash')
+            Video details:
+            - Platform: {platform}
+            - Category: {category}
+            - Duration: {duration:.0f}s
             
-            prompt_generation_request = f"""
-            MISSION: {topic}
-            SCRIPT CONTENT: {script_content}
-            VISUAL STYLE: {style}
-            PLATFORM: {config.target_platform.value}
-            CATEGORY: {config.category.value}
+            Generate 6-8 text overlays that:
+            1. Are specific to the topic (not generic)
+            2. Create engagement and interest
+            3. Use emojis appropriately
+            4. Are timed throughout the video
+            5. Vary in style (title, subtitle, highlight, call-to-action)
             
-            As a professional video director, create 3 distinct visual prompts for this mission.
-            Each prompt should be specific, actionable, and designed to accomplish the mission.
+            Return as JSON array with this format:
+            [
+                {{
+                    "text": "🔥 Specific engaging text about the topic",
+                    "start_time": 0.0,
+                    "end_time": 4.0,
+                    "position": "top",
+                    "style": "title",
+                    "color": "white"
+                }},
+                {{
+                    "text": "🤯 Another specific overlay",
+                    "start_time": 5.0,
+                    "end_time": 8.0,
+                    "position": "center",
+                    "style": "highlight",
+                    "color": "cyan"
+                }}
+            ]
             
-            Requirements:
-            - Each prompt should be 1-2 sentences maximum
-            - Focus on visual elements that support the mission
-            - Consider the target platform and category
-            - Make prompts diverse but cohesive
-            - No generic templates - be specific to this mission
+            Position options: top, center, bottom, upper_center, lower_center
+            Style options: title, subtitle, highlight, normal
+            Color options: white, yellow, cyan, orange, red, green, magenta
             
-            Return only the 3 prompts, one per line, no numbering or formatting.
+            Make sure text is specific to "{topic}" and not generic.
             """
             
-            response = model.generate_content(prompt_generation_request)
-            ai_prompts = response.text.strip().split('\n')
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=self.api_key)
+                model = genai.GenerativeModel('gemini-2.0-flash-exp')
+                
+                response = model.generate_content(ai_prompt)
+                
+                # Extract JSON from response
+                import json
+                import re
+                
+                # Find JSON array in response
+                json_match = re.search(r'\[.*\]', response.text, re.DOTALL)
+                if json_match:
+                    overlay_data = json.loads(json_match.group())
+                    
+                    # Validate and process overlays
+                    for overlay in overlay_data:
+                        if isinstance(overlay, dict) and 'text' in overlay:
+                            # Ensure timing is within video duration
+                            start_time = min(float(overlay.get('start_time', 0)), duration - 2)
+                            end_time = min(float(overlay.get('end_time', start_time + 3)), duration)
+                            
+                            if end_time > start_time:
+                                overlays.append({
+                                    'text': overlay['text'],
+                                    'start_time': start_time,
+                                    'end_time': end_time,
+                                    'position': overlay.get('position', 'center'),
+                                    'style': overlay.get('style', 'normal'),
+                                    'color': overlay.get('color', 'white')
+                                })
+                    
+                    logger.info(f"🤖 AI generated {len(overlays)} intelligent text overlays")
+                    
+            except Exception as e:
+                logger.warning(f"⚠️ AI text generation failed: {e}")
+                overlays = []
             
-            # Clean and validate prompts
-            cleaned_prompts = []
-            for prompt in ai_prompts:
-                clean_prompt = prompt.strip()
-                if clean_prompt and len(clean_prompt) > 10:
-                    # Add style suffix if not already present
-                    if style not in clean_prompt.lower():
-                        clean_prompt += f", {style}"
-                    cleaned_prompts.append(clean_prompt)
+            # Fallback: Create topic-specific overlays if AI fails
+            if not overlays:
+                overlays = self._create_topic_specific_overlays(config, duration)
             
-            # Ensure we have at least 3 prompts
-            while len(cleaned_prompts) < 3:
-                cleaned_prompts.append(f"Professional visual content supporting: {topic}, {style}")
-            
-            logger.info(f"🎨 AI-generated prompts for '{topic}':")
-            for i, prompt in enumerate(cleaned_prompts[:3], 1):
-                logger.info(f"   Prompt {i}: {prompt}")
-            
-            return cleaned_prompts[:3]
+            return overlays
             
         except Exception as e:
-            logger.error(f"❌ AI prompt generation failed: {e}")
-            # Fallback: Create generic prompts based on mission analysis
-            fallback_prompts = [
-                f"Professional visual content that supports: {topic}, {style}",
-                f"Engaging scene designed to accomplish: {topic}, {style}",
-                f"Compelling visual narrative for: {topic}, {style}"
-            ]
-            logger.info(f"🔄 Using fallback prompts for '{topic}'")
-            return fallback_prompts
+            logger.error(f"❌ Intelligent text overlay generation failed: {e}")
+            return self._create_topic_specific_overlays(config, duration)
+    
+    def _create_topic_specific_overlays(self, config: GeneratedVideoConfig, duration: float) -> List[Dict]:
+        """Create topic-specific text overlays as fallback"""
+        overlays = []
+        topic = config.topic.lower()
+        
+        try:
+            # Persian mythology specific overlays
+            if 'persian' in topic and 'mythology' in topic:
+                overlays = [
+                    {
+                        'text': '🏺 Ancient Persian Mythology',
+                        'start_time': 0.0,
+                        'end_time': 4.0,
+                        'position': 'top',
+                        'style': 'title',
+                        'color': 'white'
+                    },
+                    {
+                        'text': '⚔️ Epic Battle of Deities',
+                        'start_time': 5.0,
+                        'end_time': 9.0,
+                        'position': 'center',
+                        'style': 'highlight',
+                        'color': 'yellow'
+                    },
+                    {
+                        'text': '🌟 Ahura Mazda vs Angra Mainyu',
+                        'start_time': 10.0,
+                        'end_time': 14.0,
+                        'position': 'upper_center',
+                        'style': 'subtitle',
+                        'color': 'cyan'
+                    },
+                    {
+                        'text': '🥤 The Sacred Cola Wars',
+                        'start_time': 15.0,
+                        'end_time': 19.0,
+                        'position': 'center',
+                        'style': 'highlight',
+                        'color': 'orange'
+                    },
+                    {
+                        'text': '✨ Choose Your Divine Drink',
+                        'start_time': 20.0,
+                        'end_time': 24.0,
+                        'position': 'lower_center',
+                        'style': 'subtitle',
+                        'color': 'magenta'
+                    },
+                    {
+                        'text': '🔥 Ancient Wisdom Revealed',
+                        'start_time': 25.0,
+                        'end_time': 29.0,
+                        'position': 'center',
+                        'style': 'highlight',
+                        'color': 'red'
+                    },
+                    {
+                        'text': '👆 Follow for More Mythology',
+                        'start_time': max(0, duration - 8),
+                        'end_time': duration,
+                        'position': 'bottom',
+                        'style': 'normal',
+                        'color': 'white'
+                    }
+                ]
+            
+            # Comedy specific overlays
+            elif 'comedy' in topic or 'funny' in topic:
+                overlays = [
+                    {
+                        'text': '😂 Prepare to Laugh!',
+                        'start_time': 0.0,
+                        'end_time': 4.0,
+                        'position': 'top',
+                        'style': 'title',
+                        'color': 'yellow'
+                    },
+                    {
+                        'text': '🤣 This is Hilarious!',
+                        'start_time': 8.0,
+                        'end_time': 12.0,
+                        'position': 'center',
+                        'style': 'highlight',
+                        'color': 'cyan'
+                    },
+                    {
+                        'text': '💀 I Can\'t Even...',
+                        'start_time': 16.0,
+                        'end_time': 20.0,
+                        'position': 'upper_center',
+                        'style': 'subtitle',
+                        'color': 'orange'
+                    },
+                    {
+                        'text': '🔥 Comedy Gold!',
+                        'start_time': 24.0,
+                        'end_time': 28.0,
+                        'position': 'center',
+                        'style': 'highlight',
+                        'color': 'red'
+                    },
+                    {
+                        'text': '👆 Follow for More Laughs',
+                        'start_time': max(0, duration - 6),
+                        'end_time': duration,
+                        'position': 'bottom',
+                        'style': 'normal',
+                        'color': 'white'
+                    }
+                ]
+            
+            # Generic engaging overlays
+            else:
+                clean_topic = config.topic.replace('_', ' ').title()
+                overlays = [
+                    {
+                        'text': f'✨ {clean_topic}',
+                        'start_time': 0.0,
+                        'end_time': 4.0,
+                        'position': 'top',
+                        'style': 'title',
+                        'color': 'white'
+                    },
+                    {
+                        'text': '🤯 Mind-Blowing!',
+                        'start_time': 6.0,
+                        'end_time': 10.0,
+                        'position': 'center',
+                        'style': 'highlight',
+                        'color': 'cyan'
+                    },
+                    {
+                        'text': '🔥 This is Amazing!',
+                        'start_time': 12.0,
+                        'end_time': 16.0,
+                        'position': 'upper_center',
+                        'style': 'subtitle',
+                        'color': 'orange'
+                    },
+                    {
+                        'text': '⚡ Incredible Content!',
+                        'start_time': 18.0,
+                        'end_time': 22.0,
+                        'position': 'center',
+                        'style': 'highlight',
+                        'color': 'yellow'
+                    },
+                    {
+                        'text': '💫 Don\'t Miss This!',
+                        'start_time': 24.0,
+                        'end_time': 28.0,
+                        'position': 'lower_center',
+                        'style': 'subtitle',
+                        'color': 'magenta'
+                    },
+                    {
+                        'text': '👆 Follow for More',
+                        'start_time': max(0, duration - 6),
+                        'end_time': duration,
+                        'position': 'bottom',
+                        'style': 'normal',
+                        'color': 'white'
+                    }
+                ]
+            
+            # Adjust timing for shorter videos
+            if duration < 30:
+                # Remove some overlays and adjust timing
+                overlays = overlays[:4]  # Keep only first 4 overlays
+                for i, overlay in enumerate(overlays):
+                    # Distribute overlays evenly
+                    overlay['start_time'] = (duration / len(overlays)) * i
+                    overlay['end_time'] = min(overlay['start_time'] + 4, duration)
+            
+            logger.info(f"📝 Created {len(overlays)} topic-specific text overlays")
+            return overlays
+            
+        except Exception as e:
+            logger.error(f"❌ Topic-specific overlay creation failed: {e}")
+            return []
 
     def _generate_audio(self, script: str, duration: int) -> str:
         """Generate audio from script using Google TTS with enhanced naturalness"""
