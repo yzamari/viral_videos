@@ -11,6 +11,7 @@ from gtts import gTTS
 from moviepy.editor import *
 import tempfile
 import time
+import re # Added for Hebrew TTS
 
 from ..models.video_models import (
     GeneratedVideoConfig, MultiLanguageVideo, LanguageVersion,
@@ -382,15 +383,30 @@ class MultiLanguageVideoGenerator:
         logger.info(f"🎤 Generating realistic {lang_name} TTS...")
         
         try:
-            # Check if realistic audio is requested (Google Cloud TTS)
-            realistic_audio = getattr(self, 'use_realistic_audio', False)
-            
-            # Skip Google Cloud TTS to avoid authentication issues
-            # Use enhanced gTTS for better compatibility
-            logger.info(f"🎤 Using enhanced gTTS for {lang_name}...")
-            
-            # Enhanced gTTS configuration with language-specific settings
+            # Enhanced TTS configuration with language-specific settings
             tts_config = self.tts_voice_config[language].copy()
+            
+            # Special handling for Hebrew to improve naturalness
+            if language == Language.HEBREW:
+                logger.info("🎤 Using enhanced Hebrew TTS settings...")
+                # Use better Hebrew voice settings
+                tts_config = {
+                    'lang': 'iw',  # Hebrew language code
+                    'tld': 'co.il',  # Israeli domain for better Hebrew pronunciation
+                    'slow': False
+                }
+                
+                # Add Hebrew-specific improvements
+                # Remove punctuation that might confuse Hebrew TTS
+                script = re.sub(r'[^\w\s\u0590-\u05FF]', ' ', script)  # Keep Hebrew characters
+                script = re.sub(r'\s+', ' ', script).strip()
+                
+                # Add natural Hebrew speech patterns
+                script = script.replace('.', ' ')  # Remove periods for better flow
+                script = script.replace('!', ' ')  # Remove exclamation marks
+                script = script.replace('?', ' ')  # Remove question marks
+                
+                logger.info(f"🎤 Hebrew script cleaned: {script[:50]}...")
             
             # Create natural TTS with emotion
             tts = gTTS(
@@ -400,43 +416,76 @@ class MultiLanguageVideoGenerator:
             
             audio_filename = f"audio_{language.value}_{video_id}.mp3"
             audio_path = os.path.join(session_dir, audio_filename)
-            tts.save(audio_path)
             
-            # Validate duration
-            audio_clip = AudioFileClip(audio_path)
-            actual_duration = audio_clip.duration
-            audio_clip.close()
+            # Multiple attempts for reliable generation
+            for attempt in range(3):
+                try:
+                    logger.info(f"🎤 TTS attempt {attempt + 1}/3 for {lang_name}...")
+                    tts.save(audio_path)
+                    
+                    # Validate the generated audio
+                    if os.path.exists(audio_path):
+                        file_size = os.path.getsize(audio_path)
+                        if file_size > 50000:  # At least 50KB for real audio
+                            audio_clip = AudioFileClip(audio_path)
+                            actual_duration = audio_clip.duration
+                            audio_clip.close()
+                            
+                            logger.info(f"✅ Enhanced {lang_name} TTS: {actual_duration:.1f}s ({file_size/1024:.0f}KB)")
+                            return audio_path
+                        else:
+                            logger.warning(f"⚠️ Generated audio too small: {file_size} bytes")
+                            if os.path.exists(audio_path):
+                                os.remove(audio_path)
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ TTS attempt {attempt + 1} failed: {e}")
+                    if attempt < 2:  # Wait before retry
+                        time.sleep(2)
+                    continue
             
-            logger.info(f"✅ Enhanced gTTS {lang_name}: {actual_duration:.1f}s")
-            return audio_path
+            # If all attempts failed, create a fallback
+            logger.error(f"❌ All TTS attempts failed for {lang_name}")
+            raise Exception(f"TTS generation failed for {lang_name}")
             
         except Exception as e:
             logger.error(f"❌ TTS failed: {e}")
             raise
-    
+
     def _compose_multilingual_video(self, veo_clips: List[Dict], audio_path: str,
                                    language: Language, video_id: str, session_dir: str) -> str:
-        """Compose final video with shared clips and language-specific audio"""
+        """Compose final video with shared clips, language-specific audio, and text overlays"""
         
         lang_name = self.language_names[language]
-        logger.info(f"🎬 Composing {lang_name} video...")
+        logger.info(f"🎬 Composing {lang_name} video with text overlays...")
         
         try:
             # Load audio
             audio_clip = AudioFileClip(audio_path)
             audio_duration = audio_clip.duration
             
-            # Load shared video clips
+            # Load shared video clips and filter out failed ones
             video_clips = []
             for clip_info in veo_clips:
                 try:
-                    video_clip = VideoFileClip(clip_info['clip_path'])
-                    video_clips.append(video_clip)
+                    clip_path = clip_info['clip_path']
+                    if os.path.exists(clip_path):
+                        file_size = os.path.getsize(clip_path)
+                        if file_size > 100000:  # At least 100KB for real video
+                            video_clip = VideoFileClip(clip_path)
+                            video_clips.append(video_clip)
+                            logger.info(f"✅ Loaded clip: {os.path.basename(clip_path)} ({file_size/1024/1024:.1f}MB)")
+                        else:
+                            logger.warning(f"⚠️ Skipping small clip: {os.path.basename(clip_path)} ({file_size} bytes)")
+                    else:
+                        logger.warning(f"⚠️ Clip not found: {clip_path}")
                 except Exception as e:
-                    logger.warning(f"Failed to load clip: {e}")
+                    logger.warning(f"⚠️ Failed to load clip: {e}")
             
             if not video_clips:
-                raise Exception("No video clips available")
+                raise Exception("No valid video clips available")
+            
+            logger.info(f"🎬 Using {len(video_clips)} valid video clips")
             
             # Concatenate and sync to audio
             final_video = concatenate_videoclips(video_clips, method="compose")
@@ -448,17 +497,26 @@ class MultiLanguageVideoGenerator:
                 last_frame = final_video.to_ImageClip(t=final_video.duration - 0.1).set_duration(padding)
                 final_video = concatenate_videoclips([final_video, last_frame])
             
+            # Add text overlays for multi-language videos
+            final_video_with_overlays = self._add_multilingual_text_overlays(
+                final_video, language, audio_duration
+            )
+            
             # Add audio
-            final_video_with_audio = final_video.set_audio(audio_clip)
+            final_video_with_audio = final_video_with_overlays.set_audio(audio_clip)
             
             # Save
             video_filename = f"viral_video_{language.value}_{video_id}.mp4"
             output_path = os.path.join(session_dir, video_filename)
             
+            logger.info(f"🎬 Rendering {lang_name} video: {output_path}")
             final_video_with_audio.write_videofile(
                 output_path,
+                fps=30,
                 codec='libx264',
                 audio_codec='aac',
+                temp_audiofile='temp-audio.m4a',
+                remove_temp=True,
                 verbose=False,
                 logger=None
             )
@@ -466,13 +524,117 @@ class MultiLanguageVideoGenerator:
             # Cleanup
             final_video_with_audio.close()
             audio_clip.close()
+            for clip in video_clips:
+                clip.close()
             
-            logger.info(f"✅ {lang_name} video complete")
-            return output_path
+            # Verify output
+            if os.path.exists(output_path):
+                file_size = os.path.getsize(output_path) / (1024 * 1024)
+                logger.info(f"✅ {lang_name} video generated: {output_path} ({file_size:.1f}MB)")
+                return output_path
+            else:
+                raise Exception(f"Output video not created: {output_path}")
             
         except Exception as e:
-            logger.error(f"❌ Video composition failed: {e}")
+            logger.error(f"❌ Video composition failed for {lang_name}: {e}")
             raise
+
+    def _add_multilingual_text_overlays(self, video_clip, language: Language, duration: float):
+        """Add text overlays appropriate for the target language"""
+        from moviepy.editor import TextClip, CompositeVideoClip
+        
+        lang_name = self.language_names[language]
+        is_rtl = language in self.rtl_languages
+        
+        logger.info(f"📝 Adding text overlays for {lang_name} (RTL: {is_rtl})")
+        
+        try:
+            overlays = []
+            video_width, video_height = video_clip.size
+            
+            # Language-specific text overlays
+            if language == Language.HEBREW:
+                overlay_texts = [
+                    {"text": "🔥 תוכן ויראלי", "start": 0, "end": 3, "position": "top"},
+                    {"text": "💡 מידע חשוב", "start": 4, "end": 8, "position": "center"},
+                    {"text": "👆 עקבו לעוד", "start": max(0, duration-4), "end": duration, "position": "bottom"}
+                ]
+            elif language == Language.ARABIC:
+                overlay_texts = [
+                    {"text": "🔥 محتوى فيروسي", "start": 0, "end": 3, "position": "top"},
+                    {"text": "💡 معلومات مهمة", "start": 4, "end": 8, "position": "center"},
+                    {"text": "👆 تابعونا للمزيد", "start": max(0, duration-4), "end": duration, "position": "bottom"}
+                ]
+            elif language == Language.PERSIAN:
+                overlay_texts = [
+                    {"text": "🔥 محتوای ویروسی", "start": 0, "end": 3, "position": "top"},
+                    {"text": "💡 اطلاعات مهم", "start": 4, "end": 8, "position": "center"},
+                    {"text": "👆 دنبال کنید", "start": max(0, duration-4), "end": duration, "position": "bottom"}
+                ]
+            else:
+                # English and other languages
+                overlay_texts = [
+                    {"text": "🔥 Viral Content", "start": 0, "end": 3, "position": "top"},
+                    {"text": "💡 Important Info", "start": 4, "end": 8, "position": "center"},
+                    {"text": "👆 Follow for more", "start": max(0, duration-4), "end": duration, "position": "bottom"}
+                ]
+            
+            # Create text clips
+            for overlay in overlay_texts:
+                try:
+                    text = overlay["text"]
+                    start_time = overlay["start"]
+                    end_time = min(overlay["end"], duration)
+                    position = overlay["position"]
+                    
+                    if end_time <= start_time:
+                        continue
+                    
+                    # Font size based on video dimensions
+                    font_size = max(60, int(video_width * 0.08))
+                    
+                    # Position calculation
+                    if position == "top":
+                        y_pos = video_height * 0.15
+                    elif position == "center":
+                        y_pos = video_height * 0.5
+                    else:  # bottom
+                        y_pos = video_height * 0.85
+                    
+                    # Create text clip
+                    text_clip = TextClip(
+                        text,
+                        fontsize=font_size,
+                        color='white',
+                        font='Arial-Bold',
+                        stroke_color='black',
+                        stroke_width=3,
+                        method='caption',
+                        size=(int(video_width * 0.9), None),
+                        align='center'
+                    )
+                    
+                    text_clip = text_clip.set_position(('center', y_pos)).set_start(start_time).set_duration(end_time - start_time)
+                    overlays.append(text_clip)
+                    
+                    logger.info(f"📝 Added {lang_name} overlay: '{text}' at {start_time}-{end_time}s")
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to create overlay: {e}")
+                    continue
+            
+            # Composite video with overlays
+            if overlays:
+                final_video = CompositeVideoClip([video_clip] + overlays)
+                logger.info(f"✅ Added {len(overlays)} text overlays to {lang_name} video")
+                return final_video
+            else:
+                logger.warning(f"⚠️ No overlays added to {lang_name} video")
+                return video_clip
+                
+        except Exception as e:
+            logger.error(f"❌ Text overlay generation failed for {lang_name}: {e}")
+            return video_clip
     
     def _save_multilingual_project_info(self, multilang_video: MultiLanguageVideo, session_dir: str):
         """Save project information"""
