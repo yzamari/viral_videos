@@ -73,8 +73,8 @@ echo
 echo -e "${YELLOW}# Generate a 30-second video${NC}"
 echo "python3 main.py generate --topic 'AI creating amazing content'"
 echo
-echo -e "${YELLOW}# Launch web interface${NC}"
-echo "python3 enhanced_ui.py"
+echo -e "${YELLOW}# Launch AI agent web interface${NC}"
+echo "python3 modern_ui.py"
 echo
 echo -e "${YELLOW}# Interactive launcher${NC}"
 echo "./launch.sh"
@@ -82,4 +82,4 @@ echo
 echo -e "${BLUE}📚 Documentation:${NC} README.md, RUNNING_INSTRUCTIONS.md"
 echo -e "${BLUE}🆘 Help:${NC} python3 main.py --help"
 echo
-echo -e "${GREEN}✨ Happy video creating with 26+ AI agents! 🎬${NC}" 
+echo -e "${GREEN}✨ Happy video creating with 3-19 intelligent AI agents! 🎬${NC}" 

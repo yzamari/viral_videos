@@ -1,6 +1,7 @@
 """
 Video generator using AI and video editing libraries
 """
+from veo_client import VeoApiClient
 import os
 import json
 import subprocess
@@ -18,7 +19,7 @@ import random
 
 # MoviePy imports
 from moviepy.editor import (
-    VideoFileClip, AudioFileClip, CompositeVideoClip, TextClip, ColorClip, 
+    VideoFileClip, AudioFileClip, CompositeVideoClip, TextClip, ColorClip,
     concatenate_videoclips, concatenate_audioclips, ImageClip, vfx, afx
 )
 try:
@@ -39,7 +40,6 @@ import google.generativeai as genai
 # Add project root to path for fallback imports
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from veo_client import VeoApiClient
 
 try:
     from ..models.video_models import (
@@ -71,31 +71,38 @@ except ImportError:
 
 logger = get_logger(__name__)
 
+
 def ensure_gcloud_auth():
     """Ensure gcloud is authenticated automatically without browser interaction"""
     try:
         # Check if already authenticated
-        result = subprocess.run(['gcloud', 'auth', 'list', '--filter=status:ACTIVE'],
-                              capture_output=True, text=True)
+        result = subprocess.run(['gcloud',
+                                 'auth',
+                                 'list',
+                                 '--filter=status:ACTIVE'],
+                                capture_output=True,
+                                text=True)
         if result.returncode == 0 and result.stdout.strip():
             logger.info("✅ gcloud already authenticated")
 
             # Check if application default credentials are set
             try:
                 result = subprocess.run(['gcloud', 'auth', 'print-access-token'],
-                                      capture_output=True, text=True)
+                                        capture_output=True, text=True)
                 if result.returncode == 0:
                     logger.info("✅ Application default credentials available")
 
                     # Verify ADC file exists
                     import os
-                    adc_path = os.path.expanduser("~/.config/gcloud/application_default_credentials.json")
+                    adc_path = os.path.expanduser(
+                        "~/.config/gcloud/application_default_credentials.json")
                     if os.path.exists(adc_path):
                         logger.info("✅ ADC file confirmed")
                         return True
                     else:
-                        logger.warning("⚠️ ADC file missing, may need re-authentication")
-            except:
+                        logger.warning(
+                            "⚠️ ADC file missing, may need re-authentication")
+            except BaseException:
                 pass
 
         logger.info("🔐 Setting up gcloud authentication...")
@@ -111,7 +118,9 @@ def ensure_gcloud_auth():
                 logger.info("✅ Application default credentials configured")
                 return True
             else:
-                logger.warning(f"⚠️ Application default login failed: {result.stderr}")
+                logger.warning(
+                    f"⚠️ Application default login failed: {
+                        result.stderr}")
         except subprocess.TimeoutExpired:
             logger.warning("⚠️ Application default login timed out")
         except Exception as e:
@@ -123,9 +132,12 @@ def ensure_gcloud_auth():
             # Check if service account key exists
             service_account_paths = [
                 os.path.expanduser("~/.config/gcloud/application_default_credentials.json"),
-                os.path.join(os.getcwd(), "service-account-key.json"),
-                os.path.join(os.getcwd(), "credentials.json")
-            ]
+                os.path.join(
+                    os.getcwd(),
+                    "service-account-key.json"),
+                os.path.join(
+                    os.getcwd(),
+                    "credentials.json")]
 
             for key_path in service_account_paths:
                 if os.path.exists(key_path):
@@ -143,31 +155,44 @@ def ensure_gcloud_auth():
 
         # Final fallback: Try to use existing credentials
         try:
-            result = subprocess.run(['gcloud', 'config', 'set', 'auth/disable_credentials', 'false'],
-                                  capture_output=True, text=True)
+            result = subprocess.run(['gcloud',
+                                     'config',
+                                     'set',
+                                     'auth/disable_credentials',
+                                     'false'],
+                                    capture_output=True,
+                                    text=True)
             result = subprocess.run(['gcloud', 'auth', 'print-access-token'],
-                                  capture_output=True, text=True)
+                                    capture_output=True, text=True)
             if result.returncode == 0:
                 logger.info("✅ Using existing gcloud credentials")
                 return True
         except Exception as e:
             logger.warning(f"⚠️ Existing credentials check failed: {e}")
 
-        logger.warning("⚠️ Could not set up automatic authentication, will use fallback methods")
+        logger.warning(
+            "⚠️ Could not set up automatic authentication, will use fallback methods")
         return False
 
     except Exception as e:
         logger.error(f"❌ Authentication setup failed: {e}")
         return False
 
+
 class VideoGenerator:
     """
     Main video generator class with REAL VEO-2 video generation
     """
 
-    def __init__(self, api_key: str, use_vertex_ai: bool = True, project_id: Optional[str] = None,
-                 location: Optional[str] = None, gcs_bucket: Optional[str] = None,
-                 use_real_veo2: bool = True, session_id: Optional[str] = None):
+    def __init__(
+            self,
+            api_key: str,
+            use_vertex_ai: bool = True,
+            project_id: Optional[str] = None,
+            location: Optional[str] = None,
+            gcs_bucket: Optional[str] = None,
+            use_real_veo2: bool = True,
+            session_id: Optional[str] = None):
         self.api_key = api_key
         self.use_vertex_ai = use_vertex_ai
         self.project_id = project_id or "viralgen-464411"
@@ -182,7 +207,8 @@ class VideoGenerator:
             os.makedirs(self.session_dir, exist_ok=True)
         else:
             self.session_id = SessionManager.create_session_id()
-            self.session_dir = SessionManager.create_session_folder(self.session_id)
+            self.session_dir = SessionManager.create_session_folder(
+                self.session_id)
 
         # UNIFIED OUTPUT STRUCTURE - All files go in session directory
         self.base_output_dir = "outputs"
@@ -196,7 +222,12 @@ class VideoGenerator:
         self.analysis_dir = os.path.join(self.session_dir, "analysis")
 
         # Create all subdirectories
-        for directory in [self.clips_dir, self.images_dir, self.audio_dir, self.logs_dir, self.analysis_dir]:
+        for directory in [
+                self.clips_dir,
+                self.images_dir,
+                self.audio_dir,
+                self.logs_dir,
+                self.analysis_dir]:
             os.makedirs(directory, exist_ok=True)
 
         logger.info(f"📁 Unified session directory created: {self.session_dir}")
@@ -207,13 +238,14 @@ class VideoGenerator:
 
         # Initialize comprehensive logger with session directory
         from ..utils.comprehensive_logger import ComprehensiveLogger
-        self.comprehensive_logger = ComprehensiveLogger(self.session_id, self.session_dir)
+        self.comprehensive_logger = ComprehensiveLogger(
+            self.session_id, self.session_dir)
 
         # Initialize models
         import google.generativeai as genai
         genai.configure(api_key=api_key)
-        self.script_model = genai.GenerativeModel("gemini-1.5-flash")
-        self.refinement_model = genai.GenerativeModel("gemini-1.5-pro")
+        self.script_model = genai.GenerativeModel("gemini-2.5-flash")
+        self.refinement_model = genai.GenerativeModel("gemini-2.5-flash")
 
         # Initialize VEO-2 client if enabled
         if use_real_veo2:
@@ -243,12 +275,14 @@ class VideoGenerator:
                     )
                     logger.info("🎬 Google AI Studio VEO-2 client initialized")
                 except ImportError as e:
-                    logger.warning(f"⚠️ Google AI Studio VEO-2 not available: {e}")
+                    logger.warning(
+                        f"⚠️ Google AI Studio VEO-2 not available: {e}")
 
             # Initialize Gemini Image fallback
             try:
                 from .gemini_image_client import GeminiImageClient
-                self.image_client = GeminiImageClient(api_key, self.session_dir)  # Use session directory
+                self.image_client = GeminiImageClient(
+                    api_key, self.session_dir)  # Use session directory
                 logger.info("🎨 Gemini Image fallback client initialized")
             except ImportError as e:
                 logger.warning(f"⚠️ Gemini Image fallback not available: {e}")
@@ -257,7 +291,9 @@ class VideoGenerator:
             self.veo_client = None
             self.image_client = None
 
-        logger.info(f"🎬 VideoGenerator initialized with session {self.session_id}, use_real_veo2={use_real_veo2}, use_vertex_ai={use_vertex_ai}")
+        logger.info(
+            f"🎬 VideoGenerator initialized with session {
+                self.session_id}, use_real_veo2={use_real_veo2}, use_vertex_ai={use_vertex_ai}")
 
         # Log initialization
         self.comprehensive_logger.log_debug_info(
@@ -270,9 +306,7 @@ class VideoGenerator:
                 "use_real_veo2": use_real_veo2,
                 "use_vertex_ai": use_vertex_ai,
                 "project_id": self.project_id,
-                "location": self.location
-            }
-        )
+                "location": self.location})
 
     def generate_video(self, config: GeneratedVideoConfig) -> str:
         """Generate a complete video with comprehensive logging"""
@@ -290,7 +324,9 @@ class VideoGenerator:
         )
 
         try:
-            logger.info(f"🎬 Starting video generation for topic: {config.topic}")
+            logger.info(
+                f"🎬 Starting video generation for topic: {
+                    config.topic}")
 
             # Step 1: Generate Script
             script_start = time.time()
@@ -311,7 +347,8 @@ class VideoGenerator:
             logger.info(f"📝 Script generated: {len(script)} characters")
 
             # Step 2: Clean script for TTS
-            clean_script = self._clean_script_for_tts(script, config.duration_seconds)
+            clean_script = self._clean_script_for_tts(
+                script, config.duration_seconds)
 
             # Log cleaned script
             self.comprehensive_logger.log_script_generation(
@@ -333,7 +370,8 @@ class VideoGenerator:
 
             # Step 4: Generate Audio
             audio_start = time.time()
-            audio_path = self._generate_audio(clean_script, config.duration_seconds)
+            audio_path = self._generate_audio(
+                clean_script, config.duration_seconds)
             audio_time = time.time() - audio_start
 
             # Log audio generation
@@ -364,7 +402,8 @@ class VideoGenerator:
 
             # Step 5: Compose Final Video
             compose_start = time.time()
-            final_video = self._compose_final_video(video_clips, audio_path, config, script)
+            final_video = self._compose_final_video(
+                video_clips, audio_path, config, script)
             compose_time = time.time() - compose_start
 
             # Log final composition
@@ -390,7 +429,8 @@ class VideoGenerator:
             logger.error(f"❌ Video generation failed: {e}")
 
             # Log failure
-            self.comprehensive_logger.finalize_session(success=False, error_message=str(e))
+            self.comprehensive_logger.finalize_session(
+                success=False, error_message=str(e))
 
             raise
 
@@ -420,13 +460,15 @@ class VideoGenerator:
                 script_text = ""
 
                 # Add hook text
-                if 'hook' in script_data and isinstance(script_data['hook'], dict):
+                if 'hook' in script_data and isinstance(
+                        script_data['hook'], dict):
                     hook_text = script_data['hook'].get('text', '')
                     if hook_text:
                         script_text += hook_text + " "
 
                 # Add all segment texts
-                if 'segments' in script_data and isinstance(script_data['segments'], list):
+                if 'segments' in script_data and isinstance(
+                        script_data['segments'], list):
                     for segment in script_data['segments']:
                         if isinstance(segment, dict) and 'text' in segment:
                             segment_text = segment['text']
@@ -434,12 +476,14 @@ class VideoGenerator:
                                 script_text += segment_text + " "
 
                 # Add CTA text if available
-                if 'cta' in script_data and isinstance(script_data['cta'], dict):
+                if 'cta' in script_data and isinstance(
+                        script_data['cta'], dict):
                     cta_text = script_data['cta'].get('text', '')
                     if cta_text:
                         script_text += cta_text + " "
 
-                # If we got text, use it; otherwise fallback to string representation
+                # If we got text, use it; otherwise fallback to string
+                # representation
                 script = script_text.strip() if script_text.strip() else str(script_data)
             else:
                 script = str(script_data)
@@ -459,13 +503,19 @@ class VideoGenerator:
                 f"This knowledge will be valuable for you and your family."
             )
 
-            logger.info(f"🔄 Using fallback script: {len(fallback_script)} characters")
+            logger.info(
+                f"🔄 Using fallback script: {
+                    len(fallback_script)} characters")
             return fallback_script
 
-    def _generate_creative_script(self, config: GeneratedVideoConfig, video_id: str) -> str:
+    def _generate_creative_script(
+            self,
+            config: GeneratedVideoConfig,
+            video_id: str) -> str:
         """Generate creative script for multi-language video generation - compatibility method"""
         # This method is called by the multi-language generator
-        # We'll use the existing _generate_script method but with enhanced creativity
+        # We'll use the existing _generate_script method but with enhanced
+        # creativity
         try:
             logger.info(f"🎭 Generating creative script for video {video_id}")
 
@@ -475,36 +525,52 @@ class VideoGenerator:
             # Create a more creative prompt for multi-language content
             script_data = director.write_script(
                 topic=config.topic,
-                style=getattr(config, 'style', 'engaging'),
+                style=getattr(
+                    config,
+                    'style',
+                    'engaging'),
                 duration=config.duration_seconds,
                 platform=config.target_platform,
                 category=config.category,
                 patterns={
-                    'hooks': ['attention-grabbing', 'curiosity-driven', 'emotional'],
-                    'themes': [getattr(config, 'tone', 'energetic'), 'viral', 'engaging'],
-                    'success_factors': ['shareable', 'memorable', 'impactful']
-                },
-                incorporate_news=False
-            )
+                    'hooks': [
+                        'attention-grabbing',
+                        'curiosity-driven',
+                        'emotional'],
+                    'themes': [
+                        getattr(
+                            config,
+                            'tone',
+                            'energetic'),
+                        'viral',
+                        'engaging'],
+                    'success_factors': [
+                        'shareable',
+                        'memorable',
+                        'impactful']},
+                incorporate_news=False)
 
             # Convert to string format for compatibility
             if isinstance(script_data, dict):
                 script_text = ""
 
                 # Extract hook
-                if 'hook' in script_data and isinstance(script_data['hook'], dict):
+                if 'hook' in script_data and isinstance(
+                        script_data['hook'], dict):
                     hook_text = script_data['hook'].get('text', '')
                     if hook_text:
                         script_text += hook_text + " "
 
                 # Extract main content
-                if 'segments' in script_data and isinstance(script_data['segments'], list):
+                if 'segments' in script_data and isinstance(
+                        script_data['segments'], list):
                     for segment in script_data['segments']:
                         if isinstance(segment, dict) and 'text' in segment:
                             script_text += segment['text'] + " "
 
                 # Extract CTA
-                if 'cta' in script_data and isinstance(script_data['cta'], dict):
+                if 'cta' in script_data and isinstance(
+                        script_data['cta'], dict):
                     cta_text = script_data['cta'].get('text', '')
                     if cta_text:
                         script_text += cta_text + " "
@@ -513,7 +579,9 @@ class VideoGenerator:
             else:
                 script = str(script_data)
 
-            logger.info(f"✅ Creative script generated: {len(script)} characters")
+            logger.info(
+                f"✅ Creative script generated: {
+                    len(script)} characters")
             return script
 
         except Exception as e:
@@ -522,40 +590,41 @@ class VideoGenerator:
             # Fallback to basic script generation
             return self._generate_script(config)
 
-    def _generate_video_clips(self, config: GeneratedVideoConfig, script: str) -> List[str]:
+    def _generate_video_clips(
+            self,
+            config: GeneratedVideoConfig,
+            script: str) -> List[str]:
         """Generate video clips with force generation modes and proper orientation"""
         try:
             clips = []
 
             # Apply AI agents orientation decision if enabled
             if config.ai_decide_orientation and config.video_orientation == VideoOrientation.AUTO:
-                from ..agents.enhanced_orchestrator_with_19_agents import EnhancedOrchestratorWith19Agents
-                orchestrator = EnhancedOrchestratorWith19Agents(
-                    api_key=self.api_key,
-                    session_id=getattr(self, 'session_id', 'temp_session'),
-                    use_vertex_ai=getattr(self, 'use_vertex_ai', True),
-                    vertex_project_id=getattr(self, 'project_id', 'viralgen-464411'),
-                    vertex_location=getattr(self, 'location', 'us-central1'),
-                    vertex_gcs_bucket=getattr(self, 'gcs_bucket', 'viral-veo2-results')
-                )
-                optimal_orientation = orchestrator._ai_agents_decide_video_orientation(config)
-                config = orchestrator._apply_orientation_to_config(config, optimal_orientation)
+                # Use default orientation for now (removed complex orchestrator)
+                logger.info("🎯 Auto-orientation: Using default 9:16 for social media")
+                config.video_orientation = VideoOrientation.PORTRAIT
 
             # Get proper resolution based on orientation
             width, height = config.get_resolution()
             aspect_ratio = config.get_aspect_ratio()
 
-            logger.info(f"🎬 Video generation with orientation: {config.video_orientation.value}")
+            logger.info(
+                f"🎬 Video generation with orientation: {
+                    config.video_orientation.value}")
             logger.info(f"📏 Resolution: {width}x{height} ({aspect_ratio})")
-            logger.info(f"🎛️ Force generation mode: {config.force_generation_mode.value}")
+            logger.info(
+                f"🎛️ Force generation mode: {
+                    config.force_generation_mode.value}")
 
             # IMPROVED: Calculate proper clip timing based on duration
-            # Ensure we have enough clips to cover the full duration without excessive looping
+            # Ensure we have enough clips to cover the full duration without
+            # excessive looping
             target_duration = config.duration_seconds
             ideal_clip_duration = 8  # VEO-2 clips are typically 8 seconds
 
             # Calculate minimum clips needed for full coverage
-            min_clips_needed = max(3, int(target_duration / ideal_clip_duration))
+            min_clips_needed = max(
+                3, int(target_duration / ideal_clip_duration))
 
             # Add buffer clips to reduce looping
             if target_duration > 30:
@@ -565,15 +634,20 @@ class VideoGenerator:
 
             num_clips = min_clips_needed + buffer_clips
 
-            logger.info(f"🎬 Generating {num_clips} clips for {target_duration}s video")
-            logger.info(f"📊 Clip distribution: {num_clips} clips × {ideal_clip_duration}s = {num_clips * ideal_clip_duration}s total")
+            logger.info(
+                f"🎬 Generating {num_clips} clips for {target_duration}s video")
+            logger.info(
+                f"📊 Clip distribution: {num_clips} clips × {ideal_clip_duration}s = {
+                    num_clips * ideal_clip_duration}s total")
 
             # Create VEO-2 prompts based on the topic and script
             veo_prompts = self._create_veo2_prompts(config, script)
 
             # IMPROVED: Ensure we have enough prompts for the calculated clips
             if len(veo_prompts) < num_clips:
-                logger.info(f"🔄 Expanding {len(veo_prompts)} prompts to {num_clips} for better coverage")
+                logger.info(
+                    f"🔄 Expanding {
+                        len(veo_prompts)} prompts to {num_clips} for better coverage")
 
                 # Duplicate and vary existing prompts to reach target count
                 original_prompts = veo_prompts.copy()
@@ -583,10 +657,13 @@ class VideoGenerator:
                             break
 
                         # Create variations of existing prompts
-                        variation_prompt = self._create_prompt_variation(prompt, len(veo_prompts))
+                        variation_prompt = self._create_prompt_variation(
+                            prompt, len(veo_prompts))
                         veo_prompts.append(variation_prompt)
 
-                logger.info(f"✅ Expanded to {len(veo_prompts)} prompts for comprehensive coverage")
+                logger.info(
+                    f"✅ Expanded to {
+                        len(veo_prompts)} prompts for comprehensive coverage")
 
             # Trim to exact number needed
             veo_prompts = veo_prompts[:num_clips]
@@ -599,15 +676,20 @@ class VideoGenerator:
 
             # Generate clips based on force mode
             if config.force_generation_mode == ForceGenerationMode.FORCE_VEO3:
-                clips = self._force_veo3_generation(veo_prompts, config, actual_clip_duration, aspect_ratio)
+                clips = self._force_veo3_generation(
+                    veo_prompts, config, actual_clip_duration, aspect_ratio)
             elif config.force_generation_mode == ForceGenerationMode.FORCE_VEO2:
-                clips = self._force_veo2_generation(veo_prompts, config, actual_clip_duration, aspect_ratio)
+                clips = self._force_veo2_generation(
+                    veo_prompts, config, actual_clip_duration, aspect_ratio)
             elif config.force_generation_mode == ForceGenerationMode.FORCE_IMAGE_GEN:
-                clips = self._force_image_generation(veo_prompts, config, actual_clip_duration, aspect_ratio)
+                clips = self._force_image_generation(
+                    veo_prompts, config, actual_clip_duration, aspect_ratio)
             elif config.force_generation_mode == ForceGenerationMode.FORCE_CONTINUOUS:
-                clips = self._force_continuous_generation(veo_prompts, config, actual_clip_duration, aspect_ratio)
+                clips = self._force_continuous_generation(
+                    veo_prompts, config, actual_clip_duration, aspect_ratio)
             else:  # AUTO mode
-                clips = self._auto_generation_with_fallback(veo_prompts, config, actual_clip_duration, aspect_ratio)
+                clips = self._auto_generation_with_fallback(
+                    veo_prompts, config, actual_clip_duration, aspect_ratio)
 
             logger.info(f"🎬 Generated {len(clips)} clips total")
 
@@ -618,9 +700,16 @@ class VideoGenerator:
                     file_size = os.path.getsize(clip_path)
                     if file_size > 100000:  # At least 100KB for valid video
                         valid_clips.append(clip_path)
-                        logger.info(f"✅ Valid clip: {os.path.basename(clip_path)} ({file_size/1024/1024:.1f}MB)")
+                        logger.info(
+                            f"✅ Valid clip: {
+                                os.path.basename(clip_path)} ({
+                                file_size /
+                                1024 /
+                                1024:.1f}MB)")
                     else:
-                        logger.warning(f"⚠️ Small clip skipped: {os.path.basename(clip_path)} ({file_size} bytes)")
+                        logger.warning(
+                            f"⚠️ Small clip skipped: {
+                                os.path.basename(clip_path)} ({file_size} bytes)")
                 else:
                     logger.warning(f"⚠️ Missing clip: {clip_path}")
 
@@ -634,7 +723,10 @@ class VideoGenerator:
             logger.error(f"❌ Video clip generation failed: {e}")
             raise
 
-    def _create_prompt_variation(self, original_prompt: str, variation_index: int) -> str:
+    def _create_prompt_variation(
+            self,
+            original_prompt: str,
+            variation_index: int) -> str:
         """Create a variation of an existing prompt to expand content"""
         variations = [
             f"Alternative angle: {original_prompt}",
@@ -648,46 +740,69 @@ class VideoGenerator:
         ]
 
         variation_prefix = variations[variation_index % len(variations)]
-        return f"{variation_prefix.replace(original_prompt, '').strip()} {original_prompt}"
+        return f"{
+            variation_prefix.replace(
+                original_prompt,
+                '').strip()} {original_prompt}"
 
-    def _auto_generation_with_fallback(self, veo_prompts: List[str], config: GeneratedVideoConfig,
-                                     clip_duration: float, aspect_ratio: str) -> List[str]:
+    def _auto_generation_with_fallback(
+            self,
+            veo_prompts: List[str],
+            config: GeneratedVideoConfig,
+            clip_duration: float,
+            aspect_ratio: str) -> List[str]:
         """Auto generation with comprehensive fallback chain"""
-        logger.info("🔄 AUTO GENERATION MODE: Trying optimal generation with fallbacks")
+        logger.info(
+            "🔄 AUTO GENERATION MODE: Trying optimal generation with fallbacks")
 
         # First try VEO-3 if available
         try:
-            clips = self._force_veo3_generation(veo_prompts, config, clip_duration, aspect_ratio)
-            if clips and len(clips) >= len(veo_prompts) // 2:  # At least 50% success
-                logger.info(f"✅ VEO-3 generation successful: {len(clips)} clips")
+            clips = self._force_veo3_generation(
+                veo_prompts, config, clip_duration, aspect_ratio)
+            if clips and len(clips) >= len(
+                    veo_prompts) // 2:  # At least 50% success
+                logger.info(
+                    f"✅ VEO-3 generation successful: {len(clips)} clips")
                 return clips
         except Exception as e:
             logger.warning(f"⚠️ VEO-3 generation failed: {e}")
 
         # Fallback to VEO-2
         try:
-            clips = self._force_veo2_generation(veo_prompts, config, clip_duration, aspect_ratio)
-            if clips and len(clips) >= len(veo_prompts) // 2:  # At least 50% success
-                logger.info(f"✅ VEO-2 generation successful: {len(clips)} clips")
+            clips = self._force_veo2_generation(
+                veo_prompts, config, clip_duration, aspect_ratio)
+            if clips and len(clips) >= len(
+                    veo_prompts) // 2:  # At least 50% success
+                logger.info(
+                    f"✅ VEO-2 generation successful: {len(clips)} clips")
                 return clips
         except Exception as e:
             logger.warning(f"⚠️ VEO-2 generation failed: {e}")
 
         # Fallback to image generation
         try:
-            clips = self._force_image_generation(veo_prompts, config, clip_duration, aspect_ratio)
-            if clips and len(clips) >= len(veo_prompts) // 2:  # At least 50% success
-                logger.info(f"✅ Image generation successful: {len(clips)} clips")
+            clips = self._force_image_generation(
+                veo_prompts, config, clip_duration, aspect_ratio)
+            if clips and len(clips) >= len(
+                    veo_prompts) // 2:  # At least 50% success
+                logger.info(
+                    f"✅ Image generation successful: {
+                        len(clips)} clips")
                 return clips
         except Exception as e:
             logger.warning(f"⚠️ Image generation failed: {e}")
 
         # Final fallback to local generation
         logger.warning("🔄 Using local generation as final fallback")
-        return self._force_continuous_generation(veo_prompts, config, clip_duration, aspect_ratio)
+        return self._force_continuous_generation(
+            veo_prompts, config, clip_duration, aspect_ratio)
 
-    def _force_veo3_generation(self, veo_prompts: List[str], config: GeneratedVideoConfig,
-                              clip_duration: float, aspect_ratio: str) -> List[str]:
+    def _force_veo3_generation(
+            self,
+            veo_prompts: List[str],
+            config: GeneratedVideoConfig,
+            clip_duration: float,
+            aspect_ratio: str) -> List[str]:
         """Force VEO-3 generation only"""
         logger.info("🎬 FORCE VEO-3 MODE: Using VEO-3 exclusively")
 
@@ -709,26 +824,40 @@ class VideoGenerator:
                         )
 
                         if clip_path and os.path.exists(clip_path):
-                            logger.info(f"✅ VEO-3 clip {i+1} generated: {clip_path}")
+                            logger.info(
+                                f"✅ VEO-3 clip {i + 1} generated: {clip_path}")
                             clips.append(clip_path)
                             continue
 
                 # If VEO-3 fails, create error clip
-                logger.error(f"❌ VEO-3 generation failed for clip {i+1}")
-                error_clip_path = os.path.join(self.session_dir, f"veo3_error_{i}_{self.session_id}.mp4")
-                self._create_error_clip(error_clip_path, "VEO-3 Generation Failed", clip_duration, aspect_ratio)
+                logger.error(f"❌ VEO-3 generation failed for clip {i + 1}")
+                error_clip_path = os.path.join(
+                    self.session_dir, f"veo3_error_{i}_{
+                        self.session_id}.mp4")
+                self._create_error_clip(
+                    error_clip_path,
+                    "VEO-3 Generation Failed",
+                    clip_duration,
+                    aspect_ratio)
                 clips.append(error_clip_path)
 
             except Exception as e:
-                logger.error(f"❌ VEO-3 clip {i+1} failed: {e}")
-                error_clip_path = os.path.join(self.session_dir, f"veo3_error_{i}_{self.session_id}.mp4")
-                self._create_error_clip(error_clip_path, f"VEO-3 Error: {str(e)}", clip_duration, aspect_ratio)
+                logger.error(f"❌ VEO-3 clip {i + 1} failed: {e}")
+                error_clip_path = os.path.join(
+                    self.session_dir, f"veo3_error_{i}_{
+                        self.session_id}.mp4")
+                self._create_error_clip(
+                    error_clip_path, f"VEO-3 Error: {str(e)}", clip_duration, aspect_ratio)
                 clips.append(error_clip_path)
 
         return clips
 
-    def _force_veo2_generation(self, veo_prompts: List[str], config: GeneratedVideoConfig,
-                              clip_duration: float, aspect_ratio: str) -> List[str]:
+    def _force_veo2_generation(
+            self,
+            veo_prompts: List[str],
+            config: GeneratedVideoConfig,
+            clip_duration: float,
+            aspect_ratio: str) -> List[str]:
         """Force VEO-2 generation only"""
         logger.info("🎥 FORCE VEO-2 MODE: Using VEO-2 exclusively")
 
@@ -750,28 +879,43 @@ class VideoGenerator:
                         )
 
                         if clip_path and os.path.exists(clip_path):
-                            logger.info(f"✅ VEO-2 clip {i+1} generated: {clip_path}")
+                            logger.info(
+                                f"✅ VEO-2 clip {i + 1} generated: {clip_path}")
                             clips.append(clip_path)
                             continue
 
                 # If VEO-2 fails, create error clip
-                logger.error(f"❌ VEO-2 generation failed for clip {i+1}")
-                error_clip_path = os.path.join(self.session_dir, f"veo2_error_{i}_{self.session_id}.mp4")
-                self._create_error_clip(error_clip_path, "VEO-2 Generation Failed", clip_duration, aspect_ratio)
+                logger.error(f"❌ VEO-2 generation failed for clip {i + 1}")
+                error_clip_path = os.path.join(
+                    self.session_dir, f"veo2_error_{i}_{
+                        self.session_id}.mp4")
+                self._create_error_clip(
+                    error_clip_path,
+                    "VEO-2 Generation Failed",
+                    clip_duration,
+                    aspect_ratio)
                 clips.append(error_clip_path)
 
             except Exception as e:
-                logger.error(f"❌ VEO-2 clip {i+1} failed: {e}")
-                error_clip_path = os.path.join(self.session_dir, f"veo2_error_{i}_{self.session_id}.mp4")
-                self._create_error_clip(error_clip_path, f"VEO-2 Error: {str(e)}", clip_duration, aspect_ratio)
+                logger.error(f"❌ VEO-2 clip {i + 1} failed: {e}")
+                error_clip_path = os.path.join(
+                    self.session_dir, f"veo2_error_{i}_{
+                        self.session_id}.mp4")
+                self._create_error_clip(
+                    error_clip_path, f"VEO-2 Error: {str(e)}", clip_duration, aspect_ratio)
                 clips.append(error_clip_path)
 
         return clips
 
-    def _force_image_generation(self, veo_prompts: List[str], config: GeneratedVideoConfig,
-                               clip_duration: float, aspect_ratio: str) -> List[str]:
+    def _force_image_generation(
+            self,
+            veo_prompts: List[str],
+            config: GeneratedVideoConfig,
+            clip_duration: float,
+            aspect_ratio: str) -> List[str]:
         """Force image generation only"""
-        logger.info("🎨 FORCE IMAGE GENERATION MODE: Using AI image generation exclusively")
+        logger.info(
+            "🎨 FORCE IMAGE GENERATION MODE: Using AI image generation exclusively")
 
         clips = []
         for i, prompt in enumerate(veo_prompts):
@@ -782,7 +926,7 @@ class VideoGenerator:
                     image_clips = self.image_client.generate_image_based_clips(
                         prompts=[{
                             'veo2_prompt': prompt,
-                            'description': f"Scene {i+1}: {prompt[:100]}"
+                            'description': f"Scene {i + 1}: {prompt[:100]}"
                         }],
                         config={
                             'duration_seconds': clip_duration,
@@ -795,28 +939,45 @@ class VideoGenerator:
                     if image_clips and len(image_clips) > 0:
                         clip_path = image_clips[0]['clip_path']
                         if os.path.exists(clip_path):
-                            logger.info(f"✅ Image generation clip {i+1} generated: {clip_path}")
+                            logger.info(
+                                f"✅ Image generation clip {
+                                    i + 1} generated: {clip_path}")
                             clips.append(clip_path)
                             continue
 
                 # If image generation fails, create error clip
-                logger.error(f"❌ Image generation failed for clip {i+1}")
-                error_clip_path = os.path.join(self.session_dir, f"image_error_{i}_{self.session_id}.mp4")
-                self._create_error_clip(error_clip_path, "Image Generation Failed", clip_duration, aspect_ratio)
+                logger.error(f"❌ Image generation failed for clip {i + 1}")
+                error_clip_path = os.path.join(
+                    self.session_dir, f"image_error_{i}_{
+                        self.session_id}.mp4")
+                self._create_error_clip(
+                    error_clip_path,
+                    "Image Generation Failed",
+                    clip_duration,
+                    aspect_ratio)
                 clips.append(error_clip_path)
 
             except Exception as e:
-                logger.error(f"❌ Image generation clip {i+1} failed: {e}")
-                error_clip_path = os.path.join(self.session_dir, f"image_error_{i}_{self.session_id}.mp4")
-                self._create_error_clip(error_clip_path, f"Image Error: {str(e)}", clip_duration, aspect_ratio)
+                logger.error(f"❌ Image generation clip {i + 1} failed: {e}")
+                error_clip_path = os.path.join(
+                    self.session_dir, f"image_error_{i}_{
+                        self.session_id}.mp4")
+                self._create_error_clip(
+                    error_clip_path, f"Image Error: {
+                        str(e)}", clip_duration, aspect_ratio)
                 clips.append(error_clip_path)
 
         return clips
 
-    def _force_continuous_generation(self, veo_prompts: List[str], config: GeneratedVideoConfig,
-                                    clip_duration: float, aspect_ratio: str) -> List[str]:
+    def _force_continuous_generation(
+            self,
+            veo_prompts: List[str],
+            config: GeneratedVideoConfig,
+            clip_duration: float,
+            aspect_ratio: str) -> List[str]:
         """Force continuous generation - keep trying until success"""
-        logger.info("🔄 FORCE CONTINUOUS MODE: Will keep trying until successful generation")
+        logger.info(
+            "🔄 FORCE CONTINUOUS MODE: Will keep trying until successful generation")
 
         clips = []
         max_attempts_per_clip = 10  # Maximum attempts per clip
@@ -826,11 +987,15 @@ class VideoGenerator:
             clip_generated = False
 
             for attempt in range(max_attempts_per_clip):
-                logger.info(f"🔄 Continuous generation attempt {attempt + 1}/{max_attempts_per_clip} for clip {i+1}")
+                logger.info(
+                    f"🔄 Continuous generation attempt {
+                        attempt + 1}/{max_attempts_per_clip} for clip {
+                        i + 1}")
 
                 try:
                     # Try VEO-3 first
-                    if self.use_real_veo2 and self.veo_client and hasattr(self.veo_client, 'generate_video_clip'):
+                    if self.use_real_veo2 and self.veo_client and hasattr(
+                            self.veo_client, 'generate_video_clip'):
                         clip_path = self.veo_client.generate_video_clip(
                             prompt=prompt,
                             duration=clip_duration,
@@ -841,13 +1006,15 @@ class VideoGenerator:
                         )
 
                         if clip_path and os.path.exists(clip_path):
-                            logger.info(f"✅ Continuous VEO-3 clip {i+1} generated on attempt {attempt + 1}")
+                            logger.info(
+                                f"✅ Continuous VEO-3 clip {i + 1} generated on attempt {attempt + 1}")
                             clips.append(clip_path)
                             clip_generated = True
                             break
 
                     # Try VEO-2 if VEO-3 fails
-                    if self.use_real_veo2 and self.veo_client and hasattr(self.veo_client, 'generate_video_clip'):
+                    if self.use_real_veo2 and self.veo_client and hasattr(
+                            self.veo_client, 'generate_video_clip'):
                         clip_path = self.veo_client.generate_video_clip(
                             prompt=prompt,
                             duration=clip_duration,
@@ -858,7 +1025,8 @@ class VideoGenerator:
                         )
 
                         if clip_path and os.path.exists(clip_path):
-                            logger.info(f"✅ Continuous VEO-2 clip {i+1} generated on attempt {attempt + 1}")
+                            logger.info(
+                                f"✅ Continuous VEO-2 clip {i + 1} generated on attempt {attempt + 1}")
                             clips.append(clip_path)
                             clip_generated = True
                             break
@@ -868,7 +1036,7 @@ class VideoGenerator:
                         image_clips = self.image_client.generate_image_based_clips(
                             prompts=[{
                                 'veo2_prompt': prompt,
-                                'description': f"Scene {i+1}: {prompt[:100]}"
+                                'description': f"Scene {i + 1}: {prompt[:100]}"
                             }],
                             config={
                                 'duration_seconds': clip_duration,
@@ -881,34 +1049,56 @@ class VideoGenerator:
                         if image_clips and len(image_clips) > 0:
                             clip_path = image_clips[0]['clip_path']
                             if os.path.exists(clip_path):
-                                logger.info(f"✅ Continuous image clip {i+1} generated on attempt {attempt + 1}")
+                                logger.info(
+                                    f"✅ Continuous image clip {
+                                        i +
+                                        1} generated on attempt {
+                                        attempt +
+                                        1}")
                                 clips.append(clip_path)
                                 clip_generated = True
                                 break
 
                     # Wait before next attempt
                     if attempt < max_attempts_per_clip - 1:
-                        wait_time = min(30, (attempt + 1) * 5)  # Progressive wait: 5s, 10s, 15s, etc.
-                        logger.info(f"⏳ Waiting {wait_time}s before next attempt...")
+                        # Progressive wait: 5s, 10s, 15s, etc.
+                        wait_time = min(30, (attempt + 1) * 5)
+                        logger.info(
+                            f"⏳ Waiting {wait_time}s before next attempt...")
                         time.sleep(wait_time)
 
                 except Exception as e:
-                    logger.warning(f"⚠️ Continuous generation attempt {attempt + 1} failed: {e}")
+                    logger.warning(
+                        f"⚠️ Continuous generation attempt {
+                            attempt + 1} failed: {e}")
                     continue
 
             # If all attempts failed, create error clip
             if not clip_generated:
-                logger.error(f"❌ All {max_attempts_per_clip} continuous attempts failed for clip {i+1}")
-                error_clip_path = os.path.join(self.session_dir, f"continuous_error_{i}_{self.session_id}.mp4")
-                self._create_error_clip(error_clip_path, f"Continuous Generation Failed ({max_attempts_per_clip} attempts)", clip_duration, aspect_ratio)
+                logger.error(
+                    f"❌ All {max_attempts_per_clip} continuous attempts failed for clip {
+                        i + 1}")
+                error_clip_path = os.path.join(
+                    self.session_dir, f"continuous_error_{i}_{
+                        self.session_id}.mp4")
+                self._create_error_clip(
+                    error_clip_path,
+                    f"Continuous Generation Failed ({max_attempts_per_clip} attempts)",
+                    clip_duration,
+                    aspect_ratio)
                 clips.append(error_clip_path)
 
         return clips
 
-    def _generate_with_fallback_chain(self, veo_prompts: List[str], config: GeneratedVideoConfig,
-                                     clip_duration: float, aspect_ratio: str) -> List[str]:
+    def _generate_with_fallback_chain(
+            self,
+            veo_prompts: List[str],
+            config: GeneratedVideoConfig,
+            clip_duration: float,
+            aspect_ratio: str) -> List[str]:
         """Generate with normal fallback chain: VEO-3 → VEO-2 → Image → Local → Text"""
-        logger.info("🔄 NORMAL FALLBACK CHAIN: VEO-3 → VEO-2 → Image → Local → Text")
+        logger.info(
+            "🔄 NORMAL FALLBACK CHAIN: VEO-3 → VEO-2 → Image → Local → Text")
 
         clips = []
         for i, prompt in enumerate(veo_prompts):
@@ -916,8 +1106,10 @@ class VideoGenerator:
             clip_path = None
 
             # STEP 1: Try VEO-3 generation
-            if self.use_real_veo2 and self.veo_client and hasattr(self.veo_client, 'generate_video_clip'):
-                logger.info(f"🎬 Attempting VEO-3 generation for clip {i+1}/{len(veo_prompts)}")
+            if self.use_real_veo2 and self.veo_client and hasattr(
+                    self.veo_client, 'generate_video_clip'):
+                logger.info(
+                    f"🎬 Attempting VEO-3 generation for clip {i + 1}/{len(veo_prompts)}")
                 try:
                     clip_path = self.veo_client.generate_video_clip(
                         prompt=prompt,
@@ -930,19 +1122,23 @@ class VideoGenerator:
                     if clip_path and os.path.exists(clip_path):
                         file_size = os.path.getsize(clip_path)
                         if file_size > 500000:  # At least 500KB for real video
-                            logger.info(f"✅ VEO-3 clip {i+1} generated: {clip_path} ({file_size/1024/1024:.1f}MB)")
+                            logger.info(
+                                f"✅ VEO-3 clip {i + 1} generated: {clip_path} ({file_size / 1024 / 1024:.1f}MB)")
                             clips.append(clip_path)
                             continue
                         else:
-                            logger.warning(f"⚠️ VEO-3 clip too small: {file_size} bytes")
+                            logger.warning(
+                                f"⚠️ VEO-3 clip too small: {file_size} bytes")
                             if os.path.exists(clip_path):
                                 os.remove(clip_path)
                 except Exception as e:
-                    logger.warning(f"⚠️ VEO-3 failed for clip {i+1}: {e}")
+                    logger.warning(f"⚠️ VEO-3 failed for clip {i + 1}: {e}")
 
             # STEP 2: Try VEO-2 generation
-            if self.use_real_veo2 and self.veo_client and hasattr(self.veo_client, 'generate_video_clip'):
-                logger.info(f"🎥 Attempting VEO-2 generation for clip {i+1}/{len(veo_prompts)}")
+            if self.use_real_veo2 and self.veo_client and hasattr(
+                    self.veo_client, 'generate_video_clip'):
+                logger.info(
+                    f"🎥 Attempting VEO-2 generation for clip {i + 1}/{len(veo_prompts)}")
                 try:
                     clip_path = self.veo_client.generate_video_clip(
                         prompt=prompt,
@@ -955,27 +1151,33 @@ class VideoGenerator:
                     if clip_path and os.path.exists(clip_path):
                         file_size = os.path.getsize(clip_path)
                         if file_size > 500000:  # At least 500KB for real video
-                            logger.info(f"✅ VEO-2 clip {i+1} generated: {clip_path} ({file_size/1024/1024:.1f}MB)")
+                            logger.info(
+                                f"✅ VEO-2 clip {i + 1} generated: {clip_path} ({file_size / 1024 / 1024:.1f}MB)")
                             clips.append(clip_path)
                             continue
                         else:
                             try:
-                                logger.warning(f"⚠️ VEO-2 clip too small: {file_size} bytes")
+                                logger.warning(
+                                    f"⚠️ VEO-2 clip too small: {file_size} bytes")
                                 if os.path.exists(clip_path):
                                     os.remove(clip_path)
                             except Exception as e:
-                                logger.warning(f"⚠️ VEO-2 failed for clip {i+1}: {e}")
+                                logger.warning(
+                                    f"⚠️ VEO-2 failed for clip {i + 1}: {e}")
                 except Exception as e:
-                    logger.warning(f"⚠️ VEO-2 generation failed for clip {i+1}: {e}")
+                    logger.warning(
+                        f"⚠️ VEO-2 generation failed for clip {i + 1}: {e}")
 
             # STEP 3: Try Gemini Image Generation fallback
             if self.image_client:
-                logger.info(f"🎨 Attempting Gemini Image fallback for clip {i+1}")
+                logger.info(
+                    f"🎨 Attempting Gemini Image fallback for clip {
+                        i + 1}")
                 try:
                     image_clips = self.image_client.generate_image_based_clips(
                         prompts=[{
                             'veo2_prompt': prompt,
-                            'description': f"Scene {i+1}: {prompt[:100]}"
+                            'description': f"Scene {i + 1}: {prompt[:100]}"
                         }],
                         config={
                             'duration_seconds': clip_duration,
@@ -989,55 +1191,98 @@ class VideoGenerator:
                         if os.path.exists(clip_path):
                             file_size = os.path.getsize(clip_path)
                             if file_size > 100000:  # At least 100KB for image-based video
-                                logger.info(f"✅ Gemini Image clip {i+1} generated: {clip_path} ({file_size/1024/1024:.1f}MB)")
+                                logger.info(
+                                    f"✅ Gemini Image clip {
+                                        i +
+                                        1} generated: {clip_path} ({
+                                        file_size /
+                                        1024 /
+                                        1024:.1f}MB)")
                                 clips.append(clip_path)
                                 continue
                             else:
-                                logger.warning(f"⚠️ Image clip too small: {file_size} bytes")
+                                logger.warning(
+                                    f"⚠️ Image clip too small: {file_size} bytes")
                                 if os.path.exists(clip_path):
                                     os.remove(clip_path)
                 except Exception as e:
-                    logger.warning(f"⚠️ Gemini Image failed for clip {i+1}: {e}")
+                    logger.warning(
+                        f"⚠️ Gemini Image failed for clip {
+                            i + 1}: {e}")
 
             # STEP 4: Enhanced local tool fallback (FFmpeg-based)
-            logger.info(f"🛠️ Using enhanced local tool fallback for clip {i+1}")
+            logger.info(
+                f"🛠️ Using enhanced local tool fallback for clip {
+                    i + 1}")
             try:
-                clip_path = os.path.join(self.session_dir, f"enhanced_local_clip_{i}_{self.session_id}.mp4")
-                self._create_enhanced_local_clip(clip_path, prompt, clip_duration, aspect_ratio)
+                clip_path = os.path.join(
+                    self.session_dir,
+                    f"enhanced_local_clip_{i}_{
+                        self.session_id}.mp4")
+                self._create_enhanced_local_clip(
+                    clip_path, prompt, clip_duration, aspect_ratio)
                 if os.path.exists(clip_path):
                     file_size = os.path.getsize(clip_path)
                     if file_size > 100000:  # At least 100KB
-                        logger.info(f"✅ Enhanced local clip {i+1} generated: {clip_path} ({file_size/1024/1024:.1f}MB)")
+                        logger.info(
+                            f"✅ Enhanced local clip {
+                                i +
+                                1} generated: {clip_path} ({
+                                file_size /
+                                1024 /
+                                1024:.1f}MB)")
                         clips.append(clip_path)
                         continue
                     else:
-                        logger.warning(f"⚠️ Local clip too small: {file_size} bytes")
+                        logger.warning(
+                            f"⚠️ Local clip too small: {file_size} bytes")
                         if os.path.exists(clip_path):
                             os.remove(clip_path)
             except Exception as e:
-                logger.warning(f"⚠️ Enhanced local tool failed for clip {i+1}: {e}")
+                logger.warning(
+                    f"⚠️ Enhanced local tool failed for clip {
+                        i + 1}: {e}")
 
             # STEP 5: Final text fallback (guaranteed to work)
-            logger.info(f"📝 Using guaranteed text fallback for clip {i+1}")
-            clip_path = os.path.join(self.session_dir, f"text_fallback_clip_{i}_{self.session_id}.mp4")
-            self._create_text_overlay_clip(clip_path, prompt, clip_duration, aspect_ratio)
+            logger.info(f"📝 Using guaranteed text fallback for clip {i + 1}")
+            clip_path = os.path.join(
+                self.session_dir,
+                f"text_fallback_clip_{i}_{
+                    self.session_id}.mp4")
+            self._create_text_overlay_clip(
+                clip_path, prompt, clip_duration, aspect_ratio)
 
             # Verify final fallback
             if os.path.exists(clip_path):
                 file_size = os.path.getsize(clip_path)
-                logger.info(f"✅ Text fallback clip {i+1} generated: {clip_path} ({file_size/1024/1024:.1f}MB)")
+                logger.info(
+                    f"✅ Text fallback clip {
+                        i +
+                        1} generated: {clip_path} ({
+                        file_size /
+                        1024 /
+                        1024:.1f}MB)")
                 clips.append(clip_path)
             else:
-                logger.error(f"❌ Even text fallback failed for clip {i+1}")
+                logger.error(f"❌ Even text fallback failed for clip {i + 1}")
                 # Create emergency placeholder
-                emergency_path = os.path.join(self.session_dir, f"emergency_clip_{i}_{self.session_id}.mp4")
-                self._create_emergency_clip(emergency_path, f"Clip {i+1}", clip_duration, aspect_ratio)
+                emergency_path = os.path.join(
+                    self.session_dir, f"emergency_clip_{i}_{
+                        self.session_id}.mp4")
+                self._create_emergency_clip(
+                    emergency_path, f"Clip {
+                        i + 1}", clip_duration, aspect_ratio)
                 clips.append(emergency_path)
 
         logger.info(f"🎬 Generated {len(clips)} clips total")
         return clips
 
-    def _create_emergency_clip(self, output_path: str, text: str, duration: float, aspect_ratio: str):
+    def _create_emergency_clip(
+            self,
+            output_path: str,
+            text: str,
+            duration: float,
+            aspect_ratio: str):
         """Create emergency clip when all else fails"""
         try:
             import subprocess
@@ -1052,16 +1297,23 @@ class VideoGenerator:
 
             # Create simple emergency clip
             cmd = [
-                'ffmpeg', '-y',
-                '-f', 'lavfi',
-                '-i', f'color=c=blue:s={width}x{height}:d={duration}:r=30',
-                '-vf', f'drawtext=text=\'{text}\':fontcolor=white:fontsize=60:x=(w-text_w)/2:y=(h-text_h)/2',
-                '-c:v', 'libx264',
-                '-preset', 'ultrafast',
-                '-crf', '30',
-                '-pix_fmt', 'yuv420p',
-                output_path
-            ]
+                'ffmpeg',
+                '-y',
+                '-f',
+                'lavfi',
+                '-i',
+                f'color=c=blue:s={width}x{height}:d={duration}:r=30',
+                '-vf',
+                f'drawtext=text=\'{text}\':fontcolor=white:fontsize=60:x=(w-text_w)/2:y=(h-text_h)/2',
+                '-c:v',
+                'libx264',
+                '-preset',
+                'ultrafast',
+                '-crf',
+                '30',
+                '-pix_fmt',
+                'yuv420p',
+                output_path]
 
             subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             logger.info(f"🚨 Emergency clip created: {output_path}")
@@ -1072,7 +1324,12 @@ class VideoGenerator:
             with open(output_path, 'w') as f:
                 f.write("emergency")
 
-    def _create_error_clip(self, output_path: str, error_message: str, duration: float, aspect_ratio: str):
+    def _create_error_clip(
+            self,
+            output_path: str,
+            error_message: str,
+            duration: float,
+            aspect_ratio: str):
         """Create an error clip for failed generation"""
         try:
             import subprocess
@@ -1089,16 +1346,23 @@ class VideoGenerator:
 
             # Create error video with FFmpeg
             cmd = [
-                'ffmpeg', '-y',
-                '-f', 'lavfi',
-                '-i', f'color=c=red:s={width}x{height}:d={duration}:r=30',
-                '-vf', f'drawtext=text=\'{error_message}\':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=(h-text_h)/2',
-                '-c:v', 'libx264',
-                '-preset', 'fast',
-                '-crf', '23',
-                '-pix_fmt', 'yuv420p',
-                output_path
-            ]
+                'ffmpeg',
+                '-y',
+                '-f',
+                'lavfi',
+                '-i',
+                f'color=c=red:s={width}x{height}:d={duration}:r=30',
+                '-vf',
+                f'drawtext=text=\'{error_message}\':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=(h-text_h)/2',
+                '-c:v',
+                'libx264',
+                '-preset',
+                'fast',
+                '-crf',
+                '23',
+                '-pix_fmt',
+                'yuv420p',
+                output_path]
 
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode == 0:
@@ -1109,7 +1373,12 @@ class VideoGenerator:
         except Exception as e:
             logger.error(f"❌ Error clip creation failed: {e}")
 
-    def _create_enhanced_local_clip(self, output_path: str, prompt: str, duration: float, aspect_ratio: str = "16:9"):
+    def _create_enhanced_local_clip(
+            self,
+            output_path: str,
+            prompt: str,
+            duration: float,
+            aspect_ratio: str = "16:9"):
         """Create enhanced local video clip using FFmpeg with proper duration and size"""
         try:
             import subprocess
@@ -1129,7 +1398,12 @@ class VideoGenerator:
             prompt_lower = prompt.lower()
 
             # Choose colors and patterns based on prompt content
-            if any(word in prompt_lower for word in ['toys', 'bed', 'sleep', 'child']):
+            if any(
+                word in prompt_lower for word in [
+                    'toys',
+                    'bed',
+                    'sleep',
+                    'child']):
                 # Soft, calming colors for sleep/toy content
                 base_color = "lightblue"
                 accent_color = "pink"
@@ -1148,7 +1422,8 @@ class VideoGenerator:
                 text_content = "Educational Video Content"
 
             # Create engaging animated video with FFmpeg
-            logger.info(f"🎨 Creating enhanced local clip: {width}x{height}, {duration}s")
+            logger.info(
+                f"🎨 Creating enhanced local clip: {width}x{height}, {duration}s")
 
             # Use a complex filter to create animated, engaging content
             cmd = [
@@ -1156,9 +1431,15 @@ class VideoGenerator:
                 '-f', 'lavfi',
                 '-i', f'color=c={base_color}:s={width}x{height}:d={duration}:r=30',
                 '-f', 'lavfi',
-                '-i', f'color=c={accent_color}:s={width//4}x{height//4}:d={duration}:r=30',
+                '-i', f'color=c={accent_color}:s={width //
+                                                  4}x{height //
+                                                      4}:d={duration}:r=30',
                 '-filter_complex',
-                f'[0][1]overlay=x=\'(main_w-overlay_w)/2+50*sin(2*PI*t)\':y=\'(main_h-overlay_h)/2+30*cos(2*PI*t)\',drawtext=text=\'{text_content}\':fontcolor=white:fontsize={min(48, width//25)}:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=black@0.7:boxborderw=5',
+                f'[0][1]overlay=x=\'(main_w-overlay_w)/2+50*sin(2*PI*t)\':y=\'(main_h-overlay_h)/2+30*cos(2*PI*t)\',drawtext=text=\'{text_content}\':fontcolor=white:fontsize={
+                    min(
+                        48,
+                        width //
+                        25)}:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=black@0.7:boxborderw=5',
                 '-c:v', 'libx264',
                 '-preset', 'medium',
                 '-crf', '23',
@@ -1168,7 +1449,8 @@ class VideoGenerator:
             ]
 
             # Run FFmpeg with timeout
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=60)
 
             if result.returncode == 0:
                 # Verify file was created with proper size
@@ -1176,21 +1458,36 @@ class VideoGenerator:
                     file_size = os.path.getsize(output_path)
                     if file_size > 100000:  # At least 100KB for a proper video
                         file_size_mb = file_size / (1024 * 1024)
-                        logger.info(f"✅ Enhanced local clip created: {output_path} ({file_size_mb:.2f}MB)")
+                        logger.info(
+                            f"✅ Enhanced local clip created: {output_path} ({
+                                file_size_mb:.2f}MB)")
 
                         # Verify duration using FFprobe
                         try:
-                            probe_cmd = ['ffprobe', '-v', 'quiet', '-show_entries', 'format=duration', '-of', 'csv=p=0', output_path]
-                            probe_result = subprocess.run(probe_cmd, capture_output=True, text=True, timeout=10)
+                            probe_cmd = [
+                                'ffprobe',
+                                '-v',
+                                'quiet',
+                                '-show_entries',
+                                'format=duration',
+                                '-of',
+                                'csv=p=0',
+                                output_path]
+                            probe_result = subprocess.run(
+                                probe_cmd, capture_output=True, text=True, timeout=10)
                             if probe_result.returncode == 0:
-                                actual_duration = float(probe_result.stdout.strip())
-                                logger.info(f"📏 Verified duration: {actual_duration:.1f}s (target: {duration}s)")
-                        except:
+                                actual_duration = float(
+                                    probe_result.stdout.strip())
+                                logger.info(
+                                    f"📏 Verified duration: {
+                                        actual_duration:.1f}s (target: {duration}s)")
+                        except BaseException:
                             pass
 
                         return output_path
                     else:
-                        logger.warning(f"⚠️ Created file too small: {file_size} bytes")
+                        logger.warning(
+                            f"⚠️ Created file too small: {file_size} bytes")
                         os.remove(output_path)
                 else:
                     logger.error("❌ Output file not created")
@@ -1200,31 +1497,47 @@ class VideoGenerator:
             # Fallback to simpler approach
             logger.info("🔄 Trying simpler FFmpeg approach...")
             simple_cmd = [
-                'ffmpeg', '-y',
-                '-f', 'lavfi',
-                '-i', f'testsrc2=size={width}x{height}:duration={duration}:rate=30',
-                '-vf', f'drawtext=text=\'Educational Content\':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=(h-text_h)/2',
-                '-c:v', 'libx264',
-                '-preset', 'ultrafast',
-                '-pix_fmt', 'yuv420p',
-                output_path
-            ]
+                'ffmpeg',
+                '-y',
+                '-f',
+                'lavfi',
+                '-i',
+                f'testsrc2=size={width}x{height}:duration={duration}:rate=30',
+                '-vf',
+                f'drawtext=text=\'Educational Content\':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=(h-text_h)/2',
+                '-c:v',
+                'libx264',
+                '-preset',
+                'ultrafast',
+                '-pix_fmt',
+                'yuv420p',
+                output_path]
 
-            simple_result = subprocess.run(simple_cmd, capture_output=True, text=True, timeout=30)
+            simple_result = subprocess.run(
+                simple_cmd, capture_output=True, text=True, timeout=30)
 
             if simple_result.returncode == 0 and os.path.exists(output_path):
                 file_size_mb = os.path.getsize(output_path) / (1024 * 1024)
-                logger.info(f"✅ Simple local clip created: {output_path} ({file_size_mb:.2f}MB)")
+                logger.info(
+                    f"✅ Simple local clip created: {output_path} ({
+                        file_size_mb:.2f}MB)")
                 return output_path
             else:
-                logger.error(f"❌ Simple FFmpeg also failed: {simple_result.stderr}")
+                logger.error(
+                    f"❌ Simple FFmpeg also failed: {
+                        simple_result.stderr}")
                 raise Exception("All FFmpeg approaches failed")
 
         except Exception as e:
             logger.error(f"❌ Enhanced local clip creation failed: {e}")
             raise
 
-    def _create_text_overlay_clip(self, output_path: str, prompt: str, duration: float, aspect_ratio: str = "16:9"):
+    def _create_text_overlay_clip(
+            self,
+            output_path: str,
+            prompt: str,
+            duration: float,
+            aspect_ratio: str = "16:9"):
         """Create text overlay clip with proper aspect ratio"""
         try:
             # Parse aspect ratio to get dimensions
@@ -1238,8 +1551,17 @@ class VideoGenerator:
                 width, height = 1920, 1080
 
             # Create a gradient background
-            color = (random.randint(50, 150), random.randint(50, 150), random.randint(100, 255))
-            clip = ColorClip(size=(width, height), color=color, duration=duration)
+            color = (
+                random.randint(
+                    50, 150), random.randint(
+                    50, 150), random.randint(
+                    100, 255))
+            clip = ColorClip(
+                size=(
+                    width,
+                    height),
+                color=color,
+                duration=duration)
 
             # Extract key words from prompt for display
             words = prompt.split()[:5]
@@ -1247,18 +1569,27 @@ class VideoGenerator:
 
             # Create main text with proper sizing for aspect ratio
             font_size = 80 if aspect_ratio == "16:9" else 60
-            txt = TextClip(display_text,
-                          fontsize=font_size, color='white', font='Arial-Bold',
-                          stroke_color='black', stroke_width=2)
+            txt = TextClip(
+                display_text,
+                fontsize=font_size,
+                color='white',
+                font='Arial-Bold',
+                stroke_color='black',
+                stroke_width=2)
             txt = txt.set_position('center').set_duration(duration)
 
             # Create subtitle
-            subtitle = TextClip("AI Generated Video",
-                               fontsize=font_size//2, color='lightgray', font='Arial')
-            subtitle = subtitle.set_position(('center', 'bottom')).set_duration(duration)
+            subtitle = TextClip(
+                "AI Generated Video",
+                fontsize=font_size // 2,
+                color='lightgray',
+                font='Arial')
+            subtitle = subtitle.set_position(
+                ('center', 'bottom')).set_duration(duration)
 
             final_clip = CompositeVideoClip([clip, txt, subtitle])
-            final_clip.write_videofile(output_path, fps=30, verbose=False, logger=None)
+            final_clip.write_videofile(
+                output_path, fps=30, verbose=False, logger=None)
             final_clip.close()
 
         except Exception as e:
@@ -1269,16 +1600,21 @@ class VideoGenerator:
         """Create a placeholder video clip"""
         try:
             # Create a simple colored clip
-            color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
+            color = (
+                random.randint(
+                    50, 255), random.randint(
+                    50, 255), random.randint(
+                    50, 255))
             clip = ColorClip(size=(1280, 720), color=color, duration=duration)
 
             # Add some text
             txt = TextClip(f"Generated Clip\nSession: {self.session_id}",
-                          fontsize=50, color='white', font='Arial-Bold')
+                           fontsize=50, color='white', font='Arial-Bold')
             txt = txt.set_position('center').set_duration(duration)
 
             final_clip = CompositeVideoClip([clip, txt])
-            final_clip.write_videofile(output_path, fps=30, verbose=False, logger=None)
+            final_clip.write_videofile(
+                output_path, fps=30, verbose=False, logger=None)
             final_clip.close()
 
         except Exception as e:
@@ -1300,24 +1636,30 @@ class VideoGenerator:
         elif isinstance(script, dict):
             # Extract text from dict structure
             script_text = ""
-            if 'hook' in script and isinstance(script['hook'], dict) and 'text' in script['hook']:
+            if 'hook' in script and isinstance(
+                    script['hook'], dict) and 'text' in script['hook']:
                 script_text += script['hook']['text'] + " "
             if 'segments' in script and isinstance(script['segments'], list):
                 for segment in script['segments']:
                     if isinstance(segment, dict) and 'text' in segment:
                         script_text += segment['text'] + " "
-            if 'cta' in script and isinstance(script['cta'], dict) and 'text' in script['cta']:
+            if 'cta' in script and isinstance(
+                    script['cta'], dict) and 'text' in script['cta']:
                 script_text += script['cta']['text'] + " "
         else:
             script_text = str(script)
 
         # Try Gemini cleaning first
         if script_text and len(script_text.strip()) > 20:
-            logger.info("🤖 Using Gemini to clean script and remove visual cues")
-            gemini_cleaned = self._clean_script_with_gemini(script_text, target_duration)
+            logger.info(
+                "🤖 Using Gemini to clean script and remove visual cues")
+            gemini_cleaned = self._clean_script_with_gemini(
+                script_text, target_duration)
             if gemini_cleaned:
                 dialogue_lines.append(gemini_cleaned)
-                logger.info(f"✅ Gemini successfully cleaned script: {len(gemini_cleaned)} chars")
+                logger.info(
+                    f"✅ Gemini successfully cleaned script: {
+                        len(gemini_cleaned)} chars")
 
         # STEP 2: If Gemini cleaning failed, fall back to structured parsing
         if not dialogue_lines:
@@ -1335,43 +1677,61 @@ class VideoGenerator:
                 # Extract dialogue from JSON/dict structure
                 if script_data and isinstance(script_data, dict):
                     # Extract from hook
-                    if 'hook' in script_data and isinstance(script_data['hook'], dict):
+                    if 'hook' in script_data and isinstance(
+                            script_data['hook'], dict):
                         if 'text' in script_data['hook']:
                             hook_text = script_data['hook']['text']
                             # Extract only spoken content, not visual cues
-                            clean_hook = self._extract_spoken_dialogue(hook_text)
+                            clean_hook = self._extract_spoken_dialogue(
+                                hook_text)
                             if clean_hook and len(clean_hook.strip()) > 5:
                                 dialogue_lines.append(clean_hook)
 
                     # Extract from segments
-                    if 'segments' in script_data and isinstance(script_data['segments'], list):
+                    if 'segments' in script_data and isinstance(
+                            script_data['segments'], list):
                         for segment in script_data['segments']:
                             if isinstance(segment, dict) and 'text' in segment:
                                 seg_text = segment['text']
                                 # Extract only spoken content
-                                clean_seg = self._extract_spoken_dialogue(seg_text)
+                                clean_seg = self._extract_spoken_dialogue(
+                                    seg_text)
                                 if clean_seg and len(clean_seg.strip()) > 5:
                                     dialogue_lines.append(clean_seg)
 
                     # Extract from CTA (but skip generic ones)
-                    if 'cta' in script_data and isinstance(script_data['cta'], dict):
+                    if 'cta' in script_data and isinstance(
+                            script_data['cta'], dict):
                         if 'text' in script_data['cta']:
                             cta_text = script_data['cta']['text']
                             # Skip generic CTAs
-                            if cta_text and not any(skip in cta_text.lower() for skip in ['subscribe', 'follow', 'like', 'share', 'save', 'comment']):
-                                clean_cta = self._extract_spoken_dialogue(cta_text)
+                            if cta_text and not any(
+                                skip in cta_text.lower() for skip in [
+                                    'subscribe',
+                                    'follow',
+                                    'like',
+                                    'share',
+                                    'save',
+                                    'comment']):
+                                clean_cta = self._extract_spoken_dialogue(
+                                    cta_text)
                                 if clean_cta and len(clean_cta.strip()) > 5:
                                     dialogue_lines.append(clean_cta)
 
-                    logger.info(f"📝 Extracted {len(dialogue_lines)} dialogue lines from structured script")
+                    logger.info(
+                        f"📝 Extracted {
+                            len(dialogue_lines)} dialogue lines from structured script")
 
             except Exception as e:
                 logger.warning(f"Structured parsing failed: {e}")
 
-        # STEP 3: If still no dialogue, use text overlay headers as audio content
+        # STEP 3: If still no dialogue, use text overlay headers as audio
+        # content
         if not dialogue_lines:
-            logger.info("🎯 No dialogue found, using text overlay headers for audio")
-            overlay_headers = self._get_text_overlay_headers_for_audio(target_duration)
+            logger.info(
+                "🎯 No dialogue found, using text overlay headers for audio")
+            overlay_headers = self._get_text_overlay_headers_for_audio(
+                target_duration)
             if overlay_headers:
                 dialogue_lines.append(overlay_headers)
 
@@ -1381,7 +1741,8 @@ class VideoGenerator:
             full_dialogue = ' '.join(dialogue_lines)
         else:
             # NEVER use generic content - if we have nothing, return empty
-            logger.error("❌ No content available for TTS - cannot generate audio")
+            logger.error(
+                "❌ No content available for TTS - cannot generate audio")
             return ""
 
         # STEP 5: Ensure proper UTF-8 encoding
@@ -1393,15 +1754,67 @@ class VideoGenerator:
             logger.warning(f"Unicode normalization failed: {e}")
 
         # STEP 6: Calculate optimal word count and trim if needed
-        target_words = int(target_duration * 2.2)  # 2.2 words per second for natural pacing
+        # 2.2 words per second for natural pacing
+        target_words = int(target_duration * 2.2)
         words = full_dialogue.split()
 
         if len(words) > target_words:
-            # Trim to target length
-            final_script = ' '.join(words[:target_words])
-            # Ensure it ends properly
+            # SMART TRUNCATION: Find the best sentence boundary instead of
+            # cutting mid-sentence
+            import re
+
+            # Split into sentences to find natural break points
+            sentences = re.split(r'[.!?]+', full_dialogue)
+            sentences = [s.strip() for s in sentences if s.strip()]
+
+            # Build script sentence by sentence until we approach target
+            final_script = ""
+            current_word_count = 0
+
+            for sentence in sentences:
+                sentence_words = sentence.split()
+
+                # If adding this sentence would exceed target by more than 20%,
+                # stop
+                if current_word_count + \
+                        len(sentence_words) > target_words * 1.2:
+                    break
+
+                # Add sentence with proper punctuation
+                if final_script:
+                    final_script += ". " + sentence
+                else:
+                    final_script = sentence
+
+                current_word_count += len(sentence_words)
+
+                # If we're close to target, we can stop here
+                if current_word_count >= target_words * 0.8:
+                    break
+
+            # Ensure proper ending
             if not final_script.endswith(('.', '!', '?')):
                 final_script += '.'
+
+            # If we ended up too short, extend the video duration instead of
+            # padding
+            final_words = final_script.split()
+            if len(final_words) < target_words * 0.6:
+                # Calculate what the actual duration should be
+                actual_duration_needed = len(final_words) / 2.2
+                logger.info(
+                    f"🎯 Script too short for {target_duration}s, recommending {
+                        actual_duration_needed:.1f}s")
+
+                # Store the recommended duration for the video composer to use
+                if hasattr(self, 'recommended_duration'):
+                    self.recommended_duration = actual_duration_needed
+                else:
+                    # If we can't store it, at least log it clearly
+                    logger.warning(
+                        f"⚠️ Consider extending video duration to {
+                            actual_duration_needed:.1f}s for complete sentences")
+
         elif len(words) < target_words * 0.7:
             # Extend if too short (but avoid generic content)
             if hasattr(self, 'current_config') and self.current_config:
@@ -1432,21 +1845,29 @@ class VideoGenerator:
         tts_script_path = os.path.join(self.session_dir, "tts_script.json")
         try:
             with open(tts_script_path, 'w', encoding='utf-8') as f:
-                json.dump({
-                    "original_script": str(script)[:500] + "..." if len(str(script)) > 500 else str(script),
-                    "final_tts_script": final_script,
-                    "word_count": len(final_words),
-                    "estimated_duration": estimated_duration,
-                    "target_duration": target_duration,
-                    "cleaning_method": "gemini" if len(dialogue_lines) > 0 and "gemini" in str(dialogue_lines[0]) else "structured"
-                }, f, indent=2, ensure_ascii=False)
+                json.dump(
+                    {
+                        "original_script": str(script)[
+                            :500] +
+                        "..." if len(
+                            str(script)) > 500 else str(script),
+                        "final_tts_script": final_script,
+                        "word_count": len(final_words),
+                        "estimated_duration": estimated_duration,
+                        "target_duration": target_duration,
+                        "cleaning_method": "gemini" if len(dialogue_lines) > 0 and "gemini" in str(
+                            dialogue_lines[0]) else "structured"},
+                    f,
+                    indent=2,
+                    ensure_ascii=False)
             logger.info(f"📁 TTS script saved to: {tts_script_path}")
         except Exception as e:
             logger.warning(f"Failed to save TTS script: {e}")
 
         return final_script
 
-    def _create_natural_dialogue_from_topic(self, script_text: str, target_duration: int) -> str:
+    def _create_natural_dialogue_from_topic(
+            self, script_text: str, target_duration: int) -> str:
         """Create natural dialogue from topic, avoiding generic content"""
 
         # Get the current topic from config
@@ -1465,8 +1886,7 @@ class VideoGenerator:
             r'(shows?|demonstrates?|reveals?|explains?|teaches?|discusses?)[^.!?]*[.!?]',
             r'(important|crucial|essential|key|vital)[^.!?]*[.!?]',
             r'(benefits?|advantages?|problems?|issues?|solutions?)[^.!?]*[.!?]',
-            r'(how to|ways to|methods to|tips for)[^.!?]*[.!?]'
-        ]
+            r'(how to|ways to|methods to|tips for)[^.!?]*[.!?]']
 
         for pattern in action_patterns:
             matches = re.findall(pattern, script_text, re.IGNORECASE)
@@ -1474,15 +1894,16 @@ class VideoGenerator:
 
         # If we found meaningful content, use it
         if meaningful_phrases:
-            dialogue = ' '.join(meaningful_phrases[:3])  # Use first 3 meaningful phrases
+            # Use first 3 meaningful phrases
+            dialogue = ' '.join(meaningful_phrases[:3])
         else:
-            # Only create topic-specific content for topics we have specific knowledge about
+            # Only create topic-specific content for topics we have specific
+            # knowledge about
             if 'toys' in topic.lower() and 'bed' in topic.lower():
                 dialogue = (
                     "This is amazing. Could your child's favorite toys actually be disrupting their sleep? "
                     "They hog your space, trap dust, and trip you up. Clear the clutter, create calm. "
-                    "Sweet dreams await."
-                )
+                    "Sweet dreams await.")
             else:
                 # For other topics, return empty to force header reading
                 return ""
@@ -1506,8 +1927,7 @@ class VideoGenerator:
             "Each deity claimed their drink possessed magical properties that would grant eternal happiness. "
             "The battle raged for centuries, with mortals choosing sides in this cosmic cola war. "
             "Some say this mythological conflict continues to this day, manifesting in modern brand loyalty. "
-            "Which divine beverage would you choose in this eternal struggle between light and darkness?"
-        )
+            "Which divine beverage would you choose in this eternal struggle between light and darkness?")
 
         # Adjust length based on target duration
         words = base_dialogue.split()
@@ -1521,8 +1941,7 @@ class VideoGenerator:
             extension = (
                 " Legend tells of brave warriors who would drink their chosen beverage before battle. "
                 "The taste would reveal their destiny and guide them to victory or defeat. "
-                "Even today, some believe you can taste the ancient magic in every sip."
-            )
+                "Even today, some believe you can taste the ancient magic in every sip.")
             return base_dialogue + extension
         else:
             return base_dialogue
@@ -1536,8 +1955,7 @@ class VideoGenerator:
             "The Egyptian gods are having a heated debate in their pyramid boardroom. "
             "Even the Buddha is scratching his head, trying to find the middle way between two sodas. "
             "It's the ultimate divine dilemma that has puzzled deities for millennia. "
-            "Who knew that choosing a beverage could cause such cosmic chaos?"
-        )
+            "Who knew that choosing a beverage could cause such cosmic chaos?")
 
         # Adjust length based on target duration
         words = base_dialogue.split()
@@ -1548,8 +1966,7 @@ class VideoGenerator:
         elif len(words) < target_words * 0.7:
             extension = (
                 " The funniest part? They all end up drinking water anyway because immortals have to stay hydrated. "
-                "But don't tell the marketing departments that!"
-            )
+                "But don't tell the marketing departments that!")
             return base_dialogue + extension
         else:
             return base_dialogue
@@ -1576,7 +1993,8 @@ class VideoGenerator:
                 f"Your child will sleep more soundly in a clean, toy-free sleep environment."
             )
         else:
-            # If we don't have specific content, return empty string to force header reading
+            # If we don't have specific content, return empty string to force
+            # header reading
             return ""
 
         # Adjust length based on target duration
@@ -2397,10 +2815,26 @@ class VideoGenerator:
             text = re.sub(pattern, '', text, flags=re.IGNORECASE)
 
         # Remove technical directions
-        text = re.sub(r'(Then,?\s*as\s+the\s+punchline|as\s+the\s+punchline)[^,]*,?\s*', '', text, flags=re.IGNORECASE)
-        text = re.sub(r'lands,?\s*the\s+speaker[^,]*,?\s*', '', text, flags=re.IGNORECASE)
-        text = re.sub(r'breaks\s+into[^,]*,?\s*', '', text, flags=re.IGNORECASE)
-        text = re.sub(r'raises\s+an\s+eyebrow[^,]*,?\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(
+            r'(Then,?\s*as\s+the\s+punchline|as\s+the\s+punchline)[^,]*,?\s*',
+            '',
+            text,
+            flags=re.IGNORECASE)
+        text = re.sub(
+            r'lands,?\s*the\s+speaker[^,]*,?\s*',
+            '',
+            text,
+            flags=re.IGNORECASE)
+        text = re.sub(
+            r'breaks\s+into[^,]*,?\s*',
+            '',
+            text,
+            flags=re.IGNORECASE)
+        text = re.sub(
+            r'raises\s+an\s+eyebrow[^,]*,?\s*',
+            '',
+            text,
+            flags=re.IGNORECASE)
         text = re.sub(r'->\s*A\s+single[^.]*\.', '', text, flags=re.IGNORECASE)
 
         # Remove timing and technical cues
@@ -2434,10 +2868,15 @@ class VideoGenerator:
                     'chroma', 'lighting', 'shadow', 'silhouette', 'reflection'
                 ]
 
-                first_word = sentence.split()[0].lower() if sentence.split() else ''
+                first_word = sentence.split()[0].lower(
+                ) if sentence.split() else ''
                 if first_word not in visual_starters:
-                    # Also check if it's a fragment starting with "a rapid", "an ancient", etc.
-                    if not re.match(r'^(a|an|the)\s+(rapid|quick|slow|gradual|sudden|majestic|ancient|comforting|close-up|wide|medium)', sentence, re.IGNORECASE):
+                    # Also check if it's a fragment starting with "a rapid",
+                    # "an ancient", etc.
+                    if not re.match(
+                        r'^(a|an|the)\s+(rapid|quick|slow|gradual|sudden|majestic|ancient|comforting|close-up|wide|medium)',
+                        sentence,
+                            re.IGNORECASE):
                         clean_sentences.append(sentence)
 
         text = '. '.join(clean_sentences)
@@ -2459,10 +2898,18 @@ class VideoGenerator:
 
         # Remove visual descriptions and stage directions
         text = re.sub(r'Opens with[^.]*\.', '', text, flags=re.IGNORECASE)
-        text = re.sub(r'As the question is asked[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(
+            r'As the question is asked[^.]*\.',
+            '',
+            text,
+            flags=re.IGNORECASE)
         text = re.sub(r'quickly cuts to[^.]*\.', '', text, flags=re.IGNORECASE)
         text = re.sub(r'then back to[^.]*\.', '', text, flags=re.IGNORECASE)
-        text = re.sub(r'with a thought bubble[^.]*\.', '', text, flags=re.IGNORECASE)
+        text = re.sub(
+            r'with a thought bubble[^.]*\.',
+            '',
+            text,
+            flags=re.IGNORECASE)
         text = re.sub(r'showing[^.]*\.', '', text, flags=re.IGNORECASE)
         text = re.sub(r'Zoom to[^.]*\.', '', text, flags=re.IGNORECASE)
         text = re.sub(r'Cut to[^.]*\.', '', text, flags=re.IGNORECASE)
@@ -2478,10 +2925,26 @@ class VideoGenerator:
         text = re.sub(r'<[^>]*>', '', text)
 
         # Remove technical directions
-        text = re.sub(r'(Then,?\s*as\s+the\s+punchline|as\s+the\s+punchline)[^,]*,?\s*', '', text, flags=re.IGNORECASE)
-        text = re.sub(r'lands,?\s*the\s+speaker[^,]*,?\s*', '', text, flags=re.IGNORECASE)
-        text = re.sub(r'breaks\s+into[^,]*,?\s*', '', text, flags=re.IGNORECASE)
-        text = re.sub(r'raises\s+an\s+eyebrow[^,]*,?\s*', '', text, flags=re.IGNORECASE)
+        text = re.sub(
+            r'(Then,?\s*as\s+the\s+punchline|as\s+the\s+punchline)[^,]*,?\s*',
+            '',
+            text,
+            flags=re.IGNORECASE)
+        text = re.sub(
+            r'lands,?\s*the\s+speaker[^,]*,?\s*',
+            '',
+            text,
+            flags=re.IGNORECASE)
+        text = re.sub(
+            r'breaks\s+into[^,]*,?\s*',
+            '',
+            text,
+            flags=re.IGNORECASE)
+        text = re.sub(
+            r'raises\s+an\s+eyebrow[^,]*,?\s*',
+            '',
+            text,
+            flags=re.IGNORECASE)
         text = re.sub(r'->\s*A\s+single[^.]*\.', '', text, flags=re.IGNORECASE)
 
         # Clean up whitespace and punctuation
@@ -2525,9 +2988,14 @@ class VideoGenerator:
 
         return dialogue_lines
 
-    def _generate_voiceover(self, script: str, duration: int = 30, config: Dict = None) -> str:
+    def _generate_voiceover(
+            self,
+            script: str,
+            duration: int = 30,
+            config: Dict = None) -> str:
         """Generate high-quality AI voice-over using Google Cloud TTS"""
-        logger.info(f"🎤 Generating high-quality voice-over for {duration}s video...")
+        logger.info(
+            f"🎤 Generating high-quality voice-over for {duration}s video...")
 
         if not config:
             config = {}
@@ -2541,8 +3009,12 @@ class VideoGenerator:
             clean_script = self._clean_script_for_tts(script, duration)
 
             if not clean_script or len(clean_script.strip()) < 10:
-                logger.warning("⚠️ Script too short after cleaning, using fallback")
-                clean_script = f"Welcome to this amazing video about {config.get('topic', 'our topic')}. This content will definitely interest you. Thanks for watching!"
+                logger.warning(
+                    "⚠️ Script too short after cleaning, using fallback")
+                clean_script = f"Welcome to this amazing video about {
+                    config.get(
+                        'topic',
+                        'our topic')}. This content will definitely interest you. Thanks for watching!"
 
             # STEP 2: Try Google Cloud TTS first for natural voice
             try:
@@ -2561,13 +3033,18 @@ class VideoGenerator:
 
                 if audio_path and os.path.exists(audio_path):
                     # Move to session directory
-                    session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+                    session_dir = os.path.join(
+                        self.output_dir, f"session_{
+                            self.session_id}")
                     os.makedirs(session_dir, exist_ok=True)
-                    final_path = os.path.join(session_dir, f"google_tts_voice_{uuid.uuid4()}.mp3")
+                    final_path = os.path.join(
+                        session_dir, f"google_tts_voice_{
+                            uuid.uuid4()}.mp3")
                     import shutil
                     shutil.move(audio_path, final_path)
 
-                    logger.info(f"✅ Google Cloud TTS SUCCESS: Natural voice generated")
+                    logger.info(
+                        f"✅ Google Cloud TTS SUCCESS: Natural voice generated")
                     logger.info(f"📁 Audio file: {final_path}")
                     return final_path
 
@@ -2593,12 +3070,17 @@ class VideoGenerator:
                     tts_config['tld'] = 'com.au'  # Australian for deeper tone
 
                 # Add natural speech patterns
-                enhanced_script = self._add_natural_speech_patterns(clean_script, feeling_context)
+                enhanced_script = self._add_natural_speech_patterns(
+                    clean_script, feeling_context)
 
                 tts = gTTS(text=enhanced_script, **tts_config)
-                session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+                session_dir = os.path.join(
+                    self.output_dir, f"session_{
+                        self.session_id}")
                 os.makedirs(session_dir, exist_ok=True)
-                audio_path = os.path.join(session_dir, f"enhanced_voice_{uuid.uuid4()}.mp3")
+                audio_path = os.path.join(
+                    session_dir, f"enhanced_voice_{
+                        uuid.uuid4()}.mp3")
                 tts.save(audio_path)
 
                 logger.info(f"✅ Enhanced gTTS generated: {audio_path}")
@@ -2610,9 +3092,13 @@ class VideoGenerator:
                 # STEP 4: Simple fallback
                 try:
                     simple_tts = gTTS(text=clean_script, lang='en', slow=False)
-                    session_dir = os.path.join(self.output_dir, f"session_{self.session_id}")
+                    session_dir = os.path.join(
+                        self.output_dir, f"session_{
+                            self.session_id}")
                     os.makedirs(session_dir, exist_ok=True)
-                    audio_path = os.path.join(session_dir, f"simple_voice_{uuid.uuid4()}.mp3")
+                    audio_path = os.path.join(
+                        session_dir, f"simple_voice_{
+                            uuid.uuid4()}.mp3")
                     simple_tts.save(audio_path)
                     logger.info(f"✅ Simple TTS fallback: {audio_path}")
                     return audio_path
@@ -2651,9 +3137,14 @@ class VideoGenerator:
 
         return '. '.join(sentences)
 
-    def _add_text_overlays(self, video_clip, config: GeneratedVideoConfig, duration: float, audio_script: str = None):
+    def _add_text_overlays(
+            self,
+            video_clip,
+            config: GeneratedVideoConfig,
+            duration: float,
+            audio_script: str = None):
         """Add modern social media style text overlays with smart positioning to avoid hiding important content
-        
+
         Args:
             video_clip: The video clip to add overlays to
             config: Video generation configuration
@@ -2662,14 +3153,18 @@ class VideoGenerator:
         """
         from moviepy.editor import TextClip, CompositeVideoClip
 
-        logger.info(f"📝 Adding modern social media text overlays to {duration:.1f}s video")
-        
+        logger.info(
+            f"📝 Adding modern social media text overlays to {
+                duration:.1f}s video")
+
         # NEW FEATURE: Check if subtitle mode is enabled
         use_subtitles = getattr(config, 'use_subtitle_overlays', False)
-        
+
         if use_subtitles and audio_script:
-            logger.info("🎤 Using audio-based subtitle overlays instead of generic text")
-            return self._add_subtitle_overlays(video_clip, config, duration, audio_script)
+            logger.info(
+                "🎤 Using audio-based subtitle overlays instead of generic text")
+            return self._add_subtitle_overlays(
+                video_clip, config, duration, audio_script)
 
         try:
             overlays = []
@@ -2679,15 +3174,20 @@ class VideoGenerator:
 
             # Modern social media font sizes (larger and bolder)
             # Optimized for mobile viewing and engagement
-            title_fontsize = max(120, int(video_width * 0.15))    # 15% of video width - extra bold
-            subtitle_fontsize = max(100, int(video_width * 0.12))  # 12% of video width - very bold
-            overlay_fontsize = max(110, int(video_width * 0.13))   # 13% of video width - super engaging
+            # 15% of video width - extra bold
+            title_fontsize = max(120, int(video_width * 0.15))
+            # 12% of video width - very bold
+            subtitle_fontsize = max(100, int(video_width * 0.12))
+            # 13% of video width - super engaging
+            overlay_fontsize = max(110, int(video_width * 0.13))
 
             # Safe text areas with strategic positioning
-            safe_width = int(video_width * 0.85)  # 85% of video width for text wrapping
+            # 85% of video width for text wrapping
+            safe_width = int(video_width * 0.85)
 
             # Generate intelligent text overlays with modern styling
-            intelligent_overlays = self._generate_modern_text_overlays(config, duration)
+            intelligent_overlays = self._generate_modern_text_overlays(
+                config, duration)
 
             # Add overlays with modern social media styling
             for i, overlay_data in enumerate(intelligent_overlays):
@@ -2702,7 +3202,8 @@ class VideoGenerator:
                     modern_font = overlay_data.get('font', 'Impact')
                     modern_color = overlay_data.get('color', 'white')
 
-                    # ENHANCED: Determine styling based on modern social media trends with EXTRA BOLDNESS
+                    # ENHANCED: Determine styling based on modern social media
+                    # trends with EXTRA BOLDNESS
                     if style == 'title':
                         fontsize = title_fontsize
                         color = modern_color
@@ -2748,15 +3249,18 @@ class VideoGenerator:
                         text_position = ('center', video_height * 0.82)
                     elif position == 'left_edge':
                         # Left edge for portrait videos
-                        text_position = (video_width * 0.15, video_height * 0.5)
+                        text_position = (
+                            video_width * 0.15, video_height * 0.5)
                     elif position == 'right_edge':
                         # Right edge for portrait videos
-                        text_position = (video_width * 0.85, video_height * 0.5)
+                        text_position = (
+                            video_width * 0.85, video_height * 0.5)
                     else:
                         # Default to lower third with safe positioning
                         text_position = ('center', video_height * 0.70)
 
-                    # ENHANCED: Create modern text clip with MAXIMUM visibility styling
+                    # ENHANCED: Create modern text clip with MAXIMUM visibility
+                    # styling
                     text_clip = TextClip(
                         text,
                         fontsize=fontsize,
@@ -2771,7 +3275,8 @@ class VideoGenerator:
                         interline=-3,  # Tighter line spacing for impact
                     )
 
-                    # ENHANCED: Apply DOUBLE drop shadow effect for ultra-modern look and maximum contrast
+                    # ENHANCED: Apply DOUBLE drop shadow effect for
+                    # ultra-modern look and maximum contrast
                     try:
                         # Create primary shadow layer (darker and larger)
                         primary_shadow = TextClip(
@@ -2785,7 +3290,8 @@ class VideoGenerator:
                             interline=-3,
                         )
 
-                        # Create secondary shadow layer (lighter and smaller offset)
+                        # Create secondary shadow layer (lighter and smaller
+                        # offset)
                         secondary_shadow = TextClip(
                             text,
                             fontsize=fontsize,
@@ -2799,24 +3305,41 @@ class VideoGenerator:
 
                         # Position shadows with multiple offsets for depth
                         primary_shadow_position = (
-                            text_position[0] + shadow_offset[0] if isinstance(text_position, tuple) else 'center',
-                            text_position[1] + shadow_offset[1] if isinstance(text_position, tuple) else text_position
-                        )
+                            text_position[0] +
+                            shadow_offset[0] if isinstance(
+                                text_position,
+                                tuple) else 'center',
+                            text_position[1] +
+                            shadow_offset[1] if isinstance(
+                                text_position,
+                                tuple) else text_position)
 
                         secondary_shadow_position = (
-                            text_position[0] + shadow_offset[0]//2 if isinstance(text_position, tuple) else 'center',
-                            text_position[1] + shadow_offset[1]//2 if isinstance(text_position, tuple) else text_position
-                        )
+                            text_position[0] +
+                            shadow_offset[0] //
+                            2 if isinstance(
+                                text_position,
+                                tuple) else 'center',
+                            text_position[1] +
+                            shadow_offset[1] //
+                            2 if isinstance(
+                                text_position,
+                                tuple) else text_position)
 
                         # Apply timing and opacity to shadows
-                        primary_shadow = primary_shadow.set_position(primary_shadow_position).set_start(start_time).set_duration(end_time - start_time).set_opacity(0.8)
-                        secondary_shadow = secondary_shadow.set_position(secondary_shadow_position).set_start(start_time).set_duration(end_time - start_time).set_opacity(0.4)
-                        text_clip = text_clip.set_position(text_position).set_start(start_time).set_duration(end_time - start_time)
+                        primary_shadow = primary_shadow.set_position(primary_shadow_position).set_start(
+                            start_time).set_duration(end_time - start_time).set_opacity(0.8)
+                        secondary_shadow = secondary_shadow.set_position(secondary_shadow_position).set_start(
+                            start_time).set_duration(end_time - start_time).set_opacity(0.4)
+                        text_clip = text_clip.set_position(text_position).set_start(
+                            start_time).set_duration(end_time - start_time)
 
-                        # Add all layers: primary shadow, secondary shadow, main text
-                        overlays.extend([primary_shadow, secondary_shadow, text_clip])
+                        # Add all layers: primary shadow, secondary shadow,
+                        # main text
+                        overlays.extend(
+                            [primary_shadow, secondary_shadow, text_clip])
 
-                    except:
+                    except BaseException:
                         # Fallback to single shadow if double shadow fails
                         try:
                             shadow_clip = TextClip(
@@ -2831,32 +3354,46 @@ class VideoGenerator:
                             )
 
                             shadow_position = (
-                                text_position[0] + shadow_offset[0] if isinstance(text_position, tuple) else 'center',
-                                text_position[1] + shadow_offset[1] if isinstance(text_position, tuple) else text_position
-                            )
+                                text_position[0] +
+                                shadow_offset[0] if isinstance(
+                                    text_position,
+                                    tuple) else 'center',
+                                text_position[1] +
+                                shadow_offset[1] if isinstance(
+                                    text_position,
+                                    tuple) else text_position)
 
-                            shadow_clip = shadow_clip.set_position(shadow_position).set_start(start_time).set_duration(end_time - start_time).set_opacity(0.7)
-                            text_clip = text_clip.set_position(text_position).set_start(start_time).set_duration(end_time - start_time)
+                            shadow_clip = shadow_clip.set_position(shadow_position).set_start(
+                                start_time).set_duration(end_time - start_time).set_opacity(0.7)
+                            text_clip = text_clip.set_position(text_position).set_start(
+                                start_time).set_duration(end_time - start_time)
 
                             overlays.extend([shadow_clip, text_clip])
-                        except:
-                            # Final fallback to just main text with enhanced stroke
-                            text_clip = text_clip.set_position(text_position).set_start(start_time).set_duration(end_time - start_time)
+                        except BaseException:
+                            # Final fallback to just main text with enhanced
+                            # stroke
+                            text_clip = text_clip.set_position(text_position).set_start(
+                                start_time).set_duration(end_time - start_time)
                             overlays.append(text_clip)
 
-                    logger.info(f"✅ Added ENHANCED overlay: '{text[:30]}...' ({fontsize}px {font}, stroke:{stroke_width}px) at {start_time:.1f}s-{end_time:.1f}s")
+                    logger.info(
+                        f"✅ Added ENHANCED overlay: '{text[:30]}...' ({fontsize}px {font}, stroke:{stroke_width}px) at {start_time:.1f}s-{end_time:.1f}s")
 
                 except Exception as e:
-                    logger.error(f"❌ Failed to create enhanced text overlay {i}: {e}")
+                    logger.error(
+                        f"❌ Failed to create enhanced text overlay {i}: {e}")
                     continue
 
             # Combine video with all modern overlays
             if overlays:
                 final_video = CompositeVideoClip([video_clip] + overlays)
-                logger.info(f"✅ Added {len(overlays)} modern social media text overlays")
+                logger.info(
+                    f"✅ Added {
+                        len(overlays)} modern social media text overlays")
                 return final_video
             else:
-                logger.warning("⚠️ No modern overlays created, returning original video")
+                logger.warning(
+                    "⚠️ No modern overlays created, returning original video")
                 return video_clip
 
         except Exception as e:
@@ -2864,167 +3401,308 @@ class VideoGenerator:
             logger.info("🔄 Returning video without overlays")
             return video_clip
 
-    def _add_subtitle_overlays(self, video_clip, config: GeneratedVideoConfig, duration: float, audio_script: str):
-        """Add subtitle overlays based on audio script content with smart timing"""
+    def _add_subtitle_overlays(
+            self,
+            video_clip,
+            config: GeneratedVideoConfig,
+            duration: float,
+            audio_script: str):
+        """Add subtitle overlays based on audio script content with modern styling and perfect timing"""
         from moviepy.editor import TextClip, CompositeVideoClip
-        
-        logger.info(f"🎤 Adding audio-based subtitle overlays to {duration:.1f}s video")
-        
+
+        logger.info(
+            f"🎤 Adding modern subtitle overlays to {
+                duration:.1f}s video")
+
         try:
             # Get video dimensions
             video_width, video_height = video_clip.size
-            
-            # Subtitle styling - more readable and less intrusive than regular overlays
-            subtitle_fontsize = max(60, int(video_width * 0.08))  # Smaller than regular overlays
-            safe_width = int(video_width * 0.90)  # Wider for subtitles
-            
+
+            # ENHANCED SUBTITLE STYLING - Modern and vibrant
+            # Larger for better visibility
+            subtitle_fontsize = max(80, int(video_width * 0.10))
+            # Slightly narrower for better readability
+            safe_width = int(video_width * 0.85)
+
+            # Modern color palette for subtitles
+            modern_colors = [
+                '#FFFFFF',  # Pure white (most readable)
+                '#FFD700',  # Gold (premium, attention-grabbing)
+                '#00FFFF',  # Cyan (modern, trendy)
+                '#FF6B6B',  # Coral (warm, friendly)
+                '#4ECDC4',  # Turquoise (fresh, modern)
+                '#45B7D1',  # Sky blue (professional, trustworthy)
+                '#96CEB4',  # Mint green (calm, natural)
+                '#FFEAA7',  # Light yellow (energetic, positive)
+            ]
+
+            # Modern font options (fallback chain)
+            modern_fonts = [
+                'Montserrat-Black',    # Instagram favorite
+                'Helvetica-Bold',      # Clean and modern
+                'Arial-Black',         # Strong and readable
+                'Impact',              # Bold and attention-grabbing
+                'Futura-Bold',         # Geometric and trendy
+                'Roboto-Bold',         # Google's modern choice
+                'Oswald-Bold',         # Strong geometric
+                'Bebas-Neue',          # Condensed modern
+            ]
+
             # Generate subtitle segments from audio script
-            subtitle_segments = self._generate_subtitle_segments(audio_script, duration)
-            
+            subtitle_segments = self._generate_subtitle_segments(
+                audio_script, duration)
+
             overlays = []
-            
+
             for i, segment in enumerate(subtitle_segments):
                 try:
                     text = segment['text']
                     start_time = segment['start_time']
                     end_time = segment['end_time']
-                    
-                    # Subtitle positioning - bottom third for readability
-                    subtitle_position = ('center', video_height * 0.75)
-                    
-                    # Create subtitle text clip with clean styling
+
+                    # Cycle through colors for variety
+                    color = modern_colors[i % len(modern_colors)]
+
+                    # Try different fonts with fallback
+                    font_used = None
+                    for font in modern_fonts:
+                        try:
+                            # Test if font works
+                            test_clip = TextClip(
+                                "Test",
+                                fontsize=subtitle_fontsize,
+                                color=color,
+                                font=font,
+                                method='caption'
+                            )
+                            test_clip.close()
+                            font_used = font
+                            break
+                        except BaseException:
+                            continue
+
+                    # Fallback to system default if no modern fonts work
+                    if not font_used:
+                        font_used = 'Arial-Bold'
+
+                    # ENHANCED POSITIONING - Smart subtitle placement
+                    # Position subtitles in the lower third but not too close
+                    # to bottom
+                    subtitle_y_position = video_height * 0.70  # 70% down from top
+
+                    # Create main subtitle text with enhanced styling
                     text_clip = TextClip(
                         text,
                         fontsize=subtitle_fontsize,
-                        color='white',
-                        font='Arial-Bold',
-                        stroke_color='black',
-                        stroke_width=3,
+                        color=color,
+                        font=font_used,
+                        stroke_color='#000000',  # Black stroke for contrast
+                        stroke_width=4,          # Thicker stroke for better visibility
                         method='caption',
                         size=(safe_width, None),
                         align='center',
-                        interline=5,  # Better line spacing for subtitles
+                        interline=8,             # Better line spacing
                     )
-                    
-                    # Add subtle shadow for better readability
+
+                    # Add enhanced shadow/glow effect for better readability
                     shadow_clip = TextClip(
                         text,
                         fontsize=subtitle_fontsize,
-                        color='black',
-                        font='Arial-Bold',
+                        color='#000000',         # Black shadow
+                        font=font_used,
                         method='caption',
                         size=(safe_width, None),
                         align='center',
-                        interline=5,
+                        interline=8,
                     )
-                    
-                    # Position shadow slightly offset
+
+                    # Create glow effect with multiple shadow layers
+                    glow_clips = []
+                    for offset in [
+                            (2, 2), (-2, -2), (2, -2), (-2, 2)]:  # 4-directional glow
+                        glow_clip = TextClip(
+                            text,
+                            fontsize=subtitle_fontsize,
+                            color='#000000',
+                            font=font_used,
+                            method='caption',
+                            size=(safe_width, None),
+                            align='center',
+                            interline=8,
+                        )
+
+                        glow_position = (
+                            'center', subtitle_y_position + offset[1])
+                        glow_clip = glow_clip.set_position(glow_position).set_start(
+                            start_time).set_duration(end_time - start_time).set_opacity(0.3)
+                        glow_clips.append(glow_clip)
+
+                    # Position main elements
+                    subtitle_position = ('center', subtitle_y_position)
                     shadow_position = (
-                        subtitle_position[0] if isinstance(subtitle_position, tuple) else 'center',
-                        subtitle_position[1] + 2 if isinstance(subtitle_position, tuple) else subtitle_position
-                    )
-                    
-                    # Apply timing
-                    shadow_clip = shadow_clip.set_position(shadow_position).set_start(start_time).set_duration(end_time - start_time).set_opacity(0.8)
-                    text_clip = text_clip.set_position(subtitle_position).set_start(start_time).set_duration(end_time - start_time)
-                    
+                        'center',
+                        subtitle_y_position +
+                        3)  # Slightly offset shadow
+
+                    # Apply timing and positioning
+                    shadow_clip = shadow_clip.set_position(shadow_position).set_start(
+                        start_time).set_duration(end_time - start_time).set_opacity(0.6)
+                    text_clip = text_clip.set_position(subtitle_position).set_start(
+                        start_time).set_duration(end_time - start_time)
+
+                    # Add all layers: glow effects, shadow, then main text
+                    overlays.extend(glow_clips)
                     overlays.extend([shadow_clip, text_clip])
-                    
-                    logger.info(f"✅ Added subtitle: '{text[:40]}...' at {start_time:.1f}s-{end_time:.1f}s")
-                    
+
+                    logger.info(
+                        f"✅ Enhanced subtitle: '{text[:40]}...' at {start_time:.1f}s-{end_time:.1f}s")
+                    logger.info(
+                        f"   🎨 Style: {font_used} | Color: {color} | Enhanced effects")
+
                 except Exception as e:
-                    logger.error(f"❌ Failed to create subtitle overlay {i}: {e}")
+                    logger.error(
+                        f"❌ Failed to create enhanced subtitle overlay {i}: {e}")
                     continue
-            
-            # Combine video with subtitle overlays
+
+            # Combine video with enhanced subtitle overlays
             if overlays:
                 final_video = CompositeVideoClip([video_clip] + overlays)
-                logger.info(f"✅ Added {len(overlays)} subtitle overlays")
+                logger.info(
+                    f"✅ Added {
+                        len(overlays)} enhanced subtitle overlays with modern styling")
                 return final_video
             else:
-                logger.warning("⚠️ No subtitle overlays created, returning original video")
+                logger.warning(
+                    "⚠️ No subtitle overlays created, returning original video")
                 return video_clip
-                
+
         except Exception as e:
-            logger.error(f"❌ Subtitle overlay creation failed: {e}")
+            logger.error(f"❌ Enhanced subtitle overlay creation failed: {e}")
             logger.info("🔄 Returning video without subtitle overlays")
             return video_clip
 
-    def _generate_subtitle_segments(self, audio_script: str, duration: float) -> List[Dict]:
-        """Generate subtitle segments from audio script with smart timing"""
-        
-        logger.info(f"📝 Generating subtitle segments from audio script")
-        
+    def _generate_subtitle_segments(
+            self,
+            audio_script: str,
+            duration: float) -> List[Dict]:
+        """Generate subtitle segments from audio script with smart timing based on speech rate"""
+
+        logger.info(
+            f"📝 Generating subtitle segments with smart timing from audio script")
+
         try:
             # Clean and prepare the script
             clean_script = audio_script.strip()
-            
+
             # Split script into sentences/phrases for subtitle timing
             import re
-            
+
             # Split by sentences (periods, exclamation marks, question marks)
             sentences = re.split(r'[.!?]+', clean_script)
             sentences = [s.strip() for s in sentences if s.strip()]
-            
+
             # If no sentences, split by commas or natural breaks
             if len(sentences) <= 1:
                 sentences = re.split(r'[,;]+', clean_script)
                 sentences = [s.strip() for s in sentences if s.strip()]
-            
-            # If still too few segments, split by words (for very short scripts)
+
+            # If still too few segments, split by words (for very short
+            # scripts)
             if len(sentences) <= 1:
                 words = clean_script.split()
                 # Group words into chunks of 6-8 words per subtitle
                 sentences = []
                 for i in range(0, len(words), 7):
-                    chunk = ' '.join(words[i:i+7])
+                    chunk = ' '.join(words[i:i + 7])
                     if chunk:
                         sentences.append(chunk)
-            
-            # Calculate timing for each subtitle segment
+
+            # IMPROVED TIMING: Calculate timing based on word count and speech
+            # rate
             segments = []
             if sentences:
-                segment_duration = duration / len(sentences)
-                
+                # Calculate speech rate (words per second) based on total
+                # script
+                total_words = len(clean_script.split())
+                speech_rate = total_words / duration  # words per second
+
+                # Ensure reasonable speech rate (2-3 words per second)
+                speech_rate = max(2.0, min(3.0, speech_rate))
+
+                current_time = 0.0
+
                 for i, sentence in enumerate(sentences):
-                    start_time = i * segment_duration
-                    end_time = min((i + 1) * segment_duration, duration)
-                    
-                    # Ensure minimum display time of 1.5 seconds
-                    if end_time - start_time < 1.5:
-                        end_time = min(start_time + 1.5, duration)
-                    
-                    # Ensure maximum display time of 4 seconds
-                    if end_time - start_time > 4.0:
-                        end_time = start_time + 4.0
-                    
+                    sentence_words = sentence.split()
+                    word_count = len(sentence_words)
+
+                    # Calculate duration based on word count and speech rate
+                    estimated_duration = word_count / speech_rate
+
+                    # Apply timing constraints
+                    # Minimum display time: 1.5 seconds for readability
+                    # Maximum display time: 4 seconds to avoid boring static
+                    # text
+                    segment_duration = max(1.5, min(4.0, estimated_duration))
+
+                    start_time = current_time
+                    end_time = min(start_time + segment_duration, duration)
+
+                    # Ensure we don't exceed video duration
+                    if start_time >= duration:
+                        break
+
+                    # Add small gap between subtitles for better readability
+                    if i < len(sentences) - 1:  # Not the last subtitle
+                        gap_duration = 0.1  # 100ms gap
+                        end_time = min(end_time, duration - gap_duration)
+
                     segments.append({
                         'text': sentence,
                         'start_time': start_time,
-                        'end_time': end_time
+                        'end_time': end_time,
+                        'word_count': word_count,
+                        'estimated_duration': estimated_duration
                     })
-                    
-                    logger.info(f"📝 Subtitle segment {i+1}: '{sentence[:30]}...' ({start_time:.1f}s-{end_time:.1f}s)")
-            
+
+                    logger.info(
+                        f"📝 Smart subtitle {i + 1}: '{sentence[:30]}...' ({start_time:.1f}s-{end_time:.1f}s) [{word_count} words]")
+
+                    # Move to next subtitle start time
+                    current_time = end_time + 0.1  # Small gap between subtitles
+
+                # If we have remaining time, extend the last subtitle
+                if segments and current_time < duration:
+                    segments[-1]['end_time'] = duration
+                    logger.info(f"📝 Extended last subtitle to {duration:.1f}s")
+
+                logger.info(
+                    f"✅ Generated {
+                        len(segments)} smart-timed subtitle segments")
+                logger.info(f"🎤 Speech rate: {speech_rate:.1f} words/second")
+
             else:
                 # Fallback: Create a single subtitle with the entire script
                 segments.append({
                     'text': clean_script[:100] + "..." if len(clean_script) > 100 else clean_script,
                     'start_time': 0.0,
-                    'end_time': min(duration, 4.0)
+                    'end_time': min(duration, 4.0),
+                    'word_count': len(clean_script.split()),
+                    'estimated_duration': duration
                 })
-                
+
                 logger.info(f"📝 Fallback: Single subtitle segment created")
-            
-            logger.info(f"✅ Generated {len(segments)} subtitle segments")
+
             return segments
-            
+
         except Exception as e:
-            logger.error(f"❌ Subtitle segment generation failed: {e}")
+            logger.error(f"❌ Smart subtitle segment generation failed: {e}")
             # Return empty list to fall back to no subtitles
             return []
 
-    def _generate_modern_text_overlays(self, config: GeneratedVideoConfig, duration: float) -> List[Dict]:
+    def _generate_modern_text_overlays(
+            self,
+            config: GeneratedVideoConfig,
+            duration: float) -> List[Dict]:
         """Generate modern social media style text overlays with trendy fonts and smart positioning"""
         overlays = []
 
@@ -3034,9 +3712,12 @@ class VideoGenerator:
             category = config.category.value
             platform = config.target_platform.value
 
-            logger.info(f"🎨 MODERN AI: Generating trendy social media overlays")
+            logger.info(
+                f"🎨 MODERN AI: Generating trendy social media overlays")
             logger.info(f"🎯 Mission: {topic}")
-            logger.info(f"📱 Platform: {platform} | Category: {category} | Duration: {duration:.0f}s")
+            logger.info(
+                f"📱 Platform: {platform} | Category: {category} | Duration: {
+                    duration:.0f}s")
 
             # Modern social media AI prompt
             ai_prompt = f"""
@@ -3117,7 +3798,7 @@ class VideoGenerator:
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=self.api_key)
-                model = genai.GenerativeModel('gemini-2.0-flash-exp')
+                model = genai.GenerativeModel('gemini-2.5-flash')
 
                 response = model.generate_content(ai_prompt)
 
@@ -3132,13 +3813,36 @@ class VideoGenerator:
                     for i, overlay in enumerate(overlay_data):
                         if isinstance(overlay, dict) and 'text' in overlay:
                             # Ensure timing is within video duration
-                            start_time = min(float(overlay.get('start_time', 0)), duration - 2)
-                            end_time = min(float(overlay.get('end_time', start_time + 3)), duration)
+                            start_time = min(
+                                float(
+                                    overlay.get(
+                                        'start_time',
+                                        0)),
+                                duration - 2)
+                            end_time = min(
+                                float(
+                                    overlay.get(
+                                        'end_time',
+                                        start_time +
+                                        3)),
+                                duration)
 
                             if end_time > start_time:
-                                logger.info(f"🎨 MODERN OVERLAY {i+1}: {overlay['text'][:30]}...")
-                                logger.info(f"   🎯 Font: {overlay.get('font', 'Impact')} | Color: {overlay.get('color', 'white')}")
-                                logger.info(f"   📍 Position: {overlay.get('position', 'lower_third')} (smart content-aware)")
+                                logger.info(
+                                    f"🎨 MODERN OVERLAY {i + 1}: {overlay['text'][:30]}...")
+                                logger.info(
+                                    f"   🎯 Font: {
+                                        overlay.get(
+                                            'font',
+                                            'Impact')} | Color: {
+                                        overlay.get(
+                                            'color',
+                                            'white')}")
+                                logger.info(
+                                    f"   📍 Position: {
+                                        overlay.get(
+                                            'position',
+                                            'lower_third')} (smart content-aware)")
 
                                 overlays.append({
                                     'text': overlay['text'],
@@ -3150,7 +3854,9 @@ class VideoGenerator:
                                     'color': overlay.get('color', 'white')
                                 })
 
-                    logger.info(f"🎨 Generated {len(overlays)} modern social media overlays")
+                    logger.info(
+                        f"🎨 Generated {
+                            len(overlays)} modern social media overlays")
 
             except Exception as e:
                 logger.warning(f"⚠️ Modern AI overlay generation failed: {e}")
@@ -3159,7 +3865,8 @@ class VideoGenerator:
             # Fallback: Create trendy mission-specific overlays
             if not overlays:
                 logger.info("🔄 AI failed, using trendy fallback overlays")
-                overlays = self._create_trendy_fallback_overlays(config, duration)
+                overlays = self._create_trendy_fallback_overlays(
+                    config, duration)
 
             return overlays
 
@@ -3167,7 +3874,10 @@ class VideoGenerator:
             logger.error(f"❌ Modern overlay generation failed: {e}")
             return self._create_trendy_fallback_overlays(config, duration)
 
-    def _create_trendy_fallback_overlays(self, config: GeneratedVideoConfig, duration: float) -> List[Dict]:
+    def _create_trendy_fallback_overlays(
+            self,
+            config: GeneratedVideoConfig,
+            duration: float) -> List[Dict]:
         """Create trendy social media style fallback overlays"""
         overlays = []
         topic = config.topic.lower()
@@ -3275,7 +3985,7 @@ class VideoGenerator:
             else:
                 # Generic trendy overlays with diverse fonts and colors
                 clean_topic = config.topic.replace('_', ' ').title()
-                
+
                 # Diverse font and color combinations for variety
                 font_color_combos = [
                     ('Impact', 'gold'),
@@ -3286,7 +3996,7 @@ class VideoGenerator:
                     ('Oswald-Bold', 'red'),
                     ('Roboto-Bold', 'lime')
                 ]
-                
+
                 overlays = [
                     {
                         'text': f'🔥 {clean_topic[:20]}',
@@ -3331,7 +4041,8 @@ class VideoGenerator:
                 overlays = overlays[:3]  # Keep only first 3 overlays
                 for i, overlay in enumerate(overlays):
                     overlay['start_time'] = (duration / len(overlays)) * i
-                    overlay['end_time'] = min(overlay['start_time'] + 4, duration)
+                    overlay['end_time'] = min(
+                        overlay['start_time'] + 4, duration)
 
             logger.info(f"🎨 Created {len(overlays)} trendy fallback overlays")
             return overlays
@@ -3357,7 +4068,10 @@ class VideoGenerator:
             # Multiple attempts with different configurations
             for attempt in range(3):
                 try:
-                    logger.info(f"🎤 TTS attempt {attempt + 1}/3: Generating audio...")
+                    logger.info(
+                        f"🎤 TTS attempt {
+                            attempt +
+                            1}/3: Generating audio...")
 
                     # Try different TTS configurations
                     if attempt == 0:
@@ -3365,7 +4079,11 @@ class VideoGenerator:
                         tts = gTTS(text=clean_script, lang='en', slow=False)
                     elif attempt == 1:
                         # Try with different TLD
-                        tts = gTTS(text=clean_script, lang='en', slow=False, tld='com')
+                        tts = gTTS(
+                            text=clean_script,
+                            lang='en',
+                            slow=False,
+                            tld='com')
                     else:
                         # Try with slow speech as last resort
                         tts = gTTS(text=clean_script, lang='en', slow=True)
@@ -3375,29 +4093,41 @@ class VideoGenerator:
                         tts.save(audio_path)
 
                         # Verify the audio file was created and has content
-                        if os.path.exists(audio_path) and os.path.getsize(audio_path) > 1000:  # At least 1KB
+                        if os.path.exists(audio_path) and os.path.getsize(
+                                audio_path) > 1000:  # At least 1KB
                             # Get actual duration
                             try:
                                 audio_clip = AudioFileClip(audio_path)
                                 actual_duration = audio_clip.duration
                                 audio_clip.close()
 
-                                logger.info(f"🎵 Audio generated successfully: {audio_path}")
-                                logger.info(f"🎵 Duration: {actual_duration:.1f}s (target: {duration}s)")
-                                logger.info(f"🎵 File size: {os.path.getsize(audio_path) / 1024:.1f}KB")
+                                logger.info(
+                                    f"🎵 Audio generated successfully: {audio_path}")
+                                logger.info(
+                                    f"🎵 Duration: {
+                                        actual_duration:.1f}s (target: {duration}s)")
+                                logger.info(
+                                    f"🎵 File size: {
+                                        os.path.getsize(audio_path) /
+                                        1024:.1f}KB")
 
                                 return audio_path
                             except Exception as e:
-                                logger.warning(f"⚠️ Could not get audio duration: {e}")
+                                logger.warning(
+                                    f"⚠️ Could not get audio duration: {e}")
                                 return audio_path
                         else:
-                            logger.warning(f"⚠️ Audio file too small or missing (attempt {attempt + 1})")
+                            logger.warning(
+                                f"⚠️ Audio file too small or missing (attempt {
+                                    attempt + 1})")
                             if os.path.exists(audio_path):
                                 os.remove(audio_path)
                             continue
 
                     except Exception as save_error:
-                        logger.warning(f"⚠️ TTS save failed (attempt {attempt + 1}): {save_error}")
+                        logger.warning(
+                            f"⚠️ TTS save failed (attempt {
+                                attempt + 1}): {save_error}")
                         continue
 
                 except Exception as e:
@@ -3405,14 +4135,17 @@ class VideoGenerator:
                     continue
 
             # If all TTS attempts failed, create a better fallback
-            logger.error("❌ All TTS attempts failed, creating enhanced fallback")
+            logger.error(
+                "❌ All TTS attempts failed, creating enhanced fallback")
 
         except Exception as e:
             logger.error(f"❌ Audio generation failed: {e}")
 
         # Create a better fallback audio with text-to-speech using system tools
         try:
-            fallback_audio = os.path.join(self.audio_dir, f"fallback_audio_{uuid.uuid4()}.mp3")
+            fallback_audio = os.path.join(
+                self.audio_dir, f"fallback_audio_{
+                    uuid.uuid4()}.mp3")
 
             # Try to use system say command on macOS
             try:
@@ -3424,8 +4157,15 @@ class VideoGenerator:
                     temp_aiff = fallback_audio.replace('.mp3', '.aiff')
 
                     # Use macOS say command
-                    cmd = ['say', '-o', temp_aiff, '-v', 'Samantha', clean_script]
-                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                    cmd = [
+                        'say',
+                        '-o',
+                        temp_aiff,
+                        '-v',
+                        'Samantha',
+                        clean_script]
+                    result = subprocess.run(
+                        cmd, capture_output=True, text=True, timeout=30)
 
                     if result.returncode == 0 and os.path.exists(temp_aiff):
                         # Convert AIFF to MP3
@@ -3433,12 +4173,15 @@ class VideoGenerator:
                             'ffmpeg', '-i', temp_aiff, '-acodec', 'mp3',
                             '-ab', '128k', '-y', fallback_audio
                         ]
-                        ffmpeg_result = subprocess.run(ffmpeg_cmd, capture_output=True, text=True)
+                        ffmpeg_result = subprocess.run(
+                            ffmpeg_cmd, capture_output=True, text=True)
 
-                        if ffmpeg_result.returncode == 0 and os.path.exists(fallback_audio):
+                        if ffmpeg_result.returncode == 0 and os.path.exists(
+                                fallback_audio):
                             # Clean up temp file
                             os.remove(temp_aiff)
-                            logger.info(f"🎤 macOS 'say' fallback audio created: {fallback_audio}")
+                            logger.info(
+                                f"🎤 macOS 'say' fallback audio created: {fallback_audio}")
                             return fallback_audio
                         else:
                             logger.warning("⚠️ FFmpeg conversion failed")
@@ -3449,56 +4192,91 @@ class VideoGenerator:
 
             # Final fallback: Create silent audio with FFmpeg
             cmd = [
-                'ffmpeg', '-f', 'lavfi', '-i', f'anullsrc=r=44100:cl=stereo:d={duration}',
-                '-acodec', 'mp3', '-y', fallback_audio
-            ]
+                'ffmpeg',
+                '-f',
+                'lavfi',
+                '-i',
+                f'anullsrc=r=44100:cl=stereo:d={duration}',
+                '-acodec',
+                'mp3',
+                '-y',
+                fallback_audio]
 
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=15)
             if result.returncode == 0 and os.path.exists(fallback_audio):
-                logger.info(f"🔇 Created fallback silent audio: {fallback_audio}")
+                logger.info(
+                    f"🔇 Created fallback silent audio: {fallback_audio}")
                 return fallback_audio
             else:
-                logger.error(f"❌ Fallback audio creation failed: {result.stderr}")
+                logger.error(
+                    f"❌ Fallback audio creation failed: {
+                        result.stderr}")
                 raise Exception("Both audio generation and fallback failed")
 
         except Exception as fallback_error:
             logger.error(f"❌ Fallback audio creation failed: {fallback_error}")
             raise Exception("All audio generation methods failed")
 
-    def _compose_final_video(self, video_clips: List[str], audio_path: str,
-                           config: GeneratedVideoConfig, script: str = None) -> str:
+    def _compose_final_video(
+            self,
+            video_clips: List[str],
+            audio_path: str,
+            config: GeneratedVideoConfig,
+            script: str = None) -> str:
         """Compose final video with proper duration alignment and text overlays"""
         try:
             # Create session directory path
-            final_video_path = os.path.join(self.session_dir, f"final_video_{self.session_id}.mp4")
+            final_video_path = os.path.join(
+                self.session_dir, f"final_video_{
+                    self.session_id}.mp4")
 
             # IMPROVED: Use audio duration as primary reference for synchronization
             # This ensures script and audio are never cut in the middle
             audio_clip = None
             target_duration = config.duration_seconds
 
+            # Check if we have a recommended duration from TTS processing
+            if hasattr(
+                    self,
+                    'recommended_duration') and self.recommended_duration:
+                logger.info(
+                    f"🎯 Using recommended duration from TTS: {
+                        self.recommended_duration:.1f}s")
+                target_duration = self.recommended_duration
+
             if audio_path and os.path.exists(audio_path):
                 audio_clip = AudioFileClip(audio_path)
                 audio_duration = audio_clip.duration
                 logger.info(f"🎵 Audio duration: {audio_duration:.1f}s")
-                logger.info(f"🎯 Config target: {target_duration}s")
+                logger.info(f"🎯 Config target: {config.duration_seconds}s")
+                logger.info(f"🎯 Current target: {target_duration}s")
 
                 # CRITICAL: If audio is longer than target, extend target to match audio
                 # This prevents cutting off the script/audio in the middle
                 if audio_duration > target_duration:
-                    logger.info(f"🎵 Audio ({audio_duration:.1f}s) longer than target ({target_duration}s)")
-                    logger.info(f"🎯 Extending target duration to match complete audio: {audio_duration:.1f}s")
+                    logger.info(
+                        f"🎵 Audio ({audio_duration:.1f}s) longer than target ({target_duration}s)")
+                    logger.info(
+                        f"🎯 Extending target duration to match complete audio: {
+                            audio_duration:.1f}s")
                     target_duration = audio_duration  # Use full audio duration
                 elif audio_duration < target_duration * 0.9:  # Audio significantly shorter
-                    logger.info(f"🎵 Audio ({audio_duration:.1f}s) shorter than target ({target_duration}s)")
+                    logger.info(
+                        f"🎵 Audio ({audio_duration:.1f}s) shorter than target ({target_duration}s)")
                     target_duration = audio_duration  # Use audio duration to avoid silence
-                    logger.info(f"🎯 Adjusted target to audio duration: {target_duration:.1f}s")
+                    logger.info(
+                        f"🎯 Adjusted target to audio duration: {
+                            target_duration:.1f}s")
                 else:
-                    # Audio duration is close to target, use audio duration for perfect sync
+                    # Audio duration is close to target, use audio duration for
+                    # perfect sync
                     target_duration = audio_duration
-                    logger.info(f"🎯 Using audio duration for perfect sync: {target_duration:.1f}s")
+                    logger.info(
+                        f"🎯 Using audio duration for perfect sync: {
+                            target_duration:.1f}s")
             else:
-                logger.warning("⚠️ No audio file found, using config duration")
+                logger.warning("⚠️ No audio file found, using target duration")
 
             logger.info(f"🎯 Final target duration: {target_duration:.1f}s")
 
@@ -3515,12 +4293,18 @@ class VideoGenerator:
             if not clips:
                 raise RenderingError("No valid video clips found")
 
-            logger.info(f"🎬 Video clips total duration: {total_video_duration:.1f}s")
-            logger.info(f"🎯 Adjusting video to match requested duration: {target_duration}s")
+            logger.info(
+                f"🎬 Video clips total duration: {
+                    total_video_duration:.1f}s")
+            logger.info(
+                f"🎯 Adjusting video to match requested duration: {target_duration}s")
 
             # Adjust video duration to match target (not audio)
             if abs(total_video_duration - target_duration) > 0.5:
-                logger.info(f"⚖️ Adjusting video duration from {total_video_duration:.1f}s to {target_duration:.1f}s")
+                logger.info(
+                    f"⚖️ Adjusting video duration from {
+                        total_video_duration:.1f}s to {
+                        target_duration:.1f}s")
 
                 # Calculate speed factor
                 speed_factor = total_video_duration / target_duration
@@ -3532,11 +4316,15 @@ class VideoGenerator:
                 elif speed_factor < 0.9:  # Video too short, slow down or loop
                     if speed_factor > 0.7:
                         from moviepy.video.fx.speedx import speedx
-                        clips = [clip.fx(speedx, speed_factor) for clip in clips]
-                        logger.info(f"🐌 Slowing down video by {speed_factor:.2f}x")
+                        clips = [clip.fx(speedx, speed_factor)
+                                 for clip in clips]
+                        logger.info(
+                            f"🐌 Slowing down video by {
+                                speed_factor:.2f}x")
                     else:
                         # Loop clips to reach target duration
-                        loops_needed = int(target_duration / total_video_duration) + 1
+                        loops_needed = int(
+                            target_duration / total_video_duration) + 1
                         clips = clips * loops_needed
                         logger.info(f"🔄 Looping clips {loops_needed} times")
 
@@ -3549,37 +4337,51 @@ class VideoGenerator:
             elif video.duration < target_duration:
                 # Extend last frame
                 last_frame = video.get_frame(video.duration - 0.1)
-                extension = ImageClip(last_frame, duration=target_duration - video.duration)
+                extension = ImageClip(
+                    last_frame,
+                    duration=target_duration -
+                    video.duration)
                 video = concatenate_videoclips([video, extension])
 
             # Add text overlays (with optional subtitle support)
             # Pass the cleaned script for potential subtitle generation
-            audio_script = self._clean_script_for_tts(script, config.duration_seconds) if script else None
-            video_with_overlays = self._add_text_overlays(video, config, video.duration, audio_script)
+            audio_script = self._clean_script_for_tts(
+                script, config.duration_seconds) if script else None
+            video_with_overlays = self._add_text_overlays(
+                video, config, video.duration, audio_script)
 
             # Add fade-out effect (1-2 seconds)
-            fade_duration = min(2.0, video_with_overlays.duration * 0.1)  # 1-2 seconds or 10% of video, whichever is smaller
+            # 1-2 seconds or 10% of video, whichever is smaller
+            fade_duration = min(2.0, video_with_overlays.duration * 0.1)
             if fade_duration > 0.5:  # Only apply if video is long enough
                 if fadeout:
-                    video_with_overlays = video_with_overlays.fx(fadeout, fade_duration)
-                    logger.info(f"🌅 Added {fade_duration:.1f}s fade-out effect")
+                    video_with_overlays = video_with_overlays.fx(
+                        fadeout, fade_duration)
+                    logger.info(
+                        f"🌅 Added {
+                            fade_duration:.1f}s fade-out effect")
 
             # Sync audio to match video duration exactly
             if audio_clip:
                 # Ensure audio matches video duration exactly
                 if audio_clip.duration > video_with_overlays.duration:
-                    audio_clip = audio_clip.subclip(0, video_with_overlays.duration)
+                    audio_clip = audio_clip.subclip(
+                        0, video_with_overlays.duration)
                 elif audio_clip.duration < video_with_overlays.duration:
                     # Extend audio with silence
                     from moviepy.audio.AudioClip import AudioClip
                     silence_duration = video_with_overlays.duration - audio_clip.duration
-                    silence = AudioClip(lambda t: [0, 0], duration=silence_duration)
+                    silence = AudioClip(
+                        lambda t: [
+                            0, 0], duration=silence_duration)
                     audio_clip = concatenate_audioclips([audio_clip, silence])
 
                 # Apply fade-out to audio as well to match video
                 if fade_duration > 0.5 and audio_fadeout:
                     audio_clip = audio_clip.fx(audio_fadeout, fade_duration)
-                    logger.info(f"🔊 Added {fade_duration:.1f}s audio fade-out effect")
+                    logger.info(
+                        f"🔊 Added {
+                            fade_duration:.1f}s audio fade-out effect")
 
                 video_with_overlays = video_with_overlays.set_audio(audio_clip)
                 logger.info(f"🎵 Audio synced: {audio_clip.duration:.1f}s")
@@ -3608,7 +4410,10 @@ class VideoGenerator:
             final_clip.close()
 
             logger.info(f"🎬 Final video composed: {final_video_path}")
-            logger.info(f"✅ Final duration: {final_duration:.1f}s (target: {target_duration:.1f}s)")
+            logger.info(
+                f"✅ Final duration: {
+                    final_duration:.1f}s (target: {
+                    target_duration:.1f}s)")
 
             return final_video_path
 
@@ -3616,7 +4421,10 @@ class VideoGenerator:
             logger.error(f"❌ Video composition failed: {e}")
             raise RenderingError(f"Video composition failed: {str(e)}")
 
-    def _create_veo2_prompts(self, config: GeneratedVideoConfig, script: Union[str, dict]) -> List[str]:
+    def _create_veo2_prompts(self,
+                             config: GeneratedVideoConfig,
+                             script: Union[str,
+                                           dict]) -> List[str]:
         """Create VEO-2 prompts based on AI agent decisions and script content"""
         topic = config.topic
         style = config.visual_style
@@ -3625,7 +4433,8 @@ class VideoGenerator:
         script_content = ""
         if isinstance(script, dict):
             # Extract text content from dictionary script
-            if 'hook' in script and isinstance(script['hook'], dict) and 'text' in script['hook']:
+            if 'hook' in script and isinstance(
+                    script['hook'], dict) and 'text' in script['hook']:
                 script_content += script['hook']['text'] + " "
             if 'segments' in script and isinstance(script['segments'], list):
                 for segment in script['segments']:
@@ -3642,7 +4451,7 @@ class VideoGenerator:
             # Use Gemini to generate appropriate prompts based on the mission
             import google.generativeai as genai
             genai.configure(api_key=self.api_key)
-            model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            model = genai.GenerativeModel('gemini-2.5-flash')
 
             prompt_generation_request = f"""
             MISSION: {topic}
@@ -3654,15 +4463,32 @@ class VideoGenerator:
             As a professional video director, create 3 distinct visual prompts for this mission.
             Each prompt should be specific, actionable, and designed to accomplish the mission.
 
-            CRITICAL REQUIREMENTS:
+            CRITICAL CONTENT POLICY REQUIREMENTS:
+            - ABSOLUTELY NO references to children, kids, babies, toddlers, minors, family members
+            - AVOID emotional distress words: crying, screaming, scared, frustrated, struggling
+            - NO violence, conflict, fighting, attacking, harm, danger, threats
+            - NO medical issues, illness, disease, contamination, germs
+            - Use ONLY adult subjects (18+ years old) or abstract/object-focused content
+            - Replace family/child references with "person", "individual", "practitioner"
+            - Focus on peaceful, positive, educational content only
+
+            SAFE LANGUAGE GUIDELINES:
+            - Instead of "child/children" → "person/people" or "practitioner"
+            - Instead of "family" → "group" or "community"
+            - Instead of "mother/father" → "person" or "instructor"
+            - Instead of "crying/screaming" → "peaceful/calm"
+            - Instead of "struggle/fight" → "practice/flow"
+            - Instead of "dramatic/intense" → "graceful/smooth"
+            - Use words like: peaceful, graceful, flowing, centered, balanced, serene, professional
+
+            VISUAL REQUIREMENTS:
             - Each prompt should be 1-2 sentences maximum
             - Focus on visual elements that support the mission
             - Consider the target platform and category
             - Make prompts diverse but cohesive
             - No generic templates - be specific to this mission
-            - AVOID SENSITIVE CONTENT: No violence, harm, inappropriate content with children
             - Use positive, educational, and family-friendly language
-            - Focus on visual storytelling rather than potentially sensitive scenarios
+            - Focus on visual storytelling with adult subjects only
 
             IMPORTANT - NO TEXT OVERLAYS:
             - NO text overlays, captions, subtitles, or written words in the video
@@ -3692,7 +4518,8 @@ class VideoGenerator:
 
             # Ensure we have at least 3 prompts
             while len(cleaned_prompts) < 3:
-                safe_prompt = self._create_safe_fallback_prompt(topic, style, len(cleaned_prompts) + 1)
+                safe_prompt = self._create_safe_fallback_prompt(
+                    topic, style, len(cleaned_prompts) + 1)
                 cleaned_prompts.append(safe_prompt)
 
             logger.info(f"🎨 AI-generated prompts for '{topic}':")
@@ -3716,7 +4543,8 @@ class VideoGenerator:
         """Sanitize VEO prompts to remove sensitive words that might trigger Google's AI safety filters"""
         import re
 
-        # List of potentially sensitive words/phrases that might trigger VEO filters
+        # List of potentially sensitive words/phrases that might trigger VEO
+        # filters
         sensitive_patterns = [
             # Violence/harm related
             r'\b(violence|violent|attack|attacking|fight|fighting|hurt|hurting|harm|harmful|dangerous|threat|threatening)\b',
@@ -3778,7 +4606,13 @@ class VideoGenerator:
 
         # Apply replacements
         for sensitive_word, replacement in replacements.items():
-            prompt = re.sub(r'\b' + re.escape(sensitive_word) + r'\b', replacement, prompt, flags=re.IGNORECASE)
+            prompt = re.sub(
+                r'\b' +
+                re.escape(sensitive_word) +
+                r'\b',
+                replacement,
+                prompt,
+                flags=re.IGNORECASE)
 
         # Remove any remaining sensitive patterns
         for pattern in sensitive_patterns:
@@ -3789,13 +4623,19 @@ class VideoGenerator:
 
         # If prompt was heavily sanitized, create a safe alternative
         if len(prompt) < len(original_prompt) * 0.5:
-            logger.warning(f"⚠️ Prompt heavily sanitized, creating safe alternative")
+            logger.warning(
+                f"⚠️ Prompt heavily sanitized, creating safe alternative")
             prompt = self._create_safe_visual_prompt(original_prompt)
 
-        logger.info(f"🧹 Prompt sanitized: '{original_prompt[:50]}...' -> '{prompt[:50]}...'")
+        logger.info(
+            f"🧹 Prompt sanitized: '{original_prompt[:50]}...' -> '{prompt[:50]}...'")
         return prompt
 
-    def _create_safe_fallback_prompt(self, topic: str, style: str, prompt_number: int) -> str:
+    def _create_safe_fallback_prompt(
+            self,
+            topic: str,
+            style: str,
+            prompt_number: int) -> str:
         """Create safe fallback prompts that won't trigger VEO content filters"""
 
         # Create topic-specific safe prompts
@@ -3803,21 +4643,18 @@ class VideoGenerator:
             safe_prompts = [
                 f"Peaceful bedroom scene with colorful toys organized neatly on shelves, soft lighting, cozy atmosphere, {style}",
                 f"Split screen showing organized toy storage versus messy bed, clean aesthetic, educational comparison, {style}",
-                f"Time-lapse of toys being placed in designated storage areas, organized bedroom, calm environment, {style}"
-            ]
+                f"Time-lapse of toys being placed in designated storage areas, organized bedroom, calm environment, {style}"]
         elif 'sleep' in topic.lower() or 'bedtime' in topic.lower():
             safe_prompts = [
                 f"Serene bedroom with soft lighting, comfortable bedding, peaceful atmosphere, {style}",
                 f"Organized children's room with designated play and sleep areas, clean design, {style}",
-                f"Gentle transition from playtime to bedtime routine, calm environment, {style}"
-            ]
+                f"Gentle transition from playtime to bedtime routine, calm environment, {style}"]
         else:
             # Generic safe prompts
             safe_prompts = [
                 f"Professional educational content about {topic}, clean visual design, informative presentation, {style}",
                 f"Engaging visual storytelling for {topic}, family-friendly content, positive messaging, {style}",
-                f"Clear educational demonstration of {topic}, helpful information, accessible format, {style}"
-            ]
+                f"Clear educational demonstration of {topic}, helpful information, accessible format, {style}"]
 
         # Return the appropriate prompt based on prompt_number
         if prompt_number <= len(safe_prompts):
@@ -3889,7 +4726,8 @@ class VideoGenerator:
                     f"Learn about {topic}!"
                 ]
             else:
-                # If we really have nothing, return empty to prevent audio generation
+                # If we really have nothing, return empty to prevent audio
+                # generation
                 return ""
 
         # Create natural audio script from headers
@@ -3913,7 +4751,10 @@ class VideoGenerator:
         else:
             return audio_script + "."
 
-    def _clean_script_with_gemini(self, script_text: str, target_duration: int) -> str:
+    def _clean_script_with_gemini(
+            self,
+            script_text: str,
+            target_duration: int) -> str:
         """Use Gemini to clean script and remove visual cues, keeping only spoken dialogue"""
         try:
             import google.generativeai as genai
@@ -3937,14 +4778,17 @@ class VideoGenerator:
             """
 
             genai.configure(api_key=self.api_key)
-            model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             response = model.generate_content(prompt)
 
             if response and response.text:
                 clean_text = response.text.strip()
                 # Basic validation
-                if len(clean_text) > 10 and not any(word in clean_text.lower() for word in ['camera', 'visual', 'scene', 'cut to']):
-                    logger.info(f"✅ Gemini cleaned script: {len(clean_text)} chars")
+                if len(clean_text) > 10 and not any(word in clean_text.lower()
+                                                    for word in ['camera', 'visual', 'scene', 'cut to']):
+                    logger.info(
+                        f"✅ Gemini cleaned script: {
+                            len(clean_text)} chars")
                     return clean_text
 
             logger.warning("Gemini cleaning failed, using fallback")
@@ -3955,4 +4799,3 @@ class VideoGenerator:
             return ""
 
 # NO MOCK CLIENTS - ONLY REAL VEO GENERATION ALLOWED!
-

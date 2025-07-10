@@ -41,8 +41,8 @@ def cli():
 @click.option('--image-only', is_flag=True, help='Force image-only generation (Gemini images)')
 @click.option('--fallback-only', is_flag=True, help='Use fallback generation only')
 @click.option('--force', is_flag=True, help='Force generation even with quota warnings')
-@click.option('--discussions', type=click.Choice(['off', 'light', 'standard', 'deep']), 
-              default='standard', help='Enable AI agent discussions (default: standard)')
+@click.option('--discussions', type=click.Choice(['off', 'light', 'standard', 'deep', 'streamlined', 'enhanced']), 
+              default='enhanced', help='AI agent mode (default: enhanced with discussions for best viral content)')
 @click.option('--discussion-log', is_flag=True, default=True, help='Show detailed discussion logs')
 @click.option('--session-id', help='Custom session ID')
 @click.option('--frame-continuity', type=click.Choice(['auto', 'on', 'off']), 
@@ -50,7 +50,7 @@ def cli():
 def generate(category: str, topic: str, platform: str, duration: int, 
             image_only: bool, fallback_only: bool, force: bool, 
             discussions: str, discussion_log: bool, session_id: str, frame_continuity: str):
-    """🎬 Generate viral video with AI agent discussions (enabled by default)"""
+    """🎬 Generate viral video with optimized AI system"""
     
     try:
         # Validate API key
@@ -72,17 +72,16 @@ def generate(category: str, topic: str, platform: str, duration: int,
         }
         click.echo(f"🎬 Frame Continuity: {continuity_modes[frame_continuity]}")
         
-        # CRITICAL: Force agent discussions to ALWAYS be ON
-        if discussions == 'off':
-            logger.info("🚨 OVERRIDING: Agent discussions forced ON (was set to off)")
-            discussions = 'standard'
-        
-        # Force discussion logging to be ON
-        discussion_log = True
-        
-        logger.info(f"🤖 AI Agent Discussions: {discussions.upper()} MODE (FORCED ON)")
-        click.echo("🎭 Orchestrated Video Generation: ALWAYS ENABLED")
-        logger.info(f"📝 Discussion logging: {'✅ ENABLED' if discussion_log else '❌ DISABLED'} (FORCED ON)")
+        # Show AI system mode
+        system_modes = {
+            'enhanced': '🎯 Enhanced (7 agents with discussions, best viral content)',
+            'streamlined': '⚡ Streamlined (5 agents, fastest)',
+            'light': '🔥 Light (7 agents, fast)',
+            'standard': '🎭 Standard (19 agents, comprehensive)',
+            'deep': '🧠 Deep (19+ agents, detailed)',
+            'off': '🚫 Traditional (no agents)'
+        }
+        click.echo(f"🤖 AI System: {system_modes.get(discussions, discussions)}")
         
         # Check quotas unless forced
         if not force:
@@ -99,8 +98,16 @@ def generate(category: str, topic: str, platform: str, duration: int,
                 if not click.confirm("Continue anyway?"):
                     sys.exit(1)
         
-        # Choose generation method based on discussions setting
-        if discussions == 'off':
+        # Choose generation method
+        if discussions == 'enhanced':
+            # Use enhanced streamlined system with discussions
+            result = _generate_enhanced_streamlined(category, topic, platform, duration, 
+                                                  image_only, fallback_only, frame_continuity)
+        elif discussions == 'streamlined':
+            # Use basic streamlined system
+            result = _generate_streamlined(category, topic, platform, duration, 
+                                         image_only, fallback_only, frame_continuity)
+        elif discussions == 'off':
             # Traditional generation without discussions
             result = _generate_traditional(category, topic, platform, duration, 
                                          image_only, fallback_only, frame_continuity)
@@ -115,6 +122,20 @@ def generate(category: str, topic: str, platform: str, duration: int,
             click.echo("✅ Video generation completed successfully!")
             click.echo(f"📁 Output: {result.get('final_video_path', 'Check outputs directory')}")
             
+            # Show performance metrics for streamlined modes
+            if discussions in ['streamlined', 'enhanced']:
+                click.echo(f"⚡ Agents Used: {result.get('agents_used', 5)}")
+                click.echo(f"🕒 Generation Time: {result.get('generation_time', 'N/A')}")
+                click.echo(f"🎯 Optimization: {result.get('optimization_level', 'streamlined')}")
+                
+                # Show discussion metrics for enhanced mode
+                if discussions == 'enhanced':
+                    click.echo(f"🤝 Discussions: {result.get('discussions_conducted', 0)}")
+                    click.echo("💬 Agent Discussions:")
+                    click.echo("   • ScriptMaster ↔ ViralismSpecialist")
+                    click.echo("   • ContentSpecialist ↔ VisualDirector") 
+                    click.echo("   • AudioEngineer ↔ VideoEditor")
+            
             # Display frame continuity decision if available
             if result.get('frame_continuity_decision'):
                 decision = result['frame_continuity_decision']
@@ -123,8 +144,8 @@ def generate(category: str, topic: str, platform: str, duration: int,
                 click.echo(f"   AI Confidence: {decision['confidence']:.2f}")
                 click.echo(f"   Reason: {decision['primary_reason']}")
             
-            if discussions != 'off' and 'discussion_results' in result:
-                _display_discussion_summary(result['discussion_results'], result['generation_metadata'])
+            if discussions not in ['off', 'streamlined'] and 'discussion_results' in result:
+                _display_discussion_summary(result['discussion_results'], result.get('generation_metadata', {}))
         else:
             click.echo("❌ Video generation failed")
             if 'error' in result:
@@ -235,13 +256,12 @@ def _generate_with_discussions(category: str, topic: str, platform: str, duratio
     
     # Create discussion-enhanced orchestrator with shared session_id
     orchestrator = create_discussion_enhanced_orchestrator(
-        api_key=settings.google_api_key,
         topic=topic,
         category=category,
         platform=platform,
         duration=duration,
-        discussion_mode=discussions,
-        session_id=session_id  # CRITICAL: Pass session_id
+        enable_discussions=(discussions != 'off'),
+        discussion_depth=discussions
     )
     
     # Create configuration
@@ -262,6 +282,80 @@ def _generate_with_discussions(category: str, topic: str, platform: str, duratio
         result['frame_continuity_decision'] = orchestrator.frame_continuity_decision
     
     return result
+
+def _generate_streamlined(category: str, topic: str, platform: str, duration: int,
+                         image_only: bool, fallback_only: bool, frame_continuity: str) -> dict:
+    """Generate video using streamlined 5-agent system"""
+    
+    # Import streamlined orchestrator
+    from src.agents.streamlined_orchestrator import create_streamlined_orchestrator
+    
+    click.echo("⚡ Using Streamlined 5-Agent System for optimal performance")
+    
+    # Create streamlined orchestrator
+    orchestrator = create_streamlined_orchestrator(
+        topic=topic,
+        platform=platform,
+        category=category,
+        duration=duration,
+        api_key=settings.google_api_key
+    )
+    
+    # Configuration for streamlined generation
+    config = {
+        'image_only': image_only,
+        'fallback_only': fallback_only,
+        'target_audience': 'young adults',
+        'style': 'viral',
+        'visual_style': 'dynamic',
+        'voice_style': 'energetic',
+        'frame_continuity': frame_continuity,
+        'quality_requirements': 'high'
+    }
+    
+    # Generate video
+    result = orchestrator.generate_video(config)
+    
+    return result
+
+
+def _generate_enhanced_streamlined(category: str, topic: str, platform: str, duration: int,
+                                 image_only: bool, fallback_only: bool, frame_continuity: str) -> dict:
+    """Generate video using enhanced streamlined 7-agent system with discussions"""
+    
+    # Import enhanced streamlined orchestrator
+    from src.agents.enhanced_streamlined_orchestrator import create_enhanced_streamlined_orchestrator
+    
+    click.echo("🎯 Using Enhanced Streamlined System with AI Agent Discussions")
+    click.echo("💬 Specialized discussions for viral content optimization")
+    
+    # Create enhanced streamlined orchestrator
+    orchestrator = create_enhanced_streamlined_orchestrator(
+        topic=topic,
+        platform=platform,
+        category=category,
+        duration=duration,
+        api_key=settings.google_api_key
+    )
+    
+    # Configuration for enhanced generation
+    config = {
+        'image_only': image_only,
+        'fallback_only': fallback_only,
+        'target_audience': 'young adults',
+        'style': 'viral',
+        'visual_style': 'dynamic',
+        'voice_style': 'energetic',
+        'content_strategy': 'engagement_focused',
+        'frame_continuity': frame_continuity,
+        'quality_requirements': 'high'
+    }
+    
+    # Generate video with discussions
+    result = orchestrator.generate_video(config)
+    
+    return result
+
 
 def _display_discussion_summary(discussion_results: dict, metadata: dict):
     """Display summary of agent discussions"""

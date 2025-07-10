@@ -40,7 +40,7 @@ class VoiceDirectorAgent:
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
 
         # Voice mapping for different languages and personalities
         self.voice_database = {
@@ -216,7 +216,8 @@ class VoiceDirectorAgent:
             }
         }
 
-        logger.info("🎭 Voice Director Agent initialized with AI-powered voice selection")
+        logger.info(
+            "🎭 Voice Director Agent initialized with AI-powered voice selection")
 
     def analyze_content_and_select_voices(self,
                                           topic: str,
@@ -238,9 +239,9 @@ class VoiceDirectorAgent:
             CONTENT ANALYSIS:
             Topic: {topic}
             Script Preview: {script[:300]}...
-            Language: {language.value}
-            Platform: {platform.value}
-            Category: {category.value}
+            Language: {language.value if hasattr(language, 'value') else str(language)}
+            Platform: {platform.value if hasattr(platform, 'value') else str(platform)}
+            Category: {category.value if hasattr(category, 'value') else str(category)}
             Duration: {duration_seconds}s
             Number of clips: {num_clips}
 
@@ -323,7 +324,7 @@ class VoiceDirectorAgent:
                 "target_audience_analysis": "analysis of target demographic and voice preferences"
             }}
 
-            Make strategic decisions that will maximize engagement for {platform.value} in {language.value}.
+            Make strategic decisions that will maximize engagement for {platform.value if hasattr(platform, 'value') else str(platform)} in {language.value if hasattr(language, 'value') else str(language)}.
             Return ONLY the JSON response.
             """
 
@@ -338,12 +339,18 @@ class VoiceDirectorAgent:
                 analysis = json.loads(json_match.group())
 
                 logger.info(f"🎭 AI Voice Strategy: {analysis['strategy']}")
-                logger.info(f"🎤 Primary Personality: {analysis['primary_personality']}")
-                logger.info(f"👥 Multiple Voices: {analysis['use_multiple_voices']}")
-                logger.info(f"🧠 AI Reasoning: {analysis['reasoning'][:100]}...")
+                logger.info(
+                    f"🎤 Primary Personality: {
+                        analysis['primary_personality']}")
+                logger.info(
+                    f"👥 Multiple Voices: {
+                        analysis['use_multiple_voices']}")
+                logger.info(
+                    f"🧠 AI Reasoning: {analysis['reasoning'][:100]}...")
 
                 # Convert to voice selections
-                voice_config = self._convert_analysis_to_voices(analysis, language, num_clips)
+                voice_config = self._convert_analysis_to_voices(
+                    analysis, language, num_clips)
 
                 return {
                     "ai_analysis": analysis,
@@ -351,14 +358,18 @@ class VoiceDirectorAgent:
                     "success": True
                 }
             else:
-                logger.warning("⚠️ Could not parse AI voice analysis, using fallback")
-                return self._create_fallback_voice_config(topic, language, num_clips)
+                logger.warning(
+                    "⚠️ Could not parse AI voice analysis, using fallback")
+                return self._create_fallback_voice_config(
+                    topic, language, num_clips)
 
         except Exception as e:
             logger.error(f"❌ AI voice analysis failed: {e}")
-            return self._create_fallback_voice_config(topic, language, num_clips)
+            return self._create_fallback_voice_config(
+                topic, language, num_clips)
 
-    def _convert_analysis_to_voices(self, analysis: Dict, language: Language, num_clips: int) -> Dict[str, Any]:
+    def _convert_analysis_to_voices(
+            self, analysis: Dict, language: Language, num_clips: int) -> Dict[str, Any]:
         """Convert AI analysis to specific voice selections"""
 
         voice_config = {
@@ -394,7 +405,8 @@ class VoiceDirectorAgent:
                 clip_info.get("emotion", "neutral")
             )
 
-            # Use AI-provided adjustments if available, otherwise use emotion-based defaults
+            # Use AI-provided adjustments if available, otherwise use
+            # emotion-based defaults
             pitch_adjustment = clip_info.get(
                 "pitch_adjustment",
                 self._get_pitch_for_emotion(
@@ -422,11 +434,17 @@ class VoiceDirectorAgent:
             })
 
         logger.info(
-            f"🎤 Generated voice config for {num_clips} clips with {len(set(v['voice_name'] for v in voice_config['clip_voices']))} unique voices")
+            f"🎤 Generated voice config for {num_clips} clips with {
+                len(
+                    set(
+                        v['voice_name'] for v in voice_config['clip_voices']))} unique voices")
 
         return voice_config
 
-    def _create_clip_voice_plan(self, analysis: Dict, num_clips: int) -> List[Dict]:
+    def _create_clip_voice_plan(
+            self,
+            analysis: Dict,
+            num_clips: int) -> List[Dict]:
         """Create voice plan for clips based on strategy"""
 
         strategy = analysis["strategy"]
@@ -460,7 +478,11 @@ class VoiceDirectorAgent:
 
         elif strategy == "dialogue":
             # Alternating voices for dialogue effect
-            genders = ["male", "female"] if primary_gender == "mixed" else [primary_gender, primary_gender]
+            genders = [
+                "male",
+                "female"] if primary_gender == "mixed" else [
+                primary_gender,
+                primary_gender]
             personalities = [primary_personality, "storyteller"]
 
             for i in range(num_clips):
@@ -493,7 +515,12 @@ class VoiceDirectorAgent:
 
         return clip_plan
 
-    def _select_voice_for_clip(self, language: Language, personality: str, gender: str, emotion: str) -> str:
+    def _select_voice_for_clip(
+            self,
+            language: Language,
+            personality: str,
+            gender: str,
+            emotion: str) -> str:
         """Select specific voice for a clip"""
 
         try:
@@ -502,7 +529,8 @@ class VoiceDirectorAgent:
             personality_enum = VoicePersonality.NARRATOR
 
         # Get voice options for this language and personality
-        if language in self.voice_database and personality_enum in self.voice_database[language]:
+        if language in self.voice_database and personality_enum in self.voice_database[
+                language]:
             voice_options = self.voice_database[language][personality_enum]
 
             # Select gender
@@ -516,7 +544,8 @@ class VoiceDirectorAgent:
             if gender in voice_options and voice_options[gender]:
                 # Select voice from available options
                 selected_voice = random.choice(voice_options[gender])
-                logger.info(f"🎤 Selected voice: {selected_voice} ({personality}, {gender}, {emotion})")
+                logger.info(
+                    f"🎤 Selected voice: {selected_voice} ({personality}, {gender}, {emotion})")
                 return selected_voice
 
         # Fallback to default voice for language
@@ -564,7 +593,8 @@ class VoiceDirectorAgent:
         }
         return pitch_map.get(emotion, 0.0)
 
-    def _create_fallback_voice_config(self, topic: str, language: Language, num_clips: int) -> Dict[str, Any]:
+    def _create_fallback_voice_config(
+            self, topic: str, language: Language, num_clips: int) -> Dict[str, Any]:
         """Create fallback voice configuration when AI analysis fails"""
 
         logger.info("🔄 Creating fallback voice configuration")
@@ -591,7 +621,8 @@ class VoiceDirectorAgent:
 
         # Use same voice for all clips in fallback
         for i in range(num_clips):
-            voice_name = self._select_voice_for_clip(language, personality.value, "auto", emotion)
+            voice_name = self._select_voice_for_clip(
+                language, personality.value, "auto", emotion)
 
             voice_config["clip_voices"].append({
                 "clip_index": i,
@@ -604,8 +635,8 @@ class VoiceDirectorAgent:
             })
 
         return {
-            "ai_analysis": {"strategy": "single", "reasoning": "Fallback configuration"},
+            "ai_analysis": {
+                "strategy": "single",
+                "reasoning": "Fallback configuration"},
             "voice_config": voice_config,
-            "success": False
-        }
-
+            "success": False}

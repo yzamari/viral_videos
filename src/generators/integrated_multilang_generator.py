@@ -19,6 +19,7 @@ from ..generators.enhanced_multilang_tts import EnhancedMultilingualTTS
 
 logger = get_logger(__name__)
 
+
 @dataclass
 class VoiceSelectionResult:
     """Result of AI voice selection process"""
@@ -27,6 +28,7 @@ class VoiceSelectionResult:
     voice_variety: bool
     ai_reasoning: str
     confidence_score: float
+
 
 @dataclass
 class ProcessedScript:
@@ -39,6 +41,7 @@ class ProcessedScript:
     sentence_count: int
     estimated_duration: float
     validation_notes: List[str]
+
 
 class IntegratedMultilingualGenerator:
     """Integrated generator with AI voice selection and enhanced multilingual support"""
@@ -62,15 +65,19 @@ class IntegratedMultilingualGenerator:
             Language.CHINESE, Language.JAPANESE, Language.THAI
         ]
 
-        logger.info("✅ Integrated Multilingual Generator initialized with AI agents")
+        logger.info(
+            "✅ Integrated Multilingual Generator initialized with AI agents")
 
-    def generate_multilingual_video_with_ai_voices(self,
-                                                 config: GeneratedVideoConfig,
-                                                 languages: List[Language],
-                                                 base_script: str) -> MultiLanguageVideo:
+    def generate_multilingual_video_with_ai_voices(
+            self,
+            config: GeneratedVideoConfig,
+            languages: List[Language],
+            base_script: str) -> MultiLanguageVideo:
         """Generate multilingual video with AI-powered voice selection"""
 
-        logger.info(f"🌍 Generating multilingual video in {len(languages)} languages")
+        logger.info(
+            f"🌍 Generating multilingual video in {
+                len(languages)} languages")
 
         start_time = time.time()
         base_video_id = f"multilang_{int(time.time())}"
@@ -86,7 +93,8 @@ class IntegratedMultilingualGenerator:
         )
 
         if not processed_script.tts_ready:
-            logger.warning("⚠️ Script processing had issues, proceeding with caution")
+            logger.warning(
+                "⚠️ Script processing had issues, proceeding with caution")
 
         # Step 2: Generate AI voice strategy for primary language
         logger.info("🎭 Step 2: AI voice strategy analysis...")
@@ -99,7 +107,8 @@ class IntegratedMultilingualGenerator:
         # Step 3: Create shared video clips (visual content)
         logger.info("🎬 Step 3: Generating shared video clips...")
         # This would integrate with existing video generation
-        shared_clips = self._generate_shared_video_clips(config, processed_script.final_script)
+        shared_clips = self._generate_shared_video_clips(
+            config, processed_script.final_script)
 
         # Step 4: Generate language-specific versions
         logger.info("🗣️ Step 4: Generating language-specific versions...")
@@ -155,7 +164,11 @@ class IntegratedMultilingualGenerator:
         logger.info(f"✅ Multilingual video generated in {total_time:.1f}s")
         return multilang_video
 
-    def _process_script_with_ai(self, script: str, language: Language, config: GeneratedVideoConfig) -> ProcessedScript:
+    def _process_script_with_ai(
+            self,
+            script: str,
+            language: Language,
+            config: GeneratedVideoConfig) -> ProcessedScript:
         """Process script with AI enhancement and validation"""
 
         try:
@@ -182,8 +195,10 @@ class IntegratedMultilingualGenerator:
 
                 if rtl_result.get("corrections_made"):
                     final_script = rtl_result["corrected_text"]
-                    validation_notes.append(f"RTL corrections: {len(rtl_result['corrections_made'])}")
-                    logger.info(f"✅ RTL validation complete with {len(rtl_result['corrections_made'])} corrections")
+                    validation_notes.append(
+                        f"RTL corrections: {len(rtl_result['corrections_made'])}")
+                    logger.info(
+                        f"✅ RTL validation complete with {len(rtl_result['corrections_made'])} corrections")
 
             return ProcessedScript(
                 original_script=script,
@@ -210,7 +225,11 @@ class IntegratedMultilingualGenerator:
                 validation_notes=["Processing failed, using original script"]
             )
 
-    def _get_ai_voice_strategy(self, script: str, language: Language, config: GeneratedVideoConfig) -> VoiceSelectionResult:
+    def _get_ai_voice_strategy(
+            self,
+            script: str,
+            language: Language,
+            config: GeneratedVideoConfig) -> VoiceSelectionResult:
         """Get AI-powered voice selection strategy"""
 
         try:
@@ -246,18 +265,23 @@ class IntegratedMultilingualGenerator:
             logger.error(f"❌ Voice strategy analysis failed: {e}")
             return self._create_fallback_voice_strategy(3)
 
-    def _translate_and_process_script(self, script: str, target_language: Language, config: GeneratedVideoConfig) -> ProcessedScript:
+    def _translate_and_process_script(
+            self,
+            script: str,
+            target_language: Language,
+            config: GeneratedVideoConfig) -> ProcessedScript:
         """Translate script to target language and process for TTS"""
 
         if target_language == Language.ENGLISH_US:
             # No translation needed
-            return self._process_script_with_ai(script, target_language, config)
+            return self._process_script_with_ai(
+                script, target_language, config)
 
         try:
             # Simple translation using Gemini (could be enhanced)
             import google.generativeai as genai
             genai.configure(api_key=self.api_key)
-            model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            model = genai.GenerativeModel('gemini-2.5-flash')
 
             language_names = {
                 Language.HEBREW: "Hebrew (עברית)",
@@ -267,7 +291,8 @@ class IntegratedMultilingualGenerator:
                 Language.GERMAN: "German (Deutsch)"
             }
 
-            target_lang_name = language_names.get(target_language, target_language.value)
+            target_lang_name = language_names.get(
+                target_language, target_language.value)
 
             translation_prompt = f"""
             Translate this video script to {target_lang_name}.
@@ -288,23 +313,33 @@ class IntegratedMultilingualGenerator:
             translated_script = response.text.strip()
 
             # Process the translated script
-            return self._process_script_with_ai(translated_script, target_language, config)
+            return self._process_script_with_ai(
+                translated_script, target_language, config)
 
         except Exception as e:
-            logger.error(f"❌ Translation failed for {target_language.value}: {e}")
+            logger.error(
+                f"❌ Translation failed for {
+                    target_language.value}: {e}")
             # Return original script as fallback
             return ProcessedScript(
                 original_script=script,
                 enhanced_script=script,
                 final_script=script,
                 tts_ready=True,
-                word_count=len(script.split()),
+                word_count=len(
+                    script.split()),
                 sentence_count=1,
                 estimated_duration=config.duration_seconds,
-                validation_notes=[f"Translation failed for {target_language.value}"]
-            )
+                validation_notes=[
+                    f"Translation failed for {
+                        target_language.value}"])
 
-    def _generate_ai_optimized_audio(self, script: str, language: Language, config: GeneratedVideoConfig, num_clips: int) -> str:
+    def _generate_ai_optimized_audio(
+            self,
+            script: str,
+            language: Language,
+            config: GeneratedVideoConfig,
+            num_clips: int) -> str:
         """Generate AI-optimized audio with intelligent voice selection"""
 
         try:
@@ -331,7 +366,8 @@ class IntegratedMultilingualGenerator:
             logger.error(f"❌ AI audio generation failed: {e}")
             return self._generate_fallback_audio(script, language)
 
-    def _generate_shared_video_clips(self, config: GeneratedVideoConfig, script: str) -> List[Dict[str, Any]]:
+    def _generate_shared_video_clips(
+            self, config: GeneratedVideoConfig, script: str) -> List[Dict[str, Any]]:
         """Generate shared video clips (placeholder - would integrate with existing video generation)"""
 
         # This is a placeholder - in the full integration, this would call
@@ -345,7 +381,7 @@ class IntegratedMultilingualGenerator:
                 "clip_path": f"placeholder_clip_{i}.mp4",
                 "duration": 8,
                 "scene_index": i,
-                "prompt": f"Scene {i+1} of {config.topic}",
+                "prompt": f"Scene {i + 1} of {config.topic}",
                 "success": True
             })
 
@@ -373,7 +409,10 @@ class IntegratedMultilingualGenerator:
             lang_code = lang_codes.get(language, 'en')
 
             tts = gTTS(text=script, lang=lang_code, slow=False)
-            audio_path = os.path.join(tempfile.gettempdir(), f"fallback_audio_{uuid.uuid4()}.mp3")
+            audio_path = os.path.join(
+                tempfile.gettempdir(),
+                f"fallback_audio_{
+                    uuid.uuid4()}.mp3")
             tts.save(audio_path)
 
             logger.info(f"✅ Fallback audio generated: {audio_path}")
@@ -383,7 +422,8 @@ class IntegratedMultilingualGenerator:
             logger.error(f"❌ Even fallback audio generation failed: {e}")
             raise
 
-    def _create_fallback_voice_strategy(self, num_clips: int) -> VoiceSelectionResult:
+    def _create_fallback_voice_strategy(
+            self, num_clips: int) -> VoiceSelectionResult:
         """Create fallback voice strategy when AI analysis fails"""
 
         clip_voices = []
@@ -429,11 +469,16 @@ class IntegratedMultilingualGenerator:
 
         return language_names.get(language, language.value)
 
-    def get_voice_strategy_preview(self, config: GeneratedVideoConfig, script: str, language: Language) -> Dict[str, Any]:
+    def get_voice_strategy_preview(self,
+                                   config: GeneratedVideoConfig,
+                                   script: str,
+                                   language: Language) -> Dict[str,
+                                                               Any]:
         """Get a preview of the voice strategy without generating audio"""
 
         try:
-            voice_strategy = self._get_ai_voice_strategy(script, language, config)
+            voice_strategy = self._get_ai_voice_strategy(
+                script, language, config)
 
             return {
                 "strategy": voice_strategy.strategy,
@@ -455,4 +500,3 @@ class IntegratedMultilingualGenerator:
         except Exception as e:
             logger.error(f"❌ Voice strategy preview failed: {e}")
             return {"strategy": "fallback", "error": str(e)}
-

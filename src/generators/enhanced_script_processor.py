@@ -12,13 +12,14 @@ from ..models.video_models import Language, Platform, VideoCategory
 
 logger = get_logger(__name__)
 
+
 class EnhancedScriptProcessor:
     """Processes scripts for optimal TTS delivery with proper punctuation and structure"""
 
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
 
         # TTS optimization rules by language
         self.language_rules = {
@@ -71,27 +72,33 @@ class EnhancedScriptProcessor:
         logger.info("✅ Enhanced Script Processor initialized")
 
     def process_script_for_tts(self,
-                             script: str,
-                             language: Language,
-                             target_duration: int,
-                             platform: Platform,
-                             category: VideoCategory) -> Dict[str, Any]:
+                               script: str,
+                               language: Language,
+                               target_duration: int,
+                               platform: Platform,
+                               category: VideoCategory) -> Dict[str, Any]:
         """Process script for optimal TTS delivery"""
 
-        logger.info(f"📝 Processing script for TTS optimization ({language.value})")
+        logger.info(
+            f"📝 Processing script for TTS optimization ({
+                language.value})")
 
         try:
             # Step 1: AI-enhanced script improvement
-            enhanced_script = self._ai_enhance_script(script, language, target_duration, platform, category)
+            enhanced_script = self._ai_enhance_script(
+                script, language, target_duration, platform, category)
 
             # Step 2: Apply language-specific formatting
-            formatted_script = self._apply_language_formatting(enhanced_script, language)
+            formatted_script = self._apply_language_formatting(
+                enhanced_script, language)
 
             # Step 3: Optimize punctuation and sentence structure
-            optimized_script = self._optimize_for_tts(formatted_script, language)
+            optimized_script = self._optimize_for_tts(
+                formatted_script, language)
 
             # Step 4: Validate and measure
-            validation_results = self._validate_script(optimized_script, language, target_duration)
+            validation_results = self._validate_script(
+                optimized_script, language, target_duration)
 
             return {
                 "original_script": script,
@@ -99,11 +106,16 @@ class EnhancedScriptProcessor:
                 "formatted_script": formatted_script,
                 "final_script": optimized_script,
                 "validation": validation_results,
-                "word_count": len(optimized_script.split()),
-                "sentence_count": len(self._split_into_sentences(optimized_script, language)),
-                "estimated_duration": self._estimate_duration(optimized_script, language),
-                "tts_ready": validation_results["is_valid"]
-            }
+                "word_count": len(
+                    optimized_script.split()),
+                "sentence_count": len(
+                    self._split_into_sentences(
+                        optimized_script,
+                        language)),
+                "estimated_duration": self._estimate_duration(
+                    optimized_script,
+                    language),
+                "tts_ready": validation_results["is_valid"]}
 
         except Exception as e:
             logger.error(f"❌ Script processing failed: {e}")
@@ -116,11 +128,18 @@ class EnhancedScriptProcessor:
                 "tts_ready": True
             }
 
-    def _ai_enhance_script(self, script: str, language: Language, target_duration: int, platform: Platform, category: VideoCategory) -> str:
+    def _ai_enhance_script(
+            self,
+            script: str,
+            language: Language,
+            target_duration: int,
+            platform: Platform,
+            category: VideoCategory) -> str:
         """Use AI to enhance script for better TTS delivery"""
 
         try:
-            language_rules = self.language_rules.get(language, self.language_rules[Language.ENGLISH_US])
+            language_rules = self.language_rules.get(
+                language, self.language_rules[Language.ENGLISH_US])
             max_sentence_length = language_rules["max_sentence_length"]
 
             enhancement_prompt = f"""
@@ -163,18 +182,24 @@ class EnhancedScriptProcessor:
             response = self.model.generate_content(enhancement_prompt)
             enhanced_script = response.text.strip()
 
-            logger.info(f"✅ AI enhanced script: {len(enhanced_script)} characters")
+            logger.info(
+                f"✅ AI enhanced script: {
+                    len(enhanced_script)} characters")
             return enhanced_script
 
         except Exception as e:
             logger.error(f"❌ AI script enhancement failed: {e}")
             return script
 
-    def _apply_language_formatting(self, script: str, language: Language) -> str:
+    def _apply_language_formatting(
+            self,
+            script: str,
+            language: Language) -> str:
         """Apply language-specific formatting rules"""
 
         formatted_script = script
-        language_rules = self.language_rules.get(language, self.language_rules[Language.ENGLISH_US])
+        language_rules = self.language_rules.get(
+            language, self.language_rules[Language.ENGLISH_US])
 
         # Remove problematic patterns
         for pattern in language_rules["avoid_patterns"]:
@@ -183,9 +208,11 @@ class EnhancedScriptProcessor:
         # Ensure proper spacing after punctuation
         for punct in language_rules["preferred_punctuation"]:
             # Fix spacing after punctuation
-            formatted_script = re.sub(f'\\{punct}(?!\\s)', f'{punct} ', formatted_script)
+            formatted_script = re.sub(
+                f'\\{punct}(?!\\s)', f'{punct} ', formatted_script)
             # Remove multiple spaces
-            formatted_script = re.sub(f'\\{punct}\\s+', f'{punct} ', formatted_script)
+            formatted_script = re.sub(
+                f'\\{punct}\\s+', f'{punct} ', formatted_script)
 
         # Language-specific formatting
         if language in [Language.HEBREW, Language.ARABIC]:
@@ -199,7 +226,8 @@ class EnhancedScriptProcessor:
     def _optimize_for_tts(self, script: str, language: Language) -> str:
         """Optimize script structure for TTS delivery"""
 
-        language_rules = self.language_rules.get(language, self.language_rules[Language.ENGLISH_US])
+        language_rules = self.language_rules.get(
+            language, self.language_rules[Language.ENGLISH_US])
         max_length = language_rules["max_sentence_length"]
 
         # Split into sentences
@@ -212,11 +240,13 @@ class EnhancedScriptProcessor:
 
             if len(words) <= max_length:
                 # Sentence is good as-is, just ensure proper punctuation
-                optimized_sentence = self._ensure_sentence_punctuation(sentence, language)
+                optimized_sentence = self._ensure_sentence_punctuation(
+                    sentence, language)
                 optimized_sentences.append(optimized_sentence)
             else:
                 # Split long sentence into shorter ones
-                split_sentences = self._split_long_sentence(sentence, max_length, language)
+                split_sentences = self._split_long_sentence(
+                    sentence, max_length, language)
                 optimized_sentences.extend(split_sentences)
 
         # Join with proper spacing
@@ -227,10 +257,14 @@ class EnhancedScriptProcessor:
 
         return optimized_script
 
-    def _split_into_sentences(self, text: str, language: Language) -> List[str]:
+    def _split_into_sentences(
+            self,
+            text: str,
+            language: Language) -> List[str]:
         """Split text into sentences based on language rules"""
 
-        language_rules = self.language_rules.get(language, self.language_rules[Language.ENGLISH_US])
+        language_rules = self.language_rules.get(
+            language, self.language_rules[Language.ENGLISH_US])
         endings = language_rules["sentence_endings"]
 
         # Create pattern for sentence endings
@@ -253,7 +287,11 @@ class EnhancedScriptProcessor:
 
         return result
 
-    def _split_long_sentence(self, sentence: str, max_length: int, language: Language) -> List[str]:
+    def _split_long_sentence(
+            self,
+            sentence: str,
+            max_length: int,
+            language: Language) -> List[str]:
         """Split a long sentence into shorter TTS-friendly sentences"""
 
         words = sentence.strip().split()
@@ -265,7 +303,16 @@ class EnhancedScriptProcessor:
         current_sentence = []
 
         # Split at natural break points (commas, conjunctions, etc.)
-        break_words = ["and", "but", "or", "so", "because", "when", "while", "if", "although"]
+        break_words = [
+            "and",
+            "but",
+            "or",
+            "so",
+            "because",
+            "when",
+            "while",
+            "if",
+            "although"]
 
         for word in words:
             current_sentence.append(word)
@@ -279,22 +326,28 @@ class EnhancedScriptProcessor:
 
             if should_break:
                 sentence_text = " ".join(current_sentence)
-                sentence_text = self._ensure_sentence_punctuation(sentence_text, language)
+                sentence_text = self._ensure_sentence_punctuation(
+                    sentence_text, language)
                 result.append(sentence_text)
                 current_sentence = []
 
         # Add remaining words
         if current_sentence:
             sentence_text = " ".join(current_sentence)
-            sentence_text = self._ensure_sentence_punctuation(sentence_text, language)
+            sentence_text = self._ensure_sentence_punctuation(
+                sentence_text, language)
             result.append(sentence_text)
 
         return result
 
-    def _ensure_sentence_punctuation(self, sentence: str, language: Language) -> str:
+    def _ensure_sentence_punctuation(
+            self,
+            sentence: str,
+            language: Language) -> str:
         """Ensure sentence has proper ending punctuation"""
 
-        language_rules = self.language_rules.get(language, self.language_rules[Language.ENGLISH_US])
+        language_rules = self.language_rules.get(
+            language, self.language_rules[Language.ENGLISH_US])
         endings = language_rules["sentence_endings"]
 
         sentence = sentence.strip()
@@ -304,7 +357,8 @@ class EnhancedScriptProcessor:
             return sentence
 
         # Add appropriate punctuation
-        if "?" in sentence or sentence.lower().startswith(("what", "who", "when", "where", "why", "how")):
+        if "?" in sentence or sentence.lower().startswith(
+                ("what", "who", "when", "where", "why", "how")):
             return sentence + "?"
         elif "!" in sentence or any(word in sentence.lower() for word in ["amazing", "wow", "incredible", "awesome"]):
             return sentence + "!"
@@ -350,22 +404,27 @@ class EnhancedScriptProcessor:
 
         return ' '.join(cleaned_sentences)
 
-    def _validate_script(self, script: str, language: Language, target_duration: int) -> Dict[str, Any]:
+    def _validate_script(self, script: str, language: Language,
+                         target_duration: int) -> Dict[str, Any]:
         """Validate script for TTS readiness"""
 
         issues = []
 
         # Check sentence lengths
         sentences = self._split_into_sentences(script, language)
-        language_rules = self.language_rules.get(language, self.language_rules[Language.ENGLISH_US])
+        language_rules = self.language_rules.get(
+            language, self.language_rules[Language.ENGLISH_US])
         max_length = language_rules["max_sentence_length"]
 
         long_sentences = [s for s in sentences if len(s.split()) > max_length]
         if long_sentences:
-            issues.append(f"Found {len(long_sentences)} sentences longer than {max_length} words")
+            issues.append(
+                f"Found {
+                    len(long_sentences)} sentences longer than {max_length} words")
 
         # Check punctuation
-        if not any(script.endswith(ending) for ending in language_rules["sentence_endings"]):
+        if not any(script.endswith(ending)
+                   for ending in language_rules["sentence_endings"]):
             issues.append("Script doesn't end with proper punctuation")
 
         # Check duration estimate
@@ -373,15 +432,18 @@ class EnhancedScriptProcessor:
         duration_diff = abs(estimated_duration - target_duration)
 
         if duration_diff > target_duration * 0.2:  # More than 20% difference
-            issues.append(f"Duration estimate ({estimated_duration}s) differs significantly from target ({target_duration}s)")
+            issues.append(
+                f"Duration estimate ({estimated_duration}s) differs significantly from target ({target_duration}s)")
 
         return {
             "is_valid": len(issues) == 0,
             "issues": issues,
             "estimated_duration": estimated_duration,
             "sentence_count": len(sentences),
-            "avg_sentence_length": sum(len(s.split()) for s in sentences) / len(sentences) if sentences else 0
-        }
+            "avg_sentence_length": sum(
+                len(
+                    s.split()) for s in sentences) /
+            len(sentences) if sentences else 0}
 
     def _estimate_duration(self, script: str, language: Language) -> float:
         """Estimate TTS duration for script"""
@@ -403,4 +465,3 @@ class EnhancedScriptProcessor:
         estimated_seconds = estimated_minutes * 60
 
         return estimated_seconds
-

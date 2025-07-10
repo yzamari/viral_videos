@@ -133,11 +133,11 @@ class AdvancedCompositionDiscussionSystem:
         )
         # Participating agents for structure discussion
         participating_agents = [
-            AgentRole.SENIOR_MANAGER,  # Strategic oversight
+            AgentRole.ORCHESTRATOR,    # Strategic oversight (was SENIOR_MANAGER)
             AgentRole.DIRECTOR,        # Visual storytelling
             AgentRole.SCRIPT_WRITER,   # Narrative structure
             AgentRole.TREND_ANALYST,   # Platform optimization
-            AgentRole.AUDIENCE_ADVOCATE  # User experience
+            AgentRole.SOUNDMAN         # User experience (was AUDIENCE_ADVOCATE)
         ]
         # Conduct discussion
         discussion_result = self.discussion_system.start_discussion(
@@ -193,9 +193,9 @@ class AdvancedCompositionDiscussionSystem:
         )
         # Participating agents for timing discussion
         participating_agents = [
-            AgentRole.PACE_MASTER,     # Timing specialist
+            AgentRole.DIRECTOR,        # Timing specialist (was PACE_MASTER)
             AgentRole.EDITOR,          # Cutting and flow
-            AgentRole.AUDIENCE_ADVOCATE,  # Attention management
+            AgentRole.ORCHESTRATOR,    # Attention management (was AUDIENCE_ADVOCATE)
             AgentRole.TREND_ANALYST    # Platform timing preferences
         ]
         # Conduct discussion
@@ -254,9 +254,9 @@ class AdvancedCompositionDiscussionSystem:
         # Participating agents for visual discussion
         participating_agents = [
             AgentRole.DIRECTOR,        # Visual direction
-            AgentRole.BRAND_STRATEGIST,  # Brand consistency
-            AgentRole.ACCESSIBILITY_EXPERT,  # Accessibility
-            AgentRole.AUDIENCE_ADVOCATE  # User experience
+            AgentRole.VIDEO_GENERATOR, # Brand consistency (was BRAND_STRATEGIST)
+            AgentRole.EDITOR,          # Accessibility (was ACCESSIBILITY_EXPERT)
+            AgentRole.TREND_ANALYST    # User experience (was AUDIENCE_ADVOCATE)
         ]
         # Conduct discussion
         discussion_result = self.discussion_system.start_discussion(
@@ -314,8 +314,8 @@ class AdvancedCompositionDiscussionSystem:
         participating_agents = [
             AgentRole.VIDEO_GENERATOR,  # VEO2 expertise
             AgentRole.DIRECTOR,        # Visual impact
-            AgentRole.PERFORMANCE_OPTIMIZER,  # Resource optimization
-            AgentRole.QUALITY_GUARD    # Quality standards
+            AgentRole.EDITOR,          # Resource optimization (was PERFORMANCE_OPTIMIZER)
+            AgentRole.SOUNDMAN         # Quality standards (was QUALITY_GUARD)
         ]
         # Conduct discussion
         discussion_result = self.discussion_system.start_discussion(
@@ -371,10 +371,10 @@ class AdvancedCompositionDiscussionSystem:
         )
         # Participating agents for integration discussion
         participating_agents = [
-            AgentRole.SENIOR_MANAGER,  # Strategic oversight
+            AgentRole.ORCHESTRATOR,    # Strategic oversight (was SENIOR_MANAGER)
             AgentRole.ORCHESTRATOR,    # Integration coordination
-            AgentRole.QUALITY_GUARD,   # Quality assurance
-            AgentRole.PERFORMANCE_OPTIMIZER  # Workflow optimization
+            AgentRole.EDITOR,          # Quality assurance (was QUALITY_GUARD)
+            AgentRole.VIDEO_GENERATOR  # Workflow optimization (was PERFORMANCE_OPTIMIZER)
         ]
         # Conduct discussion
         discussion_result = self.discussion_system.start_discussion(

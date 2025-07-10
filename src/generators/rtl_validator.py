@@ -18,7 +18,7 @@ class RTLValidator:
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
 
         # RTL languages supported
         self.rtl_languages = {
@@ -72,11 +72,14 @@ class RTLValidator:
                                       text: str,
                                       language: Language,
                                       context: Optional[str] = None,
-                                      target_audience: str = "general") -> Dict[str, Any]:
+                                      target_audience: str = "general") -> Dict[str,
+                                                                                Any]:
         """Validate and correct RTL text using Gemini AI"""
 
         if language not in self.rtl_languages:
-            logger.warning(f"⚠️ Language {language.value} is not RTL, skipping validation")
+            logger.warning(
+                f"⚠️ Language {
+                    language.value} is not RTL, skipping validation")
             return {
                 "is_rtl": False,
                 "original_text": text,
@@ -85,15 +88,19 @@ class RTLValidator:
                 "validation_passed": True
             }
 
-        logger.info(f"🔍 Validating RTL text in {self.rtl_languages[language]['name']}")
+        logger.info(
+            f"🔍 Validating RTL text in {
+                self.rtl_languages[language]['name']}")
 
         try:
             # Step 1: Initial validation
-            validation_result = self._validate_rtl_structure(text, language, context, target_audience)
+            validation_result = self._validate_rtl_structure(
+                text, language, context, target_audience)
 
             # Step 2: If issues found, get corrections
             if not validation_result["validation_passed"]:
-                correction_result = self._get_rtl_corrections(text, language, validation_result["issues"], context)
+                correction_result = self._get_rtl_corrections(
+                    text, language, validation_result["issues"], context)
 
                 # Step 3: Verify corrections
                 if correction_result["corrected_text"]:
@@ -111,8 +118,7 @@ class RTLValidator:
                         "validation_passed": verification_result["is_valid"],
                         "confidence_score": verification_result["confidence"],
                         "issues_found": validation_result["issues"],
-                        "verification_notes": verification_result["notes"]
-                    }
+                        "verification_notes": verification_result["notes"]}
 
             # No corrections needed
             return {
@@ -136,8 +142,12 @@ class RTLValidator:
                 "error": str(e)
             }
 
-    def _validate_rtl_structure(self, text: str, language: Language,
-                                context: Optional[str], target_audience: str) -> Dict[str, Any]:
+    def _validate_rtl_structure(self,
+                                text: str,
+                                language: Language,
+                                context: Optional[str],
+                                target_audience: str) -> Dict[str,
+                                                              Any]:
         """Validate RTL text structure and grammar"""
 
         lang_info = self.rtl_languages[language]
@@ -198,13 +208,21 @@ class RTLValidator:
             if json_match:
                 validation_result = json.loads(json_match.group())
 
-                logger.info(f"🔍 Validation result: {validation_result['overall_quality']}")
-                logger.info(f"📊 Confidence: {validation_result.get('confidence_score', 0)}")
+                logger.info(
+                    f"🔍 Validation result: {
+                        validation_result['overall_quality']}")
+                logger.info(
+                    f"📊 Confidence: {
+                        validation_result.get(
+                            'confidence_score',
+                            0)}")
 
                 if validation_result.get("issues"):
-                    logger.info(f"⚠️ Found {len(validation_result['issues'])} issues")
+                    logger.info(
+                        f"⚠️ Found {len(validation_result['issues'])} issues")
                     for issue in validation_result["issues"]:
-                        logger.info(f"   - {issue['type']}: {issue['description']}")
+                        logger.info(
+                            f"   - {issue['type']}: {issue['description']}")
 
                 return validation_result
             else:
@@ -215,8 +233,12 @@ class RTLValidator:
             logger.error(f"❌ RTL validation failed: {e}")
             return {"validation_passed": True, "issues": []}
 
-    def _get_rtl_corrections(self, text: str, language: Language,
-                             issues: List[Dict], context: Optional[str]) -> Dict[str, Any]:
+    def _get_rtl_corrections(self,
+                             text: str,
+                             language: Language,
+                             issues: List[Dict],
+                             context: Optional[str]) -> Dict[str,
+                                                             Any]:
         """Get corrected version of RTL text"""
 
         lang_info = self.rtl_languages[language]
@@ -277,7 +299,12 @@ class RTLValidator:
             if json_match:
                 correction_result = json.loads(json_match.group())
 
-                logger.info(f"✅ Generated corrections for {len(correction_result.get('corrections_made', []))} issues")
+                logger.info(
+                    f"✅ Generated corrections for {
+                        len(
+                            correction_result.get(
+                                'corrections_made',
+                                []))} issues")
 
                 return correction_result
             else:
@@ -288,7 +315,11 @@ class RTLValidator:
             logger.error(f"❌ RTL correction failed: {e}")
             return {"corrected_text": text, "corrections_made": []}
 
-    def _verify_corrections(self, original: str, corrected: str, language: Language) -> Dict[str, Any]:
+    def _verify_corrections(self,
+                            original: str,
+                            corrected: str,
+                            language: Language) -> Dict[str,
+                                                        Any]:
         """Verify that corrections improved the text quality"""
 
         lang_info = self.rtl_languages[language]
@@ -343,7 +374,11 @@ class RTLValidator:
             if json_match:
                 verification_result = json.loads(json_match.group())
 
-                logger.info(f"✅ Verification: {verification_result.get('recommendation', 'unknown')}")
+                logger.info(
+                    f"✅ Verification: {
+                        verification_result.get(
+                            'recommendation',
+                            'unknown')}")
                 logger.info(
                     f"📊 Quality improvement: {
                         verification_result.get(
@@ -370,7 +405,10 @@ class RTLValidator:
             self, content_list: List[Dict[str, str]], language: Language) -> List[Dict[str, Any]]:
         """Validate multiple RTL content items in batch"""
 
-        logger.info(f"🔍 Batch validating {len(content_list)} items in {language.value}")
+        logger.info(
+            f"🔍 Batch validating {
+                len(content_list)} items in {
+                language.value}")
 
         results = []
 
@@ -399,7 +437,10 @@ class RTLValidator:
                 results.append(validation_result)
 
                 logger.info(
-                    f"✅ Item {i + 1}/{len(content_list)}: {'PASSED' if validation_result['validation_passed'] else 'CORRECTED'}")
+                    f"✅ Item {
+                        i + 1}/{
+                        len(content_list)}: {
+                        'PASSED' if validation_result['validation_passed'] else 'CORRECTED'}")
 
             except Exception as e:
                 logger.error(f"❌ Failed to validate item {i}: {e}")
@@ -415,7 +456,8 @@ class RTLValidator:
         passed = sum(1 for r in results if r.get("validation_passed", False))
         corrected = sum(1 for r in results if r.get("corrections_made", []))
 
-        logger.info(f"📊 Batch validation complete: {passed}/{len(results)} passed, {corrected} corrected")
+        logger.info(
+            f"📊 Batch validation complete: {passed}/{len(results)} passed, {corrected} corrected")
 
         return results
 
@@ -423,7 +465,7 @@ class RTLValidator:
         """Check if language is RTL"""
         return language in self.rtl_languages
 
-    def get_rtl_language_info(self, language: Language) -> Optional[Dict[str, Any]]:
+    def get_rtl_language_info(
+            self, language: Language) -> Optional[Dict[str, Any]]:
         """Get RTL language information"""
         return self.rtl_languages.get(language)
-

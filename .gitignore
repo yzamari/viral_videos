@@ -191,3 +191,4 @@ test_errors/*
 test_results/*
 test_reports/*
 *.log
+.venv/*

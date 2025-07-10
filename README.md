@@ -1,8 +1,8 @@
-# 🎬 Enhanced VEO-2 Video Generator v2.1
+# 🎬 Comprehensive AI Agent Video Generator v2.5
 
-**Production-Ready System: VEO-2 + 19 AI Agents + Robust Error Handling + Professional Audio**
+**Complete AI System: Multi-Agent Discussions + Advanced Features + Professional Quality**
 
-Generate viral videos by defining your **mission** - what you want to achieve with your content. Our 19 specialized AI agents collaborate to create the perfect strategy for accomplishing your goals, with enterprise-grade reliability and error handling.
+Generate viral videos with our **Comprehensive AI Agent System** - Choose from 5 different AI modes with 3-19 specialized agents. Real AI discussions, intelligent decisions, professional results.
 
 ## 🎯 Mission-Based Video Generation
 
@@ -13,55 +13,165 @@ Instead of just creating videos about topics, define what you want to **accompli
 ✅ **"make cooking seem fun and easy for busy people"** - Lifestyle mission  
 ✅ **"inspire people to start learning a new language"** - Motivational mission
 
-## 🚀 Latest Improvements (v2.1)
+## 🚀 Latest Improvements (v2.4)
 
-### 🛡️ **Enterprise-Grade Reliability**
-- **Robust Quota Management**: Automatic retry with exponential backoff for API quota limits
-- **VEO Content Filtering**: Multi-tier content sanitization with AI-powered rephrasing
-- **Session Path Consistency**: All outputs properly organized in `outputs/session_timestamp_uid/`
-- **Comprehensive Error Handling**: Graceful degradation and detailed error reporting
+### 🤖 **AI Agent System**
+- **7 Specialized Agents**: Each agent has unique expertise and decision-making capabilities
+- **Real AI Discussions**: Agents actually discuss strategy and make collaborative decisions
+- **Intelligent Decisions**: Continuity, voice selection, media types, and structure all decided by AI
+- **Proven Results**: Real video generation with AI-enhanced optimization
 
-### 🎨 **Enhanced Content Generation**
-- **Smart Content Sanitization**: Prevents VEO sensitive content rejections
-- **Fallback Generation**: Multiple strategies when content policies are triggered
-- **Improved File Management**: Consistent session directory structure
-- **Better Monitoring**: Real-time logging and progress tracking
+### 🎨 **Modern AI-Enhanced UI**
+- **Agent Status Display**: See which AI agents are working and making decisions
+- **Discussion Visualization**: Watch AI agents discuss your content strategy in real-time
+- **Decision Transparency**: See exactly what each agent decided and why
+- **Mobile Responsive**: Works perfectly on all devices
 
-## 🤖 How 19 AI Agents Help Accomplish Your Mission
+## 🤖 AI Agent System
 
-Our agents discuss your mission across **5 specialized phases**:
+Our **7 specialized AI agents** collaborate to create viral content:
 
-### Phase 1: Script Development 🎭
-**Agents:** Script Writer, Dialogue Master, Pace Master, Audience Advocate  
-**Focus:** How to craft compelling narratives that achieve your mission
+### 👥 **The AI Agent Team**
 
-### Phase 2: Audio Production 🎵  
-**Agents:** Sound Designer, Voice Director, Audio Master, Platform Expert  
-**Focus:** What voice style, music, and effects best support your mission
+1. **🎭 Director Agent** - Script generation and creative direction
+2. **🎯 VideoStructureAgent** - Video structure and flow decisions  
+3. **⏱️ ClipTimingAgent** - Optimal timing and pacing decisions
+4. **🎨 VisualElementsAgent** - Visual composition and styling
+5. **📱 MediaTypeAgent** - VEO-2 vs image generation decisions
+6. **🔄 ContinuityDecisionAgent** - Frame continuity strategy
+7. **🎤 VoiceDirectorAgent** - Voice selection and audio strategy
 
-### Phase 3: Visual Design 🎨
-**Agents:** Director, Style Director, Color Master, Typography Master, Header Designer  
-**Focus:** Visual elements that effectively communicate your mission
+### 🤝 **AI Agent Discussions**
 
-### Phase 4: Platform Optimization 📱
-**Agents:** Platform Expert, Engagement Specialist, Trend Analyst, Quality Assurance  
-**Focus:** How to make your mission go viral on the target platform
+**Discussion 1: Script Strategy & Viral Optimization**
+- Director ↔ Script Writer agents collaborate on viral script creation
+- Analyze platform requirements and audience psychology
+- Optimize for engagement and sharing potential
 
-### Phase 5: Quality Assurance 🔍
-**Agents:** Quality Guard, Audience Advocate, Orchestrator, Editor  
-**Focus:** Ensuring the final video successfully accomplishes your mission
+**Discussion 2: Visual & Technical Strategy** 
+- Video Generator ↔ Editor agents decide technical approach
+- Choose between VEO-2 video clips vs static images
+- Determine optimal visual composition and effects
+
+**Discussion 3: Audio & Production Strategy**
+- Soundman ↔ Editor agents optimize audio production
+- Select perfect voice personality and style
+- Ensure audio-visual synchronization
+
+### ✅ **What the AI Agents Actually Do**
+- ✅ **Real Discussions**: Agents exchange messages and reach consensus
+- ✅ **Intelligent Decisions**: Frame continuity, voice selection, media types
+- ✅ **Strategic Planning**: Video structure, timing, and flow optimization
+- ✅ **Quality Control**: Multi-agent review and enhancement
+- ✅ **Platform Optimization**: Instagram/TikTok/YouTube specific strategies
+- ✅ **Real Video Output**: All decisions result in actual video files
 
 ## 🚀 Quick Start
 
-### Web Interface (Recommended)
+### 1. Install Dependencies
 ```bash
-./run_video_generator.sh ui
+pip install -r requirements.txt
 ```
-Navigate to `http://localhost:7860` and define your mission!
 
-### Command Line
+### 2. Set Up API Key
 ```bash
-python launch_full_working_app.py --mission "convince all the kids to love Mango" --duration 15 --platform youtube --category Comedy
+cp config.env.example .env
+# Edit .env and add your Google AI API key
+```
+
+### 3. Launch Ultimate Modern UI (Recommended)
+```bash
+python modern_ui.py
+```
+Navigate to `http://localhost:7860` - Choose your AI system and watch agents create your perfect viral video!
+
+## 🤖 **Complete AI Agent System Overview**
+
+### 🎯 **5 AI System Modes**
+
+| Mode | Agents | Discussions | Speed | Quality | Best For |
+|------|--------|-------------|--------|---------|----------|
+| **Simple** | 3 | 0 | ⚡ Fastest | Good | Quick tests |
+| **Enhanced** | 7 | 3 | 🚀 Fast | Excellent | Recommended |
+| **Advanced** | 15 | 6 | ⏱️ Medium | Superior | Complex content |
+| **Multilingual** | 8 | 2 | 🌍 Medium | Excellent | Multi-language |
+| **Professional** | 19+ | 8 | 🎯 Thorough | Maximum | Premium quality |
+
+### 🧠 **AI Agent Capabilities**
+
+#### **Core Agents (All Modes)**
+- **Director**: Script generation & creative direction
+- **VoiceDirector**: Intelligent voice selection & optimization
+- **ContinuityAgent**: Frame continuity decision making
+- **VideoGenerator**: VEO2/VEO3/Image generation management
+
+#### **Enhanced Agents (Enhanced+)**
+- **ScriptProcessor**: TTS optimization & multilingual support
+- **VideoStructure**: Video composition & flow analysis
+- **ClipTiming**: Optimal timing & pacing decisions
+
+#### **Advanced Agents (Advanced+)**
+- **VisualElements**: Typography, color, visual design
+- **MediaType**: VEO2 vs Image intelligent selection
+- **TrendingAnalyzer**: Social media trend analysis
+- **CompositionSystem**: Advanced video composition
+
+#### **Professional Agents (Professional)**
+- **MultilingualGenerator**: Full multilingual support
+- **RTLValidator**: Right-to-left language support
+- **AdvancedDiscussion**: 19+ agent collaborative system
+- **QualityOptimizer**: Maximum quality assurance
+
+### 💬 **AI Discussion System**
+
+#### **Enhanced Discussions (Enhanced Mode)**
+1. **Script Strategy & Viral Optimization**
+2. **Visual Composition & Technical Approach**
+3. **Audio Production & Voice Strategy**
+
+#### **Advanced Discussions (Advanced Mode)**
+1. **Script Development & Dialogue Optimization**
+2. **Audio Production & Voice Direction**
+3. **Visual Composition & Design Strategy**
+4. **Media Type & Platform Optimization**
+5. **Timing & Pacing Analysis**
+6. **Quality & Engagement Review**
+
+#### **Professional Discussions (Professional Mode)**
+- **19+ Agent Collaborative System**
+- **Multi-round consensus building**
+- **Comprehensive quality analysis**
+- **Advanced composition discussions**
+
+### ⚡ **Advanced Features**
+
+#### **Force Generation Options**
+- **Auto**: Intelligent fallback system
+- **Force VEO3**: Latest model (highest quality)
+- **Force VEO2**: Stable model (reliable)
+- **Force Image**: Image-based (fastest)
+
+#### **Trending Analysis**
+- **ContentSpecialist**: Analyzes N trending videos
+- **Time Range**: 1-72 hours of trending data
+- **Viral Insights**: Hooks, themes, success factors
+- **Platform Optimization**: Platform-specific trends
+
+#### **Multilingual Support**
+- **14 Languages**: English, Hebrew, Arabic, Spanish, French, German, Italian, Portuguese, Russian, Chinese, Japanese, Thai, Persian
+- **RTL Support**: Right-to-left language optimization
+- **Voice Localization**: Native voice selection per language
+- **Cultural Adaptation**: Content adapted for each culture
+
+#### **Professional Quality**
+- **Frame Continuity**: AI-decided or manual control
+- **Video Orientation**: Auto-detect or manual selection
+- **Quality Assurance**: Multi-agent quality review
+- **Advanced Composition**: Professional video structure
+
+### 4. Or Use CLI with AI Agent Generation
+```bash
+python main.py generate --topic "Amazing AI breakthrough" --duration 30 --agents enhanced
 ```
 
 ## 📋 Mission Examples

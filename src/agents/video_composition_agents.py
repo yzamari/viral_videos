@@ -21,7 +21,7 @@ class VideoStructureAgent:
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
 
         self.agent_profile = {
             'name': 'StructureMaster',
@@ -35,12 +35,18 @@ class VideoStructureAgent:
             ]
         }
 
-    def analyze_video_structure(self, topic: str, category: str, platform: str,
-                                total_duration: int, style: str = "viral") -> Dict[str, Any]:
+    def analyze_video_structure(self,
+                                topic: str,
+                                category: str,
+                                platform: str,
+                                total_duration: int,
+                                style: str = "viral") -> Dict[str,
+                                                              Any]:
         """
         Analyze and decide optimal video structure with mixed continuity approaches
         """
-        logger.info(f"🏗️ StructureMaster analyzing video structure for: {topic}")
+        logger.info(
+            f"🏗️ StructureMaster analyzing video structure for: {topic}")
 
         try:
             analysis_prompt = f"""
@@ -129,8 +135,12 @@ Respond in JSON format:
                     }
                 })
 
-                logger.info(f"🏗️ StructureMaster Decision: {structure_data['total_segments']} segments")
-                logger.info(f"   Strategy: {structure_data['structure_strategy']}")
+                logger.info(
+                    f"🏗️ StructureMaster Decision: {
+                        structure_data['total_segments']} segments")
+                logger.info(
+                    f"   Strategy: {
+                        structure_data['structure_strategy']}")
 
                 return structure_data
 
@@ -142,7 +152,8 @@ Respond in JSON format:
             logger.error(f"StructureMaster analysis failed: {e}")
             return self._create_fallback_structure(total_duration)
 
-    def _create_fallback_structure(self, total_duration: int) -> Dict[str, Any]:
+    def _create_fallback_structure(
+            self, total_duration: int) -> Dict[str, Any]:
         """Create fallback structure when AI analysis fails"""
 
         # Simple 3-segment structure
@@ -207,17 +218,20 @@ Respond in JSON format:
                 }
             ]
 
-        return {'total_segments': len(segments),
-                'structure_strategy': 'Fallback balanced structure',
-                'segments': segments,
-                'continuity_groups': [{'group_id': 1,
-                                       'segments': [2],
-                                       'total_duration': segments[1]['duration'],
-                                       'flow_strategy': 'Continuous flow'}] if len(segments) > 2 else [],
-                'engagement_strategy': 'Balanced pacing with hook and resolution',
-                'platform_optimization': 'Generic optimization',
-                'agent_name': 'StructureMaster (Fallback)',
-                'analysis_timestamp': datetime.now().isoformat()}
+        return {
+            'total_segments': len(segments),
+            'structure_strategy': 'Fallback balanced structure',
+            'segments': segments,
+            'continuity_groups': [
+                {
+                    'group_id': 1,
+                    'segments': [2],
+                    'total_duration': segments[1]['duration'],
+                    'flow_strategy': 'Continuous flow'}] if len(segments) > 2 else [],
+            'engagement_strategy': 'Balanced pacing with hook and resolution',
+            'platform_optimization': 'Generic optimization',
+            'agent_name': 'StructureMaster (Fallback)',
+            'analysis_timestamp': datetime.now().isoformat()}
 
 
 class ClipTimingAgent:
@@ -228,7 +242,7 @@ class ClipTimingAgent:
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
 
         self.agent_profile = {
             'name': 'TimingMaster',
@@ -242,12 +256,18 @@ class ClipTimingAgent:
             ]
         }
 
-    def analyze_clip_timings(self, video_structure: Dict[str, Any],
-                             content_details: Dict[str, Any]) -> Dict[str, Any]:
+    def analyze_clip_timings(self,
+                             video_structure: Dict[str,
+                                                   Any],
+                             content_details: Dict[str,
+                                                   Any]) -> Dict[str,
+                                                                 Any]:
         """
         Analyze and decide optimal timing for each individual clip
         """
-        logger.info(f"⏱️ TimingMaster analyzing clip timings for {video_structure['total_segments']} segments")
+        logger.info(
+            f"⏱️ TimingMaster analyzing clip timings for {
+                video_structure['total_segments']} segments")
 
         try:
             timing_prompt = f"""
@@ -316,7 +336,9 @@ Respond in JSON format:
                     'analysis_timestamp': datetime.now().isoformat()
                 })
 
-                logger.info(f"⏱️ TimingMaster Decision: {timing_data['total_clips']} clips")
+                logger.info(
+                    f"⏱️ TimingMaster Decision: {
+                        timing_data['total_clips']} clips")
                 logger.info(f"   Strategy: {timing_data['timing_strategy']}")
 
                 return timing_data
@@ -329,7 +351,8 @@ Respond in JSON format:
             logger.error(f"TimingMaster analysis failed: {e}")
             return self._create_fallback_timing(video_structure)
 
-    def _create_fallback_timing(self, video_structure: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_fallback_timing(
+            self, video_structure: Dict[str, Any]) -> Dict[str, Any]:
         """Create fallback timing when AI analysis fails"""
 
         clips = []
@@ -374,7 +397,7 @@ class VisualElementsAgent:
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
 
         self.agent_profile = {
             'name': 'VisualDesigner',
@@ -388,12 +411,17 @@ class VisualElementsAgent:
             ]
         }
 
-    def design_visual_elements(self, video_structure: Dict[str, Any],
-                               content_theme: str, platform: str) -> Dict[str, Any]:
+    def design_visual_elements(self,
+                               video_structure: Dict[str,
+                                                     Any],
+                               content_theme: str,
+                               platform: str) -> Dict[str,
+                                                      Any]:
         """
         Design headers, titles, subtitles with optimal positioning and styling
         """
-        logger.info(f"🎨 VisualDesigner designing visual elements for {platform}")
+        logger.info(
+            f"🎨 VisualDesigner designing visual elements for {platform}")
 
         try:
             design_prompt = f"""
@@ -486,7 +514,8 @@ Respond in JSON format:
                     'analysis_timestamp': datetime.now().isoformat()
                 })
 
-                logger.info(f"🎨 VisualDesigner Decision: {len(design_data['text_elements'])} text elements")
+                logger.info(
+                    f"🎨 VisualDesigner Decision: {len(design_data['text_elements'])} text elements")
                 logger.info(f"   Strategy: {design_data['design_strategy']}")
 
                 return design_data
@@ -570,7 +599,7 @@ class MediaTypeAgent:
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
 
         self.agent_profile = {
             'name': 'MediaStrategist',
@@ -584,12 +613,18 @@ class MediaTypeAgent:
             ]
         }
 
-    def analyze_media_types(self, clip_plan: Dict[str, Any],
-                            content_analysis: Dict[str, Any]) -> Dict[str, Any]:
+    def analyze_media_types(self,
+                            clip_plan: Dict[str,
+                                            Any],
+                            content_analysis: Dict[str,
+                                                   Any]) -> Dict[str,
+                                                                 Any]:
         """
         Decide whether each clip should be VEO2 video or static images
         """
-        logger.info(f"📱 MediaStrategist analyzing media types for {clip_plan['total_clips']} clips")
+        logger.info(
+            f"📱 MediaStrategist analyzing media types for {
+                clip_plan['total_clips']} clips")
 
         try:
             media_prompt = f"""
@@ -684,7 +719,8 @@ Respond in JSON format:
             logger.error(f"MediaStrategist analysis failed: {e}")
             return self._create_fallback_media_plan(clip_plan)
 
-    def _create_fallback_media_plan(self, clip_plan: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_fallback_media_plan(
+            self, clip_plan: Dict[str, Any]) -> Dict[str, Any]:
         """Create fallback media plan when AI analysis fails"""
 
         clip_decisions = []
@@ -693,7 +729,8 @@ Respond in JSON format:
 
         for clip in clip_plan['clips']:
             # Default: use VEO2 for most clips, images for very short ones
-            if clip['duration'] < 3 and clip['purpose'] in ['transition', 'text']:
+            if clip['duration'] < 3 and clip['purpose'] in [
+                    'transition', 'text']:
                 media_type = 'static_image'
                 image_count += 1
             else:
@@ -734,19 +771,25 @@ def get_composition_agents_summary() -> Dict[str, Any]:
     return {
         'StructureMaster': {
             'role': 'Video Structure Strategist',
-            'decisions': ['Video segmentation', 'Continuity strategy', 'Narrative flow']
-        },
+            'decisions': [
+                'Video segmentation',
+                'Continuity strategy',
+                'Narrative flow']},
         'TimingMaster': {
             'role': 'Clip Timing Specialist',
-            'decisions': ['Individual clip durations', 'Pacing optimization', 'Attention management']
-        },
+            'decisions': [
+                    'Individual clip durations',
+                    'Pacing optimization',
+                    'Attention management']},
         'VisualDesigner': {
             'role': 'Visual Elements Specialist',
-            'decisions': ['Headers and titles', 'Typography and colors', 'Text positioning']
-        },
+            'decisions': [
+                'Headers and titles',
+                'Typography and colors',
+                'Text positioning']},
         'MediaStrategist': {
             'role': 'Media Type Decision Specialist',
-            'decisions': ['VEO2 vs. images', 'Resource allocation', 'Visual impact optimization']
-        }
-    }
-
+            'decisions': [
+                'VEO2 vs. images',
+                'Resource allocation',
+                'Visual impact optimization']}}
