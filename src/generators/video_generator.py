@@ -21,6 +21,7 @@ from ..agents.voice_director_agent import VoiceDirectorAgent
 from ..agents.overlay_positioning_agent import OverlayPositioningAgent
 from ..agents.visual_style_agent import VisualStyleAgent
 from ..utils.session_manager import session_manager
+from ..utils.session_context import SessionContext, create_session_context
 
 logger = get_logger(__name__)
 
@@ -60,7 +61,7 @@ class VideoGenerator:
         self.use_real_veo2 = use_real_veo2
         self.use_vertex_ai = use_vertex_ai
         
-        # Set output directory
+        # Set output directory (fallback only)
         self.output_dir = output_dir or "outputs"
         os.makedirs(self.output_dir, exist_ok=True)
         
@@ -70,17 +71,8 @@ class VideoGenerator:
         self.style_agent = VisualStyleAgent(api_key)
         self.script_processor = EnhancedScriptProcessor(api_key)
         
-        # Initialize generation clients
-        if use_real_veo2 and use_vertex_ai:
-            self.veo_client = VertexAIVeo2Client(
-                project_id=vertex_project_id or os.getenv('VERTEX_AI_PROJECT_ID', 'viralgen-464411'),
-                location=vertex_location or os.getenv('VERTEX_AI_LOCATION', 'us-central1'),
-                gcs_bucket=vertex_gcs_bucket or os.getenv('VERTEX_AI_GCS_BUCKET', 'viral-veo2-results'),
-                output_dir=self.output_dir
-            )
-        else:
-            self.veo_client = None
-            
+        # VEO client will be initialized with session context when needed
+        self.veo_client = None
         self.image_client = GeminiImageClient(api_key, self.output_dir)
         self.tts_client = EnhancedMultilingualTTS(api_key)
         
@@ -88,6 +80,7 @@ class VideoGenerator:
         logger.info(f"   VEO2: {'✅' if use_real_veo2 else '❌'}")
         logger.info(f"   Vertex AI: {'✅' if use_vertex_ai else '❌'}")
         logger.info(f"   AI Agents: ✅ (Voice, Positioning, Style, Script)")
+        logger.info(f"   Session-aware: ✅ (Files will be organized in session directories)")
     
     def generate_video(self, config: GeneratedVideoConfig) -> Union[str, VideoGenerationResult]:
         """
@@ -111,10 +104,14 @@ class VideoGenerator:
             category=config.category.value
         )
         
+        # Create session context for this generation
+        session_context = create_session_context(session_id)
+        
         logger.info(f"🎬 Starting video generation for: {config.topic}")
         logger.info(f"   Duration: {config.duration_seconds}s")
         logger.info(f"   Platform: {config.target_platform.value}")
         logger.info(f"   Session: {session_id}")
+        logger.info(f"   Session Directory: {session_context.get_output_path('')}")
         
         session_manager.log_generation_step("video_generation_started", "in_progress", {
             "topic": config.topic,
@@ -123,26 +120,39 @@ class VideoGenerator:
         })
         
         try:
+            # Initialize VEO client with session context
+            if self.use_real_veo2 and self.use_vertex_ai:
+                self.veo_client = VertexAIVeo2Client(
+                    project_id=os.getenv('VERTEX_AI_PROJECT_ID', 'viralgen-464411'),
+                    location=os.getenv('VERTEX_AI_LOCATION', 'us-central1'),
+                    gcs_bucket=os.getenv('VERTEX_AI_GCS_BUCKET', 'viral-veo2-results'),
+                    output_dir=session_context.get_output_path("video_clips")
+                )
+            
             # Step 1: Process script with AI
-            script_result = self._process_script_with_ai(config)
+            script_result = self._process_script_with_ai(config, session_context)
             
             # Step 2: Get AI decisions for visual style and positioning
             style_decision = self._get_visual_style_decision(config)
             positioning_decision = self._get_positioning_decision(config, style_decision)
             
             # Step 3: Generate video clips
-            clips = self._generate_video_clips(config, script_result, style_decision)
+            clips = self._generate_video_clips(config, script_result, style_decision, session_context)
             
             # Step 4: Generate audio with AI voice selection
-            audio_files = self._generate_ai_optimized_audio(config, script_result)
+            audio_files = self._generate_ai_optimized_audio(config, script_result, session_context)
             
-            # Step 5: Compose final video (placeholder for now)
-            final_video_path = self._compose_final_video(clips, audio_files, config, session_id)
+            # Step 5: Compose final video using session context
+            final_video_path = self._compose_final_video(clips, audio_files, config, session_context)
             
             generation_time = time.time() - start_time
             
             logger.info(f"✅ Video generation completed in {generation_time:.1f}s")
             logger.info(f"📁 Output: {final_video_path}")
+            
+            # Log session summary
+            summary = session_context.get_session_summary()
+            logger.info(f"📊 Session Summary: {summary['file_counts']}")
             
             # Return VideoGenerationResult for compatibility
             result = VideoGenerationResult(
@@ -246,7 +256,7 @@ class VideoGenerator:
         logger.info(f"✅ Generated config for: {topic}")
         return config
     
-    def _process_script_with_ai(self, config: GeneratedVideoConfig) -> Dict[str, Any]:
+    def _process_script_with_ai(self, config: GeneratedVideoConfig, session_context: SessionContext) -> Dict[str, Any]:
         """Process script using AI script processor"""
         logger.info("📝 Processing script with AI")
         
@@ -264,6 +274,14 @@ class VideoGenerator:
             platform=config.target_platform,
             category=config.category
         )
+        
+        # Save script to session
+        if result.get('final_script'):
+            script_path = session_context.get_output_path("scripts", "processed_script.txt")
+            os.makedirs(os.path.dirname(script_path), exist_ok=True)
+            with open(script_path, 'w') as f:
+                f.write(result['final_script'])
+            logger.info(f"💾 Saved processed script to session")
         
         logger.info(f"✅ Script processed: {result.get('word_count', 0)} words")
         return result
@@ -301,7 +319,8 @@ class VideoGenerator:
     
     def _generate_video_clips(self, config: GeneratedVideoConfig, 
                             script_result: Dict[str, Any],
-                            style_decision: Dict[str, Any]) -> List[str]:
+                            style_decision: Dict[str, Any],
+                            session_context: SessionContext) -> List[str]:
         """Generate video clips using VEO2 or Gemini images"""
         logger.info("🎬 Generating video clips")
         
@@ -320,7 +339,7 @@ class VideoGenerator:
                 )
                 
                 if self.use_real_veo2 and self.veo_client:
-                    # Generate with VEO2
+                    # Generate with VEO2 - it will save to session directory automatically
                     clip_path = self.veo_client.generate_video_clip(
                         prompt=enhanced_prompt,
                         duration=5.0,
@@ -329,11 +348,16 @@ class VideoGenerator:
                     )
                 else:
                     # Generate with Gemini images (fallback)
+                    temp_path = f"{tempfile.gettempdir()}/clip_{i}_{uuid.uuid4().hex[:8]}.jpg"
                     clip_path = self.image_client.generate_image(
                         prompt=enhanced_prompt,
                         style=style_decision.get('primary_style', 'dynamic'),
-                        output_path=f"{self.output_dir}/clip_{i}_{uuid.uuid4().hex[:8]}.jpg"
+                        output_path=temp_path
                     )
+                    
+                    # Save to session directory
+                    if clip_path:
+                        clip_path = session_context.save_image(clip_path, f"clip_{i}")
                 
                 if clip_path:
                     clips.append(clip_path)
@@ -348,7 +372,8 @@ class VideoGenerator:
         return clips
     
     def _generate_ai_optimized_audio(self, config: GeneratedVideoConfig,
-                                   script_result: Dict[str, Any]) -> List[str]:
+                                   script_result: Dict[str, Any],
+                                   session_context: SessionContext) -> List[str]:
         """Generate audio using AI voice selection"""
         logger.info("🎤 Generating AI-optimized audio")
         
@@ -365,41 +390,110 @@ class VideoGenerator:
                 num_clips=4
             )
             
-            logger.info(f"✅ Generated {len(audio_files)} audio files")
-            return audio_files
+            # Save audio files to session directory
+            session_audio_files = []
+            for i, audio_file in enumerate(audio_files):
+                if os.path.exists(audio_file):
+                    session_audio_path = session_context.save_audio_file(audio_file, f"segment_{i}")
+                    session_audio_files.append(session_audio_path)
+                else:
+                    session_audio_files.append(audio_file)
+            
+            logger.info(f"✅ Generated {len(session_audio_files)} audio files")
+            return session_audio_files
             
         except Exception as e:
             logger.error(f"❌ Audio generation failed: {e}")
             return []
     
     def _compose_final_video(self, clips: List[str], audio_files: List[str],
-                           config: GeneratedVideoConfig, session_id: str) -> str:
-        """Compose final video from clips and audio"""
+                           config: GeneratedVideoConfig, session_context: SessionContext) -> str:
+        """Compose final video from clips and audio using session context"""
         logger.info("🎞️ Composing final video")
         
-        # For now, return the first clip or create a placeholder
-        if clips:
-            # In a full implementation, this would combine clips with audio
-            # For now, just return the first clip
-            final_path = f"{self.output_dir}/final_video_{session_id}.mp4"
-            
-            # Create a simple placeholder file
-            with open(final_path, 'w') as f:
-                f.write(f"Video placeholder for {config.topic}")
-            
-            logger.info(f"✅ Final video composed: {final_path}")
-            return final_path
-        else:
-            # Create placeholder video file
-            placeholder_path = f"{self.output_dir}/placeholder_video_{session_id}.txt"
-            with open(placeholder_path, 'w') as f:
-                f.write(f"Placeholder video for: {config.topic}\n")
-                f.write(f"Duration: {config.duration_seconds}s\n")
-                f.write(f"Platform: {config.target_platform.value}\n")
-                f.write(f"Generated: {datetime.now()}\n")
-            
-            logger.info(f"✅ Placeholder video created: {placeholder_path}")
-            return placeholder_path
+        try:
+            # Create final video in session directory
+            if clips:
+                # In a full implementation, this would combine clips with audio
+                # For now, create a comprehensive placeholder with metadata
+                video_content = self._create_video_placeholder(config, clips, audio_files)
+                
+                # Create temporary file first
+                temp_path = f"{tempfile.gettempdir()}/temp_video_{uuid.uuid4().hex[:8]}.mp4"
+                with open(temp_path, 'w') as f:
+                    f.write(video_content)
+                
+                # Save to session directory using session context
+                final_path = session_context.save_final_video(temp_path)
+                
+                logger.info(f"✅ Final video composed and saved to session: {final_path}")
+                return final_path
+            else:
+                # Create placeholder video file directly in session
+                placeholder_content = self._create_video_placeholder(config, clips, audio_files)
+                placeholder_path = session_context.get_output_path("final_output", f"placeholder_video_{session_context.session_id}.txt")
+                
+                os.makedirs(os.path.dirname(placeholder_path), exist_ok=True)
+                with open(placeholder_path, 'w') as f:
+                    f.write(placeholder_content)
+                
+                logger.info(f"✅ Placeholder video created in session: {placeholder_path}")
+                return placeholder_path
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to compose final video: {e}")
+            # Fallback to session directory
+            fallback_path = session_context.get_output_path("final_output", f"error_video_{session_context.session_id}.txt")
+            os.makedirs(os.path.dirname(fallback_path), exist_ok=True)
+            with open(fallback_path, 'w') as f:
+                f.write(f"Video generation failed: {e}\nSession: {session_context.session_id}\nTopic: {config.topic}")
+            return fallback_path
+    
+    def _create_video_placeholder(self, config: GeneratedVideoConfig, 
+                                clips: List[str], audio_files: List[str]) -> str:
+        """Create comprehensive video placeholder content"""
+        content = f"""# AI Video Generator - Video Placeholder
+
+## Video Information
+- Topic: {config.topic}
+- Duration: {config.duration_seconds} seconds
+- Platform: {config.target_platform.value}
+- Category: {config.category.value}
+- Style: {config.style}
+- Tone: {config.tone}
+- Target Audience: {config.target_audience}
+
+## Generation Details
+- Generated: {datetime.now().isoformat()}
+- Clips Generated: {len(clips)}
+- Audio Files: {len(audio_files)}
+
+## Content Structure
+- Hook: {config.hook}
+- Main Content: {config.main_content}
+- Call to Action: {config.call_to_action}
+
+## Generated Assets
+### Video Clips:
+{chr(10).join(f"- {clip}" for clip in clips)}
+
+### Audio Files:
+{chr(10).join(f"- {audio}" for audio in audio_files)}
+
+## Visual Style
+- Visual Style: {config.visual_style}
+- Color Scheme: {config.color_scheme}
+- Transitions: {config.transitions}
+
+## Audio Style
+- Background Music: {config.background_music_style}
+- Voiceover Style: {config.voiceover_style}
+- Sound Effects: {config.sound_effects}
+
+---
+This is a placeholder file. In a full implementation, this would be a complete MP4 video file.
+"""
+        return content
     
     def _get_file_size_mb(self, file_path: str) -> float:
         """Get file size in MB"""

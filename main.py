@@ -101,7 +101,7 @@ def generate(
         visual_style: str,
         mode: str):
     """🎬 Generate viral video with optimized AI system"""
-
+    
     try:
         # Validate API key
         if not settings.google_api_key:
@@ -109,13 +109,13 @@ def generate(
                 "❌ Error: GOOGLE_API_KEY not found in environment variables")
             click.echo("Please set your Google AI API key in the .env file")
             sys.exit(1)
-
+        
         # Display generation info
         click.echo(f"🎯 Generating {category} video for mission: {mission}")
         click.echo(f"📱 Platform: {platform}")
         click.echo(f"⏱️ Duration: {duration} seconds")
         click.echo(f"🎭 Mode: {mode} ({_get_mode_description(mode)})")
-
+        
         # Display frame continuity mode
         continuity_modes = {
             'auto': '🤖 AI Agent Decision',
@@ -123,7 +123,7 @@ def generate(
             'off': '❌ Always Disabled'
         }
         click.echo(f"🎬 Frame Continuity: {continuity_modes[frame_continuity]}")
-
+        
         # Show AI system mode
         system_modes = {
             'enhanced': '🎯 Enhanced (7 agents with discussions, best viral content)',
@@ -137,13 +137,13 @@ def generate(
                 system_modes.get(
                     discussions,
                     discussions)}")
-
+        
         # Check quotas unless forced
         if not force:
             click.echo("📊 Checking API quotas...")
             quota_verifier = QuotaVerifier(settings.google_api_key)
             quota_status = quota_verifier.check_all_quotas()
-
+            
             if not quota_status['overall_status']:
                 click.echo("⚠️ Warning: Quota issues detected")
                 for service, status in quota_status.items():
@@ -155,10 +155,10 @@ def generate(
                                 status.get(
                                     'message',
                                     'Limited')}")
-
+                
                 if not click.confirm("Continue anyway?"):
                     sys.exit(1)
-
+        
         # Choose generation method
         if discussions == 'enhanced':
             # Use enhanced streamlined system with discussions
@@ -222,7 +222,7 @@ def generate(
                 tone,
                 visual_style,
                 mode)
-
+        
         # Display results
         if result.get('success'):
             click.echo("✅ Video generation completed successfully!")
@@ -231,7 +231,7 @@ def generate(
                     result.get(
                         'final_video_path',
                         'Check outputs directory')}")
-
+            
             # Show performance metrics for streamlined modes
             if discussions in ['streamlined', 'enhanced']:
                 click.echo(f"⚡ Agents Used: {result.get('agents_used', 5)}")
@@ -245,7 +245,7 @@ def generate(
                         result.get(
                             'optimization_level',
                             'streamlined')}")
-
+                
                 # Show discussion metrics for enhanced mode
                 if discussions == 'enhanced':
                     click.echo(
@@ -255,9 +255,9 @@ def generate(
                                 0)}")
                     click.echo("💬 Agent Discussions:")
                     click.echo("   • ScriptMaster ↔ ViralismSpecialist")
-                    click.echo("   • ContentSpecialist ↔ VisualDirector")
+                    click.echo("   • ContentSpecialist ↔ VisualDirector") 
                     click.echo("   • AudioEngineer ↔ VideoEditor")
-
+            
             # Display frame continuity decision if available
             if result.get('frame_continuity_decision'):
                 decision = result['frame_continuity_decision']
@@ -265,7 +265,7 @@ def generate(
                 click.echo(f"🎬 Frame Continuity Decision: {status}")
                 click.echo(f"   AI Confidence: {decision['confidence']:.2f}")
                 click.echo(f"   Reason: {decision['primary_reason']}")
-
+            
             if discussions not in [
                     'off', 'streamlined'] and 'discussion_results' in result:
                 _display_discussion_summary(
@@ -275,7 +275,7 @@ def generate(
             click.echo("❌ Video generation failed")
             if 'error' in result:
                 click.echo(f"Error: {result['error']}")
-
+    
     except KeyboardInterrupt:
         click.echo("\n🛑 Generation cancelled by user")
         sys.exit(1)
@@ -299,17 +299,17 @@ def _generate_traditional(
         visual_style: str,
         mode: str) -> dict:
     """Generate video using traditional method without discussions"""
-
+    
     # Create video generator
     generator = VideoGenerator(
         api_key=settings.google_api_key,
         use_real_veo2=not fallback_only
     )
-
+    
     # Determine frame continuity setting
     use_frame_continuity = True  # Default
     frame_continuity_decision = None
-
+    
     if frame_continuity == 'on':
         use_frame_continuity = True
         frame_continuity_decision = {
@@ -330,7 +330,7 @@ def _generate_traditional(
         # Use AI agent to decide (even in traditional mode)
         from src.agents.continuity_decision_agent import ContinuityDecisionAgent
         continuity_agent = ContinuityDecisionAgent(settings.google_api_key)
-
+        
         frame_continuity_decision = continuity_agent.analyze_frame_continuity_need(
             topic=mission,
             category=category,
@@ -338,7 +338,7 @@ def _generate_traditional(
             duration=duration,
             style=style
         )
-
+        
         use_frame_continuity = frame_continuity_decision['use_frame_continuity']
         logger.info(f"🎬 AI Frame Continuity Decision: {use_frame_continuity}")
         logger.info(
@@ -347,7 +347,7 @@ def _generate_traditional(
         logger.info(
             f"   Reason: {
                 frame_continuity_decision['primary_reason']}")
-
+    
     # Create configuration
     config = GeneratedVideoConfig(
         target_platform=Platform(platform),
@@ -371,14 +371,14 @@ def _generate_traditional(
         predicted_viral_score=0.85,
         frame_continuity=use_frame_continuity  # Use AI decision or user override
     )
-
+    
     # Force image-only if requested
     if image_only:
         config.image_only_mode = True
-
+    
     # Generate video
     result = generator.generate_video(config)
-
+    
     return {
         'success': True,
         'final_video_path': result if result else None,
@@ -407,7 +407,7 @@ def _generate_with_discussions(
     click.echo("🎯 Using Working Orchestrator with AI Agents")
     click.echo(
         "🤖 AI agents: Voice Director, Continuity Agent, Visual Style, Positioning")
-
+    
     # Import working orchestrator
     from src.agents.working_orchestrator import create_working_orchestrator
 
@@ -424,7 +424,7 @@ def _generate_with_discussions(
         visual_style=visual_style,
         mode=mode
     )
-
+    
     # Create configuration
     config = {
         'image_only': image_only,
@@ -437,10 +437,10 @@ def _generate_with_discussions(
         'tone': tone,
         'target_audience': target_audience
     }
-
+    
     # Generate video with AI agents
     result = orchestrator.generate_video(config)
-
+    
     return result
 
 
@@ -458,12 +458,12 @@ def _generate_streamlined(
         visual_style: str,
         mode: str) -> dict:
     """Generate video using working orchestrator in simple mode"""
-
+    
     click.echo("⚡ Using Simple Mode for fast generation")
-
+    
     # Import working orchestrator
     from src.agents.working_orchestrator import create_working_orchestrator
-
+    
     # Create orchestrator with user parameters
     orchestrator = create_working_orchestrator(
         api_key=settings.google_api_key,
@@ -477,7 +477,7 @@ def _generate_streamlined(
         visual_style=visual_style,
         mode=mode
     )
-
+    
     # Configuration for streamlined generation
     config = {
         'image_only': image_only,
@@ -489,10 +489,10 @@ def _generate_streamlined(
         'frame_continuity': frame_continuity,
         'quality_requirements': 'high'
     }
-
+    
     # Generate video
     result = orchestrator.generate_video(config)
-
+    
     return result
 
 
@@ -510,14 +510,14 @@ def _generate_enhanced_streamlined(
         visual_style: str,
         mode: str) -> dict:
     """Generate video using working orchestrator in enhanced mode"""
-
+    
     click.echo("🎯 Using Enhanced Mode with AI Agent Intelligence")
     click.echo(
         "🤖 Full AI agent system: Voice, Style, Positioning, Continuity decisions")
-
+    
     # Import working orchestrator
     from src.agents.working_orchestrator import create_working_orchestrator
-
+    
     # Create orchestrator with user parameters
     orchestrator = create_working_orchestrator(
         api_key=settings.google_api_key,
@@ -531,7 +531,7 @@ def _generate_enhanced_streamlined(
         visual_style=visual_style,
         mode=mode
     )
-
+    
     # Configuration for enhanced generation
     config = {
         'image_only': image_only,
@@ -544,10 +544,10 @@ def _generate_enhanced_streamlined(
         'frame_continuity': frame_continuity,
         'quality_requirements': 'high'
     }
-
+    
     # Generate video with AI agents
     result = orchestrator.generate_video(config)
-
+    
     return result
 
 
@@ -600,12 +600,12 @@ def _display_discussion_summary(discussion_results: dict, metadata: dict):
         
         # Handle both dict and object results
         if hasattr(result, 'consensus_level'):
-            click.echo(f"   Consensus: {result.consensus_level:.2f}")
-            click.echo(f"   Rounds: {result.total_rounds}")
-            click.echo(f"   Participants: {', '.join(result.participating_agents)}")
-            
+        click.echo(f"   Consensus: {result.consensus_level:.2f}")
+        click.echo(f"   Rounds: {result.total_rounds}")
+        click.echo(f"   Participants: {', '.join(result.participating_agents)}")
+        
             if hasattr(result, 'key_insights') and result.key_insights:
-                click.echo(f"   Key Insight: {result.key_insights[0]}")
+            click.echo(f"   Key Insight: {result.key_insights[0]}")
         else:
             # Handle dict-style results
             click.echo(f"   Consensus: {result.get('consensus_level', 0.0):.2f}")
@@ -622,23 +622,23 @@ def _display_discussion_summary(discussion_results: dict, metadata: dict):
 @cli.command()
 def veo_quota():
     """📊 Check VEO and Gemini API quotas"""
-
+    
     if not settings.google_api_key:
         click.echo("❌ Error: GOOGLE_API_KEY not found")
         sys.exit(1)
-
+    
     click.echo("📊 Checking API quotas...")
-
+    
     quota_verifier = QuotaVerifier(settings.google_api_key)
     quota_status = quota_verifier.check_all_quotas()
-
+    
     # Display results
     click.echo("\n🔍 QUOTA STATUS:")
-
+    
     for service, status in quota_status.items():
         if service == 'overall_status':
             continue
-
+            
         if isinstance(status, dict):
             status_icon = "✅" if status.get('available', True) else "❌"
             click.echo(
@@ -646,11 +646,11 @@ def veo_quota():
                     status.get(
                         'message',
                         'Available')}")
-
+            
             if 'details' in status:
                 for detail in status['details']:
                     click.echo(f"   • {detail}")
-
+    
     # Overall status
     overall_icon = "✅" if quota_status['overall_status'] else "⚠️"
     click.echo(
@@ -664,12 +664,12 @@ def veo_quota():
               help='Number of recent sessions to show')
 def discussions(session_id: str, recent: int):
     """📊 Analyze AI agent discussions from previous generations"""
-
+    
     outputs_dir = "outputs"
     if not os.path.exists(outputs_dir):
         click.echo("❌ No outputs directory found")
         return
-
+    
     if session_id:
         # Analyze specific session
         _analyze_session_discussions(session_id)
@@ -681,19 +681,19 @@ def discussions(session_id: str, recent: int):
 def _analyze_session_discussions(session_id: str):
     """Analyze discussions from a specific session"""
     session_dir = f"outputs/session_{session_id}"
-
+    
     if not os.path.exists(session_dir):
         click.echo(f"❌ Session {session_id} not found")
         return
-
+    
     # Remove unused discussions_dir variable
     summary_file = os.path.join(session_dir, "agent_discussions_summary.json")
-
+    
     if os.path.exists(summary_file):
         import json
         with open(summary_file, 'r') as f:
             summary = json.load(f)
-
+        
         click.echo(f"🤖 DISCUSSION ANALYSIS - Session {session_id}")
         click.echo(
             f"Mission: {
@@ -707,11 +707,11 @@ def _analyze_session_discussions(session_id: str):
                 summary.get(
                     'generation_timestamp',
                     'Unknown')}")
-
+        
         config = summary.get('discussion_configuration', {})
         click.echo(f"Discussion Mode: {config.get('depth', 'Unknown')}")
         click.echo(f"Total Discussions: {config.get('total_discussions', 0)}")
-
+        
         metrics = summary.get('overall_metrics', {})
         click.echo(
             f"Average Consensus: {
@@ -719,7 +719,7 @@ def _analyze_session_discussions(session_id: str):
                     'average_consensus',
                     0):.2f}")
         click.echo(f"Total Rounds: {metrics.get('total_rounds', 0)}")
-
+        
         # Show key insights
         insights = summary.get('key_insights_summary', [])
         if insights:
@@ -734,19 +734,19 @@ def _show_recent_discussions(recent: int):
     """Show recent sessions with discussions"""
     outputs_dir = "outputs"
     sessions = []
-
+    
     for item in os.listdir(outputs_dir):
         if item.startswith("session_"):
             session_path = os.path.join(outputs_dir, item)
             summary_file = os.path.join(
                 session_path, "agent_discussions_summary.json")
-
+            
             if os.path.exists(summary_file):
                 try:
                     import json
                     with open(summary_file, 'r') as f:
                         summary = json.load(f)
-
+                    
                     sessions.append(
                         {
                             'session_id': item.replace(
@@ -760,12 +760,12 @@ def _show_recent_discussions(recent: int):
                                         'average_consensus', 0)})
                 except BaseException:
                     continue
-
+    
     # Sort by timestamp
     sessions.sort(key=lambda x: x['timestamp'], reverse=True)
-
+    
     click.echo(f"📊 RECENT SESSIONS WITH DISCUSSIONS (Last {recent}):")
-
+    
     for session in sessions[:recent]:
         click.echo(f"\n🎬 Session: {session['session_id']}")
         click.echo(f"   Mission: {session['mission']}")
@@ -825,14 +825,14 @@ def generate_topic(
     """🎯 Generate a mission using AI agents"""
     try:
         click.echo(f"🎯 Generating mission for idea: '{idea}'")
-
+        
         # Validate API key
         if not settings.google_api_key:
             click.echo(
                 "❌ Error: GOOGLE_API_KEY not found in environment variables")
             click.echo("Please set your Google AI API key in the .env file")
             sys.exit(1)
-
+        
         # Prepare context
         context = {
             'platform': platform,
@@ -841,11 +841,11 @@ def generate_topic(
             'duration': duration,
             'category': category
         }
-
+        
         # Generate mission
         generator = TopicGeneratorSystem(settings.google_api_key)
         result = generator.generate_topic(idea, context)
-
+        
         # Display results
         final_mission = result['final_topic']
         click.echo(f"\n✅ Generated Mission: {final_mission['topic']}")
@@ -866,11 +866,11 @@ def generate_topic(
             click.echo(
                 f"\n🎬 Automatically generating video with mission: '{
                     final_mission['topic']}'")
-
+            
             # Call the generate command with the generated mission
             from click.testing import CliRunner
             runner = CliRunner()
-
+            
             # Prepare arguments for video generation
             video_args = [
                 'generate',
@@ -881,16 +881,16 @@ def generate_topic(
                 '--discussions', discussions,
                 '--frame-continuity', frame_continuity
             ]
-
+            
             # Run the generate command
             result = runner.invoke(cli, video_args)
-
+            
             if result.exit_code != 0:
                 click.echo(f"❌ Video generation failed: {result.output}")
                 return
-
+            
             click.echo("✅ Video generation completed successfully!")
-
+        
     except Exception as e:
         click.echo(f"❌ Mission generation failed: {e}")
         logger.error(f"Mission generation error: {e}")
@@ -898,4 +898,4 @@ def generate_topic(
 
 
 if __name__ == "__main__":
-    cli()
+    cli() 
