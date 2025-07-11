@@ -5,12 +5,17 @@ Supports Google Cloud project-based Veo-3 generation
 
 import os
 import time
-import logging
-from typing import Optional, Dict, List
+import tempfile
+import uuid
+from typing import Optional, Dict, Any
+from datetime import datetime
+
 import google.generativeai as genai
 from google.generativeai.types import File
+from google.cloud import storage
+from ..utils.logging_config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class VertexVeo3Client:
@@ -180,8 +185,6 @@ class VertexVeo3Client:
             True if successful, False otherwise
         """
         try:
-            from google.cloud import storage
-
             # Parse GCS URI
             if not gcs_uri.startswith('gs://'):
                 raise ValueError(f"Invalid GCS URI: {gcs_uri}")
@@ -193,6 +196,7 @@ class VertexVeo3Client:
             bucket_name, blob_name = parts
 
             # Download file
+            client = storage.Client()
             bucket = client.bucket(bucket_name)
             blob = bucket.blob(blob_name)
 

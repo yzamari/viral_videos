@@ -70,19 +70,18 @@ class E2ETestRunner:
         print("1️⃣ Testing Direct Orchestrator Usage...")
         
         try:
-            from src.agents.working_simple_orchestrator import create_working_simple_orchestrator
+            from src.agents.working_orchestrator import create_working_orchestrator
             
             # Test 1: Simple Mode
             print("   Testing Simple Mode...")
             start_time = time.time()
             
-            orchestrator = create_working_simple_orchestrator(
+            orchestrator = create_working_orchestrator(
                 topic="Quick CLI test of yoga benefits",
                 platform="instagram",
                 category="health",
                 duration=15,
-                api_key=self.api_key,
-                mode="simple"
+                api_key=self.api_key
             )
             
             self.test_results['cli_tests']['simple_mode_creation'] = {
@@ -96,13 +95,12 @@ class E2ETestRunner:
             print("   Testing Enhanced Mode...")
             start_time = time.time()
             
-            enhanced_orchestrator = create_working_simple_orchestrator(
+            enhanced_orchestrator = create_working_orchestrator(
                 topic="Enhanced CLI test of AI capabilities",
                 platform="tiktok",
                 category="technology",
                 duration=20,
-                api_key=self.api_key,
-                mode="enhanced"
+                api_key=self.api_key
             )
             
             self.test_results['cli_tests']['enhanced_mode_creation'] = {
@@ -249,15 +247,14 @@ class E2ETestRunner:
             print("   Testing Session Consistency...")
             
             # Create orchestrator via CLI
-            from src.agents.working_simple_orchestrator import create_working_simple_orchestrator
+            from src.agents.working_orchestrator import create_working_orchestrator
             
-            cli_orchestrator = create_working_simple_orchestrator(
+            cli_orchestrator = create_working_orchestrator(
                 topic="Integration test topic",
                 platform="instagram",
                 category="education",
                 duration=15,
-                api_key=self.api_key,
-                mode="enhanced"
+                api_key=self.api_key
             )
             
             cli_session = cli_orchestrator.session_id

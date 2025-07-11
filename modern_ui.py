@@ -558,7 +558,8 @@ class EnhancedModernVideoGeneratorUI:
     def start_generation(self, mission: str, platform: str, category: str, 
                         duration: int, system: str, force_generation: str,
                         enable_trending: bool, trending_count: int, trending_hours: int,
-                        image_only: bool, fallback_only: bool, frame_continuity: str):
+                        image_only: bool, fallback_only: bool, frame_continuity: str,
+                        target_audience: str = "general audience"):
         """Start video generation process with all options"""
         
         if self.is_generating:
@@ -588,16 +589,15 @@ class EnhancedModernVideoGeneratorUI:
             )
             trending_insights = self.trending_analyzer.analyze_trends(trending_videos)
         
-        # Create working simple orchestrator with AI agents
+        # Create working orchestrator with AI agents
         try:
-            from src.agents.working_simple_orchestrator import create_working_simple_orchestrator
-            self.orchestrator = create_working_simple_orchestrator(
-                topic=mission,
+            from src.agents.working_orchestrator import create_working_orchestrator
+            self.orchestrator = create_working_orchestrator(
+                mission=mission,
                 platform=platform,
                 category=category,
                 duration=duration,
-                api_key=settings.google_api_key,
-                mode=system  # Use selected system as mode
+                api_key=settings.google_api_key
             )
         except Exception as e:
             self.is_generating = False
@@ -619,7 +619,7 @@ class EnhancedModernVideoGeneratorUI:
                 config = {
                     'image_only': image_only,
                     'fallback_only': fallback_only,
-                    'target_audience': 'young adults',
+                    'target_audience': target_audience,
                     'style': 'viral',
                     'visual_style': 'dynamic',
                     'voice_style': 'energetic',

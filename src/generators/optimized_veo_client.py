@@ -4,6 +4,7 @@ Handles Google AI Studio rate limits: 2 videos/minute, 50 videos/day (Tier 1)
 Now includes Gemini Image Generation fallback when VEO quota is exhausted
 """
 import os
+import shutil
 import time
 import json
 import uuid

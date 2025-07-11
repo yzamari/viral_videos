@@ -31,7 +31,7 @@ cp config.env.example config.env
 ### 3. Test Installation with Error Handling
 ```bash
 # Generate a quick test video (includes error recovery testing)
-python3 main.py generate --topic "AI creating amazing content" --duration 10
+python3 main.py generate --mission "convince people that AI can create amazing content" --duration 10
 
 # Launch web interface with monitoring
 python3 simple_test_ui.py
@@ -94,14 +94,14 @@ TEMP_FILE_CLEANUP=true
 
 ### CLI Commands with Error Handling
 ```bash
-# Generate topic from idea (with automatic retry)
-python3 main.py generate-topic --idea "convince people to exercise"
+# Generate mission from idea (with automatic retry)
+python3 main.py generate-topic --idea "convince people to exercise daily"
 
 # Generate video with quota management
-python3 main.py generate --topic "Quick fitness tips" --duration 30
+python3 main.py generate --mission "motivate busy professionals to take walking breaks" --duration 30
 
 # Auto-generate video with full error recovery
-python3 main.py generate-topic --idea "promote sustainability" --generate-video
+python3 main.py generate-topic --idea "promote sustainable living habits" --generate-video
 ```
 
 ### Web Interface with Real-time Monitoring
@@ -286,7 +286,7 @@ COMPRESS_OLD_SESSIONS=true
 ### System Health Check
 ```bash
 # Full system test
-python3 main.py generate --topic "system test" --duration 5
+python3 main.py generate --mission "test system reliability and performance" --duration 5
 
 # Expected output structure:
 outputs/
@@ -300,10 +300,10 @@ outputs/
 ### Error Handling Verification
 ```bash
 # Test quota management (will auto-recover)
-python3 main.py generate --topic "quota test" --duration 10
+python3 main.py generate --mission "demonstrate quota management capabilities" --duration 10
 
 # Test content filtering (will auto-sanitize)
-python3 main.py generate --topic "content with sensitive elements" --duration 10
+python3 main.py generate --mission "showcase content filtering with challenging content" --duration 10
 
 # Check logs for successful error recovery
 grep "ERROR" outputs/session_*/generation_log.txt

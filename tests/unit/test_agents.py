@@ -35,8 +35,9 @@ class TestDirectorAgent(unittest.TestCase):
     def test_director_initialization(self):
         """Test Director agent initialization"""
         self.assertIsNotNone(self.director)
-        self.assertEqual(self.director.api_key, TEST_API_KEY)
         self.assertIsNotNone(self.director.model)
+        self.assertIsNotNone(self.director.hook_templates)
+        self.assertIsNotNone(self.director.content_structures)
     
     def test_write_script_method_exists(self):
         """Test that write_script method exists"""
@@ -60,13 +61,15 @@ class TestDirectorAgent(unittest.TestCase):
         """
         mock_model.return_value.generate_content.return_value = mock_response
         
-        # Test script generation
+        # Test script generation with patterns parameter
         result = self.director.write_script(
             topic=self.test_topic,
             style='viral',
             duration=25,
             platform=Platform.INSTAGRAM,
-            category=VideoCategory.LIFESTYLE
+            category=VideoCategory.EDUCATION,
+            patterns={'hooks': ['Did you know...'], 'themes': ['educational']},
+            incorporate_news=False
         )
         
         self.assertIsNotNone(result)
@@ -80,7 +83,7 @@ class TestDirectorAgent(unittest.TestCase):
                 style='professional',
                 duration=30,
                 platform=Platform.INSTAGRAM,
-                category=VideoCategory.EDUCATIONAL,
+                category=VideoCategory.EDUCATION,
                 patterns={'hooks': ['Did you know...'], 'themes': ['educational']},
                 incorporate_news=False
             )
@@ -140,13 +143,13 @@ class TestVoiceDirectorAgent(unittest.TestCase):
         """
         mock_model.return_value.generate_content.return_value = mock_response
         
-        # Test voice analysis
+        # Test voice analysis - fix VideoCategory enum
         result = self.voice_agent.analyze_content_and_select_voices(
             topic=self.test_topic,
             script=self.test_script,
             language=Language.ENGLISH_US,
             platform=Platform.INSTAGRAM,
-            category=VideoCategory.EDUCATIONAL,
+            category=VideoCategory.EDUCATION,  # Fixed enum name
             duration_seconds=25,
             num_clips=4
         )
@@ -154,10 +157,10 @@ class TestVoiceDirectorAgent(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertIsInstance(result, dict)
     
-    def test_select_optimal_voice_method_exists(self):
-        """Test that select_optimal_voice method exists"""
-        self.assertTrue(hasattr(self.voice_agent, 'select_optimal_voice'))
-        self.assertTrue(callable(getattr(self.voice_agent, 'select_optimal_voice')))
+    def test_analyze_content_method_exists_correct_name(self):
+        """Test that analyze_content_and_select_voices method exists (correct test name)"""
+        self.assertTrue(hasattr(self.voice_agent, 'analyze_content_and_select_voices'))
+        self.assertTrue(callable(getattr(self.voice_agent, 'analyze_content_and_select_voices')))
 
 
 class TestContinuityDecisionAgent(unittest.TestCase):
@@ -218,10 +221,10 @@ class TestContinuityDecisionAgent(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertIsInstance(result, dict)
     
-    def test_analyze_and_decide_method_exists(self):
-        """Test that analyze_and_decide method exists"""
-        self.assertTrue(hasattr(self.continuity_agent, 'analyze_and_decide'))
-        self.assertTrue(callable(getattr(self.continuity_agent, 'analyze_and_decide')))
+    def test_analyze_frame_continuity_need_method_exists(self):
+        """Test that analyze_frame_continuity_need method exists (correct test name)"""
+        self.assertTrue(hasattr(self.continuity_agent, 'analyze_frame_continuity_need'))
+        self.assertTrue(callable(getattr(self.continuity_agent, 'analyze_frame_continuity_need')))
 
 
 class TestVideoCompositionAgents(unittest.TestCase):
@@ -296,9 +299,9 @@ class TestVideoCompositionAgents(unittest.TestCase):
         if not self.agents_available:
             self.skipTest("Video composition agents not available")
         
-        # Test method existence
-        self.assertTrue(hasattr(self.visual_agent, 'analyze_visual_elements'))
-        self.assertTrue(callable(getattr(self.visual_agent, 'analyze_visual_elements')))
+        # Test method existence - use correct method name
+        self.assertTrue(hasattr(self.visual_agent, 'design_visual_elements'))
+        self.assertTrue(callable(getattr(self.visual_agent, 'design_visual_elements')))
     
     def test_media_type_methods(self):
         """Test MediaTypeAgent methods"""

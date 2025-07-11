@@ -15,7 +15,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from src.agents.working_simple_orchestrator import WorkingSimpleOrchestrator
+from src.agents.working_orchestrator import create_working_orchestrator
 from src.utils.comprehensive_logger import ComprehensiveLogger
 from config.config import settings
 
@@ -119,15 +119,13 @@ class PersianMythologyE2ETest:
         try:
             # Create orchestrator for this mission
             from src.models.video_models import Platform, VideoCategory
-            from src.agents.working_simple_orchestrator import WorkingSimpleOrchestrator, SystemMode
             
-            orchestrator = WorkingSimpleOrchestrator(
+            orchestrator = create_working_orchestrator(
                 api_key=self.config.google_api_key,
                 topic=mission,
-                platform=Platform.YOUTUBE,
-                category=VideoCategory.EDUCATION,
-                duration=30,
-                mode=SystemMode.ENHANCED
+                platform='youtube',
+                category='education',
+                duration=30
             )
             
             # Generate video with enhanced parameters

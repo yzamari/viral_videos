@@ -836,3 +836,35 @@ class GeminiImageClient:
             logger.warning(f"⚠️ Enhanced image generation not available: {e}")
             return False
 
+    def generate_image(self, prompt: str, style: str, output_path: str) -> str:
+        """Generate a single image - compatibility method for VideoGenerator"""
+        
+        try:
+            # Extract image ID from output path
+            import os
+            image_id = os.path.splitext(os.path.basename(output_path))[0]
+            
+            # Generate the image
+            result_path = self._generate_enhanced_scene_image(
+                prompt=prompt,
+                image_id=image_id,
+                scene_index=0,
+                total_scenes=1
+            )
+            
+            if result_path and os.path.exists(result_path):
+                # Move to desired output path if different
+                if result_path != output_path:
+                    import shutil
+                    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                    shutil.move(result_path, output_path)
+                    return output_path
+                return result_path
+            else:
+                logger.warning(f"⚠️ Failed to generate image for: {prompt}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Error in generate_image: {e}")
+            return None
+

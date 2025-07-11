@@ -1,69 +1,121 @@
 #!/usr/bin/env python3
 """
-Viral Video Generator - Main Entry Point
-Enhanced with Multi-Agent Discussion System
+Main CLI interface for the AI Video Generator
+Enhanced with intelligent AI agents for voice selection, positioning, and style decisions
 """
 
-import click
-import os
-import sys
-from datetime import datetime
-from typing import Optional
-
-# Add project root to path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from config.config import settings
-from src.generators.video_generator import VideoGenerator
-from src.models.video_models import GeneratedVideoConfig, Platform, VideoCategory
-from src.utils.logging_config import get_logger
-from src.utils.quota_verifier_class import QuotaVerifier
-from src.agents.enhanced_orchestrator_with_discussions import (
-    create_discussion_enhanced_orchestrator,
-    DiscussionEnhancedOrchestrator
-)
 from src.features.topic_generator_simple import TopicGeneratorSystem
+from src.utils.quota_verifier_class import QuotaVerifier
+from src.utils.logging_config import get_logger
+from src.models.video_models import GeneratedVideoConfig, Platform, VideoCategory
+from src.generators.video_generator import VideoGenerator
+from config.config import settings
+import sys
+import os
+import click
+
+# Add src to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+
 
 logger = get_logger(__name__)
+
 
 @click.group()
 def cli():
     """🎬 Viral Video Generator with AI Agent Discussions"""
     pass
 
+
 @cli.command()
-@click.option('--category', type=click.Choice(['Comedy', 'Educational', 'Entertainment', 'News', 'Tech']), 
-              default='Comedy', help='Video category')
-@click.option('--topic', required=True, help='Video topic')
-@click.option('--platform', type=click.Choice(['youtube', 'tiktok', 'instagram', 'twitter']), 
-              default='youtube', help='Target platform')
-@click.option('--duration', type=int, default=20, help='Video duration in seconds (default: 20)')
-@click.option('--image-only', is_flag=True, help='Force image-only generation (Gemini images)')
-@click.option('--fallback-only', is_flag=True, help='Use fallback generation only')
-@click.option('--force', is_flag=True, help='Force generation even with quota warnings')
-@click.option('--discussions', type=click.Choice(['off', 'light', 'standard', 'deep', 'streamlined', 'enhanced']), 
-              default='enhanced', help='AI agent mode (default: enhanced with discussions for best viral content)')
-@click.option('--discussion-log', is_flag=True, default=True, help='Show detailed discussion logs')
+@click.option('--category',
+              type=click.Choice(['Comedy',
+                                 'Educational',
+                                 'Entertainment',
+                                 'News',
+                                 'Tech'], case_sensitive=False),
+              default='Comedy',
+              help='Video category')
+@click.option('--mission', required=True,
+              help='Video mission - what you want to accomplish')
+@click.option('--platform',
+              type=click.Choice(['youtube',
+                                 'tiktok',
+                                 'instagram',
+                                 'twitter']),
+              default='youtube',
+              help='Target platform')
+@click.option('--duration', type=int, default=20,
+              help='Video duration in seconds (default: 20)')
+@click.option('--image-only', is_flag=True,
+              help='Force image-only generation (Gemini images)')
+@click.option('--fallback-only', is_flag=True,
+              help='Use fallback generation only')
+@click.option('--force', is_flag=True,
+              help='Force generation even with quota warnings')
+@click.option('--discussions',
+              type=click.Choice(['off',
+                                 'light',
+                                 'standard',
+                                 'deep',
+                                 'streamlined',
+                                 'enhanced']),
+              default='enhanced',
+              help='AI agent mode (default: enhanced with discussions for best viral content)')
+@click.option('--discussion-log', is_flag=True, default=True,
+              help='Show detailed discussion logs')
 @click.option('--session-id', help='Custom session ID')
-@click.option('--frame-continuity', type=click.Choice(['auto', 'on', 'off']), 
-              default='auto', help='Frame continuity mode: auto (AI decides), on (always enabled), off (disabled)')
-def generate(category: str, topic: str, platform: str, duration: int, 
-            image_only: bool, fallback_only: bool, force: bool, 
-            discussions: str, discussion_log: bool, session_id: str, frame_continuity: str):
+@click.option('--frame-continuity',
+              type=click.Choice(['auto',
+                                 'on',
+                                 'off']),
+              default='auto',
+              help='Frame continuity mode: auto (AI decides), on (always enabled), off (disabled)')
+@click.option('--target-audience', default='general audience',
+              help='Target audience (e.g., "young adults", "professionals")')
+@click.option('--style', default='viral',
+              help='Content style (e.g., "viral", "educational", "professional")')
+@click.option('--tone', default='engaging',
+              help='Content tone (e.g., "engaging", "professional", "humorous")')
+@click.option('--visual-style', default='dynamic',
+              help='Visual style (e.g., "dynamic", "minimalist", "professional")')
+@click.option('--mode', 
+              type=click.Choice(['simple', 'enhanced', 'advanced', 'multilingual', 'professional']),
+              default='enhanced',
+              help='Orchestrator mode (simple=3 agents, enhanced=7 agents, advanced=15 agents, professional=19 agents)')
+def generate(
+        category: str,
+        mission: str,
+        platform: str,
+        duration: int,
+        image_only: bool,
+        fallback_only: bool,
+        force: bool,
+        discussions: str,
+        discussion_log: bool,
+        session_id: str,
+        frame_continuity: str,
+        target_audience: str,
+        style: str,
+        tone: str,
+        visual_style: str,
+        mode: str):
     """🎬 Generate viral video with optimized AI system"""
-    
+
     try:
         # Validate API key
         if not settings.google_api_key:
-            click.echo("❌ Error: GOOGLE_API_KEY not found in environment variables")
+            click.echo(
+                "❌ Error: GOOGLE_API_KEY not found in environment variables")
             click.echo("Please set your Google AI API key in the .env file")
             sys.exit(1)
-        
+
         # Display generation info
-        click.echo(f"🎬 Generating {category} video about: {topic}")
+        click.echo(f"🎯 Generating {category} video for mission: {mission}")
         click.echo(f"📱 Platform: {platform}")
         click.echo(f"⏱️ Duration: {duration} seconds")
-        
+        click.echo(f"🎭 Mode: {mode} ({_get_mode_description(mode)})")
+
         # Display frame continuity mode
         continuity_modes = {
             'auto': '🤖 AI Agent Decision',
@@ -71,7 +123,7 @@ def generate(category: str, topic: str, platform: str, duration: int,
             'off': '❌ Always Disabled'
         }
         click.echo(f"🎬 Frame Continuity: {continuity_modes[frame_continuity]}")
-        
+
         # Show AI system mode
         system_modes = {
             'enhanced': '🎯 Enhanced (7 agents with discussions, best viral content)',
@@ -79,63 +131,133 @@ def generate(category: str, topic: str, platform: str, duration: int,
             'light': '🔥 Light (7 agents, fast)',
             'standard': '🎭 Standard (19 agents, comprehensive)',
             'deep': '🧠 Deep (19+ agents, detailed)',
-            'off': '🚫 Traditional (no agents)'
-        }
-        click.echo(f"🤖 AI System: {system_modes.get(discussions, discussions)}")
-        
+            'off': '🚫 Traditional (no agents)'}
+        click.echo(
+            f"🤖 AI System: {
+                system_modes.get(
+                    discussions,
+                    discussions)}")
+
         # Check quotas unless forced
         if not force:
             click.echo("📊 Checking API quotas...")
             quota_verifier = QuotaVerifier(settings.google_api_key)
             quota_status = quota_verifier.check_all_quotas()
-            
+
             if not quota_status['overall_status']:
                 click.echo("⚠️ Warning: Quota issues detected")
                 for service, status in quota_status.items():
-                    if isinstance(status, dict) and not status.get('available', True):
-                        click.echo(f"   {service}: {status.get('message', 'Limited')}")
-                
+                    if isinstance(
+                            status, dict) and not status.get(
+                            'available', True):
+                        click.echo(
+                            f"   {service}: {
+                                status.get(
+                                    'message',
+                                    'Limited')}")
+
                 if not click.confirm("Continue anyway?"):
                     sys.exit(1)
-        
+
         # Choose generation method
         if discussions == 'enhanced':
             # Use enhanced streamlined system with discussions
-            result = _generate_enhanced_streamlined(category, topic, platform, duration, 
-                                                  image_only, fallback_only, frame_continuity)
+            result = _generate_enhanced_streamlined(
+                category,
+                mission,
+                platform,
+                duration,
+                image_only,
+                fallback_only,
+                frame_continuity,
+                target_audience,
+                style,
+                tone,
+                visual_style,
+                mode)
         elif discussions == 'streamlined':
             # Use basic streamlined system
-            result = _generate_streamlined(category, topic, platform, duration, 
-                                         image_only, fallback_only, frame_continuity)
+            result = _generate_streamlined(
+                category,
+                mission,
+                platform,
+                duration,
+                image_only,
+                fallback_only,
+                frame_continuity,
+                target_audience,
+                style,
+                tone,
+                visual_style,
+                mode)
         elif discussions == 'off':
             # Traditional generation without discussions
-            result = _generate_traditional(category, topic, platform, duration, 
-                                         image_only, fallback_only, frame_continuity)
+            result = _generate_traditional(
+                category,
+                mission,
+                platform,
+                duration,
+                image_only,
+                fallback_only,
+                frame_continuity,
+                target_audience,
+                style,
+                tone,
+                visual_style,
+                mode)
         else:
             # Enhanced generation with agent discussions
-            result = _generate_with_discussions(category, topic, platform, duration, 
-                                              image_only, fallback_only, discussions, 
-                                              discussion_log, frame_continuity)
-        
+            result = _generate_with_discussions(
+                category,
+                mission,
+                platform,
+                duration,
+                image_only,
+                fallback_only,
+                discussions,
+                discussion_log,
+                frame_continuity,
+                target_audience,
+                style,
+                tone,
+                visual_style,
+                mode)
+
         # Display results
         if result.get('success'):
             click.echo("✅ Video generation completed successfully!")
-            click.echo(f"📁 Output: {result.get('final_video_path', 'Check outputs directory')}")
-            
+            click.echo(
+                f"📁 Output: {
+                    result.get(
+                        'final_video_path',
+                        'Check outputs directory')}")
+
             # Show performance metrics for streamlined modes
             if discussions in ['streamlined', 'enhanced']:
                 click.echo(f"⚡ Agents Used: {result.get('agents_used', 5)}")
-                click.echo(f"🕒 Generation Time: {result.get('generation_time', 'N/A')}")
-                click.echo(f"🎯 Optimization: {result.get('optimization_level', 'streamlined')}")
-                
+                click.echo(
+                    f"🕒 Generation Time: {
+                        result.get(
+                            'generation_time',
+                            'N/A')}")
+                click.echo(
+                    f"🎯 Optimization: {
+                        result.get(
+                            'optimization_level',
+                            'streamlined')}")
+
                 # Show discussion metrics for enhanced mode
                 if discussions == 'enhanced':
-                    click.echo(f"🤝 Discussions: {result.get('discussions_conducted', 0)}")
+                    click.echo(
+                        f"🤝 Discussions: {
+                            result.get(
+                                'discussions_conducted',
+                                0)}")
                     click.echo("💬 Agent Discussions:")
                     click.echo("   • ScriptMaster ↔ ViralismSpecialist")
-                    click.echo("   • ContentSpecialist ↔ VisualDirector") 
+                    click.echo("   • ContentSpecialist ↔ VisualDirector")
                     click.echo("   • AudioEngineer ↔ VideoEditor")
-            
+
             # Display frame continuity decision if available
             if result.get('frame_continuity_decision'):
                 decision = result['frame_continuity_decision']
@@ -143,14 +265,17 @@ def generate(category: str, topic: str, platform: str, duration: int,
                 click.echo(f"🎬 Frame Continuity Decision: {status}")
                 click.echo(f"   AI Confidence: {decision['confidence']:.2f}")
                 click.echo(f"   Reason: {decision['primary_reason']}")
-            
-            if discussions not in ['off', 'streamlined'] and 'discussion_results' in result:
-                _display_discussion_summary(result['discussion_results'], result.get('generation_metadata', {}))
+
+            if discussions not in [
+                    'off', 'streamlined'] and 'discussion_results' in result:
+                _display_discussion_summary(
+                    result['discussion_results'], result.get(
+                        'generation_metadata', {}))
         else:
             click.echo("❌ Video generation failed")
             if 'error' in result:
                 click.echo(f"Error: {result['error']}")
-    
+
     except KeyboardInterrupt:
         click.echo("\n🛑 Generation cancelled by user")
         sys.exit(1)
@@ -159,20 +284,32 @@ def generate(category: str, topic: str, platform: str, duration: int,
         logger.error(f"Generation error: {e}", exc_info=True)
         sys.exit(1)
 
-def _generate_traditional(category: str, topic: str, platform: str, duration: int,
-                         image_only: bool, fallback_only: bool, frame_continuity: str) -> dict:
+
+def _generate_traditional(
+        category: str,
+        mission: str,
+        platform: str,
+        duration: int,
+        image_only: bool,
+        fallback_only: bool,
+        frame_continuity: str,
+        target_audience: str,
+        style: str,
+        tone: str,
+        visual_style: str,
+        mode: str) -> dict:
     """Generate video using traditional method without discussions"""
-    
+
     # Create video generator
     generator = VideoGenerator(
         api_key=settings.google_api_key,
         use_real_veo2=not fallback_only
     )
-    
+
     # Determine frame continuity setting
     use_frame_continuity = True  # Default
     frame_continuity_decision = None
-    
+
     if frame_continuity == 'on':
         use_frame_continuity = True
         frame_continuity_decision = {
@@ -193,33 +330,37 @@ def _generate_traditional(category: str, topic: str, platform: str, duration: in
         # Use AI agent to decide (even in traditional mode)
         from src.agents.continuity_decision_agent import ContinuityDecisionAgent
         continuity_agent = ContinuityDecisionAgent(settings.google_api_key)
-        
+
         frame_continuity_decision = continuity_agent.analyze_frame_continuity_need(
-            topic=topic,
+            topic=mission,
             category=category,
             platform=platform,
             duration=duration,
-            style="viral"
+            style=style
         )
-        
+
         use_frame_continuity = frame_continuity_decision['use_frame_continuity']
         logger.info(f"🎬 AI Frame Continuity Decision: {use_frame_continuity}")
-        logger.info(f"   Confidence: {frame_continuity_decision['confidence']:.2f}")
-        logger.info(f"   Reason: {frame_continuity_decision['primary_reason']}")
-    
+        logger.info(
+            f"   Confidence: {
+                frame_continuity_decision['confidence']:.2f}")
+        logger.info(
+            f"   Reason: {
+                frame_continuity_decision['primary_reason']}")
+
     # Create configuration
     config = GeneratedVideoConfig(
         target_platform=Platform(platform),
-        category=VideoCategory(category),
+        category=VideoCategory(_map_category_to_enum(category)),
         duration_seconds=duration,
-        topic=topic,
-        style="viral",
-        tone="engaging",
-        target_audience="18-34 viral content consumers",
+        topic=mission,
+        style=style,
+        tone=tone,
+        target_audience=target_audience,
         hook="Stop scrolling! You won't believe this...",
-        main_content=[f"Amazing content about {topic}"],
+        main_content=[f"Amazing content for mission: {mission}"],
         call_to_action="Follow for more viral content!",
-        visual_style="dynamic",
+        visual_style=visual_style,
         color_scheme=["#FF6B6B", "#4ECDC4", "#FFFFFF"],
         text_overlays=[],
         transitions=["fade", "slide"],
@@ -230,14 +371,14 @@ def _generate_traditional(category: str, topic: str, platform: str, duration: in
         predicted_viral_score=0.85,
         frame_continuity=use_frame_continuity  # Use AI decision or user override
     )
-    
+
     # Force image-only if requested
     if image_only:
         config.image_only_mode = True
-    
+
     # Generate video
     result = generator.generate_video(config)
-    
+
     return {
         'success': True,
         'final_video_path': result if result else None,
@@ -245,25 +386,45 @@ def _generate_traditional(category: str, topic: str, platform: str, duration: in
         'error': None
     }
 
-def _generate_with_discussions(category: str, topic: str, platform: str, duration: int,
-                              image_only: bool, fallback_only: bool, discussions: str,
-                              discussion_log: bool, frame_continuity: str) -> dict:
-    """Generate video using enhanced method with agent discussions"""
-    
-    # Create session_id using SessionManager
-    from src.utils.session_manager import SessionManager
-    session_id = SessionManager.create_session_id()
-    
-    # Create discussion-enhanced orchestrator with shared session_id
-    orchestrator = create_discussion_enhanced_orchestrator(
-        topic=topic,
-        category=category,
+
+def _generate_with_discussions(
+        category: str,
+        mission: str,
+        platform: str,
+        duration: int,
+        image_only: bool,
+        fallback_only: bool,
+        discussions: str,
+        discussion_log: bool,
+        frame_continuity: str,
+        target_audience: str,
+        style: str,
+        tone: str,
+        visual_style: str,
+        mode: str) -> dict:
+    """Generate video using working orchestrator with AI agents"""
+
+    click.echo("🎯 Using Working Orchestrator with AI Agents")
+    click.echo(
+        "🤖 AI agents: Voice Director, Continuity Agent, Visual Style, Positioning")
+
+    # Import working orchestrator
+    from src.agents.working_orchestrator import create_working_orchestrator
+
+    # Create orchestrator with user parameters
+    orchestrator = create_working_orchestrator(
+        api_key=settings.google_api_key,
+        mission=mission,
         platform=platform,
+        category=_map_category_to_enum(category),
         duration=duration,
-        enable_discussions=(discussions != 'off'),
-        discussion_depth=discussions
+        style=style,
+        tone=tone,
+        target_audience=target_audience,
+        visual_style=visual_style,
+        mode=mode
     )
-    
+
     # Create configuration
     config = {
         'image_only': image_only,
@@ -271,150 +432,244 @@ def _generate_with_discussions(category: str, topic: str, platform: str, duratio
         'image_only_mode': image_only,
         'use_real_veo2': not fallback_only,
         'discussion_logging': discussion_log,
-        'frame_continuity': frame_continuity
+        'frame_continuity': frame_continuity,
+        'style': style,
+        'tone': tone,
+        'target_audience': target_audience
     }
-    
-    # Generate video with discussions
-    result = orchestrator.orchestrate_complete_generation(config)
-    
-    # Add frame continuity decision to result if available
-    if hasattr(orchestrator, 'frame_continuity_decision') and orchestrator.frame_continuity_decision:
-        result['frame_continuity_decision'] = orchestrator.frame_continuity_decision
-    
+
+    # Generate video with AI agents
+    result = orchestrator.generate_video(config)
+
     return result
 
-def _generate_streamlined(category: str, topic: str, platform: str, duration: int,
-                         image_only: bool, fallback_only: bool, frame_continuity: str) -> dict:
-    """Generate video using streamlined 5-agent system"""
-    
-    # Import streamlined orchestrator
-    from src.agents.streamlined_orchestrator import create_streamlined_orchestrator
-    
-    click.echo("⚡ Using Streamlined 5-Agent System for optimal performance")
-    
-    # Create streamlined orchestrator
-    orchestrator = create_streamlined_orchestrator(
-        topic=topic,
+
+def _generate_streamlined(
+        category: str,
+        mission: str,
+        platform: str,
+        duration: int,
+        image_only: bool,
+        fallback_only: bool,
+        frame_continuity: str,
+        target_audience: str,
+        style: str,
+        tone: str,
+        visual_style: str,
+        mode: str) -> dict:
+    """Generate video using working orchestrator in simple mode"""
+
+    click.echo("⚡ Using Simple Mode for fast generation")
+
+    # Import working orchestrator
+    from src.agents.working_orchestrator import create_working_orchestrator
+
+    # Create orchestrator with user parameters
+    orchestrator = create_working_orchestrator(
+        api_key=settings.google_api_key,
+        mission=mission,
         platform=platform,
-        category=category,
+        category=_map_category_to_enum(category),
         duration=duration,
-        api_key=settings.google_api_key
+        style=style,
+        tone=tone,
+        target_audience=target_audience,
+        visual_style=visual_style,
+        mode=mode
     )
-    
+
     # Configuration for streamlined generation
     config = {
         'image_only': image_only,
         'fallback_only': fallback_only,
-        'target_audience': 'young adults',
-        'style': 'viral',
-        'visual_style': 'dynamic',
+        'target_audience': target_audience,
+        'style': style,
+        'visual_style': visual_style,
         'voice_style': 'energetic',
         'frame_continuity': frame_continuity,
         'quality_requirements': 'high'
     }
-    
+
     # Generate video
     result = orchestrator.generate_video(config)
-    
+
     return result
 
 
-def _generate_enhanced_streamlined(category: str, topic: str, platform: str, duration: int,
-                                 image_only: bool, fallback_only: bool, frame_continuity: str) -> dict:
-    """Generate video using enhanced streamlined 7-agent system with discussions"""
-    
-    # Import enhanced streamlined orchestrator
-    from src.agents.enhanced_streamlined_orchestrator import create_enhanced_streamlined_orchestrator
-    
-    click.echo("🎯 Using Enhanced Streamlined System with AI Agent Discussions")
-    click.echo("💬 Specialized discussions for viral content optimization")
-    
-    # Create enhanced streamlined orchestrator
-    orchestrator = create_enhanced_streamlined_orchestrator(
-        topic=topic,
+def _generate_enhanced_streamlined(
+        category: str,
+        mission: str,
+        platform: str,
+        duration: int,
+        image_only: bool,
+        fallback_only: bool,
+        frame_continuity: str,
+        target_audience: str,
+        style: str,
+        tone: str,
+        visual_style: str,
+        mode: str) -> dict:
+    """Generate video using working orchestrator in enhanced mode"""
+
+    click.echo("🎯 Using Enhanced Mode with AI Agent Intelligence")
+    click.echo(
+        "🤖 Full AI agent system: Voice, Style, Positioning, Continuity decisions")
+
+    # Import working orchestrator
+    from src.agents.working_orchestrator import create_working_orchestrator
+
+    # Create orchestrator with user parameters
+    orchestrator = create_working_orchestrator(
+        api_key=settings.google_api_key,
+        mission=mission,
         platform=platform,
-        category=category,
+        category=_map_category_to_enum(category),
         duration=duration,
-        api_key=settings.google_api_key
+        style=style,
+        tone=tone,
+        target_audience=target_audience,
+        visual_style=visual_style,
+        mode=mode
     )
-    
+
     # Configuration for enhanced generation
     config = {
         'image_only': image_only,
         'fallback_only': fallback_only,
-        'target_audience': 'young adults',
-        'style': 'viral',
-        'visual_style': 'dynamic',
+        'target_audience': target_audience,
+        'style': style,
+        'visual_style': visual_style,
         'voice_style': 'energetic',
         'content_strategy': 'engagement_focused',
         'frame_continuity': frame_continuity,
         'quality_requirements': 'high'
     }
-    
-    # Generate video with discussions
+
+    # Generate video with AI agents
     result = orchestrator.generate_video(config)
-    
+
     return result
+
+
+def _get_mode_description(mode: str) -> str:
+    """Get description for orchestrator mode"""
+    mode_descriptions = {
+        'simple': '3 agents, fast generation',
+        'enhanced': '7 agents with discussions',
+        'advanced': '15+ agents, comprehensive',
+        'multilingual': '8 agents with multi-language support',
+        'professional': '19+ agents, maximum quality'
+    }
+    return mode_descriptions.get(mode, mode)
+
+
+def _map_category_to_enum(category: str) -> str:
+    """Map CLI category names to VideoCategory enum values"""
+    category_mapping = {
+        'Comedy': 'Comedy',
+        'Educational': 'Education',
+        'Entertainment': 'Entertainment',
+        'News': 'News',
+        'Tech': 'Technology'
+    }
+    return category_mapping.get(category, category)
 
 
 def _display_discussion_summary(discussion_results: dict, metadata: dict):
     """Display summary of agent discussions"""
     click.echo("\n🤖 AI AGENT DISCUSSION SUMMARY:")
-    click.echo(f"   Total Discussions: {metadata['total_discussions']}")
-    click.echo(f"   Average Consensus: {metadata['average_consensus']:.2f}")
     
-    for topic, result in discussion_results.items():
-        click.echo(f"\n💬 {topic.replace('_', ' ').title()}:")
-        click.echo(f"   Consensus: {result.consensus_level:.2f}")
-        click.echo(f"   Rounds: {result.total_rounds}")
-        click.echo(f"   Participants: {', '.join(result.participating_agents)}")
+    # Handle missing metadata gracefully
+    total_discussions = metadata.get('total_discussions', len(discussion_results))
+    average_consensus = metadata.get('average_consensus', 0.0)
+    
+    # Calculate average consensus if not provided
+    if average_consensus == 0.0 and discussion_results:
+        consensus_values = []
+        for result in discussion_results.values():
+            if hasattr(result, 'consensus_level'):
+                consensus_values.append(result.consensus_level)
+        if consensus_values:
+            average_consensus = sum(consensus_values) / len(consensus_values)
+    
+    click.echo(f"   Total Discussions: {total_discussions}")
+    click.echo(f"   Average Consensus: {average_consensus:.2f}")
+
+    for mission_topic, result in discussion_results.items():
+        click.echo(f"\n💬 {mission_topic.replace('_', ' ').title()}:")
         
-        if result.key_insights:
-            click.echo(f"   Key Insight: {result.key_insights[0]}")
+        # Handle both dict and object results
+        if hasattr(result, 'consensus_level'):
+            click.echo(f"   Consensus: {result.consensus_level:.2f}")
+            click.echo(f"   Rounds: {result.total_rounds}")
+            click.echo(f"   Participants: {', '.join(result.participating_agents)}")
+            
+            if hasattr(result, 'key_insights') and result.key_insights:
+                click.echo(f"   Key Insight: {result.key_insights[0]}")
+        else:
+            # Handle dict-style results
+            click.echo(f"   Consensus: {result.get('consensus_level', 0.0):.2f}")
+            click.echo(f"   Rounds: {result.get('total_rounds', 0)}")
+            participants = result.get('participating_agents', [])
+            if participants:
+                click.echo(f"   Participants: {', '.join(participants)}")
+            
+            insights = result.get('key_insights', [])
+            if insights:
+                click.echo(f"   Key Insight: {insights[0]}")
+
 
 @cli.command()
 def veo_quota():
     """📊 Check VEO and Gemini API quotas"""
-    
+
     if not settings.google_api_key:
         click.echo("❌ Error: GOOGLE_API_KEY not found")
         sys.exit(1)
-    
+
     click.echo("📊 Checking API quotas...")
-    
+
     quota_verifier = QuotaVerifier(settings.google_api_key)
     quota_status = quota_verifier.check_all_quotas()
-    
+
     # Display results
     click.echo("\n🔍 QUOTA STATUS:")
-    
+
     for service, status in quota_status.items():
         if service == 'overall_status':
             continue
-            
+
         if isinstance(status, dict):
             status_icon = "✅" if status.get('available', True) else "❌"
-            click.echo(f"{status_icon} {service}: {status.get('message', 'Available')}")
-            
+            click.echo(
+                f"{status_icon} {service}: {
+                    status.get(
+                        'message',
+                        'Available')}")
+
             if 'details' in status:
                 for detail in status['details']:
                     click.echo(f"   • {detail}")
-    
+
     # Overall status
     overall_icon = "✅" if quota_status['overall_status'] else "⚠️"
-    click.echo(f"\n{overall_icon} Overall Status: {'Good' if quota_status['overall_status'] else 'Limited'}")
+    click.echo(
+        f"\n{overall_icon} Overall Status: {
+            'Good' if quota_status['overall_status'] else 'Limited'}")
+
 
 @cli.command()
 @click.option('--session-id', help='Specific session ID to analyze')
-@click.option('--recent', type=int, default=5, help='Number of recent sessions to show')
+@click.option('--recent', type=int, default=5,
+              help='Number of recent sessions to show')
 def discussions(session_id: str, recent: int):
     """📊 Analyze AI agent discussions from previous generations"""
-    
+
     outputs_dir = "outputs"
     if not os.path.exists(outputs_dir):
         click.echo("❌ No outputs directory found")
         return
-    
+
     if session_id:
         # Analyze specific session
         _analyze_session_discussions(session_id)
@@ -422,34 +677,49 @@ def discussions(session_id: str, recent: int):
         # Show recent sessions with discussions
         _show_recent_discussions(recent)
 
+
 def _analyze_session_discussions(session_id: str):
     """Analyze discussions from a specific session"""
     session_dir = f"outputs/session_{session_id}"
-    
+
     if not os.path.exists(session_dir):
         click.echo(f"❌ Session {session_id} not found")
         return
-    
-    discussions_dir = os.path.join(session_dir, "agent_discussions")
+
+    # Remove unused discussions_dir variable
     summary_file = os.path.join(session_dir, "agent_discussions_summary.json")
-    
+
     if os.path.exists(summary_file):
         import json
         with open(summary_file, 'r') as f:
             summary = json.load(f)
-        
+
         click.echo(f"🤖 DISCUSSION ANALYSIS - Session {session_id}")
-        click.echo(f"Topic: {summary.get('topic', 'Unknown')}")
-        click.echo(f"Generated: {summary.get('generation_timestamp', 'Unknown')}")
-        
+        click.echo(
+            f"Mission: {
+                summary.get(
+                    'mission',
+                    summary.get(
+                        'topic',
+                        'Unknown'))}")
+        click.echo(
+            f"Generated: {
+                summary.get(
+                    'generation_timestamp',
+                    'Unknown')}")
+
         config = summary.get('discussion_configuration', {})
         click.echo(f"Discussion Mode: {config.get('depth', 'Unknown')}")
         click.echo(f"Total Discussions: {config.get('total_discussions', 0)}")
-        
+
         metrics = summary.get('overall_metrics', {})
-        click.echo(f"Average Consensus: {metrics.get('average_consensus', 0):.2f}")
+        click.echo(
+            f"Average Consensus: {
+                metrics.get(
+                    'average_consensus',
+                    0):.2f}")
         click.echo(f"Total Rounds: {metrics.get('total_rounds', 0)}")
-        
+
         # Show key insights
         insights = summary.get('key_insights_summary', [])
         if insights:
@@ -459,70 +729,110 @@ def _analyze_session_discussions(session_id: str):
     else:
         click.echo(f"❌ No discussion summary found for session {session_id}")
 
+
 def _show_recent_discussions(recent: int):
     """Show recent sessions with discussions"""
     outputs_dir = "outputs"
     sessions = []
-    
+
     for item in os.listdir(outputs_dir):
         if item.startswith("session_"):
             session_path = os.path.join(outputs_dir, item)
-            summary_file = os.path.join(session_path, "agent_discussions_summary.json")
-            
+            summary_file = os.path.join(
+                session_path, "agent_discussions_summary.json")
+
             if os.path.exists(summary_file):
                 try:
                     import json
                     with open(summary_file, 'r') as f:
                         summary = json.load(f)
-                    
-                    sessions.append({
-                        'session_id': item.replace('session_', ''),
-                        'topic': summary.get('topic', 'Unknown'),
-                        'timestamp': summary.get('generation_timestamp', ''),
-                        'discussions': summary.get('discussion_configuration', {}).get('total_discussions', 0),
-                        'consensus': summary.get('overall_metrics', {}).get('average_consensus', 0)
-                    })
-                except:
+
+                    sessions.append(
+                        {
+                            'session_id': item.replace(
+                                'session_', ''), 'mission': summary.get(
+                                'mission', summary.get(
+                                    'topic', 'Unknown')), 'timestamp': summary.get(
+                                'generation_timestamp', ''), 'discussions': summary.get(
+                                'discussion_configuration', {}).get(
+                                'total_discussions', 0), 'consensus': summary.get(
+                                    'overall_metrics', {}).get(
+                                        'average_consensus', 0)})
+                except BaseException:
                     continue
-    
+
     # Sort by timestamp
     sessions.sort(key=lambda x: x['timestamp'], reverse=True)
-    
+
     click.echo(f"📊 RECENT SESSIONS WITH DISCUSSIONS (Last {recent}):")
-    
+
     for session in sessions[:recent]:
         click.echo(f"\n🎬 Session: {session['session_id']}")
-        click.echo(f"   Topic: {session['topic']}")
+        click.echo(f"   Mission: {session['mission']}")
         click.echo(f"   Discussions: {session['discussions']}")
         click.echo(f"   Avg Consensus: {session['consensus']:.2f}")
         click.echo(f"   Generated: {session['timestamp'][:19]}")
 
+
 @cli.command()
-@click.option('--idea', required=True, help='High-level idea or goal (e.g., "convince people to vote")')
-@click.option('--platform', type=click.Choice(['youtube', 'tiktok', 'instagram', 'twitter']), 
-              default='youtube', help='Target platform')
-@click.option('--audience', help='Target audience (e.g., "Young adults", "Professionals")')
-@click.option('--style', help='Content style (e.g., "Engaging", "Educational", "Humorous")')
-@click.option('--duration', type=int, default=30, help='Target video duration in seconds')
-@click.option('--category', type=click.Choice(['Comedy', 'Educational', 'Entertainment', 'News', 'Technology']), 
-              default='Educational', help='Video category')
-@click.option('--discussions', type=click.Choice(['light', 'standard', 'deep']), 
-              default='standard', help='Discussion mode for video generation')
-@click.option('--frame-continuity', type=click.Choice(['auto', 'on', 'off']), 
-              default='auto', help='Frame continuity mode for video generation')
-@click.option('--generate-video', is_flag=True, help='Automatically generate video after topic generation')
-def generate_topic(idea: str, platform: str, audience: str, style: str, duration: int, 
-                  category: str, discussions: str, frame_continuity: str, generate_video: bool):
-    """🎯 Generate a topic using AI agents"""
+@click.option('--idea', required=True,
+              help='High-level idea or goal (e.g., "convince people to vote")')
+@click.option('--platform',
+              type=click.Choice(['youtube',
+                                 'tiktok',
+                                 'instagram',
+                                 'twitter']),
+              default='youtube',
+              help='Target platform')
+@click.option('--audience',
+              help='Target audience (e.g., "Young adults", "Professionals")')
+@click.option('--style',
+              help='Content style (e.g., "Engaging", "Educational", "Humorous")')
+@click.option('--duration', type=int, default=30,
+              help='Target video duration in seconds')
+@click.option('--category',
+              type=click.Choice(['Comedy',
+                                 'Educational',
+                                 'Entertainment',
+                                 'News',
+                                 'Technology']),
+              default='Educational',
+              help='Video category')
+@click.option('--discussions',
+              type=click.Choice(['light',
+                                 'standard',
+                                 'deep']),
+              default='standard',
+              help='Discussion mode for video generation')
+@click.option('--frame-continuity',
+              type=click.Choice(['auto',
+                                 'on',
+                                 'off']),
+              default='auto',
+              help='Frame continuity mode for video generation')
+@click.option('--generate-video', is_flag=True,
+              help='Automatically generate video after topic generation')
+def generate_topic(
+        idea: str,
+        platform: str,
+        audience: str,
+        style: str,
+        duration: int,
+        category: str,
+        discussions: str,
+        frame_continuity: str,
+        generate_video: bool):
+    """🎯 Generate a mission using AI agents"""
     try:
-        click.echo(f"🎯 Generating topic for idea: '{idea}'")
-        
+        click.echo(f"🎯 Generating mission for idea: '{idea}'")
+
         # Validate API key
         if not settings.google_api_key:
-            click.echo("❌ Error: GOOGLE_API_KEY not found in environment variables")
+            click.echo(
+                "❌ Error: GOOGLE_API_KEY not found in environment variables")
             click.echo("Please set your Google AI API key in the .env file")
             sys.exit(1)
-        
+
         # Prepare context
         context = {
             'platform': platform,
@@ -531,51 +841,61 @@ def generate_topic(idea: str, platform: str, audience: str, style: str, duration
             'duration': duration,
             'category': category
         }
-        
-        # Generate topic
+
+        # Generate mission
         generator = TopicGeneratorSystem(settings.google_api_key)
         result = generator.generate_topic(idea, context)
-        
+
         # Display results
-        final_topic = result['final_topic']
-        click.echo(f"\n✅ Generated Topic: {final_topic['topic']}")
-        click.echo(f"📋 Reasoning: {final_topic['reasoning']}")
-        click.echo(f"🎯 Viral Potential: {final_topic['viral_potential']}")
-        click.echo(f"🛡️ Ethical Considerations: {final_topic['ethical_considerations']}")
-        click.echo(f"📁 Full results saved to: {result.get('session_directory', 'outputs/')}")
-        
-        # If generate flag is set, automatically generate video with this topic
+        final_mission = result['final_topic']
+        click.echo(f"\n✅ Generated Mission: {final_mission['topic']}")
+        click.echo(f"📋 Reasoning: {final_mission['reasoning']}")
+        click.echo(f"🎯 Viral Potential: {final_mission['viral_potential']}")
+        click.echo(
+            f"🛡️ Ethical Considerations: {
+                final_mission['ethical_considerations']}")
+        click.echo(
+            f"📁 Full results saved to: {
+                result.get(
+                    'session_directory',
+                    'outputs/')}")
+
+        # If generate flag is set, automatically generate video with this
+        # mission
         if generate_video:
-            click.echo(f"\n🎬 Automatically generating video with topic: '{final_topic['topic']}'")
-            
-            # Call the generate command with the generated topic
+            click.echo(
+                f"\n🎬 Automatically generating video with mission: '{
+                    final_mission['topic']}'")
+
+            # Call the generate command with the generated mission
             from click.testing import CliRunner
             runner = CliRunner()
-            
+
             # Prepare arguments for video generation
             video_args = [
                 'generate',
-                '--topic', final_topic['topic'],
+                '--mission', final_mission['topic'],
                 '--duration', str(duration),
                 '--category', category,
                 '--platform', platform,
                 '--discussions', discussions,
                 '--frame-continuity', frame_continuity
             ]
-            
+
             # Run the generate command
             result = runner.invoke(cli, video_args)
-            
+
             if result.exit_code != 0:
                 click.echo(f"❌ Video generation failed: {result.output}")
                 return
-            
+
             click.echo("✅ Video generation completed successfully!")
-        
+
     except Exception as e:
-        click.echo(f"❌ Topic generation failed: {e}")
-        logger.error(f"Topic generation error: {e}")
+        click.echo(f"❌ Mission generation failed: {e}")
+        logger.error(f"Mission generation error: {e}")
         sys.exit(1)
 
+
 if __name__ == "__main__":
-    cli() 
+    cli()

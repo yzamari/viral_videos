@@ -182,36 +182,36 @@ class VoiceDirectorAgent:
             },
             Language.SPANISH: {
                 VoicePersonality.NARRATOR: {
-                    "male": ["es-ES-Wavenet-B", "es-ES-Standard-B"],
-                    "female": ["es-ES-Wavenet-A", "es-ES-Standard-A", "es-ES-Wavenet-C"]
+                    "male": ["es-ES-Standard-B"],
+                    "female": ["es-ES-Standard-A"]
                 },
                 VoicePersonality.STORYTELLER: {
-                    "male": ["es-ES-Wavenet-B"],
-                    "female": ["es-ES-Wavenet-A", "es-ES-Wavenet-C"]
+                    "male": ["es-ES-Standard-B"],
+                    "female": ["es-ES-Standard-A"]
                 },
                 VoicePersonality.EDUCATOR: {
                     "male": ["es-ES-Standard-B"],
-                    "female": ["es-ES-Standard-A", "es-ES-Wavenet-A"]
+                    "female": ["es-ES-Standard-A"]
                 },
                 VoicePersonality.COMEDIAN: {
-                    "male": ["es-ES-Wavenet-B"],
-                    "female": ["es-ES-Wavenet-C"]
+                    "male": ["es-ES-Standard-B"],
+                    "female": ["es-ES-Standard-A"]
                 },
                 VoicePersonality.DRAMATIC: {
-                    "male": ["es-ES-Wavenet-B"],
-                    "female": ["es-ES-Wavenet-A"]
+                    "male": ["es-ES-Standard-B"],
+                    "female": ["es-ES-Standard-A"]
                 },
                 VoicePersonality.YOUNG_ADULT: {
-                    "male": ["es-ES-Wavenet-B"],
-                    "female": ["es-ES-Wavenet-C"]
+                    "male": ["es-ES-Standard-B"],
+                    "female": ["es-ES-Standard-A"]
                 },
                 VoicePersonality.WISE: {
                     "male": ["es-ES-Standard-B"],
                     "female": ["es-ES-Standard-A"]
                 },
                 VoicePersonality.ENTHUSIAST: {
-                    "male": ["es-ES-Wavenet-B"],
-                    "female": ["es-ES-Wavenet-C"]
+                    "male": ["es-ES-Standard-B"],
+                    "female": ["es-ES-Standard-A"]
                 }
             }
         }

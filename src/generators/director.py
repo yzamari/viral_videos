@@ -78,7 +78,7 @@ class Director:
                     logger.info(f"Incorporated {len(news_items)} news items")
 
             # Generate script components
-            hook = self._generate_hook(topic, style, patterns.get('hooks', []))
+            hook = self._create_hook(topic, style, platform, patterns, news_context)
             main_content = self._structure_content(
                 topic, duration, patterns, news_context
             )
@@ -130,48 +130,85 @@ class Director:
             logger.error(f"Script writing failed: {str(e)}")
             raise GenerationFailedError("script_writing", str(e))
 
-    def _generate_hook(self, topic: str, style: str,
-                      successful_hooks: List[str]) -> Dict[str, str]:
-        """Generate attention-grabbing hook"""
+    def _create_hook(self, topic: str, style: str, platform: Platform,
+                   patterns: Dict[str, Any], news_context: str) -> Dict[str, Any]:
+        """Create engaging hook based on topic analysis"""
         try:
-            # Analyze successful hooks for patterns
-            hook_analysis = self._analyze_hook_patterns(successful_hooks)
-
+            # Use AI to generate topic-specific hook
             prompt = f"""
-            Create an attention-grabbing hook for a video about: {topic}
+            Create an engaging opening hook for a {platform.value} video about: {topic}
+
             Style: {style}
+            Success patterns: {patterns.get('hooks', [])}
+            
+            {news_context}
 
-            Successful hook patterns:
-            {json.dumps(hook_analysis, indent=2)}
+            Requirements:
+            1. Start with an attention-grabbing question or statement
+            2. Be specific to the actual topic: {topic}
+            3. Create curiosity without revealing everything
+            4. Use emotional triggers appropriate for the topic
+            5. Keep it under 15 words for quick consumption
+            6. NEVER use generic phrases like "This is amazing"
+            7. Make it topic-specific and authentic
 
-            Create a hook that:
-            1. Grabs attention in the first 3 seconds
-            2. Creates curiosity or emotional response
-            3. Promises value or entertainment
-            4. Uses pattern that works for this topic
-
-            CRITICAL: Return ONLY spoken dialogue. NO visual descriptions, stage directions, or camera instructions.
-
-            Return JSON:
-            {{
-                "text": "ONLY the words to be spoken aloud",
-                "type": "question/shock/promise/story",
-                "duration_seconds": 3
-            }}
+            Return ONLY the hook text, no explanations.
             """
 
             response = self.model.generate_content(prompt)
-            hook_data = self._extract_json(response.text)
+            hook_text = response.text.strip()
+            
+            # Clean up any quotes or extra formatting
+            hook_text = hook_text.strip('"\'').strip()
+            
+            # Ensure it's not generic
+            generic_phrases = ['this is amazing', 'amazing', 'incredible', 'unbelievable']
+            if any(phrase in hook_text.lower() for phrase in generic_phrases):
+                # Generate a more specific hook
+                specific_prompt = f"""
+                Create a specific, non-generic hook for: {topic}
+                
+                Avoid these generic words: amazing, incredible, unbelievable
+                Be specific to the actual content and topic.
+                Ask a direct question or make a specific statement about {topic}.
+                
+                Return ONLY the hook text.
+                """
+                response = self.model.generate_content(specific_prompt)
+                hook_text = response.text.strip().strip('"\'').strip()
 
-            # Fallback to template if AI fails
-            if not hook_data:
-                hook_data = self._get_template_hook(topic, style)
-
-            return hook_data
+            return {
+                'text': hook_text,
+                'type': 'topic_specific',
+                'duration_seconds': 3
+            }
 
         except Exception as e:
-            logger.warning(f"Hook generation failed, using fallback: {e}")
-            return self._get_template_hook(topic, style)
+            logger.warning(f"Hook generation failed: {e}")
+            # Create dynamic topic-specific fallback without any hardcoded content
+            topic_words = topic.split()
+            
+            # Extract meaningful words (filter out common words)
+            meaningful_words = [word for word in topic_words if len(word) > 3 and word.lower() not in ['the', 'and', 'with', 'for', 'that', 'this', 'from']]
+            
+            if len(meaningful_words) >= 2:
+                # Use the first two meaningful words
+                hook_text = f"What happens when {meaningful_words[0]} meets {meaningful_words[1]}?"
+            elif len(meaningful_words) == 1:
+                # Use single meaningful word
+                hook_text = f"Why is {meaningful_words[0]} changing everything?"
+            elif len(topic_words) >= 3:
+                # Use first three words if no meaningful words found
+                hook_text = f"What makes {' '.join(topic_words[:3])} so important?"
+            else:
+                # Fallback to the full topic
+                hook_text = f"Why should you know about {topic}?"
+            
+            return {
+                'text': hook_text,
+                'type': 'topic_specific',
+                'duration_seconds': 3
+            }
 
     def _structure_content(self, topic: str, duration: int,
                          patterns: Dict, news_context: str) -> List[Dict[str, Any]]:
@@ -445,27 +482,27 @@ class Director:
         return None
 
     def _load_hook_templates(self) -> Dict[str, List[str]]:
-        """Load hook templates for fallback"""
+        """Load dynamic hook pattern templates (no hardcoded content)"""
         return {
             'question': [
-                "Did you know that {topic}?",
-                "What if I told you {topic}?",
-                "Have you ever wondered about {topic}?"
+                "How does {key_word} really work?",
+                "What makes {key_word} so effective?",
+                "Why is {key_word} gaining attention?"
             ],
             'shock': [
-                "You won't believe what happened with {topic}!",
-                "This {topic} will blow your mind!",
-                "The truth about {topic} is shocking!"
+                "The truth about {key_word} changes everything",
+                "What experts don't tell you about {key_word}",
+                "The hidden side of {key_word} revealed"
             ],
             'promise': [
-                "Here's how to master {topic} in seconds!",
-                "Learn the secret of {topic}!",
-                "The ultimate guide to {topic}!"
+                "Master {key_word} with this approach",
+                "Understanding {key_word} made simple",
+                "The complete guide to {key_word}"
             ],
             'story': [
-                "This is what happened when I tried {topic}...",
-                "My experience with {topic} changed everything!",
-                "The day I discovered {topic}..."
+                "My journey with {key_word} began when...",
+                "Here's what happened when I explored {key_word}",
+                "The moment {key_word} changed my perspective"
             ]
         }
 
@@ -665,15 +702,30 @@ class Director:
             # More clips for dynamic cutting
             return self._calculate_segments(duration)
 
-    def _get_template_hook(self, topic: str, style: str) -> Dict[str, str]:
-        """Get fallback hook from templates"""
+    def _get_template_hook(self, topic: str, style: str) -> Dict[str, Any]:
+        """Get fallback hook from templates dynamically"""
+        # Determine hook type based on style
         hook_type = 'question' if 'tutorial' in style else 'shock'
-        template = self.hook_templates[hook_type][0]
+        
+        # Extract meaningful words from topic
+        topic_words = topic.split()
+        meaningful_words = [word for word in topic_words if len(word) > 3 and word.lower() not in ['the', 'and', 'with', 'for', 'that', 'this', 'from']]
+        
+        # Generate dynamic hook based on type and topic
+        if hook_type == 'question':
+            if meaningful_words:
+                hook_text = f"How does {meaningful_words[0]} actually work?"
+            else:
+                hook_text = f"What's the real story behind {topic}?"
+        else:  # shock type
+            if meaningful_words:
+                hook_text = f"The truth about {meaningful_words[0]} will surprise you"
+            else:
+                hook_text = f"What you don't know about {topic}"
 
         return {
-            'text': template.format(topic=topic),
+            'text': hook_text,
             'type': hook_type,
-            'visual_cue': f"Text overlay with {style} background",
             'duration_seconds': 3
         }
 
@@ -683,16 +735,38 @@ class Director:
         return max(3, min(duration // 7, 8))
 
     def _get_default_segments(self, topic: str, num_segments: int) -> List[Dict]:
-        """Get default content segments"""
+        """Get default content segments dynamically based on topic"""
         segments = []
         segment_duration = 30 // num_segments  # Assume 30s default
-
+        
+        # Extract topic components for dynamic content
+        topic_words = topic.split()
+        meaningful_words = [word for word in topic_words if len(word) > 3 and word.lower() not in ['the', 'and', 'with', 'for', 'that', 'this', 'from', 'about']]
+        
+        # Create dynamic segment content based on topic structure
         for i in range(num_segments):
+            if i == 0:
+                # First segment: Introduction
+                if meaningful_words:
+                    text = f"Let's explore {meaningful_words[0]} and understand its significance"
+                else:
+                    text = f"Let's dive into {topic} and what makes it important"
+            elif i == num_segments - 1:
+                # Last segment: Conclusion
+                if meaningful_words:
+                    text = f"Understanding {meaningful_words[0]} opens new possibilities"
+                else:
+                    text = f"This knowledge about {topic} can be valuable"
+            else:
+                # Middle segments: Key aspects
+                if len(meaningful_words) > i:
+                    text = f"Here's what you need to know about {meaningful_words[i]}"
+                else:
+                    text = f"Another important aspect of {topic} to consider"
+            
             segments.append({
-                'text': f"Point {i+1} about {topic}",
-                'visual': f"Relevant visual for point {i+1}",
-                'duration': segment_duration,
-                'transition': 'cut'
+                'text': text,
+                'duration': segment_duration
             })
 
         return segments
@@ -701,8 +775,8 @@ class Director:
         """Analyze patterns in successful hooks"""
         if not successful_hooks:
             return {
-                'common_words': ['amazing', 'incredible', 'shocking'],
-                'patterns': ['question', 'promise', 'shock'],
+                'common_words': ['effective', 'important', 'powerful'],
+                'patterns': ['question', 'promise', 'insight'],
                 'avg_length': 15
             }
 
@@ -767,14 +841,23 @@ class Director:
         except Exception as e:
             logger.error(f"Script assembly failed: {e}")
             # Return minimal script as fallback
+            hook_text = hook.get("text", "")
+            cta_text = cta.get("text", "")
+            
+            # Extract topic from hook or use fallback
+            if hook_text:
+                fallback_content = f"Let's explore {hook_text.lower()}"
+            else:
+                fallback_content = f"Here's what you need to know"
+            
             return {
                 'hook': hook,
-                'segments': main_content or [{'text': f'Amazing content about {hook.get("text", "this topic")}', 'duration': duration-5}],
+                'segments': main_content or [{'text': fallback_content, 'duration': duration-5}],
                 'cta': cta,
                 'total_duration': duration,
                 'platform': platform.value,
                 'created_at': datetime.now().isoformat(),
-                'full_text': f'{hook.get("text", "")} Amazing content. {cta.get("text", "")}'
+                'full_text': f'{hook_text} {fallback_content}. {cta_text}'
             }
 
     def _format_news_context(self, news_items: List[Dict[str, Any]]) -> str:
@@ -808,14 +891,20 @@ class Director:
         return ' '.join(text_parts)
 
     def _enhance_hook_virality(self, hook: Dict[str, str], viral_elements: Dict[str, Any]) -> Dict[str, str]:
-        """Enhance hook for viral potential"""
-        # Add emotional triggers if missing
-        emotional_words = ['amazing', 'incredible', 'shocking', 'unbelievable', 'mind-blowing']
+        """Enhance hook for viral potential without hardcoded words"""
         hook_text = hook.get('text', '')
-
-        if not any(word in hook_text.lower() for word in emotional_words):
-            # Add emotional trigger
-            hook['text'] = f"This is {emotional_words[0]}! {hook_text}"
+        
+        # Use emotional triggers from viral_elements if available
+        available_triggers = viral_elements.get('emotional_triggers', [])
+        
+        # If no emotional triggers in text and we have available triggers, enhance the hook
+        if available_triggers and not any(trigger in hook_text.lower() for trigger in available_triggers):
+            # Use the first available emotional trigger
+            hook['text'] = f"{available_triggers[0].capitalize()}: {hook_text}"
+        elif not available_triggers:
+            # If no triggers available, enhance with intensity
+            if not any(word in hook_text.lower() for word in ['how', 'why', 'what', 'when', 'where']):
+                hook['text'] = f"Discover: {hook_text}"
 
         return hook
 
@@ -840,9 +929,9 @@ class Director:
 
         full_text = self._extract_full_text(script)
 
-        # Check for viral keywords
-        viral_keywords = ['amazing', 'incredible', 'shocking', 'unbelievable', 'secret', 'truth']
-        for keyword in viral_keywords:
+        # Check for engagement keywords (non-generic)
+        engagement_keywords = ['discover', 'reveal', 'understand', 'explore', 'learn', 'master']
+        for keyword in engagement_keywords:
             if keyword in full_text.lower():
                 score += 0.1
 

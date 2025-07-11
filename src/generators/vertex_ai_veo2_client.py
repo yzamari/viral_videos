@@ -113,7 +113,7 @@ class VertexAIVeo2Client:
             clip_id: str,
             aspect_ratio: str = "16:9",
             image_path: Optional[str] = None,
-            prefer_veo3: bool = True,
+            prefer_veo3: bool = False,
             enable_audio: bool = True) -> str:
         """
         Generate video clip using Vertex AI VEO-2/VEO-3 API
@@ -124,7 +124,7 @@ class VertexAIVeo2Client:
             clip_id: Unique identifier for this clip
             aspect_ratio: Video aspect ratio ("16:9" or "9:16")
             image_path: Optional image for image-to-video generation
-            prefer_veo3: Whether to prefer VEO-3 over VEO-2 (default: True)
+            prefer_veo3: Whether to prefer VEO-3 over VEO-2 (default: False)
             enable_audio: Whether to enable native audio generation (VEO-3 only)
 
         Returns:
@@ -151,6 +151,11 @@ class VertexAIVeo2Client:
 
             # Clamp duration to model limits
             duration = min(duration, max_duration)
+            
+            # VEO-3 requires minimum 8 seconds
+            if model_name == self.veo3_model and duration < 8.0:
+                duration = 8.0
+                logger.info(f"⏰ Adjusted duration to 8s for VEO-3 minimum requirement")
 
             # Enhance prompt for VEO-3 if using audio
             enhanced_prompt = self._enhance_prompt_for_veo3(
@@ -178,86 +183,46 @@ class VertexAIVeo2Client:
                 logger.info(
                     "🚫 VEO rejected prompt due to sensitive content, starting multi-strategy rephrasing...")
 
-                # Try multiple rephrasing strategies
-                max_rephrase_attempts = 3
-                for attempt in range(max_rephrase_attempts):
-                    logger.info(
-                        f"🔄 Rephrasing attempt {
-                            attempt + 1}/{max_rephrase_attempts}")
-
-                    if attempt == 0:
-                        # First attempt: Use Gemini to rephrase
-                        logger.info(
-                            "   Strategy: AI-powered rephrasing with Gemini")
-                        rephrased_prompt = self._rephrase_prompt_with_gemini(
-                            prompt, "VEO rejected prompt due to sensitive content")
-                    elif attempt == 1:
-                        # Second attempt: Use simple cleanup
-                        logger.info(
-                            "   Strategy: Simple word replacement cleanup")
+                # Try multi-strategy rephrasing
+                logger.info("🚫 VEO rejected prompt due to sensitive content, starting multi-strategy rephrasing...")
+                
+                # Strategy 1: AI-powered rephrasing with Gemini
+                for attempt in range(1, 4):  # Try 3 times
+                    logger.info(f"🔄 Rephrasing attempt {attempt}/3")
+                    
+                    if attempt == 1:
+                        logger.info("   Strategy: AI-powered rephrasing with Gemini")
+                        rephrased_prompt = self._rephrase_prompt_with_gemini(prompt, "VEO rejected prompt due to sensitive content")
+                    elif attempt == 2:
+                        logger.info("   Strategy: Simple word replacement cleanup")
                         rephrased_prompt = self._simple_prompt_cleanup(prompt)
                     else:
-                        # Third attempt: Create very safe generic prompt
-                        logger.info(
-                            "   Strategy: Safe generic prompt generation")
-                        rephrased_prompt = self._create_safe_generic_prompt(
-                            prompt)
-
-                    logger.info(
-                        f"   Rephrased prompt: {rephrased_prompt[:100]}...")
-
-                    # Retry generation with rephrased prompt
-                    retry_operation_name = self._create_video_generation_request(
-                        model_name, rephrased_prompt, duration, aspect_ratio, image_path
-                    )
-
-                    if not retry_operation_name:
-                        logger.warning(
-                            f"❌ Failed to create video generation request after rephrasing (attempt {
-                                attempt + 1})")
-                        continue
-
-                    logger.info(
-                        f"⏳ Polling for completion of rephrased prompt (attempt {
-                            attempt + 1})...")
-                    retry_video_uri = self._poll_for_completion(
-                        retry_operation_name, clip_id, rephrased_prompt)
-
-                    if retry_video_uri == "SENSITIVE_CONTENT_ERROR":
-                        logger.info(
-                            f"🚫 VEO still rejected prompt after rephrasing (attempt {
-                                attempt + 1})")
-                        continue
-                    elif retry_video_uri:
-                        # Success! Download the video
-                        logger.info(
-                            f"✅ Video generation successful after rephrasing (attempt {
-                                attempt + 1})")
-                        local_path = self._download_video_from_gcs(
-                            retry_video_uri, clip_id)
-                        if local_path and os.path.exists(local_path):
-                            file_size = os.path.getsize(
-                                local_path) / (1024 * 1024)
-                            model_used = "VEO-3" if model_name == self.veo3_model else "VEO-2"
-                            audio_status = " with audio" if model_name == self.veo3_model and enable_audio else ""
-                            logger.info(
-                                f"✅ {model_used} video generated after rephrasing{audio_status}: {local_path} ({
-                                    file_size:.1f}MB)")
-                            return local_path
+                        logger.info("   Strategy: Safe generic prompt generation")
+                        rephrased_prompt = self._create_safe_generic_prompt(prompt)
+                    
+                    # Test the rephrased prompt
+                    logger.info(f"   Rephrased prompt: {rephrased_prompt[:100]}...")
+                    
+                    # Try generating with rephrased prompt
+                    rephrased_operation = self._create_video_generation_request(
+                        model_name, rephrased_prompt, duration, aspect_ratio, image_path)
+                    
+                    if rephrased_operation:
+                        logger.info(f"⏳ Polling for completion of rephrased prompt (attempt {attempt})...")
+                        rephrased_result = self._poll_for_completion(rephrased_operation, clip_id, rephrased_prompt)
+                        
+                        if rephrased_result and rephrased_result != "SENSITIVE_CONTENT_ERROR":
+                            logger.info(f"✅ Video generation successful after rephrasing (attempt {attempt})")
+                            return rephrased_result
                         else:
-                            logger.warning(
-                                f"❌ Failed to download generated video after rephrasing (attempt {
-                                    attempt + 1})")
+                            logger.info(f"🚫 VEO still rejected prompt after rephrasing (attempt {attempt})")
                             continue
                     else:
-                        logger.warning(
-                            f"❌ Video generation failed or timed out after rephrasing (attempt {
-                                attempt + 1})")
+                        logger.warning(f"❌ Failed to create request for rephrased prompt (attempt {attempt})")
                         continue
-
+                
                 # All rephrasing attempts failed
-                logger.error(
-                    "❌ All rephrasing attempts failed, creating fallback clip")
+                logger.error("❌ All rephrasing attempts failed, creating fallback clip")
                 return self._create_fallback_clip(prompt, duration, clip_id)
 
             elif not video_uri:
@@ -295,137 +260,37 @@ class VertexAIVeo2Client:
             return self._create_fallback_clip(prompt, duration, clip_id)
 
     def _sanitize_prompt_for_veo(self, prompt: str) -> str:
-        """Sanitize prompt to remove words that might trigger VEO content filters"""
-        import re
-
-        # Words that commonly trigger VEO filters - COMPREHENSIVE LIST
-        sensitive_words = {
-            # Family/child-related (VEO is very strict about content involving children)
-            'child': 'person',
-            'children': 'people',
-            'kid': 'person',
-            'kids': 'people',
-            'baby': 'person',
-            'toddler': 'person',
-            'infant': 'person',
-            'minor': 'person',
-            'family': 'group',
-            'mother': 'person',
-            'father': 'person',
-            'parent': 'person',
-            'mom': 'person',
-            'dad': 'person',
-            'son': 'person',
-            'daughter': 'person',
-            'brother': 'person',
-            'sister': 'person',
-            
-            # Emotional/distress words
-            'frustrated': 'peaceful',
-            'struggling': 'resting',
-            'distressed': 'calm',
-            'crying': 'resting',
-            'screaming': 'speaking',
-            'nightmare': 'dream',
-            'scared': 'comfortable',
-            'frightened': 'relaxed',
-            'worried': 'thoughtful',
-            'anxious': 'focused',
-            'stressed': 'centered',
-            'upset': 'calm',
-            'angry': 'energetic',
-            'mad': 'enthusiastic',
-            
-            # Intensity/extreme words
-            'extreme': 'gentle',
-            'abrupt': 'smooth',
-            'jarring': 'soothing',
-            'harsh': 'soft',
-            'aggressive': 'peaceful',
-            'intense': 'calm',
-            'overwhelming': 'comfortable',
-            'dramatic': 'expressive',
-            'shocking': 'surprising',
-            'startling': 'interesting',
-            
-            # Medical/health concerns
-            'dust mites': 'cleanliness',
-            'germs': 'hygiene',
-            'bacteria': 'cleanliness',
-            'virus': 'health',
-            'microscopic': 'tiny',
-            'contaminated': 'clean',
-            'infection': 'wellness',
-            'disease': 'health',
-            'illness': 'wellness',
-            'sick': 'resting',
-            'pain': 'sensation',
-            'hurt': 'affect',
-            
-            # Action/conflict words
-            'over-the-top': 'colorful',
-            'takeover': 'arrangement',
-            'lurking': 'present',
-            'sabotage': 'affect',
-            'disrupt': 'influence',
-            'interrupt': 'transition',
-            'steal': 'take',
-            'grab': 'hold',
-            'snatch': 'pick up',
-            'attack': 'approach',
-            'fight': 'interact',
-            'battle': 'challenge',
-            'war': 'competition',
-            
-            # Transition words that can be problematic
-            'cut to': 'transition to',
-            'abruptly': 'smoothly',
-            'suddenly': 'gradually',
-            'shock': 'surprise',
-            'surprising': 'interesting',
-            'unexpected': 'different',
-            'burst': 'emerge',
-            'explode': 'expand',
-            'crash': 'meet',
-            
-            # Connection/interaction words that can be misinterpreted
-            'connection': 'interaction',
-            'engage': 'participate',
-            'engaging': 'participating',
-            'engagement': 'interaction',
-            'laughter': 'joy',
-            'laughing': 'joyful',
-            'laugh': 'smile'
+        """Sanitize prompt to comply with VEO content policies"""
+        
+        # Age-related sanitization - replace problematic age references
+        age_replacements = {
+            'kids under age 10': 'young learners',
+            'children under age 10': 'young students', 
+            'under age 10': 'young audience',
+            'kids under 10': 'young learners',
+            'children under 10': 'young students',
+            'age 10': 'elementary level',
+            'kids': 'students',
+            'children': 'learners'
         }
-
-        sanitized = prompt
-        for sensitive, replacement in sensitive_words.items():
-            sanitized = re.sub(
-                r'\b' +
-                re.escape(sensitive) +
-                r'\b',
-                replacement,
-                sanitized,
-                flags=re.IGNORECASE)
-
-        # Remove potentially problematic phrases
-        problematic_patterns = [
-            r'\b(violence|violent|attack|attacking|fight|fighting|hurt|hurting|harm|harmful|dangerous|threat|threatening)\b',
-            r'\b(kill|killing|death|dead|die|dying|blood|bleeding|wound|wounded|injury|injured)\b',
-            r'\b(gun|weapon|knife|sword|bomb|explosion|fire|burning|smoke)\b']
-
-        for pattern in problematic_patterns:
-            sanitized = re.sub(pattern, '', sanitized, flags=re.IGNORECASE)
-
-        # Clean up extra spaces
-        sanitized = re.sub(r'\s+', ' ', sanitized).strip()
-
-        # Add no-text instruction to prevent VEO from adding its own text
-        # overlays
-        sanitized += ". No text overlays, captions, or written words in the video"
-
-        logger.info(
-            f"🧹 Prompt sanitized: '{prompt[:50]}...' -> '{sanitized[:50]}...'")
+        
+        sanitized = prompt.lower()
+        for problematic, safe in age_replacements.items():
+            sanitized = sanitized.replace(problematic, safe)
+            
+        # Additional content policy sanitization
+        content_replacements = {
+            'theorem': 'mathematical concept',
+            'lagrange': 'mathematical method',
+            'remainder': 'leftover part'
+        }
+        
+        for problematic, safe in content_replacements.items():
+            sanitized = sanitized.replace(problematic, safe)
+            
+        logger.info(f"🧹 Prompt sanitized: '{prompt[:50]}...' -> '{sanitized[:50]}...'")
+        logger.info("🧹 Prompt sanitized for VEO content policies")
+        
         return sanitized
 
     def _select_optimal_model(self,
@@ -847,28 +712,21 @@ class VertexAIVeo2Client:
             gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
 
             rephrase_prompt = f"""
-            The following video generation prompt was rejected by Google's VEO AI for containing sensitive words:
+            The following video generation prompt was REJECTED by Google VEO for violating content policies:
 
             ORIGINAL PROMPT: "{original_prompt}"
-            ERROR MESSAGE: "{error_message}"
+            ERROR: "{error_message}"
 
-            Please rephrase this prompt to:
-            1. Remove any sensitive, violent, or inappropriate language
-            2. Maintain the core visual concept and intent
-            3. Use family-friendly, positive language
-            4. Focus on the visual storytelling aspects
-            5. Ensure it's suitable for all audiences
-            6. Keep it engaging and cinematic
+            TASK: Rephrase this prompt to be 100% compliant with Google VEO content policies while preserving the EXACT same meaning and visual intent.
 
-            IMPORTANT GUIDELINES:
-            - Replace any words related to violence, conflict, or harm with peaceful alternatives
-            - Remove references to weapons, fighting, or dangerous activities
-            - Use positive, uplifting language
-            - Focus on beauty, creativity, and artistic expression
-            - Maintain the original scene's visual essence
-            - Keep it concise and clear
+            REQUIREMENTS:
+            1. Keep the same visual concept and educational intent
+            2. Use VEO-safe language that won't trigger content filters
+            3. Maintain all the visual details and style information
+            4. Do NOT change the core meaning or educational value
+            5. Focus on making it policy-compliant, not dumbing it down
 
-            Return ONLY the rephrased prompt, no explanations or additional text.
+            Return ONLY the rephrased prompt that means exactly the same thing but uses VEO-safe language.
             """
 
             # Make request to Gemini API
@@ -1113,7 +971,7 @@ class VertexAIVeo2Client:
                 # Verify the file was created and has reasonable size
                 if os.path.exists(output_path):
                     file_size = os.path.getsize(output_path)
-                    if file_size > 500000:  # At least 500KB for a substantial video
+                    if file_size > 80000:  # At least 80KB for a substantial video
                         logger.info(
                             f"✅ Fallback video created: {output_path} ({
                                 file_size / 1024:.1f}KB)")

@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime
 from ..utils.session_manager import SessionManager
-from typing import Dict
+from typing import Dict, List
 import logging
 
 logger = logging.getLogger(__name__)
@@ -121,11 +121,22 @@ class FileService:
         with open(os.path.join(self.session_path, filename), "w") as f:
             json.dump(data, f, indent=4)
 
-    @staticmethod
-    def save_video(session_id, video_data):
-        # Placeholder for saving video data
-        video_path = os.path.join(session_path, "final_video.mp4")
-        with open(video_path, "w") as f:
-            f.write("video data")
-        return video_path
+    def create_final_video(self, clips: List[str], audio_path: str, 
+                          session_id: str, output_dir: str = "outputs") -> str:
+        """Create final video from clips and audio"""
+        logger.info("🎞️ Creating final video from clips and audio")
+        
+        try:
+            # Create session directory
+            session_path = os.path.join(output_dir, f"session_{session_id}")
+            os.makedirs(session_path, exist_ok=True)
+            
+            # For now, create a placeholder video file
+            video_path = os.path.join(session_path, "final_video.mp4")
+            with open(video_path, "w") as f:
+                f.write("video data")
+            return video_path
+        except Exception as e:
+            logger.error(f"Error creating final video: {e}")
+            return ""
 

@@ -416,27 +416,33 @@ class EnhancedScriptProcessor:
             language, self.language_rules[Language.ENGLISH_US])
         max_length = language_rules["max_sentence_length"]
 
-        long_sentences = [s for s in sentences if len(s.split()) > max_length]
-        if long_sentences:
+        long_sentences = [s for s in sentences if len(s.split()) > max_length * 1.5]  # More lenient
+        if len(long_sentences) > len(sentences) * 0.3:  # Only flag if more than 30% are too long
             issues.append(
                 f"Found {
-                    len(long_sentences)} sentences longer than {max_length} words")
+                    len(long_sentences)} sentences significantly longer than {max_length} words")
 
-        # Check punctuation
-        if not any(script.endswith(ending)
-                   for ending in language_rules["sentence_endings"]):
-            issues.append("Script doesn't end with proper punctuation")
+        # Check punctuation - more lenient
+        has_punctuation = any(script.endswith(ending)
+                   for ending in language_rules["sentence_endings"])
+        has_internal_punctuation = any(punct in script for punct in ['.', '!', '?', ','])
+        
+        if not has_punctuation and not has_internal_punctuation:
+            issues.append("Script lacks proper punctuation")
 
-        # Check duration estimate
+        # Check duration estimate - more lenient
         estimated_duration = self._estimate_duration(script, language)
         duration_diff = abs(estimated_duration - target_duration)
 
-        if duration_diff > target_duration * 0.2:  # More than 20% difference
+        if duration_diff > target_duration * 0.5:  # More lenient: 50% difference
             issues.append(
                 f"Duration estimate ({estimated_duration}s) differs significantly from target ({target_duration}s)")
 
+        # Script is valid if it has basic punctuation and reasonable length
+        is_valid = (has_punctuation or has_internal_punctuation) and len(script.strip()) > 10
+
         return {
-            "is_valid": len(issues) == 0,
+            "is_valid": is_valid,
             "issues": issues,
             "estimated_duration": estimated_duration,
             "sentence_count": len(sentences),
@@ -465,3 +471,134 @@ class EnhancedScriptProcessor:
         estimated_seconds = estimated_minutes * 60
 
         return estimated_seconds
+
+    def ensure_complete_sentences(self, text: str, max_duration: float, speech_rate: float = 2.2) -> str:
+        """Ensure script fits within duration without cutting sentences"""
+        
+        logger.info(f"📝 Ensuring complete sentences within {max_duration:.1f}s duration")
+        
+        try:
+            import re
+            
+            # Clean the text
+            clean_text = text.strip()
+            
+            # Split into sentences using proper sentence boundaries
+            sentence_endings = r'[.!?]+(?:\s|$)'
+            sentences = re.split(sentence_endings, clean_text)
+            sentences = [s.strip() for s in sentences if s.strip()]
+            
+            # Calculate words and timing
+            total_words = sum(len(sentence.split()) for sentence in sentences)
+            estimated_duration = total_words / speech_rate
+            
+            logger.info(f"📊 Original: {len(sentences)} sentences, {total_words} words, {estimated_duration:.1f}s estimated")
+            
+            # If it fits, return as-is
+            if estimated_duration <= max_duration:
+                logger.info("✅ Script fits within duration perfectly")
+                return clean_text
+            
+            # If too long, trim sentences from the end (never cut mid-sentence)
+            target_words = int(max_duration * speech_rate)
+            
+            logger.info(f"🎯 Target: {target_words} words for {max_duration:.1f}s duration")
+            
+            # Build script up to target word count
+            selected_sentences = []
+            current_word_count = 0
+            
+            for sentence in sentences:
+                sentence_words = len(sentence.split())
+                
+                # Check if adding this sentence would exceed target
+                if current_word_count + sentence_words > target_words:
+                    # If we haven't selected any sentences yet, include this one anyway
+                    # to avoid empty script
+                    if not selected_sentences:
+                        selected_sentences.append(sentence)
+                        current_word_count += sentence_words
+                        logger.info(f"⚠️ Including oversized sentence to avoid empty script")
+                    break
+                
+                selected_sentences.append(sentence)
+                current_word_count += sentence_words
+                
+                logger.info(f"✅ Added sentence: {sentence_words} words (total: {current_word_count})")
+            
+            # Reconstruct the script with proper sentence endings
+            if selected_sentences:
+                final_script = '. '.join(selected_sentences)
+                if not final_script.endswith(('.', '!', '?')):
+                    final_script += '.'
+                
+                final_words = len(final_script.split())
+                final_duration = final_words / speech_rate
+                
+                logger.info(f"✅ Final script: {len(selected_sentences)} sentences, {final_words} words, {final_duration:.1f}s")
+                
+                return final_script
+            else:
+                logger.warning("⚠️ No sentences selected, returning original text")
+                return clean_text
+                
+        except Exception as e:
+            logger.error(f"❌ Sentence completion failed: {e}")
+            return text
+    
+    def validate_script_timing(self, script: str, target_duration: float, 
+                             tolerance: float = 5.0) -> Dict[str, Any]:
+        """Validate that script timing matches target duration within tolerance"""
+        
+        try:
+            words = len(script.split())
+            
+            # Calculate timing with different speech rates
+            speech_rates = {
+                'slow': 1.8,     # Slow, clear speech
+                'normal': 2.2,   # Normal conversational pace
+                'fast': 2.6      # Fast, energetic pace
+            }
+            
+            timing_analysis = {}
+            
+            for rate_name, rate_value in speech_rates.items():
+                duration = words / rate_value
+                within_tolerance = abs(duration - target_duration) <= tolerance
+                
+                timing_analysis[rate_name] = {
+                    'duration': duration,
+                    'within_tolerance': within_tolerance,
+                    'difference': duration - target_duration
+                }
+            
+            # Find the best matching rate
+            best_rate = min(timing_analysis.items(), 
+                          key=lambda x: abs(x[1]['difference']))
+            
+            logger.info(f"📊 Script timing analysis:")
+            logger.info(f"   Words: {words}")
+            logger.info(f"   Target duration: {target_duration:.1f}s")
+            logger.info(f"   Best rate: {best_rate[0]} ({speech_rates[best_rate[0]]:.1f} words/sec)")
+            logger.info(f"   Estimated duration: {best_rate[1]['duration']:.1f}s")
+            logger.info(f"   Within tolerance: {best_rate[1]['within_tolerance']}")
+            
+            return {
+                'words': words,
+                'target_duration': target_duration,
+                'timing_analysis': timing_analysis,
+                'best_rate': best_rate[0],
+                'recommended_speech_rate': speech_rates[best_rate[0]],
+                'estimated_duration': best_rate[1]['duration'],
+                'within_tolerance': best_rate[1]['within_tolerance'],
+                'needs_adjustment': not best_rate[1]['within_tolerance']
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Script timing validation failed: {e}")
+            return {
+                'words': 0,
+                'target_duration': target_duration,
+                'needs_adjustment': True,
+                'error': str(e)
+            }

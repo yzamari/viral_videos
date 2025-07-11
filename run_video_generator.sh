@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# 🎬 Unified Real-time VEO-2 Video Generator Launch Script
-# This is the ONLY script you need to run the complete system
+# 🎬 AI Video Generator Launch Script
+# Launch the working AI video generator with intelligent agents
 
-echo "🎬 Starting Unified Real-time VEO-2 Video Generator..."
+echo "🎬 Starting AI Video Generator with Intelligent Agents..."
 echo "============================================================="
 
 # Activate virtual environment
@@ -28,17 +28,10 @@ python -c "import gradio, google.generativeai" 2>/dev/null || {
 
 # Check API key
 echo "🔐 Checking API key..."
-if [ -z "$GEMINI_API_KEY" ]; then
-    echo "⚠️  Warning: GEMINI_API_KEY not found in environment variables"
-    echo "Please set your API key: export GEMINI_API_KEY='your-key-here'"
-    echo "Or create a .env file with GEMINI_API_KEY=your-key-here"
-fi
-
-# Check Google Cloud authentication
-echo "🔐 Checking Google Cloud authentication..."
-if ! gcloud auth list --filter=status:ACTIVE --format="value(account)" | grep -q .; then
-    echo "🔐 Setting up Google Cloud authentication..."
-    gcloud auth application-default login --no-browser
+if [ -z "$GOOGLE_API_KEY" ]; then
+    echo "⚠️  Warning: GOOGLE_API_KEY not found in environment variables"
+    echo "Please set your API key: export GOOGLE_API_KEY='your-key-here'"
+    echo "Or create a .env file with GOOGLE_API_KEY=your-key-here"
 fi
 
 # Parse command line arguments
@@ -48,7 +41,7 @@ MISSION=""
 DURATION=15
 PLATFORM="tiktok"
 CATEGORY="Educational"
-DISCUSSIONS=true
+DISCUSSIONS="enhanced"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -76,9 +69,9 @@ while [[ $# -gt 0 ]]; do
             CATEGORY="$2"
             shift 2
             ;;
-        --no-discussions)
-            DISCUSSIONS=false
-            shift
+        --discussions)
+            DISCUSSIONS="$2"
+            shift 2
             ;;
         *)
             echo "Unknown option: $1"
@@ -89,54 +82,54 @@ done
 
 # Launch appropriate mode
 if [ "$UI_MODE" = true ]; then
-    echo "🚀 Launching Unified Real-time UI with Modern Text Overlays..."
+    echo "🚀 Launching Modern UI with AI Agents..."
     echo "🌐 Interface will be available at http://localhost:7860"
-    echo "✅ Mission-based video generation ready"
-    echo "🤖 Live agent discussions with real-time visualization"
-    echo "🎬 VEO-2/VEO-3 integration with modern text overlays"
-    echo "📊 Complete session tracking and analytics"
-    echo "🎨 Modern social media fonts and smart positioning"
+    echo "✅ AI-powered video generation ready"
+    echo "🤖 Intelligent voice selection and style decisions"
+    echo "🎬 VEO2/VEO3/Image generation with smart fallbacks"
+    echo "📊 Complete AI agent integration"
+    echo "🎨 Smart positioning and visual style selection"
     echo "📱 Mobile-optimized for viral content"
     echo ""
     echo "🔄 Starting Gradio server..."
-    python unified_realtime_ui.py
+    python modern_ui.py
 elif [ "$CLI_MODE" = true ]; then
-    echo "🚀 Launching CLI Mode..."
+    echo "🚀 Launching CLI Mode with AI Agents..."
     if [ -z "$MISSION" ]; then
         echo "❌ Error: Mission is required for CLI mode"
         echo "Usage: $0 cli --mission 'your mission here'"
         exit 1
     fi
-    python main.py generate --topic "$MISSION" --duration "$DURATION" --platform "$PLATFORM" --category "$CATEGORY" --image-only
+    python main.py generate --mission "$MISSION" --duration "$DURATION" --platform "$PLATFORM" --category "$CATEGORY" --discussions "$DISCUSSIONS"
 else
     echo "Usage: $0 [ui|cli] [options]"
     echo ""
     echo "🎬 UI Mode (Recommended):"
-    echo "  $0 ui                    # Launch real-time web interface"
-    echo "                           # - Watch AI agents discuss in real-time"
-    echo "                           # - Modern social media text overlays"
-    echo "                           # - In-browser video playback"
-    echo "                           # - Smart positioning to avoid hiding content"
+    echo "  $0 ui                    # Launch modern web interface"
+    echo "                           # - AI voice selection interface"
+    echo "                           # - Visual style and positioning controls"
+    echo "                           # - Real-time generation progress"
+    echo "                           # - Smart AI agent decisions"
     echo ""
     echo "⚡ CLI Mode:"
-    echo "  $0 cli --mission 'text'  # Generate via command line"
+    echo "  $0 cli --mission 'text'    # Generate via command line"
     echo "  Options:"
-    echo "    --mission TEXT         # Mission to accomplish (required)"
+    echo "    --mission TEXT         # Video mission (required)"
     echo "    --duration N           # Duration in seconds (default: 15)"
     echo "    --platform PLATFORM    # tiktok/youtube/instagram (default: tiktok)"
-    echo "    --category CATEGORY    # Educational/Business/Entertainment (default: Educational)"
-    echo "    --no-discussions       # Disable AI agent discussions"
+    echo "    --category CATEGORY    # Educational/Comedy/Entertainment (default: Educational)"
+    echo "    --discussions MODE     # enhanced/streamlined/off (default: enhanced)"
     echo ""
     echo "🎯 Examples:"
     echo "  $0 ui"
-    echo "  $0 cli --mission 'toys are bad for bed'"
-    echo "  $0 cli --mission 'shake bar day and night modes' --duration 30 --platform tiktok"
+    echo "  $0 cli --mission 'Create awareness about quantum computing breakthroughs'"
+    echo "  $0 cli --mission 'Make people laugh with funny cat video explanations' --duration 30 --platform tiktok"
     echo ""
-    echo "✨ Features:"
-    echo "  - Modern social media fonts (Impact, Arial Black, Helvetica-Bold)"
-    echo "  - Smart text positioning (never hides important content)"
-    echo "  - Drop shadow effects for better readability"
-    echo "  - Vibrant colors optimized for mobile engagement"
-    echo "  - Real-time AI agent discussions"
-    echo "  - VEO-2/VEO-3 video generation with fallbacks"
+    echo "✨ AI Agent Features:"
+    echo "  - 🎤 VoiceDirectorAgent: Smart voice selection (8 personalities)"
+    echo "  - 🎨 VisualStyleAgent: Dynamic style decisions (10+ styles)"
+    echo "  - 🎯 OverlayPositioningAgent: Smart subtitle positioning"
+    echo "  - 📝 EnhancedScriptProcessor: Punctuation & TTS optimization"
+    echo "  - 🌍 MultilingualTTS: 14+ language support"
+    echo "  - 🔄 ContinuityDecisionAgent: Frame continuity decisions"
 fi 

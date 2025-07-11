@@ -18,7 +18,7 @@ def test_basic_imports():
     print("🧪 Testing basic imports...")
     
     try:
-        from src.agents.working_simple_orchestrator import create_working_simple_orchestrator
+        from src.agents.working_orchestrator import create_working_orchestrator
         from src.models.video_models import Platform, VideoCategory, ForceGenerationMode
         from src.generators.video_generator import VideoGenerator
         print("✅ All basic imports successful")
@@ -32,6 +32,8 @@ def test_orchestrator_creation():
     print("🧪 Testing orchestrator creation...")
     
     try:
+        from src.agents.working_orchestrator import create_working_orchestrator
+        
         api_key = os.getenv('GOOGLE_API_KEY')
         if not api_key:
             print("⚠️ No API key found, testing basic creation only")
@@ -51,13 +53,12 @@ def test_orchestrator_creation():
             'target_audience': 'adults interested in wellness'
         }
         
-        orchestrator = create_working_simple_orchestrator(
+        orchestrator = create_working_orchestrator(
             topic=safe_config['topic'],
             platform=safe_config['platform'],
             category=safe_config['category'],
             duration=safe_config['duration'],
-            api_key=safe_config['api_key'],
-            mode=safe_config['mode']
+            api_key=safe_config['api_key']
         )
         print(f"✅ Orchestrator created successfully: {type(orchestrator).__name__}")
         
@@ -155,7 +156,7 @@ def test_safe_video_generation():
             return True
             
         # Import the orchestrator
-        from src.agents.working_simple_orchestrator import create_working_simple_orchestrator
+        from src.agents.working_orchestrator import create_working_orchestrator
         
         # Ultra-safe configuration for testing
         ultra_safe_config = {
@@ -164,7 +165,6 @@ def test_safe_video_generation():
             'category': 'health',
             'duration': 10,  # Very short for testing
             'api_key': api_key,
-            'mode': 'simple',
             'force_generation': 'force_image_gen',  # Force image generation
             'style': 'professional',
             'tone': 'peaceful',
@@ -174,13 +174,12 @@ def test_safe_video_generation():
         }
         
         print("🎬 Starting safe video generation test...")
-        orchestrator = create_working_simple_orchestrator(
+        orchestrator = create_working_orchestrator(
             topic=ultra_safe_config['topic'],
             platform=ultra_safe_config['platform'],
             category=ultra_safe_config['category'],
             duration=ultra_safe_config['duration'],
-            api_key=ultra_safe_config['api_key'],
-            mode=ultra_safe_config['mode']
+            api_key=ultra_safe_config['api_key']
         )
         
         # Generate video with safe configuration

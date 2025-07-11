@@ -113,11 +113,11 @@ generate_video_cli() {
     print_header "🎬 Video Generation Setup"
     
     # Get user input
-    read -p "Enter video topic: " topic
-    if [ -z "$topic" ]; then
-        topic="AI creating amazing content"
-        print_status "Using default topic: $topic"
-    fi
+    read -p "Enter video mission: " mission
+if [ -z "$mission" ]; then
+    mission="Create engaging content about AI capabilities"
+    print_status "Using default mission: $mission"
+fi
     
     read -p "Enter duration (5-60 seconds) [30]: " duration
     if [ -z "$duration" ]; then
@@ -144,7 +144,7 @@ generate_video_cli() {
     
     echo
     print_status "Starting video generation..."
-    print_status "Topic: $topic"
+    print_status "Mission: $mission"
     print_status "Duration: ${duration}s"
     print_status "Category: $category"
     print_status "Platform: $platform"
@@ -153,7 +153,7 @@ generate_video_cli() {
     
     # Generate video
     python3 main.py generate \
-        --topic "$topic" \
+        --mission "$mission" \
         --duration "$duration" \
         --category "$category" \
         --platform "$platform" \
@@ -278,7 +278,7 @@ run_quick_test() {
     print_status "Generating a 15-second test video..."
     
     python3 main.py generate \
-        --topic "Quick AI test" \
+        --mission "Quick AI test" \
         --duration 15 \
         --category Comedy \
         --discussions light
@@ -323,7 +323,7 @@ show_documentation() {
     echo
     echo "🚀 Quick Commands:"
     echo "  python3 main.py --help                    # Show all options"
-    echo "  python3 main.py generate --topic 'test'   # Generate video"
+    echo "  python3 main.py generate --mission 'test'   # Generate video"
     echo "  python3 simple_test_ui.py                 # Launch web UI"
     echo
 }

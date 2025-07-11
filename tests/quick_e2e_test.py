@@ -18,18 +18,17 @@ def test_video_generation():
     
     try:
         # Import orchestrator
-        from src.agents.working_simple_orchestrator import create_working_simple_orchestrator
+        from src.agents.working_orchestrator import create_working_orchestrator
         
         print("✅ Orchestrator imported successfully")
         
         # Create orchestrator
-        orchestrator = create_working_simple_orchestrator(
+        orchestrator = create_working_orchestrator(
             topic="Quick test of AI video generation capabilities",
             platform="instagram",
             category="education",
             duration=15,  # Short duration for quick test
-            api_key=os.getenv('GOOGLE_API_KEY'),
-            mode="simple"
+            api_key=os.getenv('GOOGLE_API_KEY')
         )
         
         print(f"✅ Orchestrator created - Session: {orchestrator.session_id}")

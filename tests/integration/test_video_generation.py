@@ -18,7 +18,7 @@ from tests.fixtures.test_data import (
     get_test_topic, get_test_config, validate_generation_result
 )
 
-from src.models.video_models import Platform, VideoCategory
+from src.models.video_models import Platform, VideoCategory, Language
 
 
 class TestVideoGenerationPipeline(unittest.TestCase):
@@ -34,14 +34,8 @@ class TestVideoGenerationPipeline(unittest.TestCase):
         self.available_orchestrators = []
         
         try:
-            from src.agents.working_simple_orchestrator import create_working_simple_orchestrator
-            self.available_orchestrators.append(('working_simple', create_working_simple_orchestrator))
-        except ImportError:
-            pass
-        
-        try:
-            from src.agents.enhanced_working_orchestrator import create_enhanced_working_orchestrator
-            self.available_orchestrators.append(('enhanced_working', create_enhanced_working_orchestrator))
+            from src.agents.working_orchestrator import create_working_orchestrator
+            self.available_orchestrators.append(('working', create_working_orchestrator))
         except ImportError:
             pass
     
@@ -76,9 +70,9 @@ class TestVideoGenerationPipeline(unittest.TestCase):
         
         # Create orchestrator
         orchestrator = create_func(
-            topic=self.test_topic,
+            mission=self.test_topic,
             platform="instagram",
-            category="educational",
+            category="Education",
             duration=25,
             api_key=TEST_API_KEY
         )
@@ -106,9 +100,9 @@ class TestVideoGenerationPipeline(unittest.TestCase):
                 try:
                     # Create orchestrator
                     orchestrator = create_func(
-                        topic=self.test_topic,
+                        mission=self.test_topic,
                         platform="instagram",
-                        category="educational",
+                        category="Education",
                         duration=25,
                         api_key=TEST_API_KEY
                     )
@@ -147,9 +141,9 @@ class TestVideoGenerationPipeline(unittest.TestCase):
             with self.subTest(platform=platform):
                 try:
                     orchestrator = create_func(
-                        topic=self.test_topic,
+                        mission=self.test_topic,
                         platform=platform,
-                        category="educational",
+                        category="Education",
                         duration=25,
                         api_key=TEST_API_KEY
                     )
@@ -183,7 +177,7 @@ class TestVideoGenerationPipeline(unittest.TestCase):
             with self.subTest(category=category):
                 try:
                     orchestrator = create_func(
-                        topic=self.test_topic,
+                        mission=self.test_topic,
                         platform="instagram",
                         category=category,
                         duration=25,
@@ -208,9 +202,9 @@ class TestVideoGenerationPipeline(unittest.TestCase):
             with self.subTest(duration=duration):
                 try:
                     orchestrator = create_func(
-                        topic=self.test_topic,
+                        mission=self.test_topic,
                         platform="instagram",
-                        category="educational",
+                        category="Education",
                         duration=duration,
                         api_key=TEST_API_KEY
                     )
@@ -277,16 +271,18 @@ class TestAgentIntegration(unittest.TestCase):
             style='viral',
             duration=25,
             platform=Platform.INSTAGRAM,
-            category=VideoCategory.LIFESTYLE
+            category=VideoCategory.EDUCATION,
+            patterns={'hooks': ['Amazing'], 'themes': ['lifestyle']},
+            incorporate_news=False
         )
         
         self.assertIsNotNone(script_result)
         
         # Use script in voice agent
         voice_result = self.voice_agent.analyze_content_and_select_voices(
-            topic=self.test_topic,
             script=str(script_result),
-            language='en-US',
+            topic=self.test_topic,
+            language=Language.ENGLISH_US,
             platform=Platform.INSTAGRAM,
             category=VideoCategory.LIFESTYLE,
             duration_seconds=25,
@@ -331,8 +327,8 @@ class TestConfigurationIntegration(unittest.TestCase):
         """Set up test fixtures"""
         # Check orchestrator availability
         try:
-            from src.agents.working_simple_orchestrator import create_working_simple_orchestrator
-            self.create_orchestrator = create_working_simple_orchestrator
+            from src.agents.working_orchestrator import create_working_orchestrator
+            self.create_orchestrator = create_working_orchestrator
             self.orchestrator_available = True
         except ImportError:
             self.orchestrator_available = False
@@ -345,9 +341,9 @@ class TestConfigurationIntegration(unittest.TestCase):
         config = get_test_config('basic')
         
         orchestrator = self.create_orchestrator(
-            topic=get_test_topic(0),
+            mission=get_test_topic(0),
             platform="instagram",
-            category="educational",
+            category="Education",
             duration=25,
             api_key=TEST_API_KEY,
             mode="simple"
@@ -368,9 +364,9 @@ class TestConfigurationIntegration(unittest.TestCase):
         config = get_test_config('advanced')
         
         orchestrator = self.create_orchestrator(
-            topic=get_test_topic(0),
+            mission=get_test_topic(0),
             platform="instagram",
-            category="educational",
+            category="Education",
             duration=25,
             api_key=TEST_API_KEY,
             mode="enhanced"
@@ -386,9 +382,9 @@ class TestConfigurationIntegration(unittest.TestCase):
         config = get_test_config('image_only')
         
         orchestrator = self.create_orchestrator(
-            topic=get_test_topic(0),
+            mission=get_test_topic(0),
             platform="instagram",
-            category="educational",
+            category="Education",
             duration=25,
             api_key=TEST_API_KEY,
             mode="simple"
@@ -407,8 +403,8 @@ class TestErrorHandlingIntegration(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures"""
         try:
-            from src.agents.working_simple_orchestrator import create_working_simple_orchestrator
-            self.create_orchestrator = create_working_simple_orchestrator
+            from src.agents.working_orchestrator import create_working_orchestrator
+            self.create_orchestrator = create_working_orchestrator
             self.orchestrator_available = True
         except ImportError:
             self.orchestrator_available = False
@@ -420,9 +416,9 @@ class TestErrorHandlingIntegration(unittest.TestCase):
         
         # Should create orchestrator but may fail on generation
         orchestrator = self.create_orchestrator(
-            topic=get_test_topic(0),
+            mission=get_test_topic(0),
             platform="instagram",
-            category="educational",
+            category="Education",
             duration=25,
             api_key="invalid_key",
             mode="simple"
@@ -439,9 +435,9 @@ class TestErrorHandlingIntegration(unittest.TestCase):
         # Try advanced mode which might have missing dependencies
         try:
             orchestrator = self.create_orchestrator(
-                topic=get_test_topic(0),
+                mission=get_test_topic(0),
                 platform="instagram",
-                category="educational",
+                category="Education",
                 duration=25,
                 api_key=TEST_API_KEY,
                 mode="advanced"
