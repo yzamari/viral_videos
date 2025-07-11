@@ -1,256 +1,296 @@
-# 🎬 AI Video Generator with Intelligent Agents
+# 🎬 AI-Powered Viral Video Generator v2.2
 
-> **Production-Ready AI Video Generation System** with intelligent voice selection, smart positioning, and advanced AI agent collaboration.
+**Enterprise-Ready Video Generation with Comprehensive Authentication Testing**
 
-## ✅ **System Status: FULLY OPERATIONAL**
+## 🔐 NEW: Authentication Testing
 
-- **✅ All Tests Passing**: 30/30 unit tests pass, integration tests validated
-- **✅ CLI & UI Working**: Both command-line and web interface fully functional
-- **✅ All AI Agents Active**: Voice selection, positioning, style decisions operational
-- **✅ Documentation Updated**: Complete setup and usage guides
-- **✅ Shell Scripts Fixed**: Launch scripts work correctly
+Before running the video generator, verify your Google Cloud authentication setup:
 
-## 🚀 **Quick Start**
-
-### Option 1: Web Interface (Recommended)
 ```bash
-./run_video_generator.sh ui
-```
-- **URL**: http://localhost:7860
-- **Features**: Real-time AI agent decisions, voice selection interface, visual controls
+# Test all authentication methods
+python check_auth.py
 
-### Option 2: Command Line
-```bash
-./run_video_generator.sh cli --mission "Create awareness about quantum computing breakthroughs"
+# Or test through main CLI
+python main.py test-auth
+
+# Generate video with authentication check (default)
+python main.py generate --mission "your mission"
+
+# Skip authentication test (not recommended)
+python main.py generate --mission "your mission" --skip-auth-test
 ```
 
-### Option 3: Direct Python
+### 🧪 Authentication Tests Performed
+
+The system automatically tests:
+
+1. **gcloud CLI Authentication** - Verifies `gcloud auth login` status
+2. **Application Default Credentials** - Tests ADC setup
+3. **Service Account Authentication** - Validates service account JSON (if configured)
+4. **Google AI Studio API** - Tests API key and model access
+5. **Vertex AI API** - Verifies Vertex AI project and VEO model access
+6. **Cloud Text-to-Speech API** - Tests TTS service access
+7. **Cloud Storage Access** - Validates GCS bucket permissions
+8. **Project & Billing** - Checks project configuration and billing status
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
 ```bash
-python main.py generate --mission "Your mission here" --duration 30 --platform tiktok
-```
-
-## 🤖 **AI Agent System**
-
-Our **specialized AI agents** collaborate to create viral content with intelligent voice selection and perfect timing:
-
-### 👥 **The AI Agent Team**
-
-1. **🎭 Director Agent** - Script generation and creative direction with dynamic content
-2. **🔄 ContinuityDecisionAgent** - Smart frame continuity decisions based on content analysis
-3. **🎤 VoiceDirectorAgent** - AI-powered voice selection with 8 personalities and emotion control
-4. **🎯 OverlayPositioningAgent** - Smart subtitle and overlay positioning decisions
-5. **🎨 VisualStyleAgent** - Dynamic visual style selection (cartoon, realistic, anime, etc.)
-6. **📝 EnhancedScriptProcessor** - TTS optimization with punctuation enhancement and sentence protection
-7. **🌍 EnhancedMultilingualTTS** - AI voice generation with 14+ language support
-
-### 🎤 **Advanced Voice Selection**
-
-**8 AI-Powered Voice Personalities:**
-- 🎭 **Narrator** - Professional storytelling voice
-- 📚 **Educator** - Clear, instructional tone
-- 🎪 **Comedian** - Playful, entertaining delivery
-- 🎬 **Dramatic** - Emotional, impactful narration
-- 🗣️ **Conversational** - Natural, friendly tone
-- 📢 **Announcer** - Bold, attention-grabbing voice
-- 🎵 **Storyteller** - Engaging narrative style
-- 🎯 **Presenter** - Professional presentation voice
-
-**Smart Voice Features:**
-- **Emotion-based selection**: Matches voice to content emotion
-- **Multi-voice strategies**: Single voice, dialogue, or narrator combinations
-- **Platform optimization**: Different voices for TikTok vs YouTube
-- **Language support**: 14+ languages with native voice actors
-- **Punctuation enhancement**: Proper pronunciation of punctuation marks
-
-### 🎨 **Visual Style Intelligence**
-
-**10+ Dynamic Visual Styles:**
-- 🎨 **Realistic** - Photorealistic content
-- 🎭 **Cartoon** - Animated, playful visuals
-- 🏰 **Disney** - Magical, family-friendly style
-- 🎌 **Anime** - Japanese animation aesthetic
-- 📚 **Comic** - Comic book visual style
-- 🎯 **Minimalist** - Clean, simple design
-- 🕰️ **Retro** - Vintage, nostalgic feel
-- 🚀 **Cyberpunk** - Futuristic, tech-focused
-- 🎨 **Watercolor** - Artistic, soft visuals
-- 🎭 **Clay** - 3D clay animation style
-
-### 🎯 **Smart Positioning System**
-
-**AI-Driven Subtitle Positioning:**
-- **Platform-specific optimization**: TikTok, YouTube, Instagram layouts
-- **Content-aware placement**: Avoids hiding important visual elements
-- **Dynamic positioning strategies**: Static, adaptive, or dynamic based on content
-- **Accessibility compliance**: High contrast, readable fonts, proper sizing
-
-## 🛠️ **Installation & Setup**
-
-### Prerequisites
-- Python 3.8+
-- Google API Key (Gemini)
-- Virtual environment (recommended)
-
-### 1. Clone & Setup
-```bash
-git clone <repository-url>
-cd viralAi
+git clone https://github.com/your-repo/viral-video-generator.git
+cd viral-video-generator
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Configure API Keys
-```bash
-# Option 1: Environment Variable
-export GOOGLE_API_KEY="your-google-api-key-here"
+### 2. Configure Authentication
 
-# Option 2: .env File
-echo "GOOGLE_API_KEY=your-google-api-key-here" > .env
+#### Option A: Google Cloud SDK (Recommended)
+```bash
+# Install Google Cloud SDK
+curl https://sdk.cloud.google.com | bash
+exec -l $SHELL
+
+# Authenticate
+gcloud auth login
+gcloud auth application-default login
+gcloud config set project YOUR_PROJECT_ID
 ```
 
-### 3. Launch
+#### Option B: Service Account
 ```bash
-# Web Interface
-./run_video_generator.sh ui
-
-# Command Line
-./run_video_generator.sh cli --topic "Your video topic"
+# Download service account JSON from Google Cloud Console
+export GOOGLE_APPLICATION_CREDENTIALS="path/to/service-account.json"
 ```
 
-## 📋 **Usage Examples**
-
-### Web Interface
+### 3. Set API Keys
 ```bash
-./run_video_generator.sh ui
-# Opens http://localhost:7860
-# - Select topic and platform
-# - Choose voice personality
-# - Set visual style
-# - Generate with real-time progress
+cp config.env.example config.env
+# Edit config.env with your keys:
+# GOOGLE_API_KEY=your_google_ai_studio_key
+# VERTEX_AI_PROJECT_ID=your_project_id
 ```
 
-### Command Line Examples
+### 4. Test Authentication
+```bash
+# Run comprehensive authentication test
+python check_auth.py
+```
+
+### 5. Generate Videos
+```bash
+# Generate with frame continuity
+python main.py generate --mission "Create engaging content about AI" --frame-continuity on
+
+# Generate quick video
+python main.py generate --mission "Explain quantum computing" --duration 15
+
+# Generate with specific settings
+python main.py generate \
+  --mission "Teach people about renewable energy" \
+  --platform youtube \
+  --duration 30 \
+  --style educational \
+  --tone professional \
+  --target-audience "students" \
+  --frame-continuity auto
+```
+
+## 🔧 Authentication Setup Guide
+
+### For Google AI Studio (Required)
+1. Go to [Google AI Studio](https://aistudio.google.com/)
+2. Create an API key
+3. Set `GOOGLE_API_KEY` in your environment
+
+### For Vertex AI (Recommended for VEO)
+1. Create a Google Cloud project
+2. Enable Vertex AI API
+3. Set up authentication:
+   ```bash
+   gcloud auth login
+   gcloud config set project YOUR_PROJECT_ID
+   ```
+4. Set environment variables:
+   ```bash
+   export VERTEX_AI_PROJECT_ID=your_project_id
+   export VERTEX_AI_LOCATION=us-central1
+   export VERTEX_AI_GCS_BUCKET=your_bucket_name
+   ```
+
+### For Cloud Text-to-Speech (Optional)
+1. Enable Cloud Text-to-Speech API
+2. Authentication is handled by ADC or service account
+
+## 🎯 Features
+
+### Core Features
+- **🤖 AI-Powered Generation** - Uses Google's latest AI models
+- **🎬 Frame Continuity** - Seamless video transitions with VEO2
+- **🎭 Multi-Agent System** - 7+ AI agents for optimal content
+- **📱 Platform Optimization** - YouTube, TikTok, Instagram support
+- **🔐 Enterprise Authentication** - Comprehensive auth testing
+- **📊 Session Management** - Organized file structure
+
+### Advanced Features
+- **🎨 Visual Style AI** - Intelligent style selection
+- **🎤 Voice Director AI** - Optimal voice matching
+- **📍 Positioning AI** - Smart subtitle placement
+- **🔄 Error Recovery** - Robust fallback mechanisms
+- **📈 Performance Monitoring** - Real-time metrics
+
+## 📋 Command Reference
+
+### Authentication Commands
+```bash
+# Test authentication
+python main.py test-auth
+python check_auth.py
+
+# Generate with auth check (default)
+python main.py generate --mission "your mission"
+
+# Skip auth test (not recommended)
+python main.py generate --mission "your mission" --skip-auth-test
+```
+
+### Generation Commands
 ```bash
 # Basic generation
-python main.py generate --mission "Educate people about quantum computing breakthroughs"
+python main.py generate --mission "your mission"
 
-# Advanced options
-python main.py generate \
-  --mission "Make people laugh by explaining funny cat behaviors" \
-  --duration 30 \
-  --platform tiktok \
-  --category Comedy \
-  --discussions enhanced
+# With frame continuity
+python main.py generate --mission "your mission" --frame-continuity on
 
 # Educational content
 python main.py generate \
-  --mission "Teach students how photosynthesis works in plants" \
-  --duration 45 \
-  --platform youtube \
+  --mission "Explain machine learning" \
   --category Educational \
-  --discussions deep
+  --style educational \
+  --tone professional \
+  --duration 45
+
+# Social media optimized
+python main.py generate \
+  --mission "Viral dance trend" \
+  --platform tiktok \
+  --duration 15 \
+  --style viral \
+  --tone energetic
 ```
 
-## 🔧 **Features**
+## 🔍 Troubleshooting
 
-### ✅ **Core Features**
-- **AI Agent Collaboration**: Multiple specialized AI agents work together
-- **Smart Voice Selection**: 8 personalities with emotion matching
-- **Dynamic Visual Styles**: 10+ styles with AI-driven selection
-- **Perfect Timing**: ±5 second duration control with sentence protection
-- **Multi-platform Support**: TikTok, YouTube, Instagram, Twitter
-- **14+ Languages**: Full multilingual support with native voices
+### Authentication Issues
 
-### ✅ **Advanced Features**
-- **Movie-Quality Subtitles**: Precise timing with 1.8-2.5 words/second
-- **Smart Positioning**: AI-driven subtitle and overlay placement
-- **Punctuation Enhancement**: Proper pronunciation of all punctuation
-- **Sentence Protection**: Never cuts sentences mid-way
-- **Frame Continuity**: AI-decided visual continuity for smooth flow
-- **Real-time Progress**: Live generation tracking in web interface
-
-### ✅ **Technical Features**
-- **Fallback Systems**: Multiple generation methods for reliability
-- **Quota Management**: Smart API usage optimization
-- **Session Tracking**: Complete generation history and analytics
-- **Error Handling**: Graceful degradation and recovery
-- **Testing Suite**: 30+ unit tests with 100% pass rate
-
-## 🧪 **Testing**
-
-### Run All Tests
+#### "gcloud not found"
 ```bash
-# Unit tests
-python -m pytest tests/unit/ -v
-
-# Integration tests
-python -m pytest tests/integration/ -v
-
-# AI Agent tests
-python test_ai_agents_integration.py
+# Install Google Cloud SDK
+curl https://sdk.cloud.google.com | bash
+exec -l $SHELL
 ```
 
-### Test Results
-- **✅ Unit Tests**: 30/30 passing
-- **✅ Integration Tests**: All passing
-- **✅ AI Agent Tests**: 100% success rate
-- **✅ CLI Tests**: All commands working
-- **✅ UI Tests**: Web interface fully functional
-
-## 📊 **Performance**
-
-### Generation Speed
-- **VEO2 Video**: 30-60 seconds per clip
-- **Gemini Images**: 5-10 seconds per image
-- **TTS Audio**: 2-5 seconds per segment
-- **Total Generation**: 2-5 minutes for 30-second video
-
-### Quality Metrics
-- **Voice Selection Accuracy**: 95%+ appropriate voice matching
-- **Subtitle Timing**: ±0.1 second precision
-- **Visual Style Matching**: 90%+ content-appropriate styles
-- **Sentence Protection**: 100% complete sentences
-- **Platform Optimization**: Custom layouts for each platform
-
-## 🔍 **Troubleshooting**
-
-### Common Issues
-1. **API Key Issues**: Ensure `GOOGLE_API_KEY` is set correctly
-2. **Import Errors**: Run `pip install -r requirements.txt`
-3. **UI Not Loading**: Check port 7860 is available
-4. **Generation Failures**: Check API quotas with `python main.py veo-quota`
-
-### Debug Mode
+#### "No active gcloud accounts"
 ```bash
-# Enable detailed logging
-python main.py generate --mission "test video generation" --discussion-log
+gcloud auth login
+gcloud auth application-default login
 ```
 
-## 🤝 **Contributing**
+#### "API key invalid"
+- Check your Google AI Studio API key
+- Verify the key has proper permissions
+- Ensure sufficient quota
+
+#### "Vertex AI access denied"
+```bash
+# Set correct project
+gcloud config set project YOUR_PROJECT_ID
+
+# Enable APIs
+gcloud services enable aiplatform.googleapis.com
+```
+
+### Generation Issues
+
+#### "Content policy violation"
+- The system automatically rephrases violating prompts
+- Check logs for specific violations
+- Use more general, less specific language
+
+#### "VEO quota exhausted"
+- System automatically falls back to image generation
+- Consider using Vertex AI for higher quotas
+- Wait for quota reset (daily limits)
+
+## 📊 Authentication Test Results
+
+The authentication tester provides detailed results:
+
+```
+🔐 GOOGLE CLOUD AUTHENTICATION TEST REPORT
+================================================================================
+
+✅ Overall Status: SUCCESS
+📊 Tests: 7 passed, 1 failed
+🚀 Can run app: YES
+
+📋 Individual Test Results:
+----------------------------------------
+✅ gcloud CLI Authentication: SUCCESS
+✅ Application Default Credentials: SUCCESS
+⏭️ Service Account Authentication: SKIPPED
+✅ Google AI Studio API: SUCCESS
+✅ Vertex AI API: SUCCESS
+✅ Cloud Text-to-Speech API: SUCCESS
+❌ Cloud Storage Access: FAILED
+   Error: Bucket not found
+   💡 Check bucket your-bucket-name exists and permissions are correct
+✅ Project & Billing: SUCCESS
+
+🚀 NEXT STEPS:
+----------------------------------------
+✅ All critical authentication tests passed!
+🎬 You can now run the video generator:
+   python main.py generate --mission 'your mission here'
+```
+
+## 🛡️ Security Best Practices
+
+1. **Use Service Accounts** for production
+2. **Rotate API Keys** regularly
+3. **Limit API Key Scope** to required services only
+4. **Monitor Usage** through Google Cloud Console
+5. **Enable Billing Alerts** to prevent unexpected charges
+
+## 🎯 Performance Optimization
+
+- **Vertex AI**: Use for higher quotas and better performance
+- **Frame Continuity**: Enable for narrative content, disable for quick cuts
+- **Session Management**: Automatic cleanup of temporary files
+- **Caching**: Intelligent caching of AI responses
+
+## 📈 Monitoring
+
+The system provides comprehensive monitoring:
+- Authentication status
+- API quota usage
+- Generation performance
+- Error rates and recovery
+- Session organization
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Run tests (`python -m pytest`)
-4. Commit changes (`git commit -m 'Add amazing feature'`)
-5. Push to branch (`git push origin feature/amazing-feature`)
-6. Open Pull Request
+2. Run authentication tests: `python check_auth.py`
+3. Create feature branch
+4. Add tests for new features
+5. Submit pull request
 
-## 📄 **License**
+## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 **Acknowledgments**
-
-- Google Gemini AI for intelligent content generation
-- VEO2/VEO3 for high-quality video generation
-- Google Cloud TTS for natural voice synthesis
-- All contributors and testers
+MIT License - see LICENSE file for details.
 
 ---
 
-**🎬 Ready to create viral content with AI agents? Get started now!**
-
-```bash
-./run_video_generator.sh ui
-```
+**🎬 Ready to create viral content? Start with `python check_auth.py` to verify your setup!**

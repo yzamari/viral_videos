@@ -35,7 +35,7 @@ class OptimizedVeoClient:
     - Image-based video generation when VEO quota exhausted
     """
 
-    def __init__(self, api_key: str, output_dir: str, disable_veo3: bool = True):
+    def __init__(self, api_key: str, output_dir: str, disable_veo3: bool = False):
         """Initialize optimized Veo client with quota management and image fallback"""
         self.api_key = api_key
         self.output_dir = output_dir
@@ -43,18 +43,13 @@ class OptimizedVeoClient:
         os.makedirs(self.clips_dir, exist_ok=True)
 
         # Configuration flags
-        self.disable_veo3 = disable_veo3  # Disable Veo-3 due to high cost
+        self.disable_veo3 = disable_veo3  # VEO-3 now ENABLED by default
         self.veo_quota_exhausted = False  # Track if VEO quota is exhausted
 
-        # 🚀 VERTEX AI PREFERENCE - Added for unlimited quotas
-        self.prefer_vertex_ai = True
+        # 🚀 VERTEX AI PREFERENCE - Now ENABLED for unlimited quotas
+        self.prefer_vertex_ai = True  # Enabled: Vertex AI provides unlimited quotas
         self.vertex_ai_client = None
-        self._init_vertex_ai_client()
-
-        # 🚀 VERTEX AI PREFERENCE - Added for unlimited quotas
-        self.prefer_vertex_ai = True
-        self.vertex_ai_client = None
-        self._init_vertex_ai_client()
+        self._init_vertex_ai_client()  # Now enabled: Using Vertex AI for unlimited generation
 
         # Configure Google AI client
         os.environ['GOOGLE_API_KEY'] = api_key
@@ -84,18 +79,20 @@ class OptimizedVeoClient:
         logger.info(f"📊 Available models: {list(self.available_models.keys())}")
         if self.disable_veo3:
             logger.info("💰 Veo-3 DISABLED (cost optimization)")
+        else:
+            logger.info("🚀 VEO-3 ENABLED (enhanced quality with audio)")
         logger.info(f"⏰ Quota tracking: {self.quota_tracker.get_status()}")
 
         # Fallback chain summary
         fallback_chain = []
         if not self.veo_quota_exhausted:
-            fallback_chain.append("VEO-2")
             if not self.disable_veo3 and 'veo3' in self.available_models:
-                fallback_chain.insert(0, "VEO-3")
+                fallback_chain.append("VEO-3")
+            fallback_chain.append("VEO-2")
         if self.gemini_images_available:
             fallback_chain.append("Gemini Images")
         fallback_chain.append("Text Overlay")
-        logger.info(f"🔄 Fallback chain: Vertex AI VEO-2 → Google AI VEO-2 → Gemini Images → Text Overlay")
+        logger.info(f"🔄 Fallback chain: Vertex AI VEO-3 → Vertex AI VEO-2 → Google AI VEO-2 → Gemini Images → Text Overlay")
 
         # Show quota exhaustion warning
         if self.veo_quota_exhausted:
@@ -131,25 +128,45 @@ class OptimizedVeoClient:
         """Initialize Vertex AI client for unlimited VEO generation"""
         try:
             from .vertex_ai_veo2_client import VertexAIVeo2Client
+            from .vertex_veo3_client import VertexAIVeo3Client
 
-            self.vertex_ai_client = VertexAIVeo2Client(
+            # Initialize VEO-2 client
+            self.vertex_ai_veo2_client = VertexAIVeo2Client(
                 project_id='viralgen-464411',
                 location='us-central1',
                 gcs_bucket='viral-veo2-results',
                 output_dir=self.output_dir
             )
 
-            if self.vertex_ai_client.veo_available:
-                logger.info("🚀 Vertex AI VEO-2: ✅ AVAILABLE (unlimited quotas)")
+            # Initialize VEO-3 client if not disabled
+            if not self.disable_veo3:
+                self.vertex_ai_veo3_client = VertexAIVeo3Client(
+                    project_id='viralgen-464411',
+                    location='us-central1',
+                    gcs_bucket='viral-veo3-results',
+                    output_dir=self.output_dir
+                )
+            else:
+                self.vertex_ai_veo3_client = None
+
+            # Check availability
+            veo2_available = self.vertex_ai_veo2_client.veo_available
+            veo3_available = self.vertex_ai_veo3_client.is_available() if self.vertex_ai_veo3_client else False
+
+            if veo2_available or veo3_available:
+                logger.info(f"🚀 Vertex AI VEO-2: {'✅ AVAILABLE' if veo2_available else '❌ NOT AVAILABLE'}")
+                if not self.disable_veo3:
+                    logger.info(f"🚀 Vertex AI VEO-3: {'✅ AVAILABLE' if veo3_available else '❌ NOT AVAILABLE'}")
                 self.prefer_vertex_ai = True
             else:
-                logger.warning("⚠️ Vertex AI VEO-2: ❌ NOT AVAILABLE")
+                logger.warning("⚠️ Vertex AI VEO clients: ❌ NOT AVAILABLE")
                 self.prefer_vertex_ai = False
 
         except Exception as e:
             logger.warning(f"⚠️ Vertex AI initialization failed: {e}")
             self.prefer_vertex_ai = False
-            self.vertex_ai_client = None
+            self.vertex_ai_veo2_client = None
+            self.vertex_ai_veo3_client = None
 
     def _check_initial_quota_status(self):
         """Check initial quota status to avoid unnecessary VEO attempts"""
@@ -354,14 +371,14 @@ class OptimizedVeoClient:
         max_attempts = 3
 
         # 🚀 VERTEX AI ATTEMPT FIRST (unlimited quotas)
-        if self.prefer_vertex_ai and self.vertex_ai_client:
+        if self.prefer_vertex_ai and hasattr(self, 'vertex_ai_veo2_client') and self.vertex_ai_veo2_client:
             logger.info("🚀 Attempting Vertex AI VEO-2 generation (unlimited quotas)...")
             try:
-                vertex_result = self.vertex_ai_client.generate_video_clip(
+                vertex_result = self.vertex_ai_veo2_client.generate_video(
                     prompt=prompt,
                     duration=duration,
                     clip_id=clip_id,
-                    aspect_ratio="9:16" if "tiktok" in prompt.lower() else "16:9"
+                    image_path=reference_image if frame_continuity else None
                 )
 
                 if vertex_result and os.path.exists(vertex_result):
@@ -370,38 +387,40 @@ class OptimizedVeoClient:
                     shutil.copy2(vertex_result, expected_path)
 
                     file_size = os.path.getsize(expected_path) / (1024 * 1024)
-                    logger.info(f"✅ VERTEX AI SUCCESS: {expected_path} ({file_size:.1f}MB)")
+                    logger.info(f"✅ VERTEX AI VEO-2 SUCCESS: {expected_path} ({file_size:.1f}MB)")
                     logger.info(f"💰 Cost: ~$0.15 (no daily limits)")
                     return expected_path
 
             except Exception as e:
-                logger.warning(f"⚠️ Vertex AI attempt failed: {e}")
-                logger.info("🔄 Falling back to Google AI Studio...")
+                logger.warning(f"⚠️ Vertex AI VEO-2 attempt failed: {e}")
+                logger.info("🔄 Trying Vertex AI VEO-3...")
 
-
-        # 🚀 VERTEX AI ATTEMPT FIRST (unlimited quotas)
-        if self.prefer_vertex_ai and self.vertex_ai_client:
-            logger.info("🚀 Attempting Vertex AI VEO-2 generation (unlimited quotas)...")
+        # 🚀 VERTEX AI VEO-3 ATTEMPT (if available and not disabled)
+        if (self.prefer_vertex_ai and not self.disable_veo3 and 
+            hasattr(self, 'vertex_ai_veo3_client') and self.vertex_ai_veo3_client and 
+            self.vertex_ai_veo3_client.is_available()):
+            logger.info("🚀 Attempting Vertex AI VEO-3 generation (enhanced quality)...")
             try:
-                vertex_result = self.vertex_ai_client.generate_video_clip(
+                vertex_result = self.vertex_ai_veo3_client.generate_video(
                     prompt=prompt,
                     duration=duration,
                     clip_id=clip_id,
-                    aspect_ratio="9:16" if "tiktok" in prompt.lower() else "16:9"
+                    image_path=reference_image if frame_continuity else None,
+                    enable_audio=True
                 )
 
                 if vertex_result and os.path.exists(vertex_result):
                     # Move to expected location
-                    expected_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
+                    expected_path = os.path.join(self.clips_dir, f"veo3_clip_{clip_id}.mp4")
                     shutil.copy2(vertex_result, expected_path)
 
                     file_size = os.path.getsize(expected_path) / (1024 * 1024)
-                    logger.info(f"✅ VERTEX AI SUCCESS: {expected_path} ({file_size:.1f}MB)")
-                    logger.info(f"💰 Cost: ~$0.15 (no daily limits)")
+                    logger.info(f"✅ VERTEX AI VEO-3 SUCCESS: {expected_path} ({file_size:.1f}MB)")
+                    logger.info(f"💰 Cost: ~$0.30 (enhanced quality with audio)")
                     return expected_path
 
             except Exception as e:
-                logger.warning(f"⚠️ Vertex AI attempt failed: {e}")
+                logger.warning(f"⚠️ Vertex AI VEO-3 attempt failed: {e}")
                 logger.info("🔄 Falling back to Google AI Studio...")
 
 
@@ -635,107 +654,144 @@ class OptimizedVeoClient:
         return prompt
 
     def _create_enhanced_fallback(self, prompt: str, duration: float, clip_id: str) -> str:
-        """Create high-quality 8-second fallback video that looks more realistic"""
+        """Create high-quality fallback video using Gemini for content generation"""
         output_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
 
         try:
             import subprocess
+            import os
+            import requests
 
-            logger.info(f"🎨 Creating realistic 8-second fallback video...")
+            logger.info(f"🎨 Creating Gemini-powered enhanced fallback video...")
 
-            # Create more realistic video based on content
+            # Use Gemini to generate appropriate visual content
+            visual_content = self._generate_visual_content_with_gemini(prompt)
+
+            # Create realistic video based on Gemini-generated content
             width, height = 1280, 720
             fps = 30
 
-            # Analyze prompt to determine video style
-            prompt_lower = prompt.lower()
+            # Use Gemini-generated content for video creation
+            filter_complex = [
+                f"color=c={visual_content['background_color']}:s={width}x{height}:d={duration}[bg]",
+                f"[bg]{visual_content['animation_filter']}[animated]",
+                f"[animated]drawtext=text='{visual_content['title']}':fontcolor=white:fontsize=45:x=(w-text_w)/2:y=50:box=1:boxcolor=black@0.3:boxborderw=5[text]",
+                f"[text]fade=in:0:30,fade=out:{int(duration*fps-30)}:30"
+            ]
 
-            # Define realistic video patterns based on content
-            if any(word in prompt_lower for word in ["baby", "child", "family"]):
-                # Soft pastel animation
-                filter_complex = [
-                    f"color=c=0xFFE4E1:s={width}x{height}:d={duration}[bg]",
-                    f"[bg]hue=s=sin(2*PI*t/{duration}):h=sin(2*PI*t/{duration})*360[hue]",
-                    f"[hue]drawtext=text='Family Content':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=h-100:alpha='if(lt(t,2),t/2,if(lt(t,{duration}-2),1,(1-(t-({duration}-2))/2)))'[text]",
-                    f"[text]fade=in:0:30,fade=out:{int(duration*fps-30)}:30"
-                ]
-            elif any(word in prompt_lower for word in ["nature", "landscape", "forest", "ocean"]):
-                # Nature gradient animation
-                filter_complex = [
-                    f"gradients=size={width}x{height}:x0={width}/2:y0=0:x1={width}/2:y1={height}:c0=0x87CEEB:c1=0x228B22:duration={duration}[bg]",
-                    f"[bg]curves=preset=increase_contrast[curves]",
-                    f"[curves]vignette=PI/4[vig]",
-                    f"[vig]drawtext=text='Nature Scene':fontcolor=white:fontsize=45:x=(w-text_w)/2:y=50:box=1:boxcolor=black@0.3:boxborderw=5[text]",
-                    f"[text]fade=in:0:30,fade=out:{int(duration*fps-30)}:30"
-                ]
-            elif any(word in prompt_lower for word in ["news", "breaking", "viral", "trending"]):
-                # News ticker style
-                filter_complex = [
-                    f"color=c=0x1E3A8A:s={width}x{height}:d={duration}[bg]",
-                    f"[bg]noise=alls=20:allf=t+u[noise]",
-                    f"[noise]drawbox=x=0:y={height}-120:w={width}:h=120:color=red@0.8:t=fill[box]",
-                    f"[box]drawtext=text='BREAKING NEWS':fontcolor=white:fontsize=60:x=(w-text_w)/2:y={height}-90:box=1:boxcolor=red:boxborderw=0[breaking]",
-                    f"[breaking]drawtext=text='AI Generated Content Preview':fontcolor=white:fontsize=30:x='if(gte(t,1),{width}-t*200,{width})':y={height}-40[ticker]",
-                    f"[ticker]fade=in:0:30,fade=out:{int(duration*fps-30)}:30"
-                ]
-            else:
-                # Dynamic modern animation (default)
-                colors = ["0x2563EB", "0x7C3AED", "0xDB2777", "0xF59E0B"]
-                base_color = random.choice(colors)
-                filter_complex = [
-                    f"color=c={base_color}:s={width}x{height}:d={duration}[bg]",
-                    f"[bg]geq=r='r(X,Y)*abs(sin(2*PI*T/{duration}))':g='g(X,Y)*abs(cos(2*PI*T/{duration}))':b='b(X,Y)'[effect]",
-                    f"[effect]boxblur=5:1[blur]",
-                    f"[blur]drawtext=text='AI Video':fontcolor=white:fontsize=50:x='(w-text_w)/2+sin(t*2)*50':y='(h-text_h)/2':shadowx=2:shadowy=2[text]",
-                    f"[text]fade=in:0:30,fade=out:{int(duration*fps-30)}:30"
-                ]
-
-            # Build FFmpeg command with complex filters
             filter_str = ";".join(filter_complex)
 
             cmd = [
                 'ffmpeg', '-y',
                 '-f', 'lavfi',
-                '-i', f'nullsrc=s={width}x{height}:d={duration}:r={fps}',
-                '-filter_complex', filter_str,
+                '-i', f'color=c={visual_content["background_color"]}:s={width}x{height}:d={duration}:r={fps}',
+                '-vf', filter_str,
                 '-c:v', 'libx264',
                 '-preset', 'medium',
-                '-crf', '23',
+                '-crf', '20',
                 '-pix_fmt', 'yuv420p',
                 '-movflags', '+faststart',
+                '-t', str(duration),
                 output_path
             ]
 
-            logger.info(f"🎬 Generating realistic fallback with filters...")
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
 
             if result.returncode == 0 and os.path.exists(output_path):
-                file_size = os.path.getsize(output_path) / (1024 * 1024)
-                logger.info(f"✅ Realistic fallback created: {output_path} ({file_size:.1f}MB)")
+                file_size = self._get_file_size_mb(output_path)
+                if file_size > 0.5:  # At least 0.5MB
+                    logger.info(f"✅ Enhanced Gemini fallback created: {output_path} ({file_size:.1f}MB)")
+                    return output_path
 
-                # Add some motion blur for realism
-                temp_output = output_path.replace('.mp4', '_temp.mp4')
-                blur_cmd = [
-                    'ffmpeg', '-y', '-i', output_path,
-                    '-vf', 'minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:vsbmc=1',
-                    '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
-                    temp_output
-                ]
-
-                blur_result = subprocess.run(blur_cmd, capture_output=True)
-                if blur_result.returncode == 0:
-                    os.replace(temp_output, output_path)
-                    logger.info("✨ Added motion interpolation for smoother playback")
-
-                return output_path
-            else:
-                logger.warning(f"Realistic fallback failed: {result.stderr}")
-                raise Exception(f"FFmpeg failed: {result.stderr}")
+            logger.warning(f"Enhanced fallback failed: {result.stderr}")
 
         except Exception as e:
-            logger.error(f"Enhanced fallback failed: {e}")
-            # Try simpler animated fallback
-            return self._create_animated_fallback(prompt, duration, clip_id)
+            logger.error(f"❌ Enhanced fallback creation failed: {e}")
+
+        # Simple fallback as last resort
+        return self._create_simple_fallback_video(prompt, duration, clip_id)
+
+    def _generate_visual_content_with_gemini(self, prompt: str) -> Dict[str, str]:
+        """Generate visual content parameters using Gemini"""
+        try:
+            import os
+            import requests
+
+            logger.info("🤖 Generating visual content with Gemini...")
+
+            gemini_api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+
+            if not gemini_api_key:
+                logger.warning("⚠️ No Gemini API key available, using default visual content")
+                return {
+                    "background_color": "0x4A90E2",
+                    "animation_filter": "hue=s=sin(2*PI*t/4):h=cos(2*PI*t/4)*360",
+                    "title": "AI Generated Content"
+                }
+
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}"
+
+            visual_prompt = f"""
+            Generate visual parameters for a fallback video based on this prompt: "{prompt}"
+
+            TASK: Create appropriate visual styling parameters for video generation.
+
+            REQUIREMENTS:
+            1. Choose an appropriate background color (hex format with 0x prefix)
+            2. Create an animation filter expression for FFmpeg
+            3. Generate a short title (max 25 characters)
+            4. All content must be appropriate and engaging
+
+            RESPONSE FORMAT (JSON only):
+            {{
+                "background_color": "0xHEXCODE",
+                "animation_filter": "FFmpeg filter expression",
+                "title": "Short engaging title"
+            }}
+
+            Return ONLY the JSON response, no other text.
+            """
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": visual_prompt
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            response = requests.post(gemini_url, json=payload, timeout=30)
+
+            if response.status_code == 200:
+                result = response.json()
+                gemini_response = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+                
+                # Parse JSON response
+                import json
+                try:
+                    visual_content = json.loads(gemini_response)
+                    logger.info(f"✅ Gemini generated visual content")
+                    return visual_content
+                        
+                except json.JSONDecodeError:
+                    logger.error(f"❌ Failed to parse Gemini response as JSON: {gemini_response}")
+                    
+            else:
+                logger.error(f"❌ Gemini visual content generation failed: {response.status_code}")
+
+        except Exception as e:
+            logger.error(f"❌ Visual content generation failed: {e}")
+
+        # Default visual content
+        return {
+            "background_color": "0x4A90E2",
+            "animation_filter": "hue=s=sin(2*PI*t/4):h=cos(2*PI*t/4)*360",
+            "title": "AI Generated Content"
+        }
 
     def _create_animated_fallback(self, prompt: str, duration: float, clip_id: str) -> str:
         """Create animated fallback with movement"""
@@ -796,222 +852,285 @@ class OptimizedVeoClient:
             return 0.0
 
     def _create_colorful_fallback(self, prompt: str, duration: float, clip_id: str) -> str:
-        """Create colorful, engaging fallback video based on the actual prompt content"""
+        """Create colorful, engaging fallback video using Gemini for content generation"""
         output_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
 
         try:
             import subprocess
 
-            # Analyze prompt to create appropriate visual content
-            prompt_lower = prompt.lower()
+            logger.info("🎨 Creating Gemini-powered colorful fallback...")
+
+            # Use Gemini to generate colorful content
+            colorful_content = self._generate_colorful_content_with_gemini(prompt)
+            
             width, height = 1280, 720
             fps = 30
 
-            # Extract key themes from prompt for better visuals
-            if any(word in prompt_lower for word in ['baby', 'child', 'cute', 'adorable']):
-                # Baby/child content - warm, soft colors
-                colors = ["0xFFB6C1", "0xFFC0CB", "0xFFE4E1"]  # Light pink, pink, misty rose
-                main_text = "👶 Adorable Baby Content"
-                bg_animation = "geq=r='255*abs(sin(2*PI*T/5))':g='182*abs(cos(2*PI*T/5))':b='193'"
-            elif any(word in prompt_lower for word in ['animal', 'pet', 'dog', 'cat', 'wildlife']):
-                # Animal content - natural, vibrant colors
-                colors = ["0x228B22", "0x32CD32", "0x90EE90"]  # Forest green, lime green, light green
-                main_text = "🐾 Amazing Animal Content"
-                bg_animation = "geq=r='34*abs(sin(2*PI*T/4))':g='139*abs(cos(2*PI*T/4))':b='34'"
-            elif any(word in prompt_lower for word in ['food', 'cooking', 'recipe', 'delicious']):
-                # Food content - warm, appetizing colors
-                colors = ["0xFF8C00", "0xFFA500", "0xFFD700"]  # Dark orange, orange, gold
-                main_text = "🍽️ Delicious Food Content"
-                bg_animation = "geq=r='255*abs(sin(2*PI*T/3))':g='140*abs(cos(2*PI*T/3))':b='0'"
-            elif any(word in prompt_lower for word in ['nature', 'outdoor', 'landscape', 'scenic']):
-                # Nature content - earth tones
-                colors = ["0x8FBC8F", "0x20B2AA", "0x87CEEB"]  # Dark sea green, light sea green, sky blue
-                main_text = "🌿 Beautiful Nature Content"
-                bg_animation = "geq=r='143*abs(sin(2*PI*T/6))':g='188*abs(cos(2*PI*T/6))':b='143'"
-            elif any(word in prompt_lower for word in ['technology', 'tech', 'innovation', 'digital']):
-                # Technology content - modern, sleek colors
-                colors = ["0x4169E1", "0x0000FF", "0x1E90FF"]  # Royal blue, blue, dodger blue
-                main_text = "💻 Tech Innovation Content"
-                bg_animation = "geq=r='65*abs(sin(2*PI*T/4))':g='105*abs(cos(2*PI*T/4))':b='225'"
-            elif any(word in prompt_lower for word in ['funny', 'comedy', 'laugh', 'hilarious']):
-                # Comedy content - bright, energetic colors
-                colors = ["0xFFD700", "0xFFA500", "0xFF6347"]  # Gold, orange, tomato
-                main_text = "😂 Hilarious Comedy Content"
-                bg_animation = "geq=r='255*abs(sin(2*PI*T/2))':g='215*abs(cos(2*PI*T/2))':b='0'"
-            elif any(word in prompt_lower for word in ['music', 'song', 'dance', 'beat']):
-                # Music content - vibrant, rhythmic colors
-                colors = ["0x9932CC", "0x8A2BE2", "0x9400D3"]  # Dark orchid, blue violet, dark violet
-                main_text = "🎵 Amazing Music Content"
-                bg_animation = "geq=r='153*abs(sin(4*PI*T/3))':g='50*abs(cos(4*PI*T/3))':b='204'"
-            elif any(word in prompt_lower for word in ['sports', 'athletic', 'fitness', 'exercise']):
-                # Sports content - energetic, dynamic colors
-                colors = ["0xFF4500", "0xFF6347", "0xDC143C"]  # Orange red, tomato, crimson
-                main_text = "⚽ Dynamic Sports Content"
-                bg_animation = "geq=r='255*abs(sin(3*PI*T/2))':g='69*abs(cos(3*PI*T/2))':b='0'"
-            else:
-                # Generic content - professional, modern colors
-                colors = ["0x2563EB", "0x7C3AED", "0xDB2777"]  # Blue, purple, pink
-                main_text = "✨ Amazing Content"
-                bg_animation = "geq=r='37*abs(sin(2*PI*T/5))':g='99*abs(cos(2*PI*T/5))':b='235'"
-
-            # Create subtitle text from prompt (first few words)
-            prompt_words = prompt.split()[:4]  # Take first 4 words
-            subtitle_text = " ".join(prompt_words) + "..."
-
-            # Create animated background with text overlays
-            base_color = random.choice(colors)
-
-            # Build complex filter for engaging visuals
+            # Create colorful video with Gemini-generated content
             filter_complex = [
-                f"color=c={base_color}:s={width}x{height}:d={duration}[bg]",
-                f"[bg]{bg_animation}[animated]",
-                f"[animated]boxblur=3:1[blur]",
-                # Main title with animation
-                f"[blur]drawtext=text='{main_text}':fontcolor=white:fontsize=60:x='(w-text_w)/2+sin(t)*20':y='(h-text_h)/2-100':shadowx=3:shadowy=3[title]",
-                # Subtitle with prompt content
-                f"[title]drawtext=text='{subtitle_text}':fontcolor=yellow:fontsize=40:x='(w-text_w)/2':y='(h-text_h)/2+50':shadowx=2:shadowy=2[subtitle]",
-                # Bottom text with platform info
-                f"[subtitle]drawtext=text='Professional AI Content':fontcolor=white:fontsize=30:x='(w-text_w)/2':y='h-80':shadowx=2:shadowy=2[final]",
-                # Fade effects
-                f"[final]fade=in:0:30,fade=out:{int(duration*fps-30)}:30"
+                f"color=c={colorful_content['primary_color']}:s={width}x{height}:d={duration}[bg]",
+                f"[bg]{colorful_content['animation_effect']}[animated]",
+                f"[animated]drawtext=text='{colorful_content['main_text']}':fontcolor=white:fontsize=50:x=(w-text_w)/2:y=(h-text_h)/2-50:box=1:boxcolor=black@0.5:boxborderw=5[text1]",
+                f"[text1]drawtext=text='{colorful_content['subtitle']}':fontcolor=yellow:fontsize=30:x=(w-text_w)/2:y=(h-text_h)/2+50:box=1:boxcolor=black@0.3:boxborderw=3[text2]",
+                f"[text2]fade=in:0:30,fade=out:{int(duration*fps-30)}:30"
             ]
 
-            # Build FFmpeg command
             filter_str = ";".join(filter_complex)
 
             cmd = [
                 'ffmpeg', '-y',
                 '-f', 'lavfi',
-                '-i', f'nullsrc=s={width}x{height}:d={duration}:r={fps}',
-                '-filter_complex', filter_str,
+                '-i', f'color=c={colorful_content["primary_color"]}:s={width}x{height}:d={duration}:r={fps}',
+                '-vf', filter_str,
                 '-c:v', 'libx264',
                 '-preset', 'medium',
-                '-crf', '23',
+                '-crf', '20',
                 '-pix_fmt', 'yuv420p',
                 '-movflags', '+faststart',
+                '-t', str(duration),
                 output_path
             ]
 
-            logger.info(f"🎨 Creating engaging fallback video for: {prompt[:50]}...")
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
 
-            if result.returncode == 0:
-                file_size = os.path.getsize(output_path) / (1024 * 1024)
-                logger.info(f"✅ Engaging fallback video created: {output_path} ({file_size:.1f}MB)")
-                return output_path
-            else:
-                logger.warning(f"⚠️ FFmpeg failed: {result.stderr}")
-                # Fall back to simple version
-                return self._create_simple_fallback_video(prompt, duration, clip_id)
+            if result.returncode == 0 and os.path.exists(output_path):
+                file_size = self._get_file_size_mb(output_path)
+                if file_size > 0.3:
+                    logger.info(f"✅ Colorful Gemini fallback created: {output_path} ({file_size:.1f}MB)")
+                    return output_path
+
+            logger.warning(f"Colorful fallback failed: {result.stderr}")
 
         except Exception as e:
             logger.error(f"❌ Colorful fallback creation failed: {e}")
-            return self._create_simple_fallback_video(prompt, duration, clip_id)
+
+        # Simple fallback as last resort
+        return self._create_simple_fallback_video(prompt, duration, clip_id)
+
+    def _generate_colorful_content_with_gemini(self, prompt: str) -> Dict[str, str]:
+        """Generate colorful content parameters using Gemini"""
+        try:
+            import os
+            import requests
+
+            logger.info("🌈 Generating colorful content with Gemini...")
+
+            gemini_api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+
+            if not gemini_api_key:
+                logger.warning("⚠️ No Gemini API key available, using default colorful content")
+                return {
+                    "primary_color": "0xFF6B6B",
+                    "animation_effect": "hue=s=sin(2*PI*t/3):h=cos(2*PI*t/3)*360",
+                    "main_text": "Colorful Content",
+                    "subtitle": "AI Generated"
+                }
+
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}"
+
+            colorful_prompt = f"""
+            Generate colorful video parameters based on this prompt: "{prompt}"
+
+            TASK: Create vibrant, engaging visual parameters for a colorful fallback video.
+
+            REQUIREMENTS:
+            1. Choose a vibrant primary color (hex format with 0x prefix)
+            2. Create a colorful animation effect for FFmpeg
+            3. Generate engaging main text (max 20 characters)
+            4. Create a subtitle (max 15 characters)
+            5. All content must be appropriate and engaging
+
+            RESPONSE FORMAT (JSON only):
+            {{
+                "primary_color": "0xHEXCODE",
+                "animation_effect": "FFmpeg animation filter",
+                "main_text": "Engaging main text",
+                "subtitle": "Short subtitle"
+            }}
+
+            Return ONLY the JSON response, no other text.
+            """
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": colorful_prompt
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            response = requests.post(gemini_url, json=payload, timeout=30)
+
+            if response.status_code == 200:
+                result = response.json()
+                gemini_response = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+                
+                # Parse JSON response
+                import json
+                try:
+                    colorful_content = json.loads(gemini_response)
+                    logger.info(f"✅ Gemini generated colorful content")
+                    return colorful_content
+                        
+                except json.JSONDecodeError:
+                    logger.error(f"❌ Failed to parse Gemini response as JSON: {gemini_response}")
+                    
+            else:
+                logger.error(f"❌ Gemini colorful content generation failed: {response.status_code}")
+
+        except Exception as e:
+            logger.error(f"❌ Colorful content generation failed: {e}")
+
+        # Default colorful content
+        return {
+            "primary_color": "0xFF6B6B",
+            "animation_effect": "hue=s=sin(2*PI*t/3):h=cos(2*PI*t/3)*360",
+            "main_text": "Colorful Content",
+            "subtitle": "AI Generated"
+        }
 
     def _create_simple_fallback_video(self, prompt: str, duration: float, clip_id: str) -> str:
-        """Create simple fallback video as last resort"""
+        """Create simple fallback video using Gemini for content generation"""
         output_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
 
         try:
             import subprocess
 
-            # Extract key theme from prompt
-            prompt_lower = prompt.lower()
-            if any(word in prompt_lower for word in ['baby', 'child']):
-                color = "pink"
-                text = "Baby Content"
-            elif any(word in prompt_lower for word in ['animal', 'pet']):
-                color = "green"
-                text = "Animal Content"
-            elif any(word in prompt_lower for word in ['food', 'cooking']):
-                color = "orange"
-                text = "Food Content"
-            elif any(word in prompt_lower for word in ['nature', 'outdoor']):
-                color = "forestgreen"
-                text = "Nature Content"
-            elif any(word in prompt_lower for word in ['tech', 'digital']):
-                color = "blue"
-                text = "Tech Content"
-            elif any(word in prompt_lower for word in ['funny', 'comedy']):
-                color = "gold"
-                text = "Comedy Content"
-            elif any(word in prompt_lower for word in ['music', 'song']):
-                color = "purple"
-                text = "Music Content"
-            elif any(word in prompt_lower for word in ['sports', 'fitness']):
-                color = "red"
-                text = "Sports Content"
-            else:
-                color = "blue"
-                text = "Video Content"
+            logger.info("🎬 Creating Gemini-powered simple fallback...")
+
+            # Use Gemini to generate simple content
+            simple_content = self._generate_simple_content_with_gemini(prompt)
 
             cmd = [
                 'ffmpeg', '-y',
                 '-f', 'lavfi',
-                '-i', f'color=c={color}:s=1280x720:d={duration}:r=30',
-                '-vf', f'drawtext=text=\'{text}\':fontcolor=white:fontsize=48:x=(w-text_w)/2:y=(h-text_h)/2',
+                '-i', f'color={simple_content["color"]}:size=1280x720:duration={duration}:rate=24',
+                '-vf', f'drawtext=text=\'{simple_content["text"]}\':fontcolor=white:fontsize=60:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=black@0.5:boxborderw=5',
                 '-c:v', 'libx264',
-                '-preset', 'fast',
-                '-crf', '23',
+                '-preset', 'medium',
+                '-crf', '20',
                 '-pix_fmt', 'yuv420p',
+                '-movflags', '+faststart',
+                '-t', str(duration),
                 output_path
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
 
-            if result.returncode == 0:
-                logger.info(f"✅ Simple fallback video created: {output_path}")
+            if result.returncode == 0 and os.path.exists(output_path):
+                file_size = self._get_file_size_mb(output_path)
+                logger.info(f"✅ Simple Gemini fallback created: {output_path} ({file_size:.1f}MB)")
                 return output_path
-            else:
-                logger.error(f"❌ Simple fallback failed: {result.stderr}")
-                # Create empty file as absolute last resort
-                with open(output_path, 'w') as f:
-                    f.write("")
-                return output_path
+
+            logger.warning(f"Simple fallback failed: {result.stderr}")
 
         except Exception as e:
-            logger.error(f"❌ All fallback methods failed: {e}")
-            # Create empty file as absolute last resort
-            with open(output_path, 'w') as f:
-                f.write("")
-            return output_path
+            logger.error(f"❌ Simple fallback creation failed: {e}")
+
+        # Black screen fallback as last resort
+        return self._create_black_screen_fallback(prompt, duration, clip_id)
+
+    def _generate_simple_content_with_gemini(self, prompt: str) -> Dict[str, str]:
+        """Generate simple content parameters using Gemini"""
+        try:
+            import os
+            import requests
+
+            logger.info("🔹 Generating simple content with Gemini...")
+
+            gemini_api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+
+            if not gemini_api_key:
+                logger.warning("⚠️ No Gemini API key available, using default simple content")
+                return {
+                    "color": "blue",
+                    "text": "Video Content"
+                }
+
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}"
+
+            simple_prompt = f"""
+            Generate simple video parameters based on this prompt: "{prompt}"
+
+            TASK: Create simple, clean visual parameters for a basic fallback video.
+
+            REQUIREMENTS:
+            1. Choose an appropriate color name (CSS color names like 'blue', 'red', 'green')
+            2. Generate simple text (max 20 characters)
+            3. All content must be appropriate and professional
+
+            RESPONSE FORMAT (JSON only):
+            {{
+                "color": "color_name",
+                "text": "Simple text"
+            }}
+
+            Return ONLY the JSON response, no other text.
+            """
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": simple_prompt
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            response = requests.post(gemini_url, json=payload, timeout=30)
+
+            if response.status_code == 200:
+                result = response.json()
+                gemini_response = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+                
+                # Parse JSON response
+                import json
+                try:
+                    simple_content = json.loads(gemini_response)
+                    logger.info(f"✅ Gemini generated simple content")
+                    return simple_content
+                        
+                except json.JSONDecodeError:
+                    logger.error(f"❌ Failed to parse Gemini response as JSON: {gemini_response}")
+                    
+            else:
+                logger.error(f"❌ Gemini simple content generation failed: {response.status_code}")
+
+        except Exception as e:
+            logger.error(f"❌ Simple content generation failed: {e}")
+
+        # Default simple content
+        return {
+            "color": "blue",
+            "text": "Video Content"
+        }
 
     def _create_black_screen_fallback(self, prompt: str, duration: float, clip_id: str) -> str:
-        """Create colorful engaging screen instead of black screen as final fallback"""
+        """Create engaging screen using Gemini for content generation"""
         output_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
 
         try:
             import subprocess
 
-            logger.info("🎨 Creating colorful engaging screen with text overlay...")
+            logger.info("🌟 Creating Gemini-powered engaging screen...")
+
+            # Use Gemini to generate engaging content
+            engaging_content = self._generate_engaging_content_with_gemini(prompt)
 
             width, height = 1280, 720
             fps = 30
 
-            # Extract key message from prompt
-            text = "Content Loading..."
-            bg_color = "0x4A90E2"  # Nice blue default
-
-            if "baby" in prompt.lower():
-                text = "Baby Moments Coming Soon!"
-                bg_color = "0xFFB6C1"  # Light pink
-            elif "test" in prompt.lower():
-                text = "Test Video Processing..."
-                bg_color = "0x90EE90"  # Light green
-            elif "amazing" in prompt.lower():
-                text = "Amazing Content Ahead!"
-                bg_color = "0xFFD700"  # Gold
-            elif "iran" in prompt.lower() or "military" in prompt.lower():
-                text = "Breaking News Content!"
-                bg_color = "0xFF6B6B"  # Red
-            else:
-                text = "Viral Content Loading..."
-                bg_color = "0x87CEEB"  # Sky blue
-
-            # Create colorful animated background with text
+            # Create engaging animated background with text
             filter_complex = [
-                f"color=c={bg_color}:s={width}x{height}:d={duration}[bg]",
-                f"[bg]drawtext=text='{text}':fontcolor=white:fontsize=60:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=black@0.7:boxborderw=8[text]",
+                f"color=c={engaging_content['bg_color']}:s={width}x{height}:d={duration}[bg]",
+                f"[bg]drawtext=text='{engaging_content['text']}':fontcolor=white:fontsize=60:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=black@0.7:boxborderw=8[text]",
                 f"[text]fade=in:0:30,fade=out:{int(duration*fps-30)}:30"
             ]
 
@@ -1020,30 +1139,128 @@ class OptimizedVeoClient:
             cmd = [
                 'ffmpeg', '-y',
                 '-f', 'lavfi',
-                '-i', f'nullsrc=s={width}x{height}:d={duration}:r={fps}',
-                '-filter_complex', filter_str,
+                '-i', f'color=c={engaging_content["bg_color"]}:s={width}x{height}:d={duration}:r={fps}',
+                '-vf', filter_str,
                 '-c:v', 'libx264',
-                '-preset', 'fast',
-                '-crf', '23',
+                '-preset', 'ultrafast',
+                '-crf', '25',
                 '-pix_fmt', 'yuv420p',
+                '-movflags', '+faststart',
+                '-t', str(duration),
                 output_path
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
 
             if result.returncode == 0 and os.path.exists(output_path):
-                file_size = os.path.getsize(output_path) / (1024 * 1024)
-                logger.info(f"✅ Black screen fallback created: {output_path} ({file_size:.1f}MB)")
+                file_size = self._get_file_size_mb(output_path)
+                logger.info(f"✅ Engaging Gemini screen created: {output_path} ({file_size:.1f}MB)")
                 return output_path
-            else:
-                raise Exception(f"FFmpeg failed: {result.stderr}")
+
+            logger.warning(f"Engaging screen creation failed: {result.stderr}")
 
         except Exception as e:
-            logger.error(f"Black screen fallback failed: {e}")
-            # Ultimate fallback - create empty file
-            with open(output_path, 'wb') as f:
-                f.write(b'')
-            return output_path
+            logger.error(f"❌ Engaging screen creation failed: {e}")
+
+        # Absolute last resort - create minimal video
+        try:
+            minimal_cmd = [
+                'ffmpeg', '-y',
+                '-f', 'lavfi',
+                '-i', f'color=blue:size=1280x720:duration={duration}:rate=24',
+                '-c:v', 'libx264',
+                '-preset', 'ultrafast',
+                '-crf', '30',
+                '-pix_fmt', 'yuv420p',
+                '-t', str(duration),
+                output_path
+            ]
+            subprocess.run(minimal_cmd, capture_output=True, timeout=15)
+            if os.path.exists(output_path):
+                logger.info(f"✅ Minimal fallback created: {output_path}")
+                return output_path
+        except Exception as final_error:
+            logger.error(f"❌ Even minimal fallback failed: {final_error}")
+
+        return output_path
+
+    def _generate_engaging_content_with_gemini(self, prompt: str) -> Dict[str, str]:
+        """Generate engaging content parameters using Gemini"""
+        try:
+            import os
+            import requests
+
+            logger.info("✨ Generating engaging content with Gemini...")
+
+            gemini_api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+
+            if not gemini_api_key:
+                logger.warning("⚠️ No Gemini API key available, using default engaging content")
+                return {
+                    "bg_color": "0x87CEEB",
+                    "text": "Content Loading..."
+                }
+
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}"
+
+            engaging_prompt = f"""
+            Generate engaging video parameters based on this prompt: "{prompt}"
+
+            TASK: Create engaging, professional visual parameters for a final fallback video.
+
+            REQUIREMENTS:
+            1. Choose an appropriate background color (hex format with 0x prefix)
+            2. Generate engaging text (max 25 characters)
+            3. All content must be appropriate and professional
+
+            RESPONSE FORMAT (JSON only):
+            {{
+                "bg_color": "0xHEXCODE",
+                "text": "Engaging text"
+            }}
+
+            Return ONLY the JSON response, no other text.
+            """
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": engaging_prompt
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            response = requests.post(gemini_url, json=payload, timeout=30)
+
+            if response.status_code == 200:
+                result = response.json()
+                gemini_response = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+                
+                # Parse JSON response
+                import json
+                try:
+                    engaging_content = json.loads(gemini_response)
+                    logger.info(f"✅ Gemini generated engaging content")
+                    return engaging_content
+                        
+                except json.JSONDecodeError:
+                    logger.error(f"❌ Failed to parse Gemini response as JSON: {gemini_response}")
+                    
+            else:
+                logger.error(f"❌ Gemini engaging content generation failed: {response.status_code}")
+
+        except Exception as e:
+            logger.error(f"❌ Engaging content generation failed: {e}")
+
+        # Default engaging content
+        return {
+            "bg_color": "0x87CEEB",
+            "text": "Content Loading..."
+        }
 
     def _extract_last_frame(self, video_path: str, clip_id: str) -> Optional[str]:
         """Extract the last frame from a video for frame continuity"""

@@ -8,9 +8,10 @@ import time
 import json
 import base64
 import subprocess
-from typing import Dict, Optional, List
 import requests
 from datetime import datetime
+from typing import Dict, Optional, List
+import shutil
 
 from ..utils.logging_config import get_logger
 
@@ -31,7 +32,7 @@ class VertexAIVeo2Client:
             output_dir: str):
         """
         Initialize Vertex AI VEO-2 client
-
+        
         Args:
             project_id: Google Cloud project ID
             location: Google Cloud location (e.g., 'us-central1')
@@ -44,39 +45,20 @@ class VertexAIVeo2Client:
         self.output_dir = output_dir
         self.clips_dir = os.path.join(output_dir, "veo2_clips")
         os.makedirs(self.clips_dir, exist_ok=True)
-
-        # Vertex AI API endpoints
-        self.base_url = f"https://{location}-aiplatform.googleapis.com/v1"
-        self.model_endpoint = f"{
-            self.base_url}/projects/{project_id}/locations/{location}/publishers/google/models"
-
-        # VEO-2 model configurations
-        self.veo2_model = "veo-2.0-generate-001"
-        # Preview model (requires allowlist)
-        self.veo3_model = "veo-3.0-generate-preview"
-
-        # Initialize authentication
-        self.access_token = None
-        self.token_expiry = None
+        
+        # Initialize Vertex AI client
         self.veo_available = False
-
+        self.access_token = None
+        self.token_expiry = 0
+        
         try:
+            # Try to initialize Vertex AI
             self._refresh_access_token()
-            if self.access_token:
-                self.veo_available = True
-                logger.info(
-                    f"✅ Vertex AI VEO-2 client initialized successfully")
-                logger.info(f"   Project: {project_id}")
-                logger.info(f"   Location: {location}")
-                logger.info(f"   GCS Bucket: {gcs_bucket}")
-                logger.info(f"   Authentication: ✅ Active")
-            else:
-                logger.warning(
-                    f"⚠️ Vertex AI VEO-2 client initialized with authentication issues")
-                logger.warning(f"   Will use fallback video generation")
+            self.veo_available = True
+            logger.info("✅ Vertex AI VEO-2 client initialized successfully")
         except Exception as e:
-            logger.error(f"❌ Failed to initialize Vertex AI client: {e}")
-            logger.info(f"   Will use fallback video generation")
+            logger.warning(f"⚠️ Vertex AI VEO-2 initialization failed: {e}")
+            self.veo_available = False
 
     def _refresh_access_token(self):
         """Get fresh access token using gcloud CLI"""
@@ -106,192 +88,321 @@ class VertexAIVeo2Client:
             "Content-Type": "application/json"
         }
 
-    def generate_video_clip(
-            self,
-            prompt: str,
-            duration: float,
-            clip_id: str,
-            aspect_ratio: str = "16:9",
-            image_path: Optional[str] = None,
-            prefer_veo3: bool = False,
-            enable_audio: bool = True) -> str:
+    def generate_video(self, prompt: str, duration: float = 5.0, 
+                      clip_id: str = "clip", image_path: str = None) -> str:
         """
-        Generate video clip using Vertex AI VEO-2/VEO-3 API
-
+        Generate video using VEO-2
+        
         Args:
-            prompt: Text prompt for video generation
-            duration: Duration in seconds (5-8 for VEO-2/VEO-3)
-            clip_id: Unique identifier for this clip
-            aspect_ratio: Video aspect ratio ("16:9" or "9:16")
+            prompt: Text description for video generation
+            duration: Video duration in seconds (5-8 seconds supported)
+            clip_id: Unique identifier for the clip
             image_path: Optional image for image-to-video generation
-            prefer_veo3: Whether to prefer VEO-3 over VEO-2 (default: False)
-            enable_audio: Whether to enable native audio generation (VEO-3 only)
-
+            
         Returns:
             Path to generated video file
         """
         if not self.veo_available:
-            logger.warning("⚠️ Vertex AI VEO not available, using fallback")
+            logger.warning("❌ Vertex AI VEO-2 not available, using fallback")
+            return self._create_fallback_clip(prompt, duration, clip_id)
+        
+        logger.info(f"🎬 Starting Vertex AI VEO-2 generation for clip: {clip_id}")
+        
+        try:
+            # Enhance prompt with Gemini
+            enhanced_prompt = self._enhance_prompt_with_gemini(prompt)
+            
+            # Submit generation request to Vertex AI
+            gcs_uri = self._submit_generation_request(enhanced_prompt, duration, image_path)
+            
+            if gcs_uri:
+                # Download video from GCS
+                local_path = self._download_video_from_gcs(gcs_uri, clip_id)
+                if local_path and os.path.exists(local_path):
+                    logger.info(f"✅ VEO-2 generation completed: {local_path}")
+                    return local_path
+                else:
+                    logger.error("❌ Failed to download VEO-2 video")
+                    return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
+            else:
+                logger.error("❌ VEO-2 generation failed")
+                return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
+            
+        except Exception as e:
+            logger.error(f"❌ VEO-2 generation failed: {e}")
             return self._create_fallback_clip(prompt, duration, clip_id)
 
-        try:
-            # First, sanitize the prompt to avoid sensitive content issues
-            sanitized_prompt = self._sanitize_prompt_for_veo(prompt)
-            logger.info(f"🧹 Prompt sanitized for VEO content policies")
-
-            # VEO-3 currently only supports 16:9 aspect ratio
-            if aspect_ratio == "9:16" and prefer_veo3:
-                logger.info(
-                    "📱 VEO-3 doesn't support 9:16, using VEO-2 for portrait video")
-                prefer_veo3 = False
-
-            # Smart model selection based on requirements and preferences
-            model_name, max_duration = self._select_optimal_model(
-                duration, prefer_veo3, enable_audio)
-
-            # Clamp duration to model limits
-            duration = min(duration, max_duration)
-            
-            # VEO-3 requires minimum 8 seconds
-            if model_name == self.veo3_model and duration < 8.0:
-                duration = 8.0
-                logger.info(f"⏰ Adjusted duration to 8s for VEO-3 minimum requirement")
-
-            # Enhance prompt for VEO-3 if using audio
-            enhanced_prompt = self._enhance_prompt_for_veo3(
-                sanitized_prompt, model_name, enable_audio)
-
-            logger.info(f"🎬 Generating {duration}s video with {model_name}")
-            logger.info(f"📝 Enhanced prompt: {enhanced_prompt[:100]}...")
-            if model_name == self.veo3_model and enable_audio:
-                logger.info("🔊 Native audio generation enabled")
-
-            # Create video generation request
-            operation_name = self._create_video_generation_request(
-                model_name, enhanced_prompt, duration, aspect_ratio, image_path
-            )
-
-            if not operation_name:
-                logger.warning("❌ Failed to create video generation request")
-                return self._create_fallback_clip(prompt, duration, clip_id)
-
-            # Poll for completion
-            video_uri = self._poll_for_completion(
-                operation_name, clip_id, enhanced_prompt)
-
-            if video_uri == "SENSITIVE_CONTENT_ERROR":
-                logger.info(
-                    "🚫 VEO rejected prompt due to sensitive content, starting multi-strategy rephrasing...")
-
-                # Try multi-strategy rephrasing
-                logger.info("🚫 VEO rejected prompt due to sensitive content, starting multi-strategy rephrasing...")
-                
-                # Strategy 1: AI-powered rephrasing with Gemini
-                for attempt in range(1, 4):  # Try 3 times
-                    logger.info(f"🔄 Rephrasing attempt {attempt}/3")
-                    
-                    if attempt == 1:
-                        logger.info("   Strategy: AI-powered rephrasing with Gemini")
-                        rephrased_prompt = self._rephrase_prompt_with_gemini(prompt, "VEO rejected prompt due to sensitive content")
-                    elif attempt == 2:
-                        logger.info("   Strategy: Simple word replacement cleanup")
-                        rephrased_prompt = self._simple_prompt_cleanup(prompt)
-                    else:
-                        logger.info("   Strategy: Safe generic prompt generation")
-                        rephrased_prompt = self._create_safe_generic_prompt(prompt)
-                    
-                    # Test the rephrased prompt
-                    logger.info(f"   Rephrased prompt: {rephrased_prompt[:100]}...")
-                    
-                    # Try generating with rephrased prompt
-                    rephrased_operation = self._create_video_generation_request(
-                        model_name, rephrased_prompt, duration, aspect_ratio, image_path)
-                    
-                    if rephrased_operation:
-                        logger.info(f"⏳ Polling for completion of rephrased prompt (attempt {attempt})...")
-                        rephrased_result = self._poll_for_completion(rephrased_operation, clip_id, rephrased_prompt)
-                        
-                        if rephrased_result and rephrased_result != "SENSITIVE_CONTENT_ERROR":
-                            logger.info(f"✅ Video generation successful after rephrasing (attempt {attempt})")
-                            return rephrased_result
-                        else:
-                            logger.info(f"🚫 VEO still rejected prompt after rephrasing (attempt {attempt})")
-                            continue
-                    else:
-                        logger.warning(f"❌ Failed to create request for rephrased prompt (attempt {attempt})")
-                        continue
-                
-                # All rephrasing attempts failed
-                logger.error("❌ All rephrasing attempts failed, creating fallback clip")
-                return self._create_fallback_clip(prompt, duration, clip_id)
-
-            elif not video_uri:
-                logger.warning("❌ Video generation failed or timed out")
-                return self._create_fallback_clip(prompt, duration, clip_id)
-
-            # Download video from GCS
+    def _generate_with_vertex_ai(self, prompt: str, duration: float, 
+                                clip_id: str, image_path: str = None) -> str:
+        """Generate video using Vertex AI VEO"""
+        logger.info(f"🎬 Starting Vertex AI VEO-2 generation for clip: {clip_id}")
+        
+        # Use the existing generation logic
+        enhanced_prompt = self._enhance_prompt_with_gemini(prompt)
+        
+        # Generate video
+        operation_name = self._submit_generation_request(
+            enhanced_prompt, duration, image_path
+        )
+        
+        # Poll for completion
+        video_uri = self._poll_for_completion(operation_name, enhanced_prompt, clip_id)
+        
+        if video_uri:
+            # Download video
             local_path = self._download_video_from_gcs(video_uri, clip_id)
+            return local_path
+        else:
+            raise Exception("Vertex AI VEO generation failed")
 
-            if local_path and os.path.exists(local_path):
-                file_size = os.path.getsize(local_path) / (1024 * 1024)
-                model_used = "VEO-3" if model_name == self.veo3_model else "VEO-2"
-                audio_status = " with audio" if model_name == self.veo3_model and enable_audio else ""
-                logger.info(
-                    f"✅ {model_used} video generated{audio_status}: {local_path} ({
-                        file_size:.1f}MB)")
-                return local_path
+    def _generate_with_google_ai_veo(self, prompt: str, duration: float, 
+                                    clip_id: str, image_path: str = None) -> str:
+        """Generate video using Google AI Studio VEO"""
+        logger.info(f"🎬 Starting Google AI Studio VEO generation for clip: {clip_id}")
+        
+        try:
+            # Use the OptimizedVeoClient to generate video
+            video_path = self.google_ai_veo.generate_video(
+                prompt=prompt,
+                duration=duration,
+                clip_id=clip_id,
+                image_path=image_path
+            )
+            
+            if video_path and os.path.exists(video_path):
+                # Move to our clips directory with proper naming
+                target_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
+                if video_path != target_path:
+                    shutil.move(video_path, target_path)
+                
+                logger.info(f"✅ Google AI Studio VEO video generated: {target_path}")
+                return target_path
             else:
-                logger.warning("❌ Failed to download generated video")
-                return self._create_fallback_clip(prompt, duration, clip_id)
+                raise Exception("Google AI Studio VEO generation returned no video")
+                
+        except Exception as e:
+            logger.error(f"❌ Google AI Studio VEO generation failed: {e}")
+            raise
+
+    def _verify_and_fix_prompt_with_gemini(self, prompt: str) -> str:
+        """
+        CRITICAL: Verify prompt with Gemini before sending to VEO
+        If violations detected, automatically rephrase
+        """
+        try:
+            import os
+            import requests
+
+            logger.info(
+                "🔍 Verifying prompt with Gemini before VEO submission...")
+
+            # Check if we have a Gemini API key available
+            gemini_api_key = os.getenv(
+                'GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+
+            if not gemini_api_key:
+                logger.error(
+                    "❌ No Gemini API key available - cannot verify prompt")
+                return prompt
+
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}"
+
+            verification_prompt = f"""
+            You are a Google VEO content policy expert. Your job is to analyze video generation prompts and ensure they comply with Google VEO content policies.
+
+            PROMPT TO ANALYZE: "{prompt}"
+
+            TASK: Analyze this prompt for potential VEO content policy violations and provide a response in JSON format.
+
+            VEO CONTENT POLICIES TO CHECK:
+            1. No medical procedures, surgeries, or graphic medical content
+            2. No pharmaceutical or drug-related content
+            3. No content that could be considered medical advice
+            4. No content involving minors in potentially sensitive contexts
+            5. No violent, dangerous, or harmful content
+            6. No content that could be considered misinformation
+            7. No overly specific medical terminology that might trigger filters
+            8. No content that could be considered professional medical advice
+
+            RESPONSE FORMAT (JSON only):
+            {{
+                "is_safe": true/false,
+                "violations": ["list of specific violations found"],
+                "risk_level": "low/medium/high",
+                "recommended_action": "approve/rephrase/reject",
+                "safe_alternative": "if rephrase needed, provide a VEO-safe version that maintains the same visual intent"
+            }}
+
+            Return ONLY the JSON response, no other text.
+            """
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": verification_prompt
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            response = requests.post(gemini_url, json=payload, timeout=30)
+
+            if response.status_code == 200:
+                result = response.json()
+                gemini_response = result["candidates"][0]["content"]["parts"][0]["text"].strip(
+                )
+
+                # Parse JSON response - handle markdown code blocks
+                import json
+                import re
+                try:
+                    # Clean up response - remove markdown code blocks if
+                    # present
+                    cleaned_response = gemini_response.strip()
+
+                    # Check if response is wrapped in markdown code blocks
+                    if cleaned_response.startswith(
+                            '```json') and cleaned_response.endswith('```'):
+                        # Extract JSON from markdown code blocks
+                        # Remove ```json and ```
+                        cleaned_response = cleaned_response[7:-3].strip()
+                    elif cleaned_response.startswith('```') and cleaned_response.endswith('```'):
+                        # Extract from generic code blocks
+                        cleaned_response = cleaned_response[3:-3].strip()
+
+                    # Try to extract JSON if mixed with other text
+                    json_match = re.search(
+                        r'\{.*\}', cleaned_response, re.DOTALL)
+                    if json_match:
+                        cleaned_response = json_match.group(0)
+
+                    logger.debug(
+                        f"🔍 Cleaned Gemini response: {cleaned_response}")
+
+                    analysis = json.loads(cleaned_response)
+
+                    logger.info(
+                        f"🔍 Gemini analysis - Safe: {analysis.get('is_safe', False)}")
+                    logger.info(
+                        f"🔍 Risk level: {
+                            analysis.get(
+                                'risk_level',
+                                'unknown')}")
+
+                    if analysis.get('violations'):
+                        logger.warning(
+                            f"⚠️ Potential violations: {
+                                analysis['violations']}")
+
+                    if not analysis.get('is_safe', False) or analysis.get(
+                            'recommended_action') == 'rephrase':
+                        safe_alternative = analysis.get('safe_alternative', '')
+                        if safe_alternative:
+                            logger.info(
+                                f"✅ Using Gemini-suggested safe alternative")
+                            return safe_alternative
+                        else:
+                            logger.warning(
+                                "⚠️ No safe alternative provided, using original prompt")
+                            return prompt
+                    else:
+                        logger.info("✅ Prompt verified as safe by Gemini")
+                        return prompt
+
+                except json.JSONDecodeError as e:
+                    logger.error(
+                        f"❌ Failed to parse Gemini response as JSON: {e}")
+                    logger.error(f"❌ Raw response: {gemini_response}")
+                    logger.error(f"❌ Cleaned response: {cleaned_response}")
+                    return prompt
+
+            else:
+                logger.error(
+                    f"❌ Gemini verification failed: {
+                        response.status_code}")
+                logger.error(f"Response: {response.text}")
+                return prompt
 
         except Exception as e:
-            error_msg = str(e)
-            logger.error(f"❌ VEO generation failed: {error_msg}")
+            logger.error(f"❌ Prompt verification failed: {e}")
+            return prompt
 
-            # Check if it's a sensitive content error and we haven't already
-            # sanitized
-            if ("sensitive words" in error_msg.lower(
-            ) or "responsible ai" in error_msg.lower()) and sanitized_prompt == prompt:
-                logger.warning(
-                    "⚠️ Sensitive content detected, creating safe fallback")
-                return self._create_fallback_clip(
-                    f"Safe educational content about {prompt[:30]}", duration, clip_id)
+    def _emergency_rephrase_with_gemini(self, rejected_prompt: str) -> str:
+        """
+        Emergency rephrasing when VEO rejects a prompt despite Gemini verification
+        """
+        try:
+            import os
+            import requests
 
-            return self._create_fallback_clip(prompt, duration, clip_id)
+            logger.info("🆘 Emergency rephrasing with Gemini...")
 
-    def _sanitize_prompt_for_veo(self, prompt: str) -> str:
-        """Sanitize prompt to comply with VEO content policies"""
-        
-        # Age-related sanitization - replace problematic age references
-        age_replacements = {
-            'kids under age 10': 'young learners',
-            'children under age 10': 'young students', 
-            'under age 10': 'young audience',
-            'kids under 10': 'young learners',
-            'children under 10': 'young students',
-            'age 10': 'elementary level',
-            'kids': 'students',
-            'children': 'learners'
-        }
-        
-        sanitized = prompt.lower()
-        for problematic, safe in age_replacements.items():
-            sanitized = sanitized.replace(problematic, safe)
-            
-        # Additional content policy sanitization
-        content_replacements = {
-            'theorem': 'mathematical concept',
-            'lagrange': 'mathematical method',
-            'remainder': 'leftover part'
-        }
-        
-        for problematic, safe in content_replacements.items():
-            sanitized = sanitized.replace(problematic, safe)
-            
-        logger.info(f"🧹 Prompt sanitized: '{prompt[:50]}...' -> '{sanitized[:50]}...'")
-        logger.info("🧹 Prompt sanitized for VEO content policies")
-        
-        return sanitized
+            gemini_api_key = os.getenv(
+                'GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+
+            if not gemini_api_key:
+                logger.error(
+                    "❌ No Gemini API key available for emergency rephrasing")
+                return "A peaceful, beautiful scene with gentle movement and professional lighting. No text overlays or written words in the video."
+
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}"
+
+            emergency_prompt = f"""
+            URGENT: Google VEO has rejected this video generation prompt despite initial verification.
+
+            REJECTED PROMPT: "{rejected_prompt}"
+
+            TASK: Create an ultra-safe alternative that will definitely pass VEO content policies while maintaining similar visual intent.
+
+            REQUIREMENTS:
+            1. Remove ALL potentially sensitive terms
+            2. Use only the safest, most generic language
+            3. Maintain the core visual concept if possible
+            4. Ensure 100% VEO policy compliance
+            5. No medical, pharmaceutical, or health-related terms
+            6. No terms that could be interpreted as advice or professional content
+            7. Focus on visual elements only
+
+            RESPONSE: Provide ONLY the ultra-safe rephrased prompt, no explanation or additional text.
+            """
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": emergency_prompt
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            response = requests.post(gemini_url, json=payload, timeout=30)
+
+            if response.status_code == 200:
+                result = response.json()
+                emergency_rephrased = result["candidates"][0]["content"]["parts"][0]["text"].strip(
+                )
+
+                # Add safety instruction
+                emergency_rephrased += ". No text overlays, captions, or written words in the video"
+
+                logger.info(f"✅ Emergency rephrasing completed")
+                return emergency_rephrased
+
+            else:
+                logger.error(
+                    f"❌ Emergency rephrasing failed: {
+                        response.status_code}")
+                return "A peaceful, beautiful scene with gentle movement and professional lighting. No text overlays or written words in the video."
+
+        except Exception as e:
+            logger.error(f"❌ Emergency rephrasing failed: {e}")
+            return "A peaceful, beautiful scene with gentle movement and professional lighting. No text overlays or written words in the video."
 
     def _select_optimal_model(self,
                               duration: float,
@@ -449,6 +560,39 @@ class VertexAIVeo2Client:
 
         return ", ".join(audio_elements)
 
+    def _enhance_prompt_with_gemini(self, prompt: str) -> str:
+        """Enhance prompt using Gemini for better VEO-2 generation"""
+        try:
+            import google.generativeai as genai
+            
+            # Configure Gemini
+            genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            
+            enhancement_prompt = f"""
+            Enhance this video generation prompt for VEO-2 to create high-quality, engaging video content:
+            
+            Original prompt: {prompt}
+            
+            Enhance it to be:
+            1. More specific and descriptive
+            2. Include visual details and camera movements
+            3. Optimized for VEO-2's capabilities
+            4. Engaging and dynamic
+            
+            Return only the enhanced prompt, no explanation needed.
+            """
+            
+            response = model.generate_content(enhancement_prompt)
+            enhanced = response.text.strip()
+            
+            logger.info(f"✨ Enhanced prompt: {enhanced[:100]}...")
+            return enhanced
+            
+        except Exception as e:
+            logger.warning(f"Failed to enhance prompt with Gemini: {e}")
+            return prompt  # Return original if enhancement fails
+
     def _create_video_generation_request(
             self,
             model_name: str,
@@ -515,401 +659,151 @@ class VertexAIVeo2Client:
             logger.error(f"❌ Failed to create video generation request: {e}")
             return None
 
-    def _poll_for_completion(
-            self,
-            operation_name: str,
-            clip_id: str,
-            enhanced_prompt: str) -> Optional[str]:
-        """Poll for video generation completion"""
+    def _submit_generation_request(self, prompt: str, duration: float, image_path: str = None) -> str:
+        """Submit video generation request to Vertex AI VEO-2"""
         try:
-            logger.info("⏳ Polling for video generation completion...")
-
-            max_polls = 20  # ~10 minutes max
-            poll_interval = 30  # 30 seconds
-
-            for poll_count in range(max_polls):
-                logger.info(
-                    f"   Poll {
-                        poll_count + 1}/{max_polls}: Checking operation status...")
-
-                # Check operation status
-                url = f"{self.model_endpoint}/{self.veo2_model}:fetchPredictOperation"
-                headers = self._get_auth_headers()
-
-                poll_data = {
-                    "operationName": operation_name
-                }
-                response = requests.post(
-                    url, headers=headers, json=poll_data, timeout=30)
-
-                if response.status_code != 200:
-                    logger.error(
-                        f"❌ Failed to poll operation: {
-                            response.status_code}")
-                    logger.error(f"Response: {response.text}")
-                    return None
-
+            # Build the request URL
+            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/veo-2.0-generate-001:predict"
+            
+            headers = self._get_auth_headers()
+            
+            # Build request payload
+            payload = {
+                "instances": [
+                    {
+                        "prompt": prompt,
+                        "config": {
+                            "aspectRatio": "16:9",
+                            "duration": f"{int(duration)}s"
+                        }
+                    }
+                ]
+            }
+            
+            # Add image if provided for image-to-video
+            if image_path and os.path.exists(image_path):
+                with open(image_path, 'rb') as img_file:
+                    import base64
+                    img_data = base64.b64encode(img_file.read()).decode('utf-8')
+                    payload["instances"][0]["image"] = {
+                        "bytesBase64Encoded": img_data
+                    }
+            
+            logger.info(f"🚀 Submitting VEO-2 generation request...")
+            response = requests.post(url, headers=headers, json=payload, timeout=60)
+            
+            if response.status_code == 200:
                 result = response.json()
-
-                if result.get("done", False):
-                    logger.info("✅ Video generation completed!")
-
-                    # Debug: Log the full response structure
-                    logger.debug(
-                        f"🔍 Full response: {
-                            json.dumps(
-                                result,
-                                indent=2)}")
-
-                    # Check for sensitive content error
-                    if "error" in result:
-                        error_info = result["error"]
-                        error_message = error_info.get("message", "")
-
-                        if ("sensitive words" in error_message.lower() or
-                            "responsible ai" in error_message.lower() or
-                                "violate" in error_message.lower()):
-
-                            logger.info(
-                                f"🚫 VEO rejected prompt due to sensitive content: {error_message}")
-                            logger.debug(
-                                f"🔍 REJECTED PROMPT: '{enhanced_prompt}'")
-
-                            # Return special error code to trigger rephrasing
-                            return "SENSITIVE_CONTENT_ERROR"
-
-                    # Extract video URI from response - Try multiple possible
-                    # structures
-                    response_data = result.get("response", {})
-                    video_uri = None
-
-                    # Structure 1: Check for videos array
-                    videos = response_data.get("videos", [])
-                    if videos and len(videos) > 0:
-                        video_uri = videos[0].get("gcsUri")
-                        logger.info(
-                            f"📹 Found video URI in videos[0]: {video_uri}")
-
-                    # Structure 2: Check for predictions array (common in
-                    # Vertex AI)
-                    if not video_uri:
-                        predictions = response_data.get("predictions", [])
-                        if predictions and len(predictions) > 0:
-                            prediction = predictions[0]
-                            # Check multiple possible keys
-                            for key in [
-                                'gcsUri',
-                                'uri',
-                                'video_uri',
-                                'output_uri',
-                                    'generated_video']:
-                                if key in prediction:
-                                    video_uri = prediction[key]
-                                    logger.info(
-                                        f"📹 Found video URI in predictions[0].{key}: {video_uri}")
-                                    break
-
-                    # Structure 3: Check direct in response
-                    if not video_uri:
-                        for key in [
-                            'gcsUri',
-                            'uri',
-                            'video_uri',
-                            'output_uri',
-                                'generated_video']:
-                            if key in response_data:
-                                video_uri = response_data[key]
-                                logger.info(
-                                    f"📹 Found video URI in response.{key}: {video_uri}")
-                                break
-
-                    # Structure 4: Check for nested output
-                    if not video_uri:
-                        output_data = response_data.get("output", {})
-                        if isinstance(output_data, dict):
-                            for key in [
-                                'gcsUri',
-                                'uri',
-                                'video_uri',
-                                'output_uri',
-                                    'generated_video']:
-                                if key in output_data:
-                                    video_uri = output_data[key]
-                                    logger.info(
-                                        f"📹 Found video URI in output.{key}: {video_uri}")
-                                    break
-
-                    # Structure 5: Check for results array
-                    if not video_uri:
-                        results = response_data.get("results", [])
-                        if results and len(results) > 0:
-                            result_item = results[0]
-                            if isinstance(result_item, dict):
-                                for key in [
-                                    'gcsUri',
-                                    'uri',
-                                    'video_uri',
-                                    'output_uri',
-                                        'generated_video']:
-                                    if key in result_item:
-                                        video_uri = result_item[key]
-                                        logger.info(
-                                            f"📹 Found video URI in results[0].{key}: {video_uri}")
-                                        break
-
-                    if video_uri:
-                        logger.info(
-                            f"✅ Successfully extracted video URI: {video_uri}")
-                        return video_uri
+                if "predictions" in result and len(result["predictions"]) > 0:
+                    prediction = result["predictions"][0]
+                    if "gcsUri" in prediction:
+                        logger.info("✅ VEO-2 generation completed successfully")
+                        return prediction["gcsUri"]
                     else:
-                        logger.error("❌ No video URI found in response")
-                        logger.error(
-                            f"Available keys in response: {
-                                list(
-                                    response_data.keys())}")
-                        if response_data:
-                            logger.error(
-                                f"Response data structure: {
-                                    json.dumps(
-                                        response_data,
-                                        indent=2)}")
+                        logger.error("❌ No GCS URI in VEO-2 response")
                         return None
-
-                # Wait before next poll
-                if poll_count < max_polls - 1:
-                    time.sleep(poll_interval)
-
-            logger.warning("⏰ Video generation timed out")
-            return None
-
+                else:
+                    logger.error("❌ No predictions in VEO-2 response")
+                    return None
+            else:
+                logger.error(f"❌ VEO-2 generation failed: {response.status_code}")
+                logger.error(f"Response: {response.text}")
+                return None
+                
         except Exception as e:
-            logger.error(f"❌ Polling failed: {e}")
+            logger.error(f"❌ VEO-2 generation request failed: {e}")
             return None
+
+    def _poll_for_completion(self, operation_name: str, enhanced_prompt: str, clip_id: str) -> str:
+        """Poll for completion of VEO generation (synchronous for now)"""
+        # For now, this is synchronous since we're using the predict endpoint
+        # In the future, we can implement async polling for long-running operations
+        return operation_name
 
     def _rephrase_prompt_with_gemini(
             self,
             original_prompt: str,
             error_message: str) -> str:
-        """Use Gemini to rephrase prompts that were rejected for sensitive content"""
-        try:
-            import os
-
-            logger.info(
-                f"🔄 Rephrasing prompt with Gemini to avoid sensitive content...")
-
-            # Check if we have a Gemini API key available
-            gemini_api_key = os.getenv(
-                'GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
-
-            if not gemini_api_key:
-                logger.warning(
-                    "⚠️ No Gemini API key available, using simple cleanup")
-                return self._simple_prompt_cleanup(original_prompt)
-
-            # Configure Gemini using requests (to avoid import issues)
-            import requests
-
-            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
-
-            rephrase_prompt = f"""
-            The following video generation prompt was REJECTED by Google VEO for violating content policies:
-
-            ORIGINAL PROMPT: "{original_prompt}"
-            ERROR: "{error_message}"
-
-            TASK: Rephrase this prompt to be 100% compliant with Google VEO content policies while preserving the EXACT same meaning and visual intent.
-
-            REQUIREMENTS:
-            1. Keep the same visual concept and educational intent
-            2. Use VEO-safe language that won't trigger content filters
-            3. Maintain all the visual details and style information
-            4. Do NOT change the core meaning or educational value
-            5. Focus on making it policy-compliant, not dumbing it down
-
-            Return ONLY the rephrased prompt that means exactly the same thing but uses VEO-safe language.
-            """
-
-            # Make request to Gemini API
-            payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {
-                                "text": rephrase_prompt
-                            }
-                        ]
-                    }
-                ]
-            }
-
-            response = requests.post(gemini_url, json=payload, timeout=30)
-
-            if response.status_code == 200:
-                result = response.json()
-                rephrased_prompt = result["candidates"][0]["content"]["parts"][0]["text"].strip(
-                )
-
-                # Validate the rephrased prompt
-                if not rephrased_prompt or len(rephrased_prompt) < 10:
-                    logger.warning(
-                        "⚠️ Gemini returned empty or very short prompt, using simple cleanup")
-                    return self._simple_prompt_cleanup(original_prompt)
-
-                # Add our standard no-text instruction
-                rephrased_prompt += ". No text overlays, captions, or written words in the video"
-
-                logger.info(f"✅ Prompt rephrased successfully:")
-                logger.info(f"   Original: {original_prompt[:100]}...")
-                logger.info(f"   Rephrased: {rephrased_prompt[:100]}...")
-
-                return rephrased_prompt
-            else:
-                logger.error(
-                    f"❌ Gemini API request failed: {
-                        response.status_code}")
-                logger.error(f"Response: {response.text}")
-                return self._simple_prompt_cleanup(original_prompt)
-
-        except requests.exceptions.Timeout:
-            logger.error("❌ Gemini API request timed out")
-            return self._simple_prompt_cleanup(original_prompt)
-        except requests.exceptions.RequestException as e:
-            logger.error(f"❌ Gemini API request failed: {e}")
-            return self._simple_prompt_cleanup(original_prompt)
-        except KeyError as e:
-            logger.error(f"❌ Unexpected Gemini API response structure: {e}")
-            return self._simple_prompt_cleanup(original_prompt)
-        except Exception as e:
-            logger.error(f"❌ Failed to rephrase prompt with Gemini: {e}")
-            return self._simple_prompt_cleanup(original_prompt)
+        """
+        DEPRECATED: Replaced with integrated Gemini verification and rephrasing
+        This method is no longer used - all rephrasing is now done by the integrated Gemini system
+        """
+        logger.warning(
+            "⚠️ _rephrase_prompt_with_gemini is deprecated - using integrated Gemini system instead")
+        return self._emergency_rephrase_with_gemini(original_prompt)
 
     def _simple_prompt_cleanup(self, prompt: str) -> str:
-        """Simple fallback prompt cleanup when Gemini rephrasing fails"""
-        import re
-
-        # Simple word replacements for common sensitive terms
-        replacements = {
-            'violent': 'dynamic',
-            'attack': 'approach',
-            'fight': 'dance',
-            'battle': 'competition',
-            'war': 'adventure',
-            'weapon': 'tool',
-            'gun': 'device',
-            'knife': 'utensil',
-            'blood': 'liquid',
-            'death': 'transformation',
-            'kill': 'stop',
-            'hurt': 'affect',
-            'pain': 'emotion',
-            'dangerous': 'exciting',
-            'threat': 'challenge',
-            'aggressive': 'energetic',
-            'destroy': 'change',
-            'damage': 'modify',
-            'harm': 'influence'
-        }
-
-        cleaned_prompt = prompt
-        for sensitive, replacement in replacements.items():
-            cleaned_prompt = re.sub(
-                r'\b' +
-                re.escape(sensitive) +
-                r'\b',
-                replacement,
-                cleaned_prompt,
-                flags=re.IGNORECASE)
-
-        # Add safety instruction
-        cleaned_prompt += ". No text overlays, captions, or written words in the video"
-
-        logger.info(f"🧹 Applied simple cleanup to prompt")
-        return cleaned_prompt
+        """
+        DEPRECATED: Replaced with Gemini-based rephrasing
+        This method is no longer used - all prompt rephrasing is now done by Gemini
+        """
+        logger.warning(
+            "⚠️ _simple_prompt_cleanup is deprecated - using Gemini rephrasing instead")
+        return self._emergency_rephrase_with_gemini(prompt)
 
     def _create_safe_generic_prompt(self, original_prompt: str) -> str:
-        """Create a very safe, generic prompt that should not trigger VEO filters"""
-        import re
+        """
+        DEPRECATED: Replaced with Gemini-based safe prompt generation
+        This method is no longer used - all safe prompt generation is now done by Gemini
+        """
+        logger.warning(
+            "⚠️ _create_safe_generic_prompt is deprecated - using Gemini safe generation instead")
+        return self._emergency_rephrase_with_gemini(original_prompt)
 
-        # Extract basic visual elements from original prompt
-        visual_elements = []
+    def _create_multiple_safe_prompts(self, original_prompt: str) -> List[str]:
+        """
+        DEPRECATED: Replaced with Gemini-based safe prompt generation
+        This method is no longer used - all safe prompt generation is now done by Gemini
+        """
+        logger.warning(
+            "⚠️ _create_multiple_safe_prompts is deprecated - using Gemini safe generation instead")
+        emergency_prompt = self._emergency_rephrase_with_gemini(
+            original_prompt)
+        return [emergency_prompt]
 
-        # Look for safe visual elements
-        safe_patterns = {
-            r'\b(person|people|human|man|woman|child|baby)\b': 'person',
-            r'\b(sitting|standing|walking|running|moving)\b': 'moving',
-            r'\b(smiling|happy|joyful|peaceful|calm)\b': 'happy',
-            r'\b(indoor|outdoor|room|house|building)\b': 'indoor space',
-            r'\b(nature|garden|park|forest|beach|mountain)\b': 'natural setting',
-            r'\b(blue|red|green|yellow|white|black|colorful)\b': 'colorful',
-            r'\b(beautiful|pretty|lovely|elegant|graceful)\b': 'beautiful',
-            r'\b(music|sound|audio|voice|singing)\b': 'with pleasant audio',
-            r'\b(light|bright|sunny|warm|soft)\b': 'well-lit',
-            r'\b(professional|cinematic|artistic|creative)\b': 'professional quality'}
-
-        prompt_lower = original_prompt.lower()
-        for pattern, replacement in safe_patterns.items():
-            if re.search(pattern, prompt_lower):
-                visual_elements.append(replacement)
-
-        # Create a safe, generic prompt
-        if visual_elements:
-            # Use extracted elements to create a safe prompt
-            safe_prompt = f"A peaceful scene showing {', '.join(visual_elements[:3])}"
-        else:
-            # Ultra-safe fallback
-            safe_prompt = "A peaceful, beautiful scene with a person in a natural setting"
-
-        # Add standard safety instructions
-        safe_prompt += ", cinematic quality, professional lighting, family-friendly content"
-        safe_prompt += ". No text overlays, captions, or written words in the video"
-
-        logger.info(f"🛡️ Created safe generic prompt: {safe_prompt}")
-        return safe_prompt
-
-    def _download_video_from_gcs(
+    def _try_multiple_safe_prompts(
             self,
-            gcs_uri: str,
+            model_name: str,
+            duration: float,
+            aspect_ratio: str,
+            image_path: Optional[str],
             clip_id: str) -> Optional[str]:
-        """Download video from Google Cloud Storage"""
-        try:
-            # Handle special error cases
-            if gcs_uri == "SENSITIVE_CONTENT_ERROR":
-                logger.error(
-                    "❌ Cannot download video: Content was rejected for sensitive content")
-                return None
+        """
+        DEPRECATED: Replaced with Gemini-based emergency rephrasing
+        This method is no longer used - emergency rephrasing is now handled in the main generation flow
+        """
+        logger.warning(
+            "⚠️ _try_multiple_safe_prompts is deprecated - using Gemini emergency rephrasing instead")
+        return None
 
-            # Extract bucket and path from GCS URI
-            if not gcs_uri.startswith("gs://"):
+    def _download_video_from_gcs(self, gcs_uri: str, clip_id: str) -> str:
+        """Download video from GCS to local storage"""
+        try:
+            from google.cloud import storage
+            
+            # Parse GCS URI
+            if not gcs_uri.startswith('gs://'):
                 logger.error(f"❌ Invalid GCS URI: {gcs_uri}")
                 return None
-
+            
+            # Extract bucket and blob name
             gcs_path = gcs_uri[5:]  # Remove 'gs://'
-            bucket_name = gcs_path.split('/')[0]
-            object_path = '/'.join(gcs_path.split('/')[1:])
-
-            # Local output path
-            local_path = os.path.join(
-                self.clips_dir, f"veo2_clip_{clip_id}.mp4")
-
-            logger.info(f"📥 Downloading video from GCS: {gcs_uri}")
-
-            # Use gsutil to download
-            cmd = [
-                "gsutil", "cp", gcs_uri, local_path
-            ]
-
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=300)
-
-            if result.returncode == 0:
-                logger.info(f"✅ Video downloaded: {local_path}")
-                return local_path
-            else:
-                logger.error(f"❌ gsutil failed: {result.stderr}")
-                return None
-
+            bucket_name, blob_name = gcs_path.split('/', 1)
+            
+            # Initialize GCS client
+            client = storage.Client(project=self.project_id)
+            bucket = client.bucket(bucket_name)
+            blob = bucket.blob(blob_name)
+            
+            # Download to local file
+            local_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
+            blob.download_to_filename(local_path)
+            
+            logger.info(f"✅ Downloaded VEO-2 video: {local_path}")
+            return local_path
+            
         except Exception as e:
-            logger.error(f"❌ Failed to download video: {e}")
+            logger.error(f"❌ Failed to download video from GCS: {e}")
             return None
 
     def _create_fallback_clip(
@@ -917,40 +811,28 @@ class VertexAIVeo2Client:
             prompt: str,
             duration: float,
             clip_id: str) -> str:
-        """Create fallback video when VEO-2 is not available"""
+        """Create fallback video when VEO-2 is not available - using Gemini for content generation"""
         output_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
 
         try:
-            logger.info(f"🎨 Creating fallback video for: {prompt[:50]}...")
+            logger.info(
+                f"🎨 Creating Gemini-powered fallback video for: {prompt[:50]}...")
 
-            # Create a more substantial animated background based on prompt
-            # content
-            if any(word in prompt.lower()
-                   for word in ['yoga', 'exercise', 'fitness', 'meditation']):
-                color = "lightblue"
-                text = "Yoga Practice"
-            elif any(word in prompt.lower() for word in ['family', 'child', 'baby', 'parent']):
-                color = "lightpink"
-                text = "Family Time"
-            elif any(word in prompt.lower() for word in ['nature', 'outdoor', 'garden', 'landscape']):
-                color = "lightgreen"
-                text = "Nature Scene"
-            elif any(word in prompt.lower() for word in ['food', 'cooking', 'recipe', 'kitchen']):
-                color = "lightyellow"
-                text = "Cooking"
-            else:
-                color = "lightcoral"
-                text = "AI Generated"
+            # Use Gemini to generate appropriate fallback content
+            fallback_content = self._generate_fallback_content_with_gemini(
+                prompt)
 
-            # Create animated video with FFmpeg - use testsrc for better
-            # quality and movement
+            # Create animated video with FFmpeg using Gemini-generated content
             cmd = [
                 'ffmpeg',
                 '-y',  # Overwrite output file
                 '-f', 'lavfi',
                 # Moving test pattern
                 '-i', f'testsrc=duration={duration}:size=1080x1920:rate=30',
-                '-vf', f'drawtext=text=\'{text}\':fontcolor=white:fontsize=80:x=(w-text_w)/2:y=(h-text_h)/2-100:enable=\'between(t,0,{duration})\',drawtext=text=\'Placeholder Video\':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=(h-text_h)/2:enable=\'between(t,0,{duration})\',drawtext=text=\'Force VEO-2 Mode\':fontcolor=yellow:fontsize=30:x=(w-text_w)/2:y=(h-text_h)/2+100:enable=\'between(t,0,{duration})\'',
+                '-vf', f'drawtext=text=\'{
+                    fallback_content["title"]}\':fontcolor=white:fontsize=80:x=(w-text_w)/2:y=(h-text_h)/2-100:enable=\'between(t,0,{duration})\',drawtext=text=\'{
+                    fallback_content["subtitle"]}\':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=(h-text_h)/2:enable=\'between(t,0,{duration})\',drawtext=text=\'{
+                    fallback_content["description"]}\':fontcolor=yellow:fontsize=30:x=(w-text_w)/2:y=(h-text_h)/2+100:enable=\'between(t,0,{duration})\'',
                 '-c:v', 'libx264',
                 '-preset', 'medium',
                 '-crf', '18',  # Higher quality for larger file size
@@ -973,67 +855,15 @@ class VertexAIVeo2Client:
                     file_size = os.path.getsize(output_path)
                     if file_size > 80000:  # At least 80KB for a substantial video
                         logger.info(
-                            f"✅ Fallback video created: {output_path} ({
+                            f"✅ Gemini-powered fallback video created: {output_path} ({
                                 file_size / 1024:.1f}KB)")
                         return output_path
                     else:
                         logger.warning(
-                            f"⚠️ Fallback video too small: {file_size} bytes, trying higher quality")
-                        # Try again with even higher quality and longer
-                        # duration if needed
-                        extended_duration = max(
-                            duration, 8.0)  # Ensure at least 8 seconds
-                        high_quality_cmd = [
-                            'ffmpeg', '-y', '-f', 'lavfi',
-                            '-i', f'testsrc=duration={extended_duration}:size=1080x1920:rate=30',
-                            '-vf', f'drawtext=text=\'{text}\':fontcolor=white:fontsize=80:x=(w-text_w)/2:y=(h-text_h)/2-100,drawtext=text=\'High Quality Placeholder\':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=(h-text_h)/2+50,drawtext=text=\'VEO-2 Fallback\':fontcolor=yellow:fontsize=30:x=(w-text_w)/2:y=(h-text_h)/2+120',
-                            '-c:v', 'libx264', '-preset', 'slow', '-crf', '12',  # Even higher quality
-                            '-pix_fmt', 'yuv420p', '-b:v', '8M', '-minrate', '4M', '-maxrate', '12M',
-                            '-t', str(extended_duration),
-                            output_path
-                        ]
-                        subprocess.run(
-                            high_quality_cmd,
-                            capture_output=True,
-                            text=True,
-                            timeout=90)
-                        if os.path.exists(output_path):
-                            new_file_size = os.path.getsize(output_path)
-                            if new_file_size > 500000:
-                                logger.info(
-                                    f"✅ High quality fallback created: {output_path} ({
-                                        new_file_size / 1024:.1f}KB)")
-                                return output_path
-                            else:
-                                logger.warning(
-                                    f"⚠️ High quality fallback still small: {new_file_size} bytes")
-                                # Final attempt with maximum quality
-                                max_quality_cmd = [
-                                    'ffmpeg', '-y', '-f', 'lavfi',
-                                    '-i', f'testsrc=duration=10:size=1080x1920:rate=30',  # Force 10 seconds
-                                    '-vf', f'drawtext=text=\'{text}\':fontcolor=white:fontsize=100:x=(w-text_w)/2:y=(h-text_h)/2-150,drawtext=text=\'Maximum Quality Placeholder\':fontcolor=white:fontsize=50:x=(w-text_w)/2:y=(h-text_h)/2,drawtext=text=\'VEO-2 Force Mode Active\':fontcolor=yellow:fontsize=40:x=(w-text_w)/2:y=(h-text_h)/2+100',
-                                    '-c:v', 'libx264', '-preset', 'veryslow', '-crf', '8',  # Maximum quality
-                                    '-pix_fmt', 'yuv420p', '-b:v', '15M', '-minrate', '8M', '-maxrate', '20M',
-                                    '-t', '10',
-                                    output_path
-                                ]
-                                subprocess.run(
-                                    max_quality_cmd, capture_output=True, text=True, timeout=120)
-                                if os.path.exists(output_path):
-                                    final_file_size = os.path.getsize(
-                                        output_path)
-                                    logger.info(
-                                        f"✅ Maximum quality fallback created: {output_path} ({
-                                            final_file_size / 1024:.1f}KB)")
-                                    return output_path
+                            f"⚠️ Fallback video too small: {file_size} bytes")
 
-                logger.error(
-                    f"❌ FFmpeg failed or created invalid file: {
-                        result.stderr}")
-                raise Exception("FFmpeg failed to create proper video")
-            else:
-                logger.error(f"❌ FFmpeg failed: {result.stderr}")
-                raise Exception("FFmpeg failed")
+            logger.error(f"❌ FFmpeg failed: {result.stderr}")
+            raise Exception("FFmpeg failed to create proper video")
 
         except Exception as e:
             logger.error(f"❌ Fallback creation failed: {e}")
@@ -1056,24 +886,108 @@ class VertexAIVeo2Client:
                     'yuv420p',
                     '-t',
                     str(duration),
-                    output_path]
-                subprocess.run(
-                    minimal_cmd,
-                    capture_output=True,
-                    text=True,
-                    timeout=30)
-                if os.path.exists(output_path) and os.path.getsize(
-                        output_path) > 50000:
-                    logger.info(
-                        f"✅ Minimal fallback video created: {output_path}")
+                    output_path
+                ]
+                subprocess.run(minimal_cmd, capture_output=True, timeout=30)
+                if os.path.exists(output_path):
+                    logger.info(f"✅ Minimal fallback created: {output_path}")
                     return output_path
-            except BaseException:
-                pass
+            except Exception as fallback_error:
+                logger.error(
+                    f"❌ Even minimal fallback failed: {fallback_error}")
 
-            # If all else fails, create an empty file
-            with open(output_path, 'w') as f:
-                f.write("")
-            return output_path
+        # If everything fails, return the expected path anyway
+        return output_path
+
+    def _generate_fallback_content_with_gemini(
+            self, prompt: str) -> Dict[str, str]:
+        """Generate appropriate fallback content using Gemini based on the original prompt"""
+        try:
+            import os
+            import requests
+
+            logger.info("🤖 Generating fallback content with Gemini...")
+
+            gemini_api_key = os.getenv(
+                'GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+
+            if not gemini_api_key:
+                logger.warning(
+                    "⚠️ No Gemini API key available, using generic fallback")
+                return {
+                    "title": "Video Content",
+                    "subtitle": "Processing...",
+                    "description": "Please wait"
+                }
+
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}"
+
+            content_prompt = f"""
+            Generate appropriate fallback video content based on this prompt: "{prompt}"
+
+            TASK: Create engaging text content for a placeholder video that represents the intended content while being family-friendly and appropriate.
+
+            REQUIREMENTS:
+            1. Create a title (max 20 characters)
+            2. Create a subtitle (max 30 characters)
+            3. Create a description (max 40 characters)
+            4. All content must be appropriate and engaging
+            5. Content should relate to the original prompt concept
+
+            RESPONSE FORMAT (JSON only):
+            {{
+                "title": "Short engaging title",
+                "subtitle": "Descriptive subtitle",
+                "description": "Brief description"
+            }}
+
+            Return ONLY the JSON response, no other text.
+            """
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": content_prompt
+                            }
+                        ]
+                    }
+                ]
+            }
+
+            response = requests.post(gemini_url, json=payload, timeout=30)
+
+            if response.status_code == 200:
+                result = response.json()
+                gemini_response = result["candidates"][0]["content"]["parts"][0]["text"].strip(
+                )
+
+                # Parse JSON response
+                import json
+                try:
+                    content = json.loads(gemini_response)
+                    logger.info(f"✅ Gemini generated fallback content")
+                    return content
+
+                except json.JSONDecodeError:
+                    logger.error(
+                        f"❌ Failed to parse Gemini response as JSON: {gemini_response}")
+
+            else:
+                logger.error(
+                    f"❌ Gemini content generation failed: {
+                        response.status_code}")
+
+        except Exception as e:
+            logger.error(f"❌ Fallback content generation failed: {e}")
+
+        # Default fallback content
+        return {
+            "title": "Video Content",
+            "subtitle": "AI Generated",
+            "description": "Placeholder Video"
+        }
 
     def generate_batch_clips(
             self,

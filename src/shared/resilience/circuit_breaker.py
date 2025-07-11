@@ -96,10 +96,10 @@ class CircuitBreaker:
         """
         self.total_calls += 1
         
-        # Check if circuit breaker should transition states
+        # Check if circuit breaker should transition states BEFORE blocking
         self._check_state_transition()
         
-        # Block calls if circuit breaker is open
+        # Block calls if circuit breaker is still open after state check
         if self.state == CircuitBreakerState.OPEN:
             error_msg = f"Circuit breaker '{self.name}' is OPEN - blocking call"
             logger.warning(error_msg)
@@ -130,6 +130,9 @@ class CircuitBreaker:
             
             # Record success
             self._on_success()
+            
+            # Check if we should transition to closed state after success
+            self._check_state_transition()
             
             execution_time = time.time() - start_time
             logger.debug(f"✅ Circuit breaker '{self.name}' call succeeded in {execution_time:.2f}s")

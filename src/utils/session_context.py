@@ -109,17 +109,18 @@ class SessionContext:
             final_path = os.path.join(final_output_dir, filename)
             
             # If the video is already in the session directory, just register it
-            if video_path.startswith(final_output_dir):
+            if os.path.abspath(video_path) == os.path.abspath(final_path):
                 logger.info(f"✅ Video already in session directory: {video_path}")
-                return self.session_manager.save_final_video(video_path)
+                return video_path
             
             # Copy/move video to session directory
             if os.path.exists(video_path):
                 shutil.copy2(video_path, final_path)
                 logger.info(f"💾 Saved final video to session: {final_path}")
                 
-                # Clean up temporary file if it was outside session
-                if video_path != final_path and video_path.startswith("/tmp/"):
+                # Clean up temporary file if it was outside session and is a temp file
+                if (video_path != final_path and 
+                    (video_path.startswith("/tmp/") or video_path.startswith("/var/folders/"))):
                     try:
                         os.remove(video_path)
                         logger.info(f"🗑️ Cleaned up temporary file: {video_path}")

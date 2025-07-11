@@ -9,6 +9,7 @@ from src.utils.quota_verifier_class import QuotaVerifier
 from src.utils.logging_config import get_logger
 from src.models.video_models import GeneratedVideoConfig, Platform, VideoCategory
 from src.generators.video_generator import VideoGenerator
+from src.utils.gcloud_auth_tester import test_gcloud_authentication
 from config.config import settings
 import sys
 import os
@@ -25,6 +26,22 @@ logger = get_logger(__name__)
 def cli():
     """🎬 Viral Video Generator with AI Agent Discussions"""
     pass
+
+
+@cli.command()
+def test_auth():
+    """🔐 Test Google Cloud authentication and API access"""
+    click.echo("🔐 Testing Google Cloud authentication...")
+    results = test_gcloud_authentication()
+    
+    # Exit with appropriate code
+    analysis = results.get('analysis', {})
+    if analysis.get('can_run_app', False):
+        click.echo("\n✅ Authentication tests completed successfully!")
+        sys.exit(0)
+    else:
+        click.echo("\n❌ Critical authentication failures detected!")
+        sys.exit(1)
 
 
 @cli.command()
@@ -53,6 +70,8 @@ def cli():
               help='Use fallback generation only')
 @click.option('--force', is_flag=True,
               help='Force generation even with quota warnings')
+@click.option('--skip-auth-test', is_flag=True,
+              help='Skip authentication test (not recommended)')
 @click.option('--discussions',
               type=click.Choice(['off',
                                  'light',
@@ -91,6 +110,7 @@ def generate(
         image_only: bool,
         fallback_only: bool,
         force: bool,
+        skip_auth_test: bool,
         discussions: str,
         discussion_log: bool,
         session_id: str,
@@ -103,14 +123,30 @@ def generate(
     """🎬 Generate viral video with optimized AI system"""
     
     try:
-        # Validate API key
+        # STEP 1: Authentication Testing (unless skipped)
+        if not skip_auth_test:
+            click.echo("🔐 Running Google Cloud authentication tests...")
+            auth_results = test_gcloud_authentication()
+            
+            analysis = auth_results.get('analysis', {})
+            
+            if not analysis.get('can_run_app', False):
+                click.echo("❌ Authentication tests failed! Cannot proceed with video generation.")
+                click.echo("💡 Use --skip-auth-test to bypass (not recommended)")
+                sys.exit(1)
+            
+            click.echo("✅ Authentication tests passed!")
+        else:
+            click.echo("⚠️ Skipping authentication tests (not recommended)")
+        
+        # STEP 2: Validate API key
         if not settings.google_api_key:
             click.echo(
                 "❌ Error: GOOGLE_API_KEY not found in environment variables")
             click.echo("Please set your Google AI API key in the .env file")
             sys.exit(1)
         
-        # Display generation info
+        # STEP 3: Display generation info
         click.echo(f"🎯 Generating {category} video for mission: {mission}")
         click.echo(f"📱 Platform: {platform}")
         click.echo(f"⏱️ Duration: {duration} seconds")
@@ -138,7 +174,7 @@ def generate(
                     discussions,
                     discussions)}")
         
-        # Check quotas unless forced
+        # STEP 4: Check quotas unless forced
         if not force:
             click.echo("📊 Checking API quotas...")
             quota_verifier = QuotaVerifier(settings.google_api_key)
@@ -159,7 +195,7 @@ def generate(
                 if not click.confirm("Continue anyway?"):
                     sys.exit(1)
         
-        # Choose generation method
+        # STEP 5: Choose generation method
         if discussions == 'enhanced':
             # Use enhanced streamlined system with discussions
             result = _generate_enhanced_streamlined(
@@ -223,7 +259,7 @@ def generate(
                 visual_style,
                 mode)
         
-        # Display results
+        # STEP 6: Display results
         if result.get('success'):
             click.echo("✅ Video generation completed successfully!")
             click.echo(
@@ -300,55 +336,24 @@ def _generate_traditional(
         mode: str) -> dict:
     """Generate video using traditional method without discussions"""
     
+    # CRITICAL: Make frame continuity decision FIRST
+    frame_continuity_decision = _make_frame_continuity_decision(
+        frame_continuity, category, mission, platform, duration, style
+    )
+    
+    # Log the decision prominently
+    continuity_status = "✅ ENABLED" if frame_continuity_decision['use_frame_continuity'] else "❌ DISABLED"
+    logger.info(f"🎬 Frame Continuity Decision: {continuity_status}")
+    logger.info(f"   Confidence: {frame_continuity_decision['confidence']:.2f}")
+    logger.info(f"   Reason: {frame_continuity_decision['primary_reason']}")
+    
     # Create video generator
     generator = VideoGenerator(
         api_key=settings.google_api_key,
         use_real_veo2=not fallback_only
     )
     
-    # Determine frame continuity setting
-    use_frame_continuity = True  # Default
-    frame_continuity_decision = None
-    
-    if frame_continuity == 'on':
-        use_frame_continuity = True
-        frame_continuity_decision = {
-            'use_frame_continuity': True,
-            'confidence': 1.0,
-            'primary_reason': 'User forced frame continuity ON',
-            'agent_name': 'User Override'
-        }
-    elif frame_continuity == 'off':
-        use_frame_continuity = False
-        frame_continuity_decision = {
-            'use_frame_continuity': False,
-            'confidence': 1.0,
-            'primary_reason': 'User forced frame continuity OFF',
-            'agent_name': 'User Override'
-        }
-    else:  # auto mode
-        # Use AI agent to decide (even in traditional mode)
-        from src.agents.continuity_decision_agent import ContinuityDecisionAgent
-        continuity_agent = ContinuityDecisionAgent(settings.google_api_key)
-        
-        frame_continuity_decision = continuity_agent.analyze_frame_continuity_need(
-            topic=mission,
-            category=category,
-            platform=platform,
-            duration=duration,
-            style=style
-        )
-        
-        use_frame_continuity = frame_continuity_decision['use_frame_continuity']
-        logger.info(f"🎬 AI Frame Continuity Decision: {use_frame_continuity}")
-        logger.info(
-            f"   Confidence: {
-                frame_continuity_decision['confidence']:.2f}")
-        logger.info(
-            f"   Reason: {
-                frame_continuity_decision['primary_reason']}")
-    
-    # Create configuration
+    # Create configuration with frame continuity decision
     config = GeneratedVideoConfig(
         target_platform=Platform(platform),
         category=VideoCategory(_map_category_to_enum(category)),
@@ -369,7 +374,7 @@ def _generate_traditional(
         sound_effects=[],
         inspired_by_videos=[],
         predicted_viral_score=0.85,
-        frame_continuity=use_frame_continuity  # Use AI decision or user override
+        frame_continuity=frame_continuity_decision['use_frame_continuity']  # Use AI decision or user override
     )
     
     # Force image-only if requested
@@ -385,6 +390,58 @@ def _generate_traditional(
         'frame_continuity_decision': frame_continuity_decision,
         'error': None
     }
+
+
+def _make_frame_continuity_decision(frame_continuity: str, category: str, mission: str, 
+                                  platform: str, duration: int, style: str) -> dict:
+    """
+    Make frame continuity decision at the beginning of generation
+    This decision impacts ALL subsequent choices
+    """
+    if frame_continuity == 'on':
+        return {
+            'use_frame_continuity': True,
+            'confidence': 1.0,
+            'primary_reason': 'User forced frame continuity ON',
+            'agent_name': 'User Override',
+            'requires_veo2_only': True,
+            'frame_overlap_handling': 'remove_first_frame',
+            'transition_strategy': 'last_to_first_frame'
+        }
+    elif frame_continuity == 'off':
+        return {
+            'use_frame_continuity': False,
+            'confidence': 1.0,
+            'primary_reason': 'User forced frame continuity OFF',
+            'agent_name': 'User Override',
+            'requires_veo2_only': False,
+            'frame_overlap_handling': 'none',
+            'transition_strategy': 'standard_cuts'
+        }
+    else:  # auto mode
+        # Use AI agent to decide
+        from src.agents.continuity_decision_agent import ContinuityDecisionAgent
+        continuity_agent = ContinuityDecisionAgent(settings.google_api_key)
+        
+        decision = continuity_agent.analyze_frame_continuity_need(
+            topic=mission,
+            category=category,
+            platform=platform,
+            duration=duration,
+            style=style
+        )
+        
+        # Enhance decision with technical requirements
+        if decision['use_frame_continuity']:
+            decision['requires_veo2_only'] = True
+            decision['frame_overlap_handling'] = 'remove_first_frame'
+            decision['transition_strategy'] = 'last_to_first_frame'
+        else:
+            decision['requires_veo2_only'] = False
+            decision['frame_overlap_handling'] = 'none'
+            decision['transition_strategy'] = 'standard_cuts'
+        
+        return decision
 
 
 def _generate_with_discussions(
@@ -600,12 +657,12 @@ def _display_discussion_summary(discussion_results: dict, metadata: dict):
         
         # Handle both dict and object results
         if hasattr(result, 'consensus_level'):
-        click.echo(f"   Consensus: {result.consensus_level:.2f}")
-        click.echo(f"   Rounds: {result.total_rounds}")
-        click.echo(f"   Participants: {', '.join(result.participating_agents)}")
-        
+            click.echo(f"   Consensus: {result.consensus_level:.2f}")
+            click.echo(f"   Rounds: {result.total_rounds}")
+            click.echo(f"   Participants: {', '.join(result.participating_agents)}")
+            
             if hasattr(result, 'key_insights') and result.key_insights:
-            click.echo(f"   Key Insight: {result.key_insights[0]}")
+                click.echo(f"   Key Insight: {result.key_insights[0]}")
         else:
             # Handle dict-style results
             click.echo(f"   Consensus: {result.get('consensus_level', 0.0):.2f}")
@@ -850,7 +907,7 @@ def generate_topic(
         final_mission = result['final_topic']
         click.echo(f"\n✅ Generated Mission: {final_mission['topic']}")
         click.echo(f"📋 Reasoning: {final_mission['reasoning']}")
-        click.echo(f"🎯 Viral Potential: {final_mission['viral_potential']}")
+        click.echo(f"�� Viral Potential: {final_mission['viral_potential']}")
         click.echo(
             f"🛡️ Ethical Considerations: {
                 final_mission['ethical_considerations']}")

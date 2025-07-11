@@ -184,21 +184,37 @@ class WorkingOrchestrator:
         logger.info(f"🎬 Starting {self.mode.value} AI agent video generation")
 
         try:
-            # Phase 1: Trending Analysis (if enabled)
+            # Phase 1: CRITICAL - Make frame continuity decision FIRST
+            # This decision impacts ALL subsequent choices (VEO model selection, composition, etc.)
+            frame_continuity_decision = self._make_frame_continuity_decision(config)
+            
+            # Store decision for use throughout generation
+            self.agent_decisions['frame_continuity'] = {
+                'agent': 'ContinuityDecisionAgent',
+                'decision': frame_continuity_decision
+            }
+            
+            # Log the decision prominently
+            continuity_status = "✅ ENABLED" if frame_continuity_decision['use_frame_continuity'] else "❌ DISABLED"
+            logger.info(f"🎬 Frame Continuity Decision: {continuity_status}")
+            logger.info(f"   Confidence: {frame_continuity_decision['confidence']:.2f}")
+            logger.info(f"   Reason: {frame_continuity_decision['primary_reason']}")
+            
+            # Phase 2: Trending Analysis (if enabled)
             if config.get('enable_trending', False):
                 self._analyze_trending_content(config)
 
-            # Phase 2: AI Agent Discussions (mode-dependent)
+            # Phase 3: AI Agent Discussions (mode-dependent)
             if self.mode != OrchestratorMode.SIMPLE:
                 self._conduct_agent_discussions(config)
 
-            # Phase 3: Script Generation with AI Enhancement
+            # Phase 4: Script Generation with AI Enhancement
             script_data = self._generate_enhanced_script(config)
 
-            # Phase 4: Comprehensive AI Decision Making
-            decisions = self._make_comprehensive_decisions(script_data, config)
+            # Phase 5: Comprehensive AI Decision Making (with continuity context)
+            decisions = self._make_comprehensive_decisions(script_data, config, frame_continuity_decision)
 
-            # Phase 5: Video Generation with All Features
+            # Phase 6: Video Generation with All Features (continuity-aware)
             if self.mode == OrchestratorMode.MULTILINGUAL and config.get('languages'):
                 video_path = self._generate_multilingual_video(script_data, decisions, config)
             else:
@@ -215,7 +231,8 @@ class WorkingOrchestrator:
                 'agents_used': self._count_agents_used(),
                 'discussions_conducted': len(self.discussion_results),
                 'optimization_level': f'{self.mode.value}_ai_enhanced',
-                'mode': self.mode.value
+                'mode': self.mode.value,
+                'frame_continuity_decision': frame_continuity_decision
             }
 
         except Exception as e:
@@ -228,6 +245,60 @@ class WorkingOrchestrator:
                 'discussion_results': self.discussion_results,
                 'mode': self.mode.value
             }
+
+    def _make_frame_continuity_decision(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Make frame continuity decision at the beginning of generation
+        This decision impacts:
+        - VEO model selection (continuity requires VEO2 only)
+        - Video composition (frame overlap handling)
+        - Clip generation strategy
+        """
+        frame_continuity_mode = config.get('frame_continuity', 'auto')
+        
+        if frame_continuity_mode == 'on':
+            # User forced continuity ON
+            decision = {
+                'use_frame_continuity': True,
+                'confidence': 1.0,
+                'primary_reason': 'User forced frame continuity ON',
+                'agent_name': 'User Override',
+                'requires_veo2_only': True,
+                'frame_overlap_handling': 'remove_first_frame',
+                'transition_strategy': 'last_to_first_frame'
+            }
+        elif frame_continuity_mode == 'off':
+            # User forced continuity OFF
+            decision = {
+                'use_frame_continuity': False,
+                'confidence': 1.0,
+                'primary_reason': 'User forced frame continuity OFF',
+                'agent_name': 'User Override',
+                'requires_veo2_only': False,
+                'frame_overlap_handling': 'none',
+                'transition_strategy': 'standard_cuts'
+            }
+        else:
+            # Auto mode - use AI agent to decide
+            decision = self.continuity_agent.analyze_frame_continuity_need(
+                topic=self.mission,
+                category=self.category.value,
+                platform=self.platform.value,
+                duration=self.duration,
+                style=self.style
+            )
+            
+            # Enhance decision with technical requirements
+            if decision['use_frame_continuity']:
+                decision['requires_veo2_only'] = True
+                decision['frame_overlap_handling'] = 'remove_first_frame'
+                decision['transition_strategy'] = 'last_to_first_frame'
+            else:
+                decision['requires_veo2_only'] = False
+                decision['frame_overlap_handling'] = 'none'
+                decision['transition_strategy'] = 'standard_cuts'
+        
+        return decision
 
     def _analyze_trending_content(self, config: Dict[str, Any]):
         """Analyze trending content for insights"""
@@ -428,25 +499,16 @@ class WorkingOrchestrator:
 
         return script_data
 
-    def _make_comprehensive_decisions(self, script_data: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
+    def _make_comprehensive_decisions(self, script_data: Dict[str, Any], config: Dict[str, Any],
+                                      frame_continuity_decision: Dict[str, Any]) -> Dict[str, Any]:
         """Make comprehensive AI decisions based on mode"""
         logger.info("🧠 Making comprehensive AI decisions...")
 
         decisions = {}
 
-        # Core decisions (all modes)
-        continuity_decision = self.continuity_agent.analyze_frame_continuity_need(
-            topic=self.mission,
-            category=self.category.value,
-            platform=self.platform.value,
-            duration=self.duration,
-            style=self.style
-        )
-        decisions['continuity'] = continuity_decision
-        self.agent_decisions['continuity'] = {
-            'agent': 'ContinuityDecisionAgent',
-            'decision': continuity_decision
-        }
+        # Use the frame continuity decision that was already made
+        decisions['continuity'] = frame_continuity_decision
+        logger.info(f"✅ Using frame continuity decision: {frame_continuity_decision['use_frame_continuity']}")
 
         # Voice decisions
         voice_decision = self.voice_agent.analyze_content_and_select_voices(
@@ -498,7 +560,7 @@ class WorkingOrchestrator:
             if self.visual_agent:
                 visual_analysis = self.visual_agent.design_visual_elements(
                     video_structure=decisions.get('structure', {}),
-                    content_theme=str(script_data),
+                    content_theme=self.mission,
                     platform=self.platform.value
                 )
                 decisions['visual'] = visual_analysis
@@ -507,32 +569,19 @@ class WorkingOrchestrator:
                     'analysis': visual_analysis
                 }
 
-            # Media Type Decisions
-            if self.media_agent:
-                clip_plan = {
-                    'total_clips': 4,
-                    'clip_duration': self.duration / 4,
-                    'mission': self.mission,
-                    'platform': self.platform.value
-                }
-
-                content_analysis = {
-                    'script': script_data,
-                    'mission': self.mission,
-                    'category': self.category.value
-                }
-
-                media_decision = self.media_agent.analyze_media_types(
-                    clip_plan=clip_plan,
-                    content_analysis=content_analysis
+            # Media Type Analysis
+            if self.media_agent and 'timing' in decisions:
+                media_analysis = self.media_agent.analyze_media_types(
+                    clip_plan=decisions['timing'],
+                    content_analysis={'mission': self.mission, 'platform': self.platform.value}
                 )
-                decisions['media'] = media_decision
+                decisions['media'] = media_analysis
                 self.agent_decisions['media'] = {
                     'agent': 'MediaTypeAgent',
-                    'decision': media_decision
+                    'analysis': media_analysis
                 }
 
-        logger.info(f"✅ Made {len(decisions)} comprehensive decisions")
+        logger.info(f"✅ Made {len(decisions)} comprehensive AI decisions")
         return decisions
 
     def _generate_multilingual_video(self, script_data: Dict[str, Any],
@@ -605,7 +654,7 @@ class WorkingOrchestrator:
         cta = self._extract_cta_from_script(script_data)
 
         # Apply AI decisions
-        frame_continuity = decisions.get('continuity', {}).get('recommendation') == 'enable'
+        frame_continuity = decisions.get('continuity', {}).get('use_frame_continuity')
         voice_style = decisions.get('voice', {}).get('voice_style', 'energetic')
         visual_style = decisions.get('visual', {}).get('style', self.visual_style)
 
