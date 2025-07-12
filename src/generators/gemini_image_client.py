@@ -198,15 +198,17 @@ class GeminiImageClient:
             # Create enhanced DALL-E style prompt
             enhanced_prompt = self._create_dalle_style_prompt(prompt, scene_index, total_scenes)
 
-            # Try to generate real AI image using simpler Gemini image generation
+            # Try to generate real AI image using correct Gemini image generation API
             try:
-                # Use simple text-to-image generation without response_modalities
+                # Use the correct API call with response_modalities
                 response = self.model.generate_content(
-                    contents=[
-                        "Generate a high-quality, photorealistic image based on this detailed prompt:",
-                        enhanced_prompt,
-                        "Create a professional quality image that matches this description exactly."
-                    ]
+                    contents=[enhanced_prompt],
+                    generation_config={
+                        "response_modalities": ["IMAGE", "TEXT"],
+                        "temperature": 0.7,
+                        "top_p": 0.9,
+                        "max_output_tokens": 1024
+                    }
                 )
 
                 # Check if response contains image data
@@ -227,8 +229,36 @@ class GeminiImageClient:
                                     logger.info(f"✅ Real AI image generated: {image_path}")
                                     return image_path
 
-                # If no image data, create artistic placeholder
-                logger.warning("⚠️ Gemini 2.0 Flash doesn't support image generation in this mode, creating artistic placeholder")
+                # If no image data found, try alternative approach
+                logger.warning("⚠️ No image data in response, trying alternative approach")
+                
+                # Try with simpler configuration
+                response = self.model.generate_content(
+                    contents=[f"Generate an image: {enhanced_prompt}"],
+                    generation_config={
+                        "response_modalities": ["IMAGE"]
+                    }
+                )
+                
+                if hasattr(response, 'candidates') and response.candidates:
+                    candidate = response.candidates[0]
+                    if hasattr(candidate, 'content') and candidate.content:
+                        if hasattr(candidate.content, 'parts') and candidate.content.parts:
+                            for part in candidate.content.parts:
+                                if hasattr(part, 'inline_data') and part.inline_data:
+                                    # Ensure output directory exists
+                                    os.makedirs(self.output_dir, exist_ok=True)
+
+                                    # Save the AI generated image
+                                    image_path = os.path.join(self.output_dir, f"{image_id}.png")
+                                    with open(image_path, 'wb') as f:
+                                        f.write(part.inline_data.data)
+
+                                    logger.info(f"✅ Real AI image generated (alternative): {image_path}")
+                                    return image_path
+
+                # If still no image data, create artistic placeholder
+                logger.warning("⚠️ Gemini Image Generation not returning image data, creating artistic placeholder")
                 return self._create_artistic_placeholder(prompt, image_id, scene_index, total_scenes)
 
             except Exception as e:

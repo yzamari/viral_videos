@@ -1,0 +1,36 @@
+{
+  "http_tests": {
+    "accessibility": true,
+    "api_endpoints": true,
+    "ui_components": true,
+    "ai_agent_integration": true,
+    "orchestrator_integration": true,
+    "real_time_features": true,
+    "generation_workflow": true,
+    "error_handling": true
+  },
+  "playwright_tests": {
+    "passed": true
+  },
+  "performance_tests": {
+    "page_load_time": 0.010025978088378906,
+    "page_load_ok": true,
+    "config_endpoint_ok": true,
+    "memory_usage_ok": true,
+    "memory_usage_percent": 60.9
+  },
+  "accessibility_tests": {
+    "form_inputs_count": 0,
+    "form_labels_count": 0,
+    "has_h1": false,
+    "headings_count": 0,
+    "images_count": 0,
+    "images_with_alt_count": 0,
+    "buttons_count": 0,
+    "buttons_with_text_count": 0
+  },
+  "integration_tests": {
+    "orchestrator_creation": true,
+    "file_system_access": true
+  }
+}

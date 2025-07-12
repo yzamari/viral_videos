@@ -267,7 +267,6 @@ class VertexAIVeo2Client:
                     if cleaned_response.startswith(
                             '```json') and cleaned_response.endswith('```'):
                         # Extract JSON from markdown code blocks
-                        # Remove ```json and ```
                         cleaned_response = cleaned_response[7:-3].strip()
                     elif cleaned_response.startswith('```') and cleaned_response.endswith('```'):
                         # Extract from generic code blocks
@@ -823,16 +822,27 @@ class VertexAIVeo2Client:
                 prompt)
 
             # Create animated video with FFmpeg using Gemini-generated content
+            # Escape all special characters for FFmpeg
+            import re
+            
+            def escape_for_ffmpeg(text):
+                # Remove or replace problematic characters
+                text = re.sub(r'[^\w\s-]', '', text)  # Remove special chars except word chars, spaces, hyphens
+                text = re.sub(r'\s+', ' ', text)      # Normalize whitespace
+                text = text.strip()                   # Remove leading/trailing spaces
+                return text[:30]                      # Limit length
+            
+            title = escape_for_ffmpeg(fallback_content["title"])
+            subtitle = escape_for_ffmpeg(fallback_content["subtitle"])
+            description = escape_for_ffmpeg(fallback_content["description"])
+            
             cmd = [
                 'ffmpeg',
                 '-y',  # Overwrite output file
                 '-f', 'lavfi',
                 # Moving test pattern
                 '-i', f'testsrc=duration={duration}:size=1080x1920:rate=30',
-                '-vf', f'drawtext=text=\'{
-                    fallback_content["title"]}\':fontcolor=white:fontsize=80:x=(w-text_w)/2:y=(h-text_h)/2-100:enable=\'between(t,0,{duration})\',drawtext=text=\'{
-                    fallback_content["subtitle"]}\':fontcolor=white:fontsize=40:x=(w-text_w)/2:y=(h-text_h)/2:enable=\'between(t,0,{duration})\',drawtext=text=\'{
-                    fallback_content["description"]}\':fontcolor=yellow:fontsize=30:x=(w-text_w)/2:y=(h-text_h)/2+100:enable=\'between(t,0,{duration})\'',
+                '-vf', f'drawtext=text={title}:fontcolor=white:fontsize=80:x=(w-text_w)/2:y=(h-text_h)/2-100,drawtext=text={subtitle}:fontcolor=white:fontsize=40:x=(w-text_w)/2:y=(h-text_h)/2,drawtext=text={description}:fontcolor=yellow:fontsize=30:x=(w-text_w)/2:y=(h-text_h)/2+100',
                 '-c:v', 'libx264',
                 '-preset', 'medium',
                 '-crf', '18',  # Higher quality for larger file size
@@ -963,16 +973,36 @@ class VertexAIVeo2Client:
                 gemini_response = result["candidates"][0]["content"]["parts"][0]["text"].strip(
                 )
 
-                # Parse JSON response
+                # Parse JSON response - handle markdown code blocks
                 import json
+                import re
                 try:
-                    content = json.loads(gemini_response)
+                    # Clean up response - remove markdown code blocks if present
+                    cleaned_response = gemini_response.strip()
+                    
+                    # Check if response is wrapped in markdown code blocks
+                    if cleaned_response.startswith('```json') and cleaned_response.endswith('```'):
+                        # Extract JSON from markdown code blocks
+                        cleaned_response = cleaned_response[7:-3].strip()
+                    elif cleaned_response.startswith('```') and cleaned_response.endswith('```'):
+                        # Extract from generic code blocks
+                        cleaned_response = cleaned_response[3:-3].strip()
+                    
+                    # Try to extract JSON if mixed with other text
+                    json_match = re.search(r'\{.*\}', cleaned_response, re.DOTALL)
+                    if json_match:
+                        cleaned_response = json_match.group(0)
+                    
+                    logger.debug(f"🔍 Cleaned Gemini response: {cleaned_response}")
+                    
+                    content = json.loads(cleaned_response)
                     logger.info(f"✅ Gemini generated fallback content")
                     return content
 
-                except json.JSONDecodeError:
-                    logger.error(
-                        f"❌ Failed to parse Gemini response as JSON: {gemini_response}")
+                except json.JSONDecodeError as e:
+                    logger.error(f"❌ Failed to parse Gemini response as JSON: {e}")
+                    logger.error(f"❌ Raw response: {gemini_response}")
+                    logger.error(f"❌ Cleaned response: {cleaned_response}")
 
             else:
                 logger.error(

@@ -36,7 +36,7 @@ class VertexAIVeo3Client:
         os.makedirs(self.clips_dir, exist_ok=True)
         
         # VEO-3 model configuration
-        self.veo3_model = "veo-3.0-generate-001"
+        self.veo3_model = "veo-3.0-generate-preview"
         self.veo3_available = False
         self.access_token = None
         self.token_expiry = 0
@@ -105,6 +105,10 @@ class VertexAIVeo3Client:
             # If we get 400, it means the model exists but our test request is invalid (which is expected)
             elif response.status_code == 400:
                 logger.debug("✅ VEO-3 available (model exists)")
+                return True
+            # If we get 429, it means quota exceeded but model is available
+            elif response.status_code == 429:
+                logger.debug("✅ VEO-3 available (quota exceeded - model accessible)")
                 return True
             # Any other status code suggests the model is available
             else:

@@ -47,9 +47,9 @@ class OptimizedVeoClient:
         self.veo_quota_exhausted = False  # Track if VEO quota is exhausted
 
         # 🚀 VERTEX AI PREFERENCE - Now ENABLED for unlimited quotas
-        self.prefer_vertex_ai = True  # Enabled: Vertex AI provides unlimited quotas
+        self.prefer_vertex_ai = True  # ENABLED: Vertex AI clients available
         self.vertex_ai_client = None
-        self._init_vertex_ai_client()  # Now enabled: Using Vertex AI for unlimited generation
+        self._init_vertex_ai_client()  # Initialize Vertex AI clients
 
         # Configure Google AI client
         os.environ['GOOGLE_API_KEY'] = api_key
@@ -480,7 +480,7 @@ class OptimizedVeoClient:
 
     def _generate_image_fallback(self, prompt: str, duration: float, clip_id: str, output_path: str) -> str:
         """Generate video using image generation fallback"""
-        # Try Gemini Image Generation fallback
+        # Try Gemini Image Generation fallback FIRST when VEO fails
         if self.gemini_images_available and self.gemini_image_client:
             logger.info("🎨 Using Gemini Image Generation fallback...")
             try:
@@ -770,15 +770,36 @@ class OptimizedVeoClient:
                 result = response.json()
                 gemini_response = result["candidates"][0]["content"]["parts"][0]["text"].strip()
                 
-                # Parse JSON response
+                # Parse JSON response - handle markdown code blocks
                 import json
+                import re
                 try:
-                    visual_content = json.loads(gemini_response)
+                    # Clean up response - remove markdown code blocks if present
+                    cleaned_response = gemini_response.strip()
+                    
+                    # Check if response is wrapped in markdown code blocks
+                    if cleaned_response.startswith('```json') and cleaned_response.endswith('```'):
+                        # Extract JSON from markdown code blocks
+                        cleaned_response = cleaned_response[7:-3].strip()
+                    elif cleaned_response.startswith('```') and cleaned_response.endswith('```'):
+                        # Extract from generic code blocks
+                        cleaned_response = cleaned_response[3:-3].strip()
+                    
+                    # Try to extract JSON if mixed with other text
+                    json_match = re.search(r'\{.*\}', cleaned_response, re.DOTALL)
+                    if json_match:
+                        cleaned_response = json_match.group(0)
+                    
+                    logger.debug(f"🔍 Cleaned Gemini response: {cleaned_response}")
+                    
+                    visual_content = json.loads(cleaned_response)
                     logger.info(f"✅ Gemini generated visual content")
                     return visual_content
                         
-                except json.JSONDecodeError:
-                    logger.error(f"❌ Failed to parse Gemini response as JSON: {gemini_response}")
+                except json.JSONDecodeError as e:
+                    logger.error(f"❌ Failed to parse Gemini response as JSON: {e}")
+                    logger.error(f"❌ Raw response: {gemini_response}")
+                    logger.error(f"❌ Cleaned response: {cleaned_response}")
                     
             else:
                 logger.error(f"❌ Gemini visual content generation failed: {response.status_code}")
