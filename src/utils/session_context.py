@@ -111,7 +111,7 @@ class SessionContext:
             # If the video is already in the session directory, just register it
             if os.path.abspath(video_path) == os.path.abspath(final_path):
                 logger.info(f"✅ Video already in session directory: {video_path}")
-                return video_path
+                return self.session_manager.save_final_video(video_path)
             
             # Copy/move video to session directory
             if os.path.exists(video_path):

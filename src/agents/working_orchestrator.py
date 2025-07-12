@@ -658,8 +658,8 @@ class WorkingOrchestrator:
         voice_style = decisions.get('voice', {}).get('voice_style', 'energetic')
         visual_style = decisions.get('visual', {}).get('style', self.visual_style)
 
-        # Enhanced configuration
-        return GeneratedVideoConfig(
+        # Enhanced configuration with platform and category for AI timing
+        enhanced_config = GeneratedVideoConfig(
             target_platform=self.platform,
             category=self.category,
             duration_seconds=self.duration,
@@ -685,6 +685,12 @@ class WorkingOrchestrator:
             video_orientation=VideoOrientation(config.get('orientation', 'auto')),
             ai_decide_orientation=config.get('ai_decide_orientation', True)
         )
+        
+        # Add platform and category info for AI timing decisions
+        enhanced_config.platform_name = self.platform.value
+        enhanced_config.category_name = self.category.value
+        
+        return enhanced_config
 
     def _extract_hook_from_script(self, script_data: Dict[str, Any]) -> str:
         """Extract hook from script data"""

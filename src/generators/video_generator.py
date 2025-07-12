@@ -485,17 +485,24 @@ class VideoGenerator:
             
             if use_frame_continuity:
                 logger.info("🎬 Composing with frame continuity (removing overlapping frames)")
-                final_video_path = self._compose_with_frame_continuity(
+                base_video_path = self._compose_with_frame_continuity(
                     clips, audio_files, temp_video_path, session_context
                 )
             else:
                 logger.info("🎬 Composing with standard cuts")
-                final_video_path = self._compose_with_standard_cuts(
+                base_video_path = self._compose_with_standard_cuts(
                     clips, audio_files, temp_video_path, session_context
                 )
             
+            # Add subtitle overlays if enabled
+            if config.use_subtitle_overlays and base_video_path:
+                logger.info("📝 Adding subtitle overlays to final video")
+                base_video_path = self._add_subtitle_overlays(
+                    base_video_path, config, session_context
+                )
+            
             # Save to session directory
-            saved_path = session_context.save_final_video(final_video_path)
+            saved_path = session_context.save_final_video(base_video_path)
             
             return saved_path
             
@@ -503,6 +510,181 @@ class VideoGenerator:
             logger.error(f"❌ Video composition failed: {e}")
             return ""
 
+    def _add_subtitle_overlays(self, video_path: str, config: GeneratedVideoConfig, 
+                             session_context: SessionContext) -> str:
+        """Add subtitle overlays to the video using MoviePy"""
+        try:
+            from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
+            import tempfile
+            
+            logger.info("📝 Adding subtitle overlays using MoviePy")
+            
+            # Load the video
+            video = VideoFileClip(video_path)
+            video_duration = video.duration
+            video_width, video_height = video.size
+            
+            # Create subtitle content based on the script
+            subtitle_segments = self._create_subtitle_segments(config, video_duration)
+            
+            # Get positioning decision
+            positioning_decision = self._get_positioning_decision(config, {'primary_style': 'dynamic'})
+            primary_position = positioning_decision.get('primary_subtitle_position', 'bottom_third')
+            
+            # Create text clips for subtitles
+            text_clips = []
+            for i, segment in enumerate(subtitle_segments):
+                try:
+                    text = segment['text']
+                    start_time = segment['start']
+                    end_time = segment['end']
+                    
+                    if end_time <= start_time:
+                        continue
+                    
+                    # Calculate position based on AI decision
+                    if primary_position == 'top_third':
+                        y_pos = video_height * 0.15
+                    elif primary_position == 'center':
+                        y_pos = video_height * 0.5
+                    else:  # bottom_third (default)
+                        y_pos = video_height * 0.85
+                    
+                    # Font size based on video dimensions
+                    font_size = max(40, int(video_width * 0.05))
+                    
+                    # Create text clip with modern styling
+                    text_clip = TextClip(
+                        text,
+                        fontsize=font_size,
+                        color='white',
+                        font='Arial-Bold',
+                        stroke_color='black',
+                        stroke_width=2,
+                        method='caption',
+                        size=(int(video_width * 0.9), None),
+                        align='center'
+                    )
+                    
+                    # Position and time the text clip
+                    text_clip = text_clip.set_position(('center', y_pos)).set_start(start_time).set_duration(end_time - start_time)
+                    text_clips.append(text_clip)
+                    
+                    logger.info(f"📝 Added subtitle: '{text[:30]}...' at {start_time:.1f}-{end_time:.1f}s")
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to create subtitle clip {i}: {e}")
+                    continue
+            
+            # Composite video with subtitle overlays
+            if text_clips:
+                logger.info(f"🎬 Compositing video with {len(text_clips)} subtitle overlays")
+                final_video = CompositeVideoClip([video] + text_clips)
+                
+                # Create output path
+                temp_output = tempfile.NamedTemporaryFile(suffix='.mp4', delete=False)
+                output_path = temp_output.name
+                temp_output.close()
+                
+                # Render the video with subtitles
+                final_video.write_videofile(
+                    output_path,
+                    fps=30,
+                    codec='libx264',
+                    audio_codec='aac',
+                    temp_audiofile='temp-audio.m4a',
+                    remove_temp=True,
+                    verbose=False,
+                    logger=None
+                )
+                
+                # Clean up
+                final_video.close()
+                video.close()
+                for clip in text_clips:
+                    clip.close()
+                
+                # Verify output
+                if os.path.exists(output_path):
+                    file_size = os.path.getsize(output_path) / (1024 * 1024)
+                    logger.info(f"✅ Subtitle overlays added: {output_path} ({file_size:.1f}MB)")
+                    
+                    # Clean up original video
+                    try:
+                        os.remove(video_path)
+                    except:
+                        pass
+                    
+                    return output_path
+                else:
+                    logger.error("❌ Failed to create video with subtitles")
+                    return video_path
+            else:
+                logger.warning("⚠️ No subtitle overlays created")
+                video.close()
+                return video_path
+                
+        except Exception as e:
+            logger.error(f"❌ Subtitle overlay creation failed: {e}")
+            return video_path
+    
+    def _create_subtitle_segments(self, config: GeneratedVideoConfig, video_duration: float) -> List[Dict[str, Any]]:
+        """Create subtitle segments from the video content"""
+        try:
+            # Get the main content for subtitles
+            main_content = config.main_content or [config.topic]
+            hook = config.hook or "Amazing content!"
+            cta = config.call_to_action or "Follow for more!"
+            
+            # Combine all text content
+            all_content = [hook] + main_content + [cta]
+            
+            # Create segments based on content
+            segments = []
+            segment_duration = video_duration / len(all_content)
+            
+            for i, content in enumerate(all_content):
+                # Clean and truncate content for subtitle display
+                subtitle_text = content.strip()
+                if len(subtitle_text) > 60:  # Limit subtitle length
+                    subtitle_text = subtitle_text[:57] + "..."
+                
+                start_time = i * segment_duration
+                end_time = min((i + 1) * segment_duration, video_duration)
+                
+                segments.append({
+                    'text': subtitle_text,
+                    'start': start_time,
+                    'end': end_time
+                })
+            
+            # Add engaging overlay text if content is short
+            if len(segments) < 3:
+                # Add some engaging overlay text
+                overlay_texts = [
+                    "🔥 Viral Content",
+                    "💡 Don't Miss This",
+                    "👆 Follow for More"
+                ]
+                
+                for i, overlay_text in enumerate(overlay_texts):
+                    start_time = (i + 1) * (video_duration / 4)
+                    end_time = min(start_time + 2, video_duration)
+                    
+                    if start_time < video_duration:
+                        segments.append({
+                            'text': overlay_text,
+                            'start': start_time,
+                            'end': end_time
+                        })
+            
+            logger.info(f"📝 Created {len(segments)} subtitle segments")
+            return segments
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to create subtitle segments: {e}")
+            return []
+    
     def _compose_with_frame_continuity(self, clips: List[str], audio_files: List[str], 
                                      output_path: str, session_context: SessionContext) -> str:
         """Compose video with frame continuity - remove first frame of each clip (except first)"""

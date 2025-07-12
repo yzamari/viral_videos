@@ -71,7 +71,7 @@ class GeminiImageClient:
 
     def generate_image_based_clips(self, prompts: List[Dict], config: Dict, video_id: str) -> List[Dict]:
         """
-        Generate image-based clips using enhanced scene-specific generation
+        Generate image-based clips using enhanced scene-specific generation with AI-powered timing
 
         Args:
             prompts: List of prompt dictionaries with descriptions
@@ -82,18 +82,43 @@ class GeminiImageClient:
             List of clip dictionaries with paths and metadata
         """
         total_duration = config.get('duration_seconds', 30)
-        images_per_second = config.get('images_per_second', 4)  # 4-5 images per second
+        platform = config.get('platform', 'youtube')
+        category = config.get('category', 'general')
 
-        # Calculate total images needed
-        total_images = int(total_duration * images_per_second)
-        images_per_clip = max(1, total_images // len(prompts))
-
-        logger.info(f"🎨 ENHANCED IMAGE GENERATION:")
-        logger.info(f"   Target duration: {total_duration}s")
-        logger.info(f"   Images per second: {images_per_second}")
-        logger.info(f"   Total images needed: {total_images}")
-        logger.info(f"   Images per clip: {images_per_clip}")
-        logger.info(f"   Number of clips: {len(prompts)}")
+        # Initialize Image Timing Agent for intelligent duration decisions
+        try:
+            from ..agents.image_timing_agent import ImageTimingAgent
+            timing_agent = ImageTimingAgent(self.api_key)
+            
+            # Get AI-powered timing analysis
+            timing_analysis = timing_agent.analyze_image_timing_requirements(
+                prompts=prompts,
+                platform=platform,
+                total_duration=total_duration,
+                category=category
+            )
+            
+            logger.info(f"🎨 ENHANCED IMAGE GENERATION WITH AI TIMING:")
+            logger.info(f"   Target duration: {total_duration}s")
+            logger.info(f"   Platform: {platform}")
+            logger.info(f"   Timing strategy: {timing_analysis.get('timing_strategy', 'N/A')}")
+            logger.info(f"   Average per image: {timing_analysis.get('average_duration_per_image', 0):.2f}s")
+            logger.info(f"   Number of clips: {len(prompts)}")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ ImageTimingAgent failed, using fallback timing: {e}")
+            # Fallback to improved default timing (slower than before)
+            timing_analysis = {
+                'timing_strategy': 'Fallback improved timing',
+                'average_duration_per_image': max(1.5, total_duration / len(prompts)),
+                'image_timings': [
+                    {
+                        'image_index': i,
+                        'duration': max(1.5, total_duration / len(prompts)),
+                        'timing_rationale': 'Fallback timing - improved from 0.25s to allow reading'
+                    } for i in range(len(prompts))
+                ]
+            }
 
         clips = []
 
@@ -101,11 +126,24 @@ class GeminiImageClient:
             clip_id = f"{video_id}_scene_{i}"
 
             try:
-                # Generate images for this clip
+                # Get AI-determined timing for this specific image
+                if 'image_timings' in timing_analysis and i < len(timing_analysis['image_timings']):
+                    image_duration = timing_analysis['image_timings'][i].get('duration', 2.0)
+                    timing_rationale = timing_analysis['image_timings'][i].get('timing_rationale', 'AI-determined')
+                else:
+                    image_duration = timing_analysis.get('average_duration_per_image', 2.0)
+                    timing_rationale = 'Average duration fallback'
+
+                # Ensure minimum duration for readability
+                image_duration = max(0.8, image_duration)  # At least 0.8 seconds
+
+                logger.info(f"  🎬 Image {i+1}: {image_duration:.2f}s - {timing_rationale}")
+
+                # Generate images for this clip (typically 1 image for the determined duration)
                 images = self._generate_images_for_clip(
                     prompt_data=prompt_data,
                     clip_id=clip_id,
-                    num_images=images_per_clip,
+                    num_images=1,  # One image per clip for controlled timing
                     config=config
                 )
 
@@ -113,13 +151,12 @@ class GeminiImageClient:
                     logger.warning(f"⚠️ No images generated for clip {i+1}")
                     continue
 
-                # Create video clip from images
-                clip_duration = len(images) / images_per_second
-                clip_path = self._create_video_from_images(
+                # Create video clip from images with AI-determined duration
+                clip_path = self._create_video_from_images_with_timing(
                     images=images,
                     clip_id=clip_id,
-                    duration=clip_duration,
-                    fps=images_per_second
+                    duration=image_duration,
+                    timing_info=timing_analysis['image_timings'][i] if 'image_timings' in timing_analysis and i < len(timing_analysis['image_timings']) else None
                 )
 
                 if clip_path:
@@ -127,16 +164,17 @@ class GeminiImageClient:
                         'clip_path': clip_path,
                         'description': prompt_data.get('description', f'Generated clip {i+1}'),
                         'veo2_prompt': prompt_data.get('veo2_prompt', ''),
-                        'duration': clip_duration,
+                        'duration': image_duration,
                         'scene_index': i,
-                        'generated_with': 'enhanced_images',
+                        'generated_with': 'enhanced_images_ai_timing',
                         'num_images': len(images),
-                        'images_per_second': images_per_second,
+                        'ai_timing_strategy': timing_analysis.get('timing_strategy', 'N/A'),
+                        'timing_rationale': timing_rationale,
                         'file_size_mb': self._get_file_size_mb(clip_path)
                     }
 
                     clips.append(clip_info)
-                    logger.info(f"✅ Enhanced clip {i+1}/{len(prompts)} complete: {len(images)} images, {clip_duration:.1f}s")
+                    logger.info(f"✅ Enhanced clip {i+1}/{len(prompts)} complete: {len(images)} images, {image_duration:.2f}s")
                 else:
                     logger.warning(f"⚠️ Failed to create video from images for clip {i+1}")
 
@@ -145,6 +183,7 @@ class GeminiImageClient:
                 continue
 
         logger.info(f"🎨 Enhanced image generation complete: {len(clips)}/{len(prompts)} clips successful")
+        logger.info(f"🧠 AI Timing Summary: {timing_analysis.get('user_experience_optimization', 'Optimized for engagement')}")
         return clips
 
     def _generate_images_for_clip(self, prompt_data: Dict, clip_id: str, num_images: int, config: Dict) -> List[str]:
@@ -896,5 +935,152 @@ class GeminiImageClient:
                 
         except Exception as e:
             logger.error(f"❌ Error in generate_image: {e}")
+            return None
+
+    def _create_video_from_images_with_timing(self, images: List[str], clip_id: str, duration: float, timing_info: Dict = None) -> Optional[str]:
+        """Create video clip from generated images with AI-determined timing"""
+        if not images:
+            return None
+
+        output_path = os.path.join(self.clips_dir, f"gemini_clip_{clip_id}.mp4")
+
+        try:
+            # Verify all images exist and get absolute paths
+            valid_images = []
+            for image_path in images:
+                abs_path = os.path.abspath(image_path)
+                if os.path.exists(abs_path) and os.path.getsize(abs_path) > 0:
+                    valid_images.append(abs_path)
+                else:
+                    logger.warning(f"⚠️ Image not found or empty: {image_path}")
+
+            if not valid_images:
+                logger.error(f"❌ No valid images found for clip {clip_id}")
+                return None
+
+            # Create image list file for FFmpeg with AI-determined timing
+            image_list_path = os.path.join(self.clips_dir, f"{clip_id}_images.txt")
+
+            # For single image clips, use the full duration
+            # For multiple images, distribute duration intelligently
+            if len(valid_images) == 1:
+                duration_per_image = duration
+            else:
+                # If multiple images, distribute duration based on complexity
+                # (This is rare in the new system, but handle it gracefully)
+                duration_per_image = duration / len(valid_images)
+
+            logger.info(f"🎬 Creating AI-timed video: {duration:.2f}s total, {duration_per_image:.2f}s per image")
+            
+            if timing_info:
+                logger.info(f"📊 Timing rationale: {timing_info.get('timing_rationale', 'N/A')}")
+                logger.info(f"📊 Content type: {timing_info.get('content_type', 'N/A')}")
+                logger.info(f"📊 Complexity: {timing_info.get('complexity_level', 'N/A')}")
+
+            with open(image_list_path, 'w') as f:
+                for image_path in valid_images:
+                    # Use absolute path and escape for FFmpeg
+                    escaped_path = image_path.replace("'", "'\"'\"'")  # Escape single quotes
+                    f.write(f"file '{escaped_path}'\n")
+                    f.write(f"duration {duration_per_image}\n")
+                # Repeat last image to ensure proper duration
+                if valid_images:
+                    escaped_path = valid_images[-1].replace("'", "'\"'\"'")
+                    f.write(f"file '{escaped_path}'\n")
+
+            # Verify the image list file was created
+            if not os.path.exists(image_list_path):
+                logger.error(f"❌ Failed to create image list file: {image_list_path}")
+                return None
+
+            # Create video using FFmpeg with absolute output path and optimized settings for longer display
+            abs_output_path = os.path.abspath(output_path)
+
+            # Use a lower frame rate for image-based videos to reduce file size
+            # while maintaining smooth playback for the longer display times
+            fps = 30  # Standard fps for smooth playback
+
+            cmd = [
+                'ffmpeg', '-y',
+                '-f', 'concat',
+                '-safe', '0',
+                '-i', os.path.abspath(image_list_path),
+                '-vf', f'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
+                '-r', str(fps),
+                '-c:v', 'libx264',
+                '-preset', 'medium',
+                '-crf', '23',
+                '-pix_fmt', 'yuv420p',
+                '-movflags', '+faststart',
+                abs_output_path
+            ]
+
+            logger.info(f"🎬 Creating AI-timed video from {len(valid_images)} images...")
+            logger.info(f"📁 Image list file: {image_list_path}")
+            logger.info(f"📁 Output path: {abs_output_path}")
+            logger.info(f"⏱️ Duration: {duration:.2f}s (AI-optimized for content)")
+
+            result = subprocess.run(cmd, capture_output=True, text=True, cwd=os.path.dirname(abs_output_path))
+
+            if result.returncode == 0 and os.path.exists(abs_output_path):
+                file_size = os.path.getsize(abs_output_path) / (1024 * 1024)
+                logger.info(f"✅ AI-timed video created: {abs_output_path} ({file_size:.1f}MB)")
+
+                # Clean up temporary files
+                try:
+                    os.remove(image_list_path)
+                except:
+                    pass  # Don't fail if cleanup fails
+
+                return abs_output_path
+            else:
+                logger.error(f"❌ FFmpeg failed with return code {result.returncode}")
+                logger.error(f"❌ FFmpeg stderr: {result.stderr}")
+                logger.error(f"❌ FFmpeg stdout: {result.stdout}")
+
+                # Try a simpler approach without concat
+                return self._create_video_simple_method_with_timing(valid_images, abs_output_path, duration)
+
+        except Exception as e:
+            logger.error(f"❌ Error creating AI-timed video from images: {e}")
+            return None
+
+    def _create_video_simple_method_with_timing(self, images: List[str], output_path: str, duration: float) -> Optional[str]:
+        """Create video using a simpler method without concat but with AI timing"""
+        try:
+            if not images:
+                return None
+
+            # Use the first image as a base and create a slideshow with AI timing
+            first_image = images[0]
+
+            # Simple FFmpeg command to create video from single image with AI-determined duration
+            cmd = [
+                'ffmpeg', '-y',
+                '-loop', '1',
+                '-i', first_image,
+                '-t', str(duration),
+                '-vf', f'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
+                '-r', '30',  # Standard fps
+                '-c:v', 'libx264',
+                '-preset', 'fast',
+                '-crf', '28',
+                '-pix_fmt', 'yuv420p',
+                output_path
+            ]
+
+            logger.info(f"🎬 Creating simple AI-timed video: {duration:.2f}s...")
+            result = subprocess.run(cmd, capture_output=True, text=True)
+
+            if result.returncode == 0 and os.path.exists(output_path):
+                file_size = os.path.getsize(output_path) / (1024 * 1024)
+                logger.info(f"✅ Simple AI-timed video created: {output_path} ({file_size:.1f}MB)")
+                return output_path
+            else:
+                logger.error(f"❌ Simple FFmpeg also failed: {result.stderr}")
+                return None
+
+        except Exception as e:
+            logger.error(f"❌ Simple AI-timed video creation failed: {e}")
             return None
 

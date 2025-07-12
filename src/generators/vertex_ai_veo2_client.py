@@ -805,17 +805,102 @@ class VertexAIVeo2Client:
             logger.error(f"❌ Failed to download video from GCS: {e}")
             return None
 
+    def _try_gemini_image_generation_fallback(self, prompt: str, duration: float, clip_id: str, output_path: str) -> Optional[str]:
+        """Try to use Gemini Image Generation as fallback when VEO fails with AI-powered timing"""
+        try:
+            import os
+            import shutil
+            
+            # Initialize Gemini Image Client if not already done
+            if not hasattr(self, 'gemini_image_client'):
+                from .gemini_image_client import GeminiImageClient
+                api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+                if not api_key:
+                    logger.warning("⚠️ No API key available for Gemini Image Generation")
+                    return None
+                
+                self.gemini_image_client = GeminiImageClient(api_key, self.clips_dir)
+                logger.info("✅ Gemini Image Client initialized for fallback")
+            
+            # Check if Gemini Image Generation is available
+            if not self.gemini_image_client.is_available():
+                logger.warning("⚠️ Gemini Image Generation not available")
+                return None
+            
+            logger.info(f"🎨 Using Gemini Image Generation fallback with AI timing...")
+            logger.info(f"   Prompt: {prompt[:100]}...")
+            logger.info(f"   Duration: {duration}s")
+            
+            # Create a single prompt for image generation
+            prompt_data = {
+                'veo2_prompt': prompt,
+                'description': prompt
+            }
+            
+            # Enhanced image config with AI timing
+            image_config = {
+                'duration_seconds': duration,
+                'platform': 'youtube',  # Default platform, should be passed from higher level
+                'category': 'general'   # Default category, should be passed from higher level
+            }
+            
+            # Generate image-based clip with AI-powered timing
+            try:
+                image_clips = self.gemini_image_client.generate_image_based_clips(
+                    prompts=[prompt_data],
+                    config=image_config,
+                    video_id=clip_id
+                )
+                
+                if image_clips and len(image_clips) > 0:
+                    # Move the generated clip to the expected location
+                    source_path = image_clips[0]['clip_path']
+                    if os.path.exists(source_path):
+                        # Copy to expected output path
+                        shutil.copy2(source_path, output_path)
+                        
+                        # Log AI timing information
+                        clip_info = image_clips[0]
+                        logger.info(f"✅ Gemini Image Generation fallback successful: {output_path} ({clip_info.get('file_size_mb', 0):.1f}MB)")
+                        logger.info(f"🧠 AI Timing Strategy: {clip_info.get('ai_timing_strategy', 'N/A')}")
+                        logger.info(f"📊 Timing Rationale: {clip_info.get('timing_rationale', 'AI-optimized')}")
+                        logger.info(f"⏱️ Actual Duration: {clip_info.get('duration', duration):.2f}s")
+                        
+                        return output_path
+                    else:
+                        logger.error(f"❌ Generated image clip not found: {source_path}")
+                        return None
+                else:
+                    logger.error("❌ No image clips generated")
+                    return None
+                    
+            except Exception as e:
+                logger.error(f"❌ Gemini Image Generation failed: {e}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Gemini Image Generation fallback setup failed: {e}")
+            return None
+
     def _create_fallback_clip(
             self,
             prompt: str,
             duration: float,
             clip_id: str) -> str:
-        """Create fallback video when VEO-2 is not available - using Gemini for content generation"""
+        """Create fallback video when VEO-2 is not available - using Gemini Image Generation first"""
         output_path = os.path.join(self.clips_dir, f"veo2_clip_{clip_id}.mp4")
 
         try:
             logger.info(
-                f"🎨 Creating Gemini-powered fallback video for: {prompt[:50]}...")
+                f"🎨 Creating intelligent fallback for: {prompt[:50]}...")
+
+            # Try Gemini Image Generation fallback FIRST
+            image_fallback_result = self._try_gemini_image_generation_fallback(prompt, duration, clip_id, output_path)
+            if image_fallback_result:
+                return image_fallback_result
+
+            logger.info(
+                f"🎨 Gemini Image Generation not available, using text-based fallback for: {prompt[:50]}...")
 
             # Use Gemini to generate appropriate fallback content
             fallback_content = self._generate_fallback_content_with_gemini(
