@@ -15,15 +15,16 @@ logger = get_logger(__name__)
 class SessionContext:
     """Context manager for session-aware file operations"""
     
-    def __init__(self, session_id: str):
+    def __init__(self, session_id: str, session_manager_instance=None):
         """
         Initialize session context for a specific session
         
         Args:
             session_id: The session identifier
+            session_manager_instance: Optional specific session manager instance
         """
         self.session_id = session_id
-        self.session_manager = session_manager
+        self.session_manager = session_manager_instance or session_manager
         
         # Validate session exists
         if not self.session_manager.current_session:
@@ -41,14 +42,24 @@ class SessionContext:
             Full path within session directory
         """
         try:
-            session_dir = self.session_manager.get_session_path(subdir)
-            if filename:
-                return os.path.join(session_dir, filename)
-            return session_dir
-        except ValueError as e:
+            # Check if this is the current active session
+            if self.session_manager.current_session == self.session_id:
+                session_dir = self.session_manager.get_session_path(subdir)
+                if filename:
+                    return os.path.join(session_dir, filename)
+                return session_dir
+            else:
+                # For non-active sessions, construct path manually
+                base_session_dir = os.path.join(self.session_manager.base_output_dir, self.session_id)
+                session_dir = os.path.join(base_session_dir, subdir)
+                os.makedirs(session_dir, exist_ok=True)
+                if filename:
+                    return os.path.join(session_dir, filename)
+                return session_dir
+        except Exception as e:
             logger.error(f"Failed to get session path: {e}")
             # Fallback to outputs directory
-            fallback_dir = os.path.join("outputs", self.session_id, subdir)
+            fallback_dir = os.path.join(self.session_manager.base_output_dir, self.session_id, subdir)
             os.makedirs(fallback_dir, exist_ok=True)
             if filename:
                 return os.path.join(fallback_dir, filename)
@@ -265,17 +276,18 @@ class SessionContext:
             return False
 
 
-def create_session_context(session_id: str) -> SessionContext:
+def create_session_context(session_id: str, session_manager_instance=None) -> SessionContext:
     """
     Factory function to create a session context
     
     Args:
         session_id: The session identifier
+        session_manager_instance: Optional specific session manager instance
         
     Returns:
         SessionContext instance
     """
-    return SessionContext(session_id)
+    return SessionContext(session_id, session_manager_instance)
 
 
 def get_current_session_context() -> Optional[SessionContext]:

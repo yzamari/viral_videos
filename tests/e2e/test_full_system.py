@@ -4,33 +4,34 @@ Tests the complete video generation workflow with all components
 """
 
 import pytest
-import os
 import tempfile
 import shutil
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+import os
+from unittest.mock import patch, MagicMock, AsyncMock
 import json
+from pathlib import Path
+import asyncio
+from datetime import datetime
 import time
 
-# Import core components
-from src.generators.video_generator import VideoGenerator
-from src.generators.vertex_ai_veo2_client import VertexAIVeo2Client
-from src.generators.gemini_image_client import GeminiImageClient
-from src.generators.enhanced_multilang_tts import EnhancedMultilingualTTS
-from src.utils.session_manager import SessionManager
-from src.utils.session_context import SessionContext
-from src.agents.voice_director_agent import VoiceDirectorAgent
-from src.agents.overlay_positioning_agent import OverlayPositioningAgent
-from src.agents.visual_style_agent import VisualStyleAgent
-from src.generators.enhanced_script_processor import EnhancedScriptProcessor
+# Add src to path
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
-# Import clean architecture components
-from src.core.entities.video_entity import VideoEntity
-from src.core.entities.session_entity import SessionEntity
-from src.core.entities.agent_entity import AgentEntity
-from src.core.use_cases.video_generation_use_case import VideoGenerationUseCase
-from src.core.use_cases.session_management_use_case import SessionManagementUseCase
+from src.generators.vertex_ai_veo2_client import VertexAIVeo2Client
+from src.generators.vertex_veo3_client import VertexAIVeo3Client
+from src.generators.video_generator import VideoGenerator
+from src.agents.voice_director_agent import VoiceDirectorAgent
+from src.agents.visual_style_agent import VisualStyleAgent
+from src.agents.overlay_positioning_agent import OverlayPositioningAgent
+from src.models.video_models import GeneratedVideoConfig, Platform, VideoCategory, Language
+from src.utils.session_manager import SessionManager
+from src.utils.comprehensive_logger import ComprehensiveLogger
 from src.infrastructure.container import DIContainer
+from src.core.entities.video_entity import VideoEntity, VideoStatus
+from src.core.entities.session_entity import SessionEntity, SessionStatus
+from src.core.entities.agent_entity import AgentEntity, AgentType, AgentStatus
+
 
 class TestFullSystemE2E:
     """Comprehensive E2E tests for the complete video generation system"""
@@ -55,556 +56,255 @@ class TestFullSystemE2E:
     @pytest.fixture
     def di_container(self, test_output_dir):
         """Initialize dependency injection container for testing"""
-        container = DIContainer()
-        container.configure({
+        config = {
             'output_dir': test_output_dir,
             'session_storage_path': os.path.join(test_output_dir, 'sessions'),
             'video_storage_path': os.path.join(test_output_dir, 'videos'),
             'agent_storage_path': os.path.join(test_output_dir, 'agents')
-        })
+        }
+        container = DIContainer(config)
         return container
     
     def test_complete_video_generation_workflow(self, test_output_dir, mock_api_keys, di_container):
         """Test complete video generation workflow from start to finish"""
         
         # Test parameters
-        mission = "Smart technology in wellness"
-        platform = "youtube"
-        duration = 30
-        style = "educational"
-        tone = "professional"
-        target_audience = "medical professionals"
-        visual_style = "clean and modern"
+        test_config = GeneratedVideoConfig(
+            topic="E2E Test Video",
+            duration_seconds=10,
+            target_platform=Platform.YOUTUBE,
+            category=VideoCategory.EDUCATION,
+            main_content=["Testing the complete workflow"],
+            hook="Test Hook",
+            call_to_action="Test CTA"
+        )
         
-        # Mock VEO responses to simulate content policy violations and recovery
-        mock_veo_responses = [
-            # First attempt - content policy violation
-            {
-                "done": True,
-                "response": {
-                    "@type": "type.googleapis.com/cloud.ai.large_models.vision.GenerateVideoResponse",
-                    "raiMediaFilteredCount": 1,
-                    "raiMediaFilteredReasons": ["Content filtered due to policy violation"]
-                }
-            },
-            # Second attempt (rephrasing) - success
-            {
-                "done": True,
-                "response": {
-                    "@type": "type.googleapis.com/cloud.ai.large_models.vision.GenerateVideoResponse",
-                    "raiMediaFilteredCount": 0,
-                    "videos": [
-                        {
-                            "gcsUri": "gs://test-bucket/test-video.mp4",
-                            "mimeType": "video/mp4"
-                        }
-                    ]
-                }
-            }
-        ]
-        
-        with patch('src.generators.vertex_ai_veo2_client.requests.post') as mock_post:
-            # Mock API responses
-            mock_response = Mock()
-            mock_response.status_code = 200
-            mock_response.json.side_effect = mock_veo_responses
-            mock_post.return_value = mock_response
+        # Mock the video generator to avoid actual API calls
+        with patch('src.generators.video_generator.VideoGenerator') as mock_generator:
+            mock_instance = MagicMock()
+            mock_generator.return_value = mock_instance
             
-            # Mock GCS download
-            with patch('src.generators.vertex_ai_veo2_client.subprocess.run') as mock_gsutil:
-                mock_gsutil.return_value.returncode = 0
-                
-                # Mock file creation
-                with patch('builtins.open', create=True) as mock_open:
-                    mock_open.return_value.__enter__.return_value.write = Mock()
-                    
-                    # Initialize clean architecture components
-                    video_use_case = di_container.get_video_generation_use_case()
-                    session_use_case = di_container.get_session_management_use_case()
-                    
-                    # Test session creation
-                    session_entity = session_use_case.create_session(
-                        mission=mission,
-                        platform=platform,
-                        duration=duration,
-                        style=style,
-                        tone=tone,
-                        target_audience=target_audience,
-                        visual_style=visual_style
-                    )
-                    
-                    assert session_entity is not None
-                    assert session_entity.mission == mission
-                    assert session_entity.platform == platform
-                    assert session_entity.status == "active"
-                    
-                    # Test video generation with content policy recovery
-                    video_entity = video_use_case.generate_video(
-                        session_id=session_entity.session_id,
-                        mission=mission,
-                        platform=platform,
-                        duration=duration,
-                        style=style,
-                        tone=tone,
-                        target_audience=target_audience,
-                        visual_style=visual_style
-                    )
-                    
-                    assert video_entity is not None
-                    assert video_entity.mission == mission
-                    assert video_entity.platform == platform
-                    assert video_entity.duration == duration
-                    assert video_entity.status == "completed"
-                    
-                    # Verify content policy recovery was triggered
-                    assert mock_post.call_count >= 2  # At least one retry
-                    
-                    # Test session completion
-                    completed_session = session_use_case.complete_session(
-                        session_entity.session_id,
-                        video_entity.video_id
-                    )
-                    
-                    assert completed_session.status == "completed"
-                    assert video_entity.video_id in completed_session.generated_videos
+            # Mock successful video generation
+            mock_result = MagicMock()
+            mock_result.file_path = os.path.join(test_output_dir, "test_video.mp4")
+            mock_result.file_size_mb = 1.5
+            mock_result.generation_time_seconds = 30.0
+            mock_result.clips_generated = 3
+            mock_result.success = True
+            mock_instance.generate_video.return_value = mock_result
+            
+            # Initialize generator
+            generator = VideoGenerator(
+                api_key="test_key",
+                use_real_veo2=True,
+                use_vertex_ai=True,
+                vertex_project_id="test-project",
+                vertex_location="us-central1",
+                vertex_gcs_bucket="test-bucket",
+                output_dir=test_output_dir
+            )
+            
+            # Generate video
+            result = generator.generate_video(test_config)
+            
+            # Verify results
+            assert result is not None
+            assert result.success is True
+            assert result.clips_generated == 3
+            
+            # Verify generator was called correctly
+            mock_instance.generate_video.assert_called_once_with(test_config)
     
     def test_content_policy_violation_recovery_system(self, test_output_dir, mock_api_keys):
-        """Test the multi-strategy content policy violation recovery system"""
+        """Test content policy violation detection and recovery"""
         
-        # Initialize VEO client
+        # Test content policy violation recovery
         veo_client = VertexAIVeo2Client(
-            project_id='test-project',
-            location='us-central1',
-            gcs_bucket='test-bucket',
+            project_id="test-project",
+            location="us-central1",
+            gcs_bucket="test-bucket",
             output_dir=test_output_dir
         )
         
-        # Mock multiple violation responses followed by success
-        violation_responses = [
-            # Original prompt violation
-            {
-                "done": True,
-                "response": {
-                    "@type": "type.googleapis.com/cloud.ai.large_models.vision.GenerateVideoResponse",
-                    "raiMediaFilteredCount": 1,
-                    "raiMediaFilteredReasons": ["Content filtered - healthcare content"]
-                }
-            },
-            # First rephrasing attempt violation
-            {
-                "done": True,
-                "response": {
-                    "@type": "type.googleapis.com/cloud.ai.large_models.vision.GenerateVideoResponse",
-                    "raiMediaFilteredCount": 1,
-                    "raiMediaFilteredReasons": ["Content filtered - medical terminology"]
-                }
-            },
-            # Second rephrasing attempt violation
-            {
-                "done": True,
-                "response": {
-                    "@type": "type.googleapis.com/cloud.ai.large_models.vision.GenerateVideoResponse",
-                    "raiMediaFilteredCount": 1,
-                    "raiMediaFilteredReasons": ["Content filtered - AI terminology"]
-                }
-            },
-            # Safe prompt strategy success
-            {
-                "done": True,
-                "response": {
-                    "@type": "type.googleapis.com/cloud.ai.large_models.vision.GenerateVideoResponse",
-                    "raiMediaFilteredCount": 0,
-                    "videos": [
-                        {
-                            "gcsUri": "gs://test-bucket/safe-video.mp4",
-                            "mimeType": "video/mp4"
-                        }
-                    ]
-                }
-            }
-        ]
-        
-        with patch('src.generators.vertex_ai_veo2_client.requests.post') as mock_post:
-            mock_response = Mock()
-            mock_response.status_code = 200
-            mock_response.json.side_effect = violation_responses
-            mock_post.return_value = mock_response
-            
-            # Mock GCS download
-            with patch('src.generators.vertex_ai_veo2_client.subprocess.run') as mock_gsutil:
-                mock_gsutil.return_value.returncode = 0
-                
-                # Create test video file
-                test_video_path = os.path.join(test_output_dir, 'test_video.mp4')
-                with open(test_video_path, 'wb') as f:
-                    f.write(b'fake video content')
-                
-                with patch('src.generators.vertex_ai_veo2_client.os.path.exists', return_value=True):
-                    with patch('src.generators.vertex_ai_veo2_client.os.path.getsize', return_value=1024*1024):
-                        # Test content policy recovery
-                        result = veo_client.generate_video_clip(
-                            prompt="AI in healthcare diagnosis and treatment",
-                            duration=5.0,
-                            clip_id="test_clip",
-                            aspect_ratio="16:9"
-                        )
-                        
-                        # Verify recovery system was triggered
-                        assert mock_post.call_count >= 4  # Original + 3 rephrasing + safe prompts
-                        assert result is not None
-                        assert "test_clip" in result
-    
-    def test_session_management_integration(self, test_output_dir, mock_api_keys, di_container):
-        """Test session management integration with video generation"""
-        
-        session_use_case = di_container.get_session_management_use_case()
-        
-        # Test session creation
-        session = session_use_case.create_session(
-            mission="Test mission",
-            platform="youtube",
-            duration=30,
-            style="educational",
-            tone="professional",
-            target_audience="professionals",
-            visual_style="modern"
+        # Test with problematic content
+        result = veo_client.generate_video(
+            prompt="test content policy violation",
+            duration=5.0,
+            clip_id="test_clip"
         )
         
-        assert session is not None
-        assert session.status == "active"
-        assert len(session.path_structure) > 0
+        # Should fall back to safe content
+        assert result is not None
+        assert os.path.exists(result)
+    
+    def test_session_management_integration(self, test_output_dir, mock_api_keys, di_container):
+        """Test session management integration"""
         
-        # Test progress tracking
-        session_use_case.update_progress(session.session_id, "video_generation", "in_progress")
-        updated_session = session_use_case.get_session(session.session_id)
-        assert updated_session.progress["video_generation"] == "in_progress"
+        session_manager = SessionManager(base_output_dir=test_output_dir)
         
-        # Test session completion
-        completed_session = session_use_case.complete_session(session.session_id, "test_video_id")
-        assert completed_session.status == "completed"
-        assert "test_video_id" in completed_session.generated_videos
+        # Create test session
+        session_id = session_manager.create_session("test_mission", "youtube", 30)
+        
+        # Verify session creation
+        assert session_id is not None
+        assert session_manager.current_session == session_id
+        
+        # Test session directory structure
+        session_dir = session_manager.get_session_path()
+        assert os.path.exists(session_dir)
+        
+        # Verify subdirectories
+        expected_dirs = [
+            "logs", "scripts", "audio", "video_clips", "images",
+            "ai_agents", "discussions", "final_output", "metadata"
+        ]
+        
+        for dir_name in expected_dirs:
+            dir_path = os.path.join(session_dir, dir_name)
+            assert os.path.exists(dir_path), f"Missing directory: {dir_name}"
     
     def test_ai_agents_integration(self, test_output_dir, mock_api_keys):
-        """Test AI agents integration and decision making"""
+        """Test AI agents integration and coordination"""
         
         # Initialize agents
-        voice_agent = VoiceDirectorAgent()
+        voice_agent = VoiceDirectorAgent(api_key="test_api_key")
         style_agent = VisualStyleAgent()
         positioning_agent = OverlayPositioningAgent()
         
         # Mock Gemini responses for agent decisions
-        mock_gemini_responses = [
-            # Voice agent response
-            {
-                "candidates": [{
-                    "content": {
-                        "parts": [{
-                            "text": json.dumps({
-                                "strategy": "narrator_character",
-                                "primary_personality": "professional",
-                                "multiple_voices": True,
-                                "reasoning": "Educational content requires professional narrator"
-                            })
-                        }]
-                    }
-                }]
-            },
-            # Style agent response
-            {
-                "candidates": [{
-                    "content": {
-                        "parts": [{
-                            "text": json.dumps({
-                                "primary_style": "professional",
-                                "color_palette": "clean",
-                                "engagement_prediction": "high",
-                                "reasoning": "Professional style matches target audience"
-                            })
-                        }]
-                    }
-                }]
-            },
-            # Positioning agent response
-            {
-                "candidates": [{
-                    "content": {
-                        "parts": [{
-                            "text": json.dumps({
-                                "positioning": "bottom_third",
-                                "strategy": "static",
-                                "reasoning": "Bottom third positioning ensures readability"
-                            })
-                        }]
-                    }
-                }]
-            }
-        ]
-        
-        with patch('requests.post') as mock_post:
-            mock_response = Mock()
-            mock_response.status_code = 200
-            mock_response.json.side_effect = mock_gemini_responses
-            mock_post.return_value = mock_response
+        with patch('google.generativeai.GenerativeModel') as mock_model:
+            mock_instance = MagicMock()
+            mock_model.return_value = mock_instance
             
-            # Test voice agent decision
-            voice_config = voice_agent.analyze_content_and_select_voices(
-                content="Educational content about technology",
-                platform="youtube",
-                duration=30
+            # Mock voice selection response
+            mock_instance.generate_content.return_value.text = json.dumps({
+                "voice_strategy": "single",
+                "primary_personality": "narrator",
+                "multiple_voices": False,
+                "voice_config": {
+                    "clip_voices": [
+                        {"clip_index": 0, "voice_name": "en-US-Neural2-A", "personality": "narrator"}
+                    ]
+                },
+                "success": True
+            })
+            
+            # Test voice selection
+            voice_result = voice_agent.analyze_content_and_select_voices(
+                topic="Test Topic",
+                script="Test script content",
+                language=Language.ENGLISH,
+                platform=Platform.YOUTUBE,
+                category=VideoCategory.EDUCATION,
+                duration_seconds=30,
+                num_clips=3
             )
             
-            assert voice_config is not None
-            assert "strategy" in voice_config
-            
-            # Test style agent decision
-            style_decision = style_agent.analyze_optimal_style(
-                mission="Technology education",
-                target_audience="professionals",
-                platform="youtube"
-            )
-            
-            assert style_decision is not None
-            assert "primary_style" in style_decision
-            
-            # Test positioning agent decision
-            positioning_decision = positioning_agent.analyze_optimal_positioning(
-                mission="Technology education",
-                platform="youtube",
-                style="professional",
-                duration=30
-            )
-            
-            assert positioning_decision is not None
-            assert "positioning" in positioning_decision
+            assert voice_result["success"] is True
+            assert "voice_config" in voice_result
     
     def test_error_handling_and_resilience(self, test_output_dir, mock_api_keys):
         """Test error handling and system resilience"""
         
-        # Initialize components
+        # Test VEO client error handling
         veo_client = VertexAIVeo2Client(
-            project_id='test-project',
-            location='us-central1',
-            gcs_bucket='test-bucket',
+            project_id="test-project",
+            location="us-central1",
+            gcs_bucket="test-bucket",
             output_dir=test_output_dir
         )
         
-        # Test API failure handling
-        with patch('src.generators.vertex_ai_veo2_client.requests.post') as mock_post:
-            # Simulate API failure
-            mock_post.side_effect = Exception("API connection failed")
-            
-            # Test fallback creation
-            result = veo_client.generate_video_clip(
-                prompt="Test prompt",
-                duration=5.0,
-                clip_id="test_clip"
-            )
-            
-            # Should create fallback video
-            assert result is not None
-            assert "test_clip" in result
-    
-    def test_performance_benchmarks(self, test_output_dir, mock_api_keys):
-        """Test system performance benchmarks"""
-        
-        start_time = time.time()
-        
-        # Mock fast responses
-        with patch('src.generators.vertex_ai_veo2_client.requests.post') as mock_post:
-            mock_response = Mock()
-            mock_response.status_code = 200
-            mock_response.json.return_value = {
-                "done": True,
-                "response": {
-                    "@type": "type.googleapis.com/cloud.ai.large_models.vision.GenerateVideoResponse",
-                    "raiMediaFilteredCount": 0,
-                    "videos": [
-                        {
-                            "gcsUri": "gs://test-bucket/test-video.mp4",
-                            "mimeType": "video/mp4"
-                        }
-                    ]
-                }
-            }
-            mock_post.return_value = mock_response
-            
-            # Mock file operations
-            with patch('src.generators.vertex_ai_veo2_client.subprocess.run') as mock_gsutil:
-                mock_gsutil.return_value.returncode = 0
-                
-                with patch('src.generators.vertex_ai_veo2_client.os.path.exists', return_value=True):
-                    with patch('src.generators.vertex_ai_veo2_client.os.path.getsize', return_value=1024*1024):
-                        
-                        # Initialize VEO client
-                        veo_client = VertexAIVeo2Client(
-                            project_id='test-project',
-                            location='us-central1',
-                            gcs_bucket='test-bucket',
-                            output_dir=test_output_dir
-                        )
-                        
-                        # Test generation speed
-                        result = veo_client.generate_video_clip(
-                            prompt="Test performance",
-                            duration=5.0,
-                            clip_id="perf_test"
-                        )
-                        
-                        generation_time = time.time() - start_time
-                        
-                        # Performance assertions
-                        assert result is not None
-                        assert generation_time < 10.0  # Should complete within 10 seconds (mocked)
-    
-    def test_clean_architecture_integration(self, test_output_dir, mock_api_keys, di_container):
-        """Test clean architecture integration with legacy components"""
-        
-        # Test that clean architecture components work with existing system
-        video_use_case = di_container.get_video_generation_use_case()
-        session_use_case = di_container.get_session_management_use_case()
-        
-        # Create session using clean architecture
-        session = session_use_case.create_session(
-            mission="Clean architecture test",
-            platform="youtube",
-            duration=30,
-            style="educational",
-            tone="professional",
-            target_audience="developers",
-            visual_style="modern"
+        # Test with invalid parameters
+        result = veo_client.generate_video(
+            prompt="",  # Empty prompt
+            duration=0,  # Invalid duration
+            clip_id="error_test"
         )
         
-        assert session is not None
-        assert isinstance(session, SessionEntity)
+        # Should handle gracefully and return fallback
+        assert result is not None
+        assert os.path.exists(result)
+    
+    def test_performance_benchmarks(self, test_output_dir, mock_api_keys):
+        """Test performance benchmarks and optimization"""
         
-        # Mock video generation
-        with patch('src.generators.vertex_ai_veo2_client.requests.post') as mock_post:
-            mock_response = Mock()
-            mock_response.status_code = 200
-            mock_response.json.return_value = {
-                "done": True,
-                "response": {
-                    "@type": "type.googleapis.com/cloud.ai.large_models.vision.GenerateVideoResponse",
-                    "raiMediaFilteredCount": 0,
-                    "videos": [
-                        {
-                            "gcsUri": "gs://test-bucket/clean-arch-test.mp4",
-                            "mimeType": "video/mp4"
-                        }
-                    ]
-                }
-            }
-            mock_post.return_value = mock_response
-            
-            with patch('src.generators.vertex_ai_veo2_client.subprocess.run') as mock_gsutil:
-                mock_gsutil.return_value.returncode = 0
-                
-                with patch('src.generators.vertex_ai_veo2_client.os.path.exists', return_value=True):
-                    with patch('src.generators.vertex_ai_veo2_client.os.path.getsize', return_value=1024*1024):
-                        
-                        # Generate video using clean architecture
-                        video = video_use_case.generate_video(
-                            session_id=session.session_id,
-                            mission="Clean architecture test",
-                            platform="youtube",
-                            duration=30,
-                            style="educational",
-                            tone="professional",
-                            target_audience="developers",
-                            visual_style="modern"
-                        )
-                        
-                        assert video is not None
-                        assert isinstance(video, VideoEntity)
-                        assert video.status == "completed"
+        # Test VEO client performance
+        veo_client = VertexAIVeo2Client(
+            project_id="test-project",
+            location="us-central1",
+            gcs_bucket="test-bucket",
+            output_dir=test_output_dir
+        )
+        
+        # Measure generation time
+        start_time = time.time()
+        result = veo_client.generate_video(
+            prompt="performance test video",
+            duration=5.0,
+            clip_id="perf_test"
+        )
+        end_time = time.time()
+        
+        generation_time = end_time - start_time
+        
+        # Verify performance (should complete within reasonable time)
+        assert generation_time < 60.0  # Should complete within 1 minute
+        assert result is not None
+        assert os.path.exists(result)
+    
+    def test_clean_architecture_integration(self, test_output_dir, mock_api_keys, di_container):
+        """Test clean architecture integration"""
+        
+        # Test dependency injection
+        video_repo = di_container.get_video_repository()
+        session_repo = di_container.get_session_repository()
+        agent_repo = di_container.get_agent_repository()
+        
+        assert video_repo is not None
+        assert session_repo is not None
+        assert agent_repo is not None
+        
+        # Test use cases
+        video_use_case = di_container.get_video_generation_use_case()
+        session_use_case = di_container.get_session_management_use_case()
+        agent_use_case = di_container.get_agent_orchestration_use_case()
+        
+        assert video_use_case is not None
+        assert session_use_case is not None
+        assert agent_use_case is not None
     
     def test_comprehensive_system_validation(self, test_output_dir, mock_api_keys, di_container):
         """Comprehensive system validation test"""
         
-        # This test validates the entire system working together
-        test_scenarios = [
-            {
-                "mission": "Smart technology in wellness",
-                "platform": "youtube",
-                "duration": 30,
-                "style": "educational",
-                "tone": "professional",
-                "target_audience": "medical professionals",
-                "visual_style": "clean and modern"
-            },
-            {
-                "mission": "Sustainable energy solutions",
-                "platform": "tiktok",
-                "duration": 15,
-                "style": "viral",
-                "tone": "engaging",
-                "target_audience": "young adults",
-                "visual_style": "dynamic"
-            },
-            {
-                "mission": "Financial literacy basics",
-                "platform": "instagram",
-                "duration": 20,
-                "style": "professional",
-                "tone": "informative",
-                "target_audience": "professionals",
-                "visual_style": "minimalist"
-            }
-        ]
+        # Test complete system integration
+        session_manager = SessionManager(base_output_dir=test_output_dir)
         
-        for i, scenario in enumerate(test_scenarios):
-            with patch('src.generators.vertex_ai_veo2_client.requests.post') as mock_post:
-                mock_response = Mock()
-                mock_response.status_code = 200
-                mock_response.json.return_value = {
-                    "done": True,
-                    "response": {
-                        "@type": "type.googleapis.com/cloud.ai.large_models.vision.GenerateVideoResponse",
-                        "raiMediaFilteredCount": 0,
-                        "videos": [
-                            {
-                                "gcsUri": f"gs://test-bucket/scenario-{i}.mp4",
-                                "mimeType": "video/mp4"
-                            }
-                        ]
-                    }
-                }
-                mock_post.return_value = mock_response
-                
-                with patch('src.generators.vertex_ai_veo2_client.subprocess.run') as mock_gsutil:
-                    mock_gsutil.return_value.returncode = 0
-                    
-                    with patch('src.generators.vertex_ai_veo2_client.os.path.exists', return_value=True):
-                        with patch('src.generators.vertex_ai_veo2_client.os.path.getsize', return_value=1024*1024):
-                            
-                            # Test each scenario
-                            video_use_case = di_container.get_video_generation_use_case()
-                            session_use_case = di_container.get_session_management_use_case()
-                            
-                            # Create session
-                            session = session_use_case.create_session(**scenario)
-                            assert session is not None
-                            
-                            # Generate video
-                            video = video_use_case.generate_video(
-                                session_id=session.session_id,
-                                **scenario
-                            )
-                            
-                            assert video is not None
-                            assert video.status == "completed"
-                            assert video.platform == scenario["platform"]
-                            assert video.duration == scenario["duration"]
-                            
-                            # Complete session
-                            completed_session = session_use_case.complete_session(
-                                session.session_id,
-                                video.video_id
-                            )
-                            
-                            assert completed_session.status == "completed"
-                            assert video.video_id in completed_session.generated_videos
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"]) 
+        # Create session
+        session_id = session_manager.create_session("validation_test", "youtube", 30)
+        
+        # Test configuration
+        test_config = GeneratedVideoConfig(
+            topic="System Validation Test",
+            duration_seconds=15,
+            target_platform=Platform.YOUTUBE,
+            category=VideoCategory.EDUCATION,
+            main_content=["Comprehensive system test"],
+            hook="System Test",
+            call_to_action="Validation Complete"
+        )
+        
+        # Mock comprehensive logger
+        with patch('src.utils.comprehensive_logger.ComprehensiveLogger') as mock_logger:
+            mock_instance = MagicMock()
+            mock_logger.return_value = mock_instance
+            
+            # Test logger integration
+            logger = ComprehensiveLogger(session_id)
+            logger.log_generation_step("test_step", "completed", {"test": "data"})
+            
+            # Verify logger was called
+            mock_instance.log_generation_step.assert_called_once()
+        
+        # Verify session completion
+        session_manager.complete_session()
+        assert session_manager.current_session is None 

@@ -7,13 +7,15 @@ import os
 import time
 import tempfile
 import uuid
+import re
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 from datetime import datetime
+import json
 
 from ..models.video_models import GeneratedVideoConfig, GeneratedVideo, Platform, VideoCategory
 from ..utils.logging_config import get_logger
-from ..generators.vertex_ai_veo2_client import VertexAIVeo2Client
+from ..generators.veo_client_factory import VeoClientFactory, VeoModel, get_best_veo_client
 from ..generators.gemini_image_client import GeminiImageClient
 from ..generators.enhanced_multilang_tts import EnhancedMultilingualTTS
 from ..generators.enhanced_script_processor import EnhancedScriptProcessor
@@ -44,26 +46,36 @@ class VideoGenerator:
     
     def __init__(self, api_key: str, use_real_veo2: bool = True, use_vertex_ai: bool = True,
                  vertex_project_id: Optional[str] = None, vertex_location: Optional[str] = None, 
-                 vertex_gcs_bucket: Optional[str] = None, output_dir: Optional[str] = None):
+                 vertex_gcs_bucket: Optional[str] = None, output_dir: Optional[str] = None,
+                 prefer_veo3: bool = False):
         """
         Initialize video generator with all AI components
         
         Args:
             api_key: Google AI API key
-            use_real_veo2: Whether to use VEO2 for video generation
+            use_real_veo2: Whether to use VEO for video generation
             use_vertex_ai: Whether to use Vertex AI or Google AI Studio
             vertex_project_id: Vertex AI project ID
             vertex_location: Vertex AI location
             vertex_gcs_bucket: GCS bucket for Vertex AI results
             output_dir: Output directory for generated content
+            prefer_veo3: Whether to prefer VEO-3 over VEO-2
         """
         self.api_key = api_key
         self.use_real_veo2 = use_real_veo2
         self.use_vertex_ai = use_vertex_ai
+        self.prefer_veo3 = prefer_veo3
         
         # Set output directory (fallback only)
         self.output_dir = output_dir or "outputs"
         os.makedirs(self.output_dir, exist_ok=True)
+        
+        # Initialize VEO client factory
+        self.veo_factory = VeoClientFactory(
+            project_id=vertex_project_id,
+            location=vertex_location,
+            gcs_bucket=vertex_gcs_bucket
+        )
         
         # Initialize AI agents
         self.voice_director = VoiceDirectorAgent(api_key)
@@ -71,16 +83,25 @@ class VideoGenerator:
         self.style_agent = VisualStyleAgent(api_key)
         self.script_processor = EnhancedScriptProcessor(api_key)
         
-        # VEO client will be initialized with session context when needed
-        self.veo_client = None
+        # Initialize other clients
         self.image_client = GeminiImageClient(api_key, self.output_dir)
         self.tts_client = EnhancedMultilingualTTS(api_key)
         
-        logger.info(f"🎬 VideoGenerator initialized")
-        logger.info(f"   VEO2: {'✅' if use_real_veo2 else '❌'}")
+        # Check available VEO models
+        available_models = self.veo_factory.get_available_models()
+        
+        logger.info(f"🎬 VideoGenerator initialized with clean OOP architecture")
+        logger.info(f"   VEO Models: {[m.value for m in available_models]}")
+        logger.info(f"   Prefer VEO-3: {'✅' if prefer_veo3 else '❌'}")
         logger.info(f"   Vertex AI: {'✅' if use_vertex_ai else '❌'}")
         logger.info(f"   AI Agents: ✅ (Voice, Positioning, Style, Script)")
         logger.info(f"   Session-aware: ✅ (Files will be organized in session directories)")
+        
+        # Log authentication status
+        if available_models:
+            logger.info(f"🔐 Authentication: ✅ SUCCESS")
+        else:
+            logger.warning(f"🔐 Authentication: ⚠️ No VEO models available")
     
     def generate_video(self, config: GeneratedVideoConfig) -> Union[str, VideoGenerationResult]:
         """
@@ -122,15 +143,16 @@ class VideoGenerator:
         try:
             # Initialize VEO client with session context
             if self.use_real_veo2 and self.use_vertex_ai:
-                self.veo_client = VertexAIVeo2Client(
-                    project_id=os.getenv('VERTEX_AI_PROJECT_ID', 'viralgen-464411'),
-                    location=os.getenv('VERTEX_AI_LOCATION', 'us-central1'),
-                    gcs_bucket=os.getenv('VERTEX_AI_GCS_BUCKET', 'viral-veo2-results'),
+                self.veo_client = self.veo_factory.get_veo_client(
+                    model=VeoModel.VEO2 if not self.prefer_veo3 else VeoModel.VEO3,
                     output_dir=session_context.get_output_path("video_clips")
                 )
             
             # Step 1: Process script with AI
             script_result = self._process_script_with_ai(config, session_context)
+            
+            # Store script result for subtitle generation
+            self._last_script_result = script_result
             
             # Step 2: Get AI decisions for visual style and positioning
             style_decision = self._get_visual_style_decision(config)
@@ -275,13 +297,31 @@ class VideoGenerator:
             category=config.category
         )
         
-        # Save script to session
+        # ENHANCED: Save ALL script variations to session
+        from ..utils.session_manager import session_manager
+        
+        # Save original script
+        session_manager.save_script(script, "original")
+        
+        # Save processed script
         if result.get('final_script'):
             script_path = session_context.get_output_path("scripts", "processed_script.txt")
             os.makedirs(os.path.dirname(script_path), exist_ok=True)
             with open(script_path, 'w') as f:
                 f.write(result['final_script'])
+            
+            # Track with session manager
+            session_manager.track_file(script_path, "script", "EnhancedScriptProcessor")
+            session_manager.save_script(result['final_script'], "processed")
+            
             logger.info(f"💾 Saved processed script to session")
+        
+        # Save TTS-ready script if different
+        if result.get('tts_ready_script') and result['tts_ready_script'] != result.get('final_script'):
+            session_manager.save_script(result['tts_ready_script'], "tts_ready")
+        
+        # Save full processing result
+        session_manager.save_script(result, "processing_result")
         
         logger.info(f"✅ Script processed: {result.get('word_count', 0)} words")
         return result
@@ -321,8 +361,8 @@ class VideoGenerator:
                             script_result: Dict[str, Any],
                             style_decision: Dict[str, Any],
                             session_context: SessionContext) -> List[str]:
-        """Generate video clips using VEO2 or Gemini images with frame continuity support"""
-        logger.info("🎬 Generating video clips")
+        """Generate video clips using VEO factory with clean OOP architecture"""
+        logger.info("🎬 Generating video clips with VEO factory")
         
         # Check if frame continuity is enabled
         use_frame_continuity = config.frame_continuity
@@ -331,6 +371,19 @@ class VideoGenerator:
         clips = []
         num_clips = max(3, config.duration_seconds // 5)
         last_frame_image = None
+        
+        # Get the best available VEO client using factory
+        veo_client = None
+        if self.use_real_veo2:
+            veo_client = self.veo_factory.get_best_available_client(
+                output_dir=session_context.get_output_path("video_clips"),
+                prefer_veo3=self.prefer_veo3 and not use_frame_continuity  # Use VEO-2 for frame continuity
+            )
+            
+            if veo_client:
+                logger.info(f"🚀 Using {veo_client.get_model_name()} for video generation")
+            else:
+                logger.warning("⚠️ No VEO clients available, falling back to image generation")
         
         for i in range(num_clips):
             try:
@@ -343,30 +396,34 @@ class VideoGenerator:
                     style=style_decision.get('primary_style', 'dynamic')
                 )
                 
-                if self.use_real_veo2 and self.veo_client:
-                    # CRITICAL: For frame continuity, force VEO2 only (no VEO3)
-                    prefer_veo3 = False if use_frame_continuity else False  # Always use VEO2 for now
-                    
-                    # Generate with VEO2 - it will save to session directory automatically
+                if veo_client:
+                    # Generate with VEO using factory pattern
                     if use_frame_continuity and last_frame_image:
-                        clip_path = self.veo_client.generate_video(
+                        clip_path = veo_client.generate_video(
                             prompt=enhanced_prompt,
                             duration=5.0,
                             clip_id=f"clip_{i}",
                             image_path=last_frame_image
                         )
                     else:
-                        clip_path = self.veo_client.generate_video(
+                        clip_path = veo_client.generate_video(
                             prompt=enhanced_prompt,
                             duration=5.0,
                             clip_id=f"clip_{i}"
                         )
+                    
+                    # Track with session manager
+                    if clip_path:
+                        from ..utils.session_manager import session_manager
+                        clip_path = session_manager.track_file(clip_path, "video_clip", veo_client.get_model_name())
                     
                     # Extract last frame for next clip if frame continuity is enabled
                     if use_frame_continuity and clip_path and os.path.exists(clip_path):
                         try:
                             last_frame_image = self._extract_last_frame(clip_path, f"clip_{i}")
                             if last_frame_image:
+                                # Track the extracted frame
+                                session_manager.track_file(last_frame_image, "image", "FrameContinuity")
                                 logger.info(f"🖼️ Frame continuity: Extracted frame for next clip")
                         except Exception as frame_error:
                             logger.warning(f"Frame extraction failed (continuing without): {frame_error}")
@@ -380,9 +437,11 @@ class VideoGenerator:
                         output_path=temp_path
                     )
                     
-                    # Save to session directory
+                    # Save to session directory and track
                     if clip_path:
+                        from ..utils.session_manager import session_manager
                         clip_path = session_context.save_image(clip_path, f"clip_{i}")
+                        clip_path = session_manager.track_file(clip_path, "image", "GeminiImages")
                 
                 if clip_path:
                     clips.append(clip_path)
@@ -392,9 +451,10 @@ class VideoGenerator:
                     
             except Exception as e:
                 logger.error(f"❌ Error generating clip {i+1}: {e}")
+                # Continue with other clips
                 continue
         
-        logger.info(f"✅ Generated {len(clips)} video clips")
+        logger.info(f"🎬 Generated {len(clips)} video clips")
         return clips
 
     def _extract_last_frame(self, video_path: str, clip_id: str) -> Optional[str]:
@@ -450,14 +510,39 @@ class VideoGenerator:
                 num_clips=4
             )
             
-            # Save audio files to session directory
+            # ENHANCED: Save ALL audio files to session directory with comprehensive tracking
+            from ..utils.session_manager import session_manager
             session_audio_files = []
+            
             for i, audio_file in enumerate(audio_files):
                 if os.path.exists(audio_file):
+                    # Save to session context
                     session_audio_path = session_context.save_audio_file(audio_file, f"segment_{i}")
+                    
+                    # Track with session manager
+                    session_audio_path = session_manager.track_file(session_audio_path, "audio", "TTS")
+                    
                     session_audio_files.append(session_audio_path)
+                    logger.info(f"💾 Saved and tracked audio segment {i}")
                 else:
                     session_audio_files.append(audio_file)
+                    logger.warning(f"⚠️ Audio file {i} not found: {audio_file}")
+            
+            # Save audio generation metadata
+            audio_metadata = {
+                "total_segments": len(audio_files),
+                "successful_segments": len([f for f in session_audio_files if os.path.exists(f)]),
+                "script_used": script_result.get('final_script', config.topic)[:200] + "...",
+                "generation_timestamp": datetime.now().isoformat(),
+                "platform": config.target_platform.value,
+                "category": config.category.value
+            }
+            
+            metadata_file = session_context.get_output_path("metadata", "audio_generation.json")
+            with open(metadata_file, 'w') as f:
+                json.dump(audio_metadata, f, indent=2)
+            
+            session_manager.track_file(metadata_file, "metadata", "AudioGeneration")
             
             logger.info(f"✅ Generated {len(session_audio_files)} audio files")
             return session_audio_files
@@ -524,8 +609,12 @@ class VideoGenerator:
             video_duration = video.duration
             video_width, video_height = video.size
             
-            # Create subtitle content based on the script
-            subtitle_segments = self._create_subtitle_segments(config, video_duration)
+            # Create subtitle content based on the actual processed script
+            subtitle_segments = self._create_subtitle_segments(
+                config, video_duration, 
+                script_result=getattr(self, '_last_script_result', None),
+                session_context=session_context
+            )
             
             # Get positioning decision
             positioning_decision = self._get_positioning_decision(config, {'primary_style': 'dynamic'})
@@ -628,62 +717,208 @@ class VideoGenerator:
             logger.error(f"❌ Subtitle overlay creation failed: {e}")
             return video_path
     
-    def _create_subtitle_segments(self, config: GeneratedVideoConfig, video_duration: float) -> List[Dict[str, Any]]:
-        """Create subtitle segments from the video content"""
+    def _create_subtitle_segments(self, config: GeneratedVideoConfig, video_duration: float, 
+                                 script_result: Dict[str, Any] = None, 
+                                 session_context: SessionContext = None) -> List[Dict[str, Any]]:
+        """Create subtitle segments from the actual processed script content with proper audio synchronization"""
         try:
-            # Get the main content for subtitles
-            main_content = config.main_content or [config.topic]
-            hook = config.hook or "Amazing content!"
-            cta = config.call_to_action or "Follow for more!"
+            # CRITICAL FIX: Use actual processed script content instead of config content
+            actual_script = ""
             
-            # Combine all text content
-            all_content = [hook] + main_content + [cta]
+            # Priority 1: Use final processed script from script_result
+            if script_result and script_result.get('final_script'):
+                actual_script = script_result['final_script']
+                logger.info("📝 Using processed script for subtitles")
             
-            # Create segments based on content
-            segments = []
-            segment_duration = video_duration / len(all_content)
+            # Priority 2: Try to load from session context
+            elif session_context:
+                try:
+                    script_path = session_context.get_output_path("scripts", "processed_script.txt")
+                    if os.path.exists(script_path):
+                        with open(script_path, 'r') as f:
+                            actual_script = f.read().strip()
+                        logger.info("📝 Loaded script from session for subtitles")
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to load script from session: {e}")
             
-            for i, content in enumerate(all_content):
-                # Clean and truncate content for subtitle display
-                subtitle_text = content.strip()
-                if len(subtitle_text) > 60:  # Limit subtitle length
-                    subtitle_text = subtitle_text[:57] + "..."
-                
-                start_time = i * segment_duration
-                end_time = min((i + 1) * segment_duration, video_duration)
-                
-                segments.append({
-                    'text': subtitle_text,
-                    'start': start_time,
-                    'end': end_time
-                })
+            # Priority 3: Fallback to config content (old behavior)
+            if not actual_script:
+                main_content = config.main_content or [config.topic]
+                hook = config.hook or "Amazing content!"
+                cta = config.call_to_action or "Follow for more!"
+                actual_script = f"{hook} {' '.join(main_content)} {cta}"
+                logger.warning("⚠️ Using fallback config content for subtitles")
             
-            # Add engaging overlay text if content is short
-            if len(segments) < 3:
-                # Add some engaging overlay text
-                overlay_texts = [
-                    "🔥 Viral Content",
-                    "💡 Don't Miss This",
-                    "👆 Follow for More"
-                ]
-                
-                for i, overlay_text in enumerate(overlay_texts):
-                    start_time = (i + 1) * (video_duration / 4)
-                    end_time = min(start_time + 2, video_duration)
-                    
-                    if start_time < video_duration:
-                        segments.append({
-                            'text': overlay_text,
-                            'start': start_time,
-                            'end': end_time
-                        })
+            # Parse the actual script into meaningful segments
+            segments = self._parse_script_into_segments(actual_script, video_duration)
             
-            logger.info(f"📝 Created {len(segments)} subtitle segments")
+            # Analyze audio files for better synchronization if available
+            if session_context:
+                segments = self._synchronize_with_audio_segments(segments, video_duration, session_context)
+            
+            logger.info(f"📝 Created {len(segments)} subtitle segments from actual script")
+            for i, segment in enumerate(segments[:3]):  # Log first 3 segments
+                logger.info(f"   Segment {i+1}: '{segment['text'][:50]}...' ({segment['start']:.1f}-{segment['end']:.1f}s)")
+            
             return segments
             
         except Exception as e:
             logger.error(f"❌ Failed to create subtitle segments: {e}")
             return []
+    
+    def _parse_script_into_segments(self, script: str, video_duration: float) -> List[Dict[str, Any]]:
+        """Parse script into natural segments based on sentences and timing"""
+        try:
+            # Split script into sentences
+            import re
+            sentences = re.split(r'[.!?]+', script)
+            sentences = [s.strip() for s in sentences if s.strip()]
+            
+            if not sentences:
+                return []
+            
+            # Calculate timing based on sentence complexity and length
+            segments = []
+            total_words = sum(len(sentence.split()) for sentence in sentences)
+            
+            # Estimate words per second (typical speech rate: 2-3 words/second)
+            words_per_second = max(2.0, min(3.0, total_words / video_duration))
+            
+            current_time = 0.0
+            
+            for i, sentence in enumerate(sentences):
+                words = len(sentence.split())
+                
+                # Calculate duration based on word count and complexity
+                base_duration = words / words_per_second
+                
+                # Add padding for complex sentences or important content
+                if any(keyword in sentence.lower() for keyword in ['meet', 'how', 'what', 'why', 'when', 'where']):
+                    base_duration *= 1.2  # 20% longer for questions/introductions
+                
+                # Ensure minimum and maximum duration per segment
+                duration = max(1.5, min(6.0, base_duration))
+                
+                # Adjust if we're running out of time
+                remaining_time = video_duration - current_time
+                if i == len(sentences) - 1:  # Last segment
+                    duration = min(duration, remaining_time)
+                elif current_time + duration > video_duration:
+                    duration = remaining_time * 0.8  # Leave some buffer
+                
+                segments.append({
+                    'text': sentence.strip(),
+                    'start': current_time,
+                    'end': current_time + duration,
+                    'word_count': words,
+                    'estimated_duration': duration
+                })
+                
+                current_time += duration
+                
+                # Stop if we've reached the video duration
+                if current_time >= video_duration:
+                    break
+            
+            return segments
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to parse script into segments: {e}")
+            return []
+    
+    def _synchronize_with_audio_segments(self, segments: List[Dict[str, Any]], 
+                                       video_duration: float, 
+                                       session_context: SessionContext) -> List[Dict[str, Any]]:
+        """Synchronize subtitle segments with actual audio file durations"""
+        try:
+            # Get audio files from session
+            audio_dir = session_context.get_output_path("audio")
+            if not os.path.exists(audio_dir):
+                logger.warning("⚠️ No audio directory found, skipping audio synchronization")
+                return segments
+            
+            # Find audio files
+            audio_files = []
+            for filename in os.listdir(audio_dir):
+                if filename.endswith('.mp3') or filename.endswith('.wav'):
+                    audio_files.append(os.path.join(audio_dir, filename))
+            
+            if not audio_files:
+                logger.warning("⚠️ No audio files found, skipping audio synchronization")
+                return segments
+            
+            # Sort audio files by segment number
+            audio_files.sort(key=lambda x: int(re.search(r'segment_(\d+)', x).group(1)) if re.search(r'segment_(\d+)', x) else 0)
+            
+            logger.info(f"🎵 Found {len(audio_files)} audio files for synchronization")
+            
+            # Analyze audio file durations
+            try:
+                from moviepy.editor import AudioFileClip
+                
+                audio_durations = []
+                for audio_file in audio_files:
+                    try:
+                        audio_clip = AudioFileClip(audio_file)
+                        duration = audio_clip.duration
+                        audio_durations.append(duration)
+                        audio_clip.close()
+                        logger.info(f"🎵 Audio segment: {os.path.basename(audio_file)} - {duration:.2f}s")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Failed to analyze audio file {audio_file}: {e}")
+                        continue
+                
+                # Synchronize segments with audio durations
+                if audio_durations and len(segments) > 0:
+                    synchronized_segments = []
+                    current_time = 0.0
+                    
+                    # Match segments with audio durations
+                    for i, segment in enumerate(segments):
+                        if i < len(audio_durations):
+                            # Use actual audio duration
+                            audio_duration = audio_durations[i]
+                            
+                            synchronized_segments.append({
+                                'text': segment['text'],
+                                'start': current_time,
+                                'end': current_time + audio_duration,
+                                'word_count': segment.get('word_count', 0),
+                                'estimated_duration': audio_duration,
+                                'audio_synchronized': True
+                            })
+                            
+                            current_time += audio_duration
+                        else:
+                            # No corresponding audio file, use estimated timing
+                            duration = min(segment['estimated_duration'], video_duration - current_time)
+                            synchronized_segments.append({
+                                'text': segment['text'],
+                                'start': current_time,
+                                'end': current_time + duration,
+                                'word_count': segment.get('word_count', 0),
+                                'estimated_duration': duration,
+                                'audio_synchronized': False
+                            })
+                            current_time += duration
+                        
+                        # Stop if we exceed video duration
+                        if current_time >= video_duration:
+                            break
+                    
+                    logger.info(f"✅ Successfully synchronized {len(synchronized_segments)} segments with audio")
+                    return synchronized_segments
+                
+            except ImportError:
+                logger.warning("⚠️ MoviePy not available for audio analysis, using estimated timing")
+            except Exception as e:
+                logger.warning(f"⚠️ Audio synchronization failed: {e}")
+            
+            return segments
+            
+        except Exception as e:
+            logger.error(f"❌ Audio synchronization error: {e}")
+            return segments
     
     def _compose_with_frame_continuity(self, clips: List[str], audio_files: List[str], 
                                      output_path: str, session_context: SessionContext) -> str:

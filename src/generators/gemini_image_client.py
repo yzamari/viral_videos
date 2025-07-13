@@ -72,6 +72,7 @@ class GeminiImageClient:
     def generate_image_based_clips(self, prompts: List[Dict], config: Dict, video_id: str) -> List[Dict]:
         """
         Generate image-based clips using enhanced scene-specific generation with AI-powered timing
+        Enhanced for fallback generation with 5-10 second intelligent timing decisions
 
         Args:
             prompts: List of prompt dictionaries with descriptions
@@ -84,38 +85,56 @@ class GeminiImageClient:
         total_duration = config.get('duration_seconds', 30)
         platform = config.get('platform', 'youtube')
         category = config.get('category', 'general')
+        is_fallback = config.get('is_fallback_generation', True)  # Assume fallback by default
 
         # Initialize Image Timing Agent for intelligent duration decisions
         try:
             from ..agents.image_timing_agent import ImageTimingAgent
             timing_agent = ImageTimingAgent(self.api_key)
             
-            # Get AI-powered timing analysis
-            timing_analysis = timing_agent.analyze_image_timing_requirements(
-                prompts=prompts,
-                platform=platform,
-                total_duration=total_duration,
-                category=category
-            )
+            # Use fallback timing analysis for 5-10 second optimization
+            if is_fallback:
+                logger.info(f"🎯 Using FALLBACK timing analysis for 5-10 second image display")
+                timing_analysis = timing_agent.analyze_fallback_timing_requirements(
+                    prompts=prompts,
+                    platform=platform,
+                    total_duration=total_duration,
+                    category=category
+                )
+            else:
+                # Use standard timing analysis
+                timing_analysis = timing_agent.analyze_image_timing_requirements(
+                    prompts=prompts,
+                    platform=platform,
+                    total_duration=total_duration,
+                    category=category
+                )
             
             logger.info(f"🎨 ENHANCED IMAGE GENERATION WITH AI TIMING:")
             logger.info(f"   Target duration: {total_duration}s")
             logger.info(f"   Platform: {platform}")
+            logger.info(f"   Generation mode: {'FALLBACK (5-10s frames)' if is_fallback else 'STANDARD'}")
             logger.info(f"   Timing strategy: {timing_analysis.get('timing_strategy', 'N/A')}")
             logger.info(f"   Average per image: {timing_analysis.get('average_duration_per_image', 0):.2f}s")
             logger.info(f"   Number of clips: {len(prompts)}")
             
         except Exception as e:
             logger.warning(f"⚠️ ImageTimingAgent failed, using fallback timing: {e}")
-            # Fallback to improved default timing (slower than before)
+            # Enhanced fallback timing for 5-10 second range
+            if is_fallback:
+                avg_duration = max(5.0, min(10.0, total_duration / len(prompts)))
+                logger.info(f"🎯 Using enhanced fallback timing: {avg_duration:.1f}s per image (5-10s range)")
+            else:
+                avg_duration = max(1.5, total_duration / len(prompts))
+            
             timing_analysis = {
-                'timing_strategy': 'Fallback improved timing',
-                'average_duration_per_image': max(1.5, total_duration / len(prompts)),
+                'timing_strategy': f'Enhanced {"fallback" if is_fallback else "standard"} timing',
+                'average_duration_per_image': avg_duration,
                 'image_timings': [
                     {
                         'image_index': i,
-                        'duration': max(1.5, total_duration / len(prompts)),
-                        'timing_rationale': 'Fallback timing - improved from 0.25s to allow reading'
+                        'duration': avg_duration,
+                        'timing_rationale': f'{"Fallback 5-10s range" if is_fallback else "Standard"} timing - enhanced from 0.25s to allow reading'
                     } for i in range(len(prompts))
                 ]
             }
@@ -128,14 +147,19 @@ class GeminiImageClient:
             try:
                 # Get AI-determined timing for this specific image
                 if 'image_timings' in timing_analysis and i < len(timing_analysis['image_timings']):
-                    image_duration = timing_analysis['image_timings'][i].get('duration', 2.0)
+                    image_duration = timing_analysis['image_timings'][i].get('duration', 7.0 if is_fallback else 2.0)
                     timing_rationale = timing_analysis['image_timings'][i].get('timing_rationale', 'AI-determined')
                 else:
-                    image_duration = timing_analysis.get('average_duration_per_image', 2.0)
+                    image_duration = timing_analysis.get('average_duration_per_image', 7.0 if is_fallback else 2.0)
                     timing_rationale = 'Average duration fallback'
 
-                # Ensure minimum duration for readability
-                image_duration = max(0.8, image_duration)  # At least 0.8 seconds
+                # Ensure proper duration bounds
+                if is_fallback:
+                    # Enforce 5-10 second range for fallback
+                    image_duration = max(5.0, min(10.0, image_duration))
+                else:
+                    # Standard bounds
+                    image_duration = max(0.8, image_duration)
 
                 logger.info(f"  🎬 Image {i+1}: {image_duration:.2f}s - {timing_rationale}")
 

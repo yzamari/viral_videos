@@ -156,6 +156,23 @@ class ComprehensiveLogger:
             success=False
         )
 
+        # ENHANCED: Integrate with session manager for file tracking
+        try:
+            from .session_manager import session_manager
+            self.session_manager = session_manager
+            
+            # Track all log files with session manager
+            if self.session_manager.current_session:
+                for log_file in [self.script_log_file, self.audio_log_file, self.prompt_log_file,
+                               self.discussion_log_file, self.metrics_log_file, self.debug_log_file]:
+                    # Pre-track log files (they'll be created later)
+                    self.session_manager.track_file(log_file, "comprehensive_log", "ComprehensiveLogger")
+                    
+                logger.info(f"📊 Comprehensive logging integrated with session manager")
+        except Exception as e:
+            logger.warning(f"Failed to integrate with session manager: {e}")
+            self.session_manager = None
+
         logger.info(f"📊 Comprehensive logging initialized for session {session_id}")
         logger.info(f"📁 Logs directory: {self.logs_dir}")
 

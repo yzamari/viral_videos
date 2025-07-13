@@ -5,17 +5,35 @@ Supports native audio generation and enhanced cinematic quality
 """
 
 import os
+import sys
 import time
 import json
 import subprocess
 import requests
 import shutil
 from typing import Dict, Optional, List
-from ..utils.logging_config import get_logger
+
+# Add src to path for imports
+if 'src' not in sys.path:
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+
+try:
+    from .base_veo_client import BaseVeoClient
+except ImportError:
+    try:
+        from src.generators.base_veo_client import BaseVeoClient
+    except ImportError:
+        from base_veo_client import BaseVeoClient
+
+try:
+    from src.utils.logging_config import get_logger
+except ImportError:
+    from utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-class VertexAIVeo3Client:
+
+class VertexAIVeo3Client(BaseVeoClient):
     """Vertex AI VEO-3 client for advanced video generation"""
     
     def __init__(self, project_id: str, location: str, gcs_bucket: str, output_dir: str):
@@ -28,99 +46,22 @@ class VertexAIVeo3Client:
             gcs_bucket: GCS bucket for storing generated videos
             output_dir: Local directory for downloaded videos
         """
-        self.project_id = project_id
-        self.location = location
         self.gcs_bucket = gcs_bucket
-        self.output_dir = output_dir
         self.clips_dir = os.path.join(output_dir, "veo3_clips")
         os.makedirs(self.clips_dir, exist_ok=True)
         
         # VEO-3 model configuration
         self.veo3_model = "veo-3.0-generate-preview"
-        self.veo3_available = False
-        self.access_token = None
-        self.token_expiry = 0
         
-        try:
-            # Try to initialize Vertex AI and check VEO-3 availability
-            self._refresh_access_token()
-            self.veo3_available = self._check_veo3_availability()
-            if self.veo3_available:
-                logger.info("✅ Vertex AI VEO-3 client initialized successfully")
-            else:
-                logger.warning("⚠️ VEO-3 not available (requires allowlist)")
-        except Exception as e:
-            logger.warning(f"⚠️ Vertex AI VEO-3 initialization failed: {e}")
-            self.veo3_available = False
-
-    def _refresh_access_token(self):
-        """Get fresh access token using gcloud CLI"""
-        try:
-            result = subprocess.run(
-                ["gcloud", "auth", "print-access-token"],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            self.access_token = result.stdout.strip()
-            self.token_expiry = time.time() + 3600  # Token valid for 1 hour
-            logger.debug("🔑 Access token refreshed for VEO-3")
-        except Exception as e:
-            raise Exception(f"Failed to get access token: {e}")
-
-    def _get_auth_headers(self) -> Dict[str, str]:
-        """Get authentication headers with fresh token"""
-        # Refresh token if expired
-        if not self.access_token or (self.token_expiry and time.time() >= self.token_expiry - 300):
-            self._refresh_access_token()
-
-        return {
-            "Authorization": f"Bearer {self.access_token}",
-            "Content-Type": "application/json"
-        }
-
-    def _check_veo3_availability(self) -> bool:
-        """Check if VEO-3 is available for this project"""
-        try:
-            # Test VEO-3 availability by making a simple request
-            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{self.veo3_model}:predict"
-            headers = self._get_auth_headers()
-
-            # Make a minimal test request
-            test_data = {
-                "instances": [
-                    {
-                        "prompt": "test",
-                        "config": {"aspectRatio": "16:9"}
-                    }
-                ]
-            }
-
-            response = requests.post(url, headers=headers, json=test_data, timeout=30)
-
-            # If we get 404, VEO-3 is not available
-            if response.status_code == 404:
-                logger.debug("🚫 VEO-3 not available (404 - not in allowlist)")
-                return False
-            # If we get 400, it means the model exists but our test request is invalid (which is expected)
-            elif response.status_code == 400:
-                logger.debug("✅ VEO-3 available (model exists)")
-                return True
-            # If we get 429, it means quota exceeded but model is available
-            elif response.status_code == 429:
-                logger.debug("✅ VEO-3 available (quota exceeded - model accessible)")
-                return True
-            # Any other status code suggests the model is available
-            else:
-                logger.debug(f"✅ VEO-3 available (status: {response.status_code})")
-                return True
-
-        except Exception as e:
-            logger.debug(f"🚫 VEO-3 availability check failed: {e}")
-            return False
-
+        # Initialize base client
+        super().__init__(project_id, location, output_dir)
+    
+    def get_model_name(self) -> str:
+        """Get the model name"""
+        return self.veo3_model
+    
     def generate_video(self, prompt: str, duration: float = 8.0, 
-                      clip_id: str = "clip", image_path: str = None,
+                      clip_id: str = "clip", image_path: Optional[str] = None,
                       enable_audio: bool = True) -> str:
         """
         Generate video using VEO-3 with native audio support
@@ -135,14 +76,18 @@ class VertexAIVeo3Client:
         Returns:
             Path to generated video file
         """
-        if not self.veo3_available:
-            logger.warning("❌ Vertex AI VEO-3 not available, falling back to VEO-2")
+        if not self.is_available:
+            logger.warning("❌ VEO-3 not available, falling back to VEO-2")
             # Import VEO-2 client as fallback
-            from .vertex_ai_veo2_client import VertexAIVeo2Client
-            veo2_client = VertexAIVeo2Client(self.project_id, self.location, self.gcs_bucket, self.output_dir)
-            return veo2_client.generate_video(prompt, duration, clip_id, image_path)
+            try:
+                from .vertex_ai_veo2_client import VertexAIVeo2Client
+                veo2_client = VertexAIVeo2Client(self.project_id, self.location, self.gcs_bucket, self.output_dir)
+                return veo2_client.generate_video(prompt, duration, clip_id, image_path)
+            except Exception as e:
+                logger.error(f"❌ VEO-2 fallback failed: {e}")
+                return self._create_fallback_clip(prompt, duration, clip_id)
         
-        logger.info(f"🎬 Starting Vertex AI VEO-3 generation for clip: {clip_id}")
+        logger.info(f"🎬 Starting VEO-3 generation for clip: {clip_id}")
         
         try:
             # Enhance prompt for VEO-3 with audio and cinematic instructions
@@ -167,6 +112,46 @@ class VertexAIVeo3Client:
         except Exception as e:
             logger.error(f"❌ VEO-3 generation failed: {e}")
             return self._create_fallback_clip(prompt, duration, clip_id)
+    
+    def _check_availability(self) -> bool:
+        """Check if VEO-3 is available for this project using CORRECT URL format"""
+        try:
+            # CORRECT URL format for VEO-3 predictLongRunning endpoint
+            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{self.veo3_model}:predictLongRunning"
+            headers = self._get_auth_headers()
+
+            # Make a minimal test request
+            test_data = {
+                "instances": [{"prompt": "test"}],
+                "parameters": {"aspectRatio": "16:9", "durationSeconds": 5}
+            }
+
+            response = requests.post(url, headers=headers, json=test_data, timeout=30)
+
+            # If we get 200, model is fully working
+            if response.status_code == 200:
+                logger.debug("✅ VEO-3 fully available")
+                return True
+            # If we get 400, it means the model exists but our test request is invalid (which is expected)
+            elif response.status_code == 400:
+                logger.debug("✅ VEO-3 available (model exists)")
+                return True
+            # If we get 429, it means quota exceeded but model is available
+            elif response.status_code == 429:
+                logger.debug("✅ VEO-3 available (quota exceeded - model accessible)")
+                return True
+            # If we get 404, VEO-3 is not available
+            elif response.status_code == 404:
+                logger.debug("🚫 VEO-3 not available (404 - not in allowlist)")
+                return False
+            # Any other status code suggests the model is available
+            else:
+                logger.debug(f"✅ VEO-3 available (status: {response.status_code})")
+                return True
+
+        except Exception as e:
+            logger.debug(f"🚫 VEO-3 availability check failed: {e}")
+            return False
 
     def _enhance_prompt_for_veo3(self, prompt: str, enable_audio: bool) -> str:
         """Enhance prompt for VEO-3 with audio and cinematic instructions"""
@@ -232,8 +217,8 @@ class VertexAIVeo3Client:
                                        image_path: str = None, enable_audio: bool = True) -> str:
         """Submit video generation request to Vertex AI VEO-3"""
         try:
-            # Build the request URL
-            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{self.veo3_model}:predict"
+            # Build the request URL - Use predictLongRunning for VEO models
+            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{self.veo3_model}:predictLongRunning"
             
             headers = self._get_auth_headers()
             
@@ -263,29 +248,64 @@ class VertexAIVeo3Client:
                     }
             
             logger.info(f"🚀 Submitting VEO-3 generation request...")
-            response = requests.post(url, headers=headers, json=payload, timeout=120)  # VEO-3 may take longer
+            response = requests.post(url, headers=headers, json=payload, timeout=120)
             
             if response.status_code == 200:
                 result = response.json()
-                if "predictions" in result and len(result["predictions"]) > 0:
-                    prediction = result["predictions"][0]
-                    if "gcsUri" in prediction:
-                        logger.info("✅ VEO-3 generation completed successfully")
-                        return prediction["gcsUri"]
-                    else:
-                        logger.error("❌ No GCS URI in VEO-3 response")
-                        return None
+                operation_name = result.get("name")
+                if operation_name:
+                    logger.info(f"✅ VEO-3 operation started: {operation_name}")
+                    return self._poll_operation_status(operation_name)
                 else:
-                    logger.error("❌ No predictions in VEO-3 response")
+                    logger.error("❌ No operation name in VEO-3 response")
                     return None
+            elif response.status_code == 429:
+                logger.warning("⚠️ VEO-3 quota exceeded - falling back to VEO-2")
+                return None
             else:
-                logger.error(f"❌ VEO-3 generation failed: {response.status_code}")
+                logger.error(f"❌ VEO-3 request failed: {response.status_code}")
                 logger.error(f"Response: {response.text}")
                 return None
                 
         except Exception as e:
             logger.error(f"❌ VEO-3 generation request failed: {e}")
             return None
+
+    def _poll_operation_status(self, operation_name: str) -> str:
+        """Poll the operation status until completion or failure"""
+        url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/operations/{operation_name}"
+        headers = self._get_auth_headers()
+        logger.info(f"Polling operation status for {operation_name}...")
+
+        while True:
+            try:
+                response = requests.get(url, headers=headers, timeout=60)
+                if response.status_code == 200:
+                    result = response.json()
+                    state = result.get("done")
+                    if state:
+                        if result.get("error"):
+                            logger.error(f"Operation {operation_name} failed: {result['error']['message']}")
+                            return None
+                        else:
+                            logger.info(f"Operation {operation_name} completed successfully.")
+                            if "response" in result:
+                                gcs_uri = result["response"]["gcsUri"]
+                                logger.info(f"Operation {operation_name} completed with GCS URI: {gcs_uri}")
+                                return gcs_uri
+                            else:
+                                logger.error(f"Operation {operation_name} completed but no GCS URI in response.")
+                                return None
+                    else:
+                        logger.info(f"Operation {operation_name} not done yet. Waiting...")
+                        time.sleep(10) # Wait 10 seconds before polling again
+                else:
+                    logger.error(f"Failed to poll operation status: {response.status_code}")
+                    logger.error(f"Response: {response.text}")
+                    return None
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Error polling operation status: {e}")
+                return None
 
     def _download_video_from_gcs(self, gcs_uri: str, clip_id: str) -> str:
         """Download video from GCS to local storage"""

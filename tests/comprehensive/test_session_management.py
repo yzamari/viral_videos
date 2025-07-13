@@ -70,11 +70,11 @@ class TestSessionManagement:
         )
         
         # Create session context
-        context = create_session_context(session_id)
+        context = create_session_context(session_id, self.session_manager)
         
         # Verify context properties
         assert context.session_id == session_id
-        assert context.session_manager == session_manager
+        assert context.session_manager == self.session_manager
         
         # Test path generation
         video_path = context.get_output_path("video_clips", "test_clip.mp4")
@@ -90,7 +90,7 @@ class TestSessionManagement:
             duration=15,
             category="Comedy"
         )
-        context = create_session_context(session_id)
+        context = create_session_context(session_id, self.session_manager)
         
         # Create temporary files to save
         with tempfile.NamedTemporaryFile(mode='w', suffix='.mp4', delete=False) as f:
@@ -179,7 +179,7 @@ class TestSessionManagement:
             duration=60,
             category="Educational"
         )
-        context = create_session_context(session_id)
+        context = create_session_context(session_id, self.session_manager)
         
         # Create some files in session
         for i in range(3):
@@ -220,7 +220,7 @@ class TestSessionManagement:
         assert os.path.exists(session_dir)
         
         # Clean up session
-        self.session_manager.cleanup_session(session_id)
+        self.session_manager.cleanup_session(session_id, keep_final_output=False)
         
         # Verify session is removed
         assert not os.path.exists(session_dir)
@@ -236,8 +236,8 @@ class TestSessionManagement:
         )
         
         # Create contexts
-        context1 = create_session_context(session1)
-        context2 = create_session_context(session2)
+        context1 = create_session_context(session1, self.session_manager)
+        context2 = create_session_context(session2, self.session_manager)
         
         # Create files in each session
         file1 = context1.get_output_path("video_clips", "test.mp4")
@@ -269,11 +269,11 @@ class TestSessionManagement:
         """Test session error handling"""
         # Test invalid session ID
         with pytest.raises(ValueError):
-            create_session_context("invalid_session_id")
+            create_session_context("invalid_session_id", self.session_manager)
         
         # Test session context with non-existent session
         with pytest.raises(ValueError):
-            create_session_context("session_nonexistent_12345")
+            create_session_context("session_nonexistent_12345", self.session_manager)
     
     def test_session_path_security(self):
         """Test session path security (prevent directory traversal)"""
@@ -283,7 +283,7 @@ class TestSessionManagement:
             duration=15,
             category="Educational"
         )
-        context = create_session_context(session_id)
+        context = create_session_context(session_id, self.session_manager)
         
         # Test that path traversal is prevented
         safe_path = context.get_output_path("video_clips", "safe_file.mp4")
@@ -317,21 +317,13 @@ class TestSessionIntegration:
         
         # Create video config
         config = GeneratedVideoConfig(
-            target_platform=Platform.TIKTOK,
-            category=VideoCategory.EDUCATIONAL,
-            duration_seconds=15,
-            topic="Test Integration",
-            style="viral",
-            tone="engaging",
-            target_audience="general",
+            topic="Test Video",
+            duration_seconds=30,
+            target_platform=Platform.YOUTUBE,
+            category=VideoCategory.EDUCATION,
             hook="Test hook",
             main_content=["Test content"],
-            call_to_action="Test CTA",
-            visual_style="dynamic",
-            color_scheme=["#FF0000"],
-            transitions=["fade"],
-            background_music_style="upbeat",
-            voiceover_style="energetic"
+            call_to_action="Test CTA"
         )
         
         # Mock video generator dependencies
@@ -369,7 +361,7 @@ class TestSessionIntegration:
                 mock_session_manager.create_session.assert_called_once()
                 
                 # Verify session context was created
-                mock_create_context.assert_called_once_with("session_test_12345")
+                mock_create_context.assert_called_once_with("session_test_12345", mock_session_manager)
                 
                 # Verify generation steps were logged
                 assert mock_session_manager.log_generation_step.call_count > 0

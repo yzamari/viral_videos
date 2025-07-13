@@ -95,18 +95,30 @@ class MultiAgentDiscussionSystem:
             self.model = None
             logger.warning("Google Generative AI not available")
 
-        # Set up directories
-        self.discussions_dir = os.path.join(
-            "outputs", f"session_{session_id}", "agent_discussions")
-        os.makedirs(self.discussions_dir, exist_ok=True)
+        # ENHANCED: Use session manager for proper file organization
+        from ..utils.session_manager import session_manager
+        self.session_manager = session_manager
+        
+        # Set up directories using session manager
+        if self.session_manager.current_session:
+            self.discussions_dir = self.session_manager.get_session_path("discussions")
+        else:
+            # Fallback if no active session
+            self.discussions_dir = os.path.join(
+                "outputs", f"session_{session_id}", "agent_discussions")
+            os.makedirs(self.discussions_dir, exist_ok=True)
 
         # Initialize monitoring
         self.monitoring_service = MonitoringService(session_id)
 
         # Initialize visualizer
         if enable_visualization:
-            self.visualizer = DiscussionVisualizer(
-                f"outputs/session_{session_id}")
+            if self.session_manager.current_session:
+                session_dir = self.session_manager.get_session_path()
+            else:
+                session_dir = f"outputs/session_{session_id}"
+            
+            self.visualizer = DiscussionVisualizer(session_dir)
         else:
             self.visualizer = None
 
@@ -116,6 +128,7 @@ class MultiAgentDiscussionSystem:
         logger.info("🎭 Multi-agent discussion system initialized")
         logger.info(f"   Session: {session_id}")
         logger.info(f"   Agents available: {len(self.agent_personalities)}")
+        logger.info(f"   Session-managed discussions: {'✅' if self.session_manager.current_session else '❌'}")
 
     def _initialize_agent_personalities(
             self) -> Dict[AgentRole, Dict[str, Any]]:
@@ -793,7 +806,7 @@ Be concise but insightful. Consider what other agents have said and build upon o
             discussion_log: List,
             round_num: int,
             consensus_level: float):
-        """Save discussion progress to file"""
+        """Save discussion progress to file with session management"""
         # Convert discussion log to serializable format
         serializable_log = []
         for entry in discussion_log:
@@ -809,34 +822,47 @@ Be concise but insightful. Consider what other agents have said and build upon o
             "discussion_log": serializable_log,
             "current_round": round_num,
             "consensus_level": consensus_level,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "session_id": self.session_id
         }
 
         with open(discussion_file, 'w') as f:
             json.dump(progress_data, f, indent=2, default=str)
+        
+        # ENHANCED: Track file with session manager
+        if self.session_manager.current_session:
+            self.session_manager.track_file(discussion_file, "discussion", "MultiAgentDiscussion")
 
     def _save_final_result(
             self,
             discussion_file: str,
             result: DiscussionResult):
-        """Save final discussion result"""
+        """Save final discussion result with session management"""
         result_file = discussion_file.replace('.json', '_final.json')
 
+        # Enhanced result data with session info
+        result_data = asdict(result)
+        result_data["session_id"] = self.session_id
+        result_data["final_timestamp"] = datetime.now().isoformat()
+
         with open(result_file, 'w') as f:
-            json.dump(asdict(result), f, indent=2, default=str)
+            json.dump(result_data, f, indent=2, default=str)
+        
+        # ENHANCED: Track file with session manager
+        if self.session_manager.current_session:
+            self.session_manager.track_file(result_file, "discussion", "MultiAgentDiscussion")
+            
+            # Also save to session manager's discussion tracking
+            self.session_manager.save_discussion(result_data, result.topic_id)
 
         # Also log to monitoring service
         self.monitoring_service.log(
-            f"🎯 Agent Discussion Complete: {
-                result.topic_id}")
+            f"🎯 Agent Discussion Complete: {result.topic_id}")
         self.monitoring_service.log(
-            f"   Consensus: {
-                result.consensus_level:.2f}")
+            f"   Consensus: {result.consensus_level:.2f}")
         self.monitoring_service.log(f"   Rounds: {result.total_rounds}")
         self.monitoring_service.log(
-            f"   Participants: {
-                ', '.join(
-                    result.participating_agents)}")
+            f"   Participants: {', '.join(result.participating_agents)}")
 
 # Predefined discussion topics for common video generation decisions
 
