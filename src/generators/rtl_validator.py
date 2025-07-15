@@ -11,7 +11,6 @@ from ..models.video_models import Language
 
 logger = get_logger(__name__)
 
-
 class RTLValidator:
     """Validates and corrects RTL language content using Gemini AI"""
 
@@ -152,7 +151,7 @@ class RTLValidator:
 
         lang_info = self.rtl_languages[language]
 
-        validation_prompt = f"""
+        validation_prompt = """
         You are an expert linguist specializing in {lang_info['name']} ({lang_info['native_name']}) language validation.
 
         TASK: Validate this {lang_info['name']} text for grammatical correctness, proper word order, and natural flow.
@@ -249,7 +248,7 @@ class RTLValidator:
             for issue in issues
         ])
 
-        correction_prompt = f"""
+        correction_prompt = """
         You are an expert {lang_info['name']} editor and linguist. Your task is to correct the grammatical and structural issues in this text.
 
         ORIGINAL TEXT:
@@ -324,7 +323,7 @@ class RTLValidator:
 
         lang_info = self.rtl_languages[language]
 
-        verification_prompt = f"""
+        verification_prompt = """
         You are a {lang_info['name']} language quality assessor. Compare these two versions of the same text.
 
         ORIGINAL TEXT:

@@ -1,0 +1,831 @@
+"""
+Fixed Video Generator with proper Director initialization and Studio voice handling
+"""
+
+import os
+import json
+import logging
+from typing import Dict, Any, List, Optional
+import time # Added for timestamp in _fix_aspect_ratio
+
+from ..agents.overlay_positioning_agent import OverlayPositioningAgent
+from ..agents.voice_director_agent import VoiceDirectorAgent
+from ..generators.director import Director
+from ..generators.enhanced_multilang_tts import EnhancedMultilingualTTS
+from ..generators.veo_client_factory import VeoClientFactory
+from ..models.video_models import GeneratedVideoConfig
+from ..utils.logging_config import get_logger
+from ..utils.session_context import SessionContext
+from ..utils.exceptions import VideoGenerationError, AudioGenerationError, SubtitleGenerationError
+from ..models.video_models import Language, VideoCategory
+
+logger = get_logger(__name__)
+
+
+class VideoGenerator:
+    """Orchestrates the video generation process"""
+
+    def __init__(self, api_key: str):
+        """Initialize the video generator with API credentials"""
+        self.api_key = api_key
+
+        # Initialize VEO client factory with proper project credentials
+        self.veo_factory = VeoClientFactory()
+
+        # Initialize AI agents - FIXED: Pass api_key to Director
+        self.director = Director(api_key=api_key)
+        self.voice_director = VoiceDirectorAgent(api_key)
+        self.overlay_positioning = OverlayPositioningAgent(api_key)
+
+    def generate_video(self, config: GeneratedVideoConfig,
+                      script_result: Dict[str, Any],
+                      session_context: SessionContext) -> str:
+        """Generate video with AI-optimized audio and visual elements"""
+        logger.info("🎬 Starting AI-optimized video generation")
+        logger.info(f"📊 Config: {config.topic[:50]}...")
+        logger.info(f"🎯 Target: {config.target_platform}")
+        logger.info(f"⏱️ Duration: {config.duration_seconds}s")
+
+        try:
+            # Generate audio with AI voice selection
+            audio_files = self._generate_ai_optimized_audio(
+                config, script_result, session_context
+            )
+
+            if not audio_files:
+                raise AudioGenerationError("No audio files generated")
+
+            # Generate video clips
+            video_clips = self._generate_video_clips(
+                config, script_result, session_context
+            )
+
+            # Add professional subtitles and create final video
+            final_video = self._add_professional_subtitles(
+                video_clips, audio_files, script_result, config, session_context
+            )
+
+            return final_video
+
+        except Exception as e:
+            logger.error(f"❌ Video generation failed: {str(e)}")
+            raise VideoGenerationError(f"Video generation failed: {str(e)}")
+
+    def _generate_ai_optimized_audio(self, config: GeneratedVideoConfig,
+                                    script_result: Dict[str, Any],
+                                    session_context: SessionContext) -> List[str]:
+        """Generate audio with AI voice selection and optimization"""
+        logger.info("🎤 Generating AI-optimized audio")
+
+        # Get AI voice strategy
+        voice_strategy = self.voice_director.analyze_content_and_select_voices(
+            topic=config.topic,
+            script=script_result.get('full_script', ''),
+            language=Language.ENGLISH_US,
+            platform=config.target_platform,
+            category=VideoCategory.COMEDY,
+            duration_seconds=config.duration_seconds,
+            num_clips=4  # Default segmentation
+        )
+
+        logger.info(f"🔍 DEBUG: Voice strategy keys: {list(voice_strategy.keys())}")
+        logger.info(f"🔍 DEBUG: Voice strategy content: {voice_strategy}")
+        
+        # Get clip_voices from the nested structure
+        clip_voices = voice_strategy.get('voice_config', {}).get('clip_voices', [])
+        logger.info(f"🎯 Voice strategy: {len(clip_voices)} voices selected")
+
+        # Segment script for audio
+        logger.info(f"🔍 DEBUG: About to segment script for audio")
+        logger.info(f"🔍 DEBUG: Script result keys: {list(script_result.keys()) if isinstance(script_result, dict) else 'Not a dict'}")
+        script_segments = self._segment_script_for_audio(script_result)
+        logger.info(f"🔍 DEBUG: Got {len(script_segments)} script segments: {script_segments}")
+
+        # Initialize TTS client
+        tts_client = EnhancedMultilingualTTS(self.api_key)
+
+        audio_files = []
+        logger.info(f"🔍 DEBUG: Starting audio generation loop for {len(script_segments)} segments")
+        for i, segment in enumerate(script_segments):
+            voice_config = clip_voices[i % len(clip_voices)] if clip_voices else {}
+            
+            # CRITICAL FIX: Remove pitch for Studio voices
+            if "studio" in voice_config.get('voice_name', '').lower():
+                if 'pitch' in voice_config:
+                    del voice_config['pitch']
+                    logger.info(f"🎤 Removed pitch for Studio voice: {voice_config.get('voice_name')}")
+
+            logger.info(f"🎵 Generating audio segment {i+1}/{len(script_segments)}")
+            logger.info(f"🎤 Voice: {voice_config.get('voice_name')}")
+            
+            try:
+                # FIXED: The method returns a list, so we get the first item for single clip generation
+                audio_paths = tts_client.generate_intelligent_voice_audio(
+                    script=segment,
+                    language=Language.ENGLISH_US,
+                    topic=config.topic,
+                    platform=config.target_platform,
+                    category=config.category,
+                    duration_seconds=config.duration_seconds,
+                    num_clips=len(script_segments),
+                    clip_index=i
+                )
+
+                # Extract the actual audio path from the list
+                if audio_paths and len(audio_paths) > 0:
+                    audio_path = audio_paths[0]  # Get first (and should be only) audio file
+                    if audio_path and os.path.exists(audio_path):
+                        audio_files.append(audio_path)
+                        logger.info(f"✅ Generated audio for clip {i}: {voice_config.get('voice_name')}")
+                    else:
+                        logger.warning(f"⚠️ Audio path invalid for clip {i}: {audio_path}")
+                else:
+                    logger.warning(f"⚠️ No audio returned for clip {i}")
+
+            except Exception as e:
+                logger.error(f"❌ Audio generation failed for clip {i}: {str(e)}")
+                continue
+
+        logger.info(f"🎵 Audio generation complete: {len(audio_files)} segments created")
+
+        # Save audio generation metadata
+        audio_metadata = {
+            "total_segments": len(script_segments),
+            "successful_segments": len(audio_files),
+            "voice_strategy": voice_strategy,
+            "script_segments": script_segments
+        }
+
+        metadata_path = os.path.join(session_context.get_output_path("metadata"), "audio_generation.json")
+        with open(metadata_path, 'w') as f:
+            json.dump(audio_metadata, f, indent=2)
+
+        return audio_files
+
+    def _generate_video_clips(self, config: GeneratedVideoConfig,
+                              script_result: Dict[str, Any],
+                              session_context: SessionContext) -> List[str]:
+        """Generate video clips using VEO clients with optional frame continuity"""
+        logger.info("🎥 Generating video clips")
+
+        # Get best VEO client
+        veo_client = self.veo_factory.get_best_available_client(
+            output_dir=session_context.get_output_path("video_clips")
+        )
+        
+        if not veo_client:
+            logger.error("❌ No VEO client available")
+            return []
+            
+        logger.info(f"🤖 Using VEO client: {veo_client.__class__.__name__}")
+
+        # Check if Director decided to use frame continuity
+        continuity_decision = self.director.decide_frame_continuity(
+            topic=config.topic,
+            style=config.visual_style,
+            category=config.category,
+            duration=config.duration_seconds,
+            platform=config.target_platform
+        )
+        
+        use_continuity = continuity_decision.get('use_frame_continuity', False)
+        logger.info(f"🎬 Frame continuity decision: {use_continuity}")
+
+        # Prepare script segments
+        script_segments = self._segment_script_for_video(
+            script_result, config.duration_seconds
+        )
+
+        video_clips = []
+        if use_continuity and hasattr(veo_client, 'generate_continuous_video'):
+            # Use continuous mode
+            logger.info("🎬 Using continuous video generation mode")
+            # Generate a single continuous video with the first prompt
+            base_prompt = script_segments[0] if script_segments else "Generate a viral video"
+            num_clips = max(1, len(script_segments))
+            clip_duration = config.duration_seconds / num_clips
+            continuous_video = veo_client.generate_continuous_video(
+                base_prompt=base_prompt,
+                num_clips=num_clips,
+                clip_duration=clip_duration,
+                base_clip_id="continuous_video"
+            )
+            if continuous_video:
+                # FIXED: Apply aspect ratio correction to continuous video
+                corrected_video = self._fix_aspect_ratio(continuous_video, config, session_context)
+                video_clips.append(corrected_video)
+        else:
+            # Generate individual clips
+            for i, segment in enumerate(script_segments):
+                try:
+                    # Generate video clip
+                    clip_path = veo_client.generate_video(
+                        prompt=segment,
+                        duration=config.duration_seconds // len(script_segments),
+                        clip_id=f"clip_{i}"
+                    )
+
+                    if clip_path and os.path.exists(clip_path):
+                        # FIXED: Apply aspect ratio correction to each individual clip
+                        logger.info(f"🔧 Correcting aspect ratio for clip {i}")
+                        corrected_clip = self._fix_aspect_ratio(clip_path, config, session_context)
+                        video_clips.append(corrected_clip)
+                        logger.info(f"✅ Generated and corrected clip {i}: {corrected_clip}")
+                    else:
+                        logger.warning(f"⚠️ Failed to generate clip {i}")
+
+                except Exception as e:
+                    logger.error(f"❌ Error generating clip {i}: {str(e)}")
+                    continue
+
+        logger.info(f"🎬 Video generation complete: {len(video_clips)} clips created")
+        return video_clips
+
+    def _add_professional_subtitles(self, video_clips: List[str], audio_files: List[str],
+                                    script_result: Dict[str, Any],
+                                    config: GeneratedVideoConfig,
+                                    session_context: SessionContext) -> str:
+        """Add professional subtitles with perfect timing"""
+        logger.info("📝 Adding subtitle overlays to final video")
+
+        # Handle case when no video clips were generated
+        if not video_clips:
+            logger.warning("⚠️ No video clips available for subtitle overlay")
+            # Create a fallback video from audio
+            return self._create_fallback_video_from_audio(audio_files, config, session_context)
+
+        # Get AI positioning decision
+        logger.info("🎯 Getting AI positioning decision")
+        self.overlay_positioning.analyze_optimal_positioning(
+            topic=config.topic,
+            video_style=config.visual_style,
+            platform=config.target_platform.value,
+            duration=config.duration_seconds,
+            subtitle_count=len(video_clips)
+        )
+
+        # Create subtitle segments
+        subtitle_segments = self._create_subtitle_segments(
+            script_result, len(video_clips), config.duration_seconds
+        )
+
+        # Create final video with subtitles
+        return self._create_final_video_with_subtitles(
+            video_clips, audio_files, subtitle_segments, config, session_context
+        )
+
+    def _segment_script_for_audio(self, script_result: Dict[str, Any]) -> List[str]:
+        """Segment script for audio generation"""
+        # Check if script has segments array (from Director)
+        if isinstance(script_result, dict) and 'segments' in script_result:
+            segments = []
+            for segment in script_result['segments']:
+                if isinstance(segment, dict) and 'text' in segment:
+                    text = segment['text'].strip()
+                    if text:
+                        segments.append(text)
+            
+            if segments:
+                logger.info(f"🎵 Found {len(segments)} script segments from Director")
+                return segments
+        
+        # Fallback to old method if segments not found
+        if isinstance(script_result, dict):
+            script_text = script_result.get('final_script', '')
+            if not script_text:
+                script_text = script_result.get('script', '')
+        else:
+            script_text = str(script_result)
+
+        # Simple segmentation - split into 4 parts
+        words = script_text.split()
+        segment_size = max(1, len(words) // 4)
+        
+        segments = []
+        for i in range(0, len(words), segment_size):
+            segment = ' '.join(words[i:i + segment_size])
+            if segment.strip():
+                segments.append(segment)
+        
+        logger.info(f"🎵 Created {len(segments)} script segments from fallback method")
+        return segments[:4]  # Limit to 4 segments
+
+    def _segment_script_for_video(self, script_result: Dict[str, Any], duration: float) -> List[str]:
+        """Segment script for video generation"""
+        return self._segment_script_for_audio(script_result)
+
+    def _create_subtitle_segments(self, script_result: Dict[str, Any],
+                                  num_segments: int, duration: float) -> List[Dict[str, Any]]:
+        """Create subtitle segments from script"""
+        if num_segments <= 0:
+            logger.warning("⚠️ No segments provided for subtitle creation")
+            return []
+            
+        # Try multiple possible keys for script text
+        script_text = ""
+        if isinstance(script_result, dict):
+            # Try various possible keys
+            possible_keys = ['final_script', 'script', 'full_script', 'content', 'text', 'generated_script']
+            for key in possible_keys:
+                script_text = script_result.get(key, '')
+                if script_text:
+                    logger.info(f"📝 Found script text in key: {key}")
+                    break
+        else:
+            script_text = str(script_result)
+
+        if not script_text:
+            logger.warning("⚠️ No script text available for subtitle creation")
+            logger.info(f"🔍 DEBUG: Available script_result keys: {list(script_result.keys()) if isinstance(script_result, dict) else 'Not a dict'}")
+            # Create generic subtitles based on topic if no script available
+            if isinstance(script_result, dict) and 'topic' in script_result:
+                script_text = f"Amazing content about {script_result['topic']}! Don't miss this!"
+            else:
+                script_text = "Amazing content! Don't miss this!"
+            logger.info(f"📝 Using fallback subtitle text: {script_text}")
+
+        # Split into words for better timing
+        words = script_text.split()
+        words_per_segment = max(1, len(words) // num_segments)
+        
+        segments = []
+        segment_duration = duration / num_segments
+        
+        for i in range(num_segments):
+            start_time = i * segment_duration
+            end_time = (i + 1) * segment_duration
+            
+            start_word = i * words_per_segment
+            end_word = min((i + 1) * words_per_segment, len(words))
+            
+            segment_text = ' '.join(words[start_word:end_word])
+            
+            segments.append({
+                'text': segment_text,
+                'start_time': start_time,
+                'end_time': end_time,
+                'duration': segment_duration
+            })
+            
+        logger.info(f"📝 Created {len(segments)} subtitle segments")
+        return segments
+
+    def _create_final_video_with_subtitles(self, video_clips: List[str], audio_files: List[str],
+                                          subtitle_segments: List[Dict[str, Any]],
+                                          config: GeneratedVideoConfig,
+                                          session_context: SessionContext) -> str:
+        """Create final video with subtitles and audio"""
+        try:
+            import subprocess
+            
+            # Create output path
+            temp_output_path = os.path.join(
+                session_context.get_output_path("temp"),
+                f"temp_final_video_{session_context.session_id}.mp4"
+            )
+            
+            final_output_path = os.path.join(
+                session_context.get_output_path("final_output"),
+                f"final_video_{session_context.session_id}.mp4"
+            )
+            
+            # Simple concatenation for now
+            if len(video_clips) == 1:
+                # Single video clip
+                input_video = video_clips[0]
+            else:
+                # Concatenate multiple clips
+                input_video = self._concatenate_video_clips(video_clips, session_context)
+                
+            # Ensure input_video is a string, not a list
+            if isinstance(input_video, list):
+                input_video = input_video[0] if input_video else ""
+            
+            if not input_video or not os.path.exists(input_video):
+                logger.error(f"❌ Invalid input video path: {input_video}")
+                raise VideoGenerationError("No valid video input available")
+            
+            # CRITICAL FIX: Create subtitle filter for FFmpeg
+            subtitle_filter = self._create_subtitle_filter(subtitle_segments)
+            
+            # Add audio if available
+            if audio_files:
+                audio_input = self._concatenate_audio_files(audio_files, session_context)
+                
+                # Ensure audio_input is a string, not a list
+                if isinstance(audio_input, list):
+                    audio_input = audio_input[0] if audio_input else ""
+                
+                if audio_input and os.path.exists(audio_input):
+                    # Combine video, audio, and subtitles
+                    if subtitle_filter:
+                        cmd = [
+                            'ffmpeg', '-y',
+                            '-i', input_video,
+                            '-i', audio_input,
+                            '-vf', subtitle_filter,
+                            '-c:a', 'aac',
+                            '-c:v', 'libx264',
+                            '-shortest',
+                            temp_output_path
+                        ]
+                    else:
+                        # No subtitles, just combine video and audio
+                        cmd = [
+                            'ffmpeg', '-y',
+                            '-i', input_video,
+                            '-i', audio_input,
+                            '-c:v', 'copy',
+                            '-c:a', 'aac',
+                            '-shortest',
+                            temp_output_path
+                        ]
+                    
+                    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+                    logger.info(f"✅ Combined video, audio, and subtitles: {temp_output_path}")
+                else:
+                    logger.warning("⚠️ Audio input invalid, creating video without audio")
+                    # Apply subtitles to video without audio
+                    if subtitle_filter:
+                        cmd = [
+                            'ffmpeg', '-y',
+                            '-i', input_video,
+                            '-vf', subtitle_filter,
+                            '-c:v', 'libx264',
+                            temp_output_path
+                        ]
+                    else:
+                        cmd = ['ffmpeg', '-y', '-i', input_video, '-c', 'copy', temp_output_path]
+                    
+                    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            else:
+                # Apply subtitles to video without audio
+                if subtitle_filter:
+                    cmd = [
+                        'ffmpeg', '-y',
+                        '-i', input_video,
+                        '-vf', subtitle_filter,
+                        '-c:v', 'libx264',
+                        temp_output_path
+                    ]
+                else:
+                    cmd = ['ffmpeg', '-y', '-i', input_video, '-c', 'copy', temp_output_path]
+                
+                result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            
+            # FIXED: Apply aspect ratio correction to ensure proper format for target platform
+            logger.info("🔧 Fixing aspect ratio for target platform")
+            corrected_video = self._fix_aspect_ratio(temp_output_path, config, session_context)
+            
+            # Copy to final output location
+            if corrected_video != final_output_path:
+                import shutil
+                shutil.copy2(corrected_video, final_output_path)
+            
+            logger.info(f"✅ Final video created: {final_output_path}")
+            return final_output_path
+            
+        except Exception as e:
+            logger.error(f"❌ Final video creation failed: {str(e)}")
+            raise VideoGenerationError(f"Final video creation failed: {str(e)}")
+
+    def _create_subtitle_filter(self, subtitle_segments: List[Dict[str, Any]]) -> str:
+        """Create FFmpeg subtitle filter from segments"""
+        if not subtitle_segments:
+            logger.info("📝 No subtitle segments provided")
+            return ""
+        
+        try:
+            # Create drawtext filters for each subtitle segment
+            filters = []
+            for i, segment in enumerate(subtitle_segments):
+                text = segment.get('text', '').strip()
+                if not text:
+                    continue
+                    
+                start_time = segment.get('start_time', 0)
+                end_time = segment.get('end_time', start_time + 3)
+                
+                # Escape text for FFmpeg
+                escaped_text = text.replace("'", "\\'").replace('"', '\\"').replace(':', '\\:')
+                
+                # Create drawtext filter with professional styling
+                filter_str = (
+                    f"drawtext=text='{escaped_text}'"
+                    ":fontsize=48"
+                    ":fontcolor=white"
+                    ":x=(w-text_w)/2"
+                    ":y=h-120"
+                    f":enable='between(t,{start_time},{end_time})'"
+                    ":box=1"
+                    ":boxcolor=black@0.7"
+                    ":boxborderw=10"
+                )
+                
+                filters.append(filter_str)
+                logger.info(f"📝 Added subtitle: '{text[:30]}...' ({start_time:.1f}s-{end_time:.1f}s)")
+            
+            if filters:
+                # Combine all filters with comma separation
+                combined_filter = ','.join(filters)
+                logger.info(f"📝 Created subtitle filter with {len(filters)} segments")
+                return combined_filter
+            else:
+                logger.warning("⚠️ No valid subtitle segments found")
+                return ""
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to create subtitle filter: {e}")
+            return ""
+
+    def _concatenate_video_clips(self, video_clips: List[str], session_context: SessionContext) -> str:
+        """Concatenate video clips into single video"""
+        try:
+            import subprocess
+            
+            # Ensure we have clips to concatenate
+            if not video_clips:
+                raise VideoGenerationError("No video clips to concatenate")
+            
+            if len(video_clips) == 1:
+                return video_clips[0]
+            
+            # Get temp directory path
+            temp_dir = session_context.get_output_path("temp")
+            if not temp_dir:
+                raise VideoGenerationError("Failed to get temp directory path")
+            
+            output_path = os.path.join(temp_dir, "concatenated_video.mp4")
+            concat_file = os.path.join(temp_dir, "concat_list.txt")
+            
+            # Verify all input clips exist
+            valid_clips = []
+            for clip in video_clips:
+                if os.path.exists(clip):
+                    valid_clips.append(clip)
+                else:
+                    logger.warning(f"⚠️ Video clip not found: {clip}")
+            
+            if not valid_clips:
+                raise VideoGenerationError("No valid video clips found")
+            
+            if len(valid_clips) == 1:
+                return valid_clips[0]
+            
+            # Create concat file with absolute paths
+            with open(concat_file, 'w') as f:
+                for clip in valid_clips:
+                    abs_path = os.path.abspath(clip)
+                    f.write(f"file '{abs_path}'\n")
+            
+            # Concatenate
+            cmd = [
+                'ffmpeg', '-y',
+                '-f', 'concat',
+                '-safe', '0',
+                '-i', concat_file,
+                '-c', 'copy',
+                output_path
+            ]
+            
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            
+            if os.path.exists(output_path):
+                return output_path
+            else:
+                raise VideoGenerationError("FFmpeg concatenation succeeded but output file not found")
+            
+        except subprocess.CalledProcessError as e:
+            logger.error(f"❌ FFmpeg concatenation failed: {e.stderr}")
+            logger.warning("🔄 Falling back to first valid clip")
+            return valid_clips[0] if 'valid_clips' in locals() and valid_clips else video_clips[0]
+        except Exception as e:
+            logger.error(f"❌ Video concatenation failed: {str(e)}")
+            return video_clips[0] if video_clips else ""
+
+    def _concatenate_audio_files(self, audio_files: List[str], session_context: SessionContext) -> str:
+        """Concatenate audio files into single audio"""
+        try:
+            import subprocess
+            
+            logger.info(f"🔍 DEBUG: Audio concatenation input type: {type(audio_files)}")
+            logger.info(f"🔍 DEBUG: Audio files: {audio_files}")
+            
+            # FIXED: Flatten any nested lists and ensure we have valid audio files
+            flat_audio_files = []
+            for audio in audio_files:
+                if isinstance(audio, list):
+                    # Handle nested lists by extracting the actual file path
+                    for nested_audio in audio:
+                        if isinstance(nested_audio, str) and os.path.exists(nested_audio):
+                            flat_audio_files.append(nested_audio)
+                elif isinstance(audio, str) and os.path.exists(audio):
+                    flat_audio_files.append(audio)
+            
+            logger.info(f"🔍 DEBUG: Flattened audio files: {flat_audio_files}")
+            
+            # Ensure we have audio files to concatenate
+            if not flat_audio_files:
+                logger.warning("⚠️ No valid audio files to concatenate")
+                return ""
+
+            if len(flat_audio_files) == 1:
+                logger.info(f"🎵 Single audio file, returning: {flat_audio_files[0]}")
+                return flat_audio_files[0]
+
+            # Get temp directory path
+            temp_dir = session_context.get_output_path("temp")
+            if not temp_dir:
+                logger.warning("⚠️ Failed to get temp directory, using first audio file")
+                return flat_audio_files[0]
+
+            output_path = os.path.join(temp_dir, "concatenated_audio.mp3")
+            concat_file = os.path.join(temp_dir, "audio_concat_list.txt")
+
+            # Create concat file with absolute paths
+            with open(concat_file, 'w') as f:
+                for audio in flat_audio_files:
+                    abs_path = os.path.abspath(audio)
+                    f.write(f"file '{abs_path}'\n")
+
+            # Concatenate using ffmpeg
+            cmd = [
+                'ffmpeg', '-y',
+                '-f', 'concat',
+                '-safe', '0',
+                '-i', concat_file,
+                '-c', 'copy',
+                output_path
+            ]
+
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            
+            if os.path.exists(output_path):
+                logger.info(f"✅ Audio concatenation successful: {output_path}")
+                return output_path
+            else:
+                logger.warning("⚠️ FFmpeg succeeded but no output file found, using first audio")
+                return flat_audio_files[0]
+
+        except subprocess.CalledProcessError as e:
+            logger.error(f"❌ FFmpeg audio concatenation failed: {e.stderr}")
+            logger.warning("🔄 Falling back to first valid audio file")
+            return flat_audio_files[0] if 'flat_audio_files' in locals() and flat_audio_files else ""
+        except Exception as e:
+            logger.error(f"❌ Audio concatenation failed: {str(e)}")
+            return flat_audio_files[0] if 'flat_audio_files' in locals() and flat_audio_files else ""
+
+    def _create_fallback_video_from_audio(self, audio_files: List[str], config: GeneratedVideoConfig,
+                                          session_context: SessionContext) -> str:
+        """Create a fallback video from audio files when no video clips are available"""
+        logger.info("🎨 Creating fallback video from audio files")
+        
+        if not audio_files:
+            logger.error("❌ No audio files available for fallback video")
+            return ""
+        
+        try:
+            # Create a simple colored video with audio
+            output_path = os.path.join(
+                session_context.get_output_path("final_output"),
+                f"fallback_video_{session_context.session_id}.mp4"
+            )
+            
+            # Concatenate audio files
+            audio_input = self._concatenate_audio_files(audio_files, session_context)
+            
+            # Create colored background video
+            import subprocess
+            cmd = [
+                'ffmpeg', '-y',
+                '-f', 'lavfi',
+                '-i', 'color=c=blue:s=1080x1920:d=60',  # 9:16 aspect ratio
+                '-i', audio_input,
+                '-c:v', 'libx264',
+                '-c:a', 'aac',
+                '-shortest',
+                output_path
+            ]
+            
+            subprocess.run(cmd, check=True, capture_output=True)
+            
+            logger.info(f"✅ Fallback video created: {output_path}")
+            return output_path
+            
+        except Exception as e:
+            logger.error(f"❌ Fallback video creation failed: {str(e)}")
+            return "" 
+
+    def _fix_aspect_ratio(self, video_path: str, config: GeneratedVideoConfig, session_context: SessionContext) -> str:
+        """Fix video aspect ratio to match the target platform requirements"""
+        try:
+            import subprocess
+            
+            # Get target resolution based on config
+            target_width, target_height = config.get_resolution()
+            target_aspect = config.get_aspect_ratio()
+            
+            logger.info(f"🔧 Fixing aspect ratio to {target_aspect} ({target_width}x{target_height})")
+            
+            # First, check current video dimensions
+            probe_cmd = [
+                'ffprobe', '-v', 'quiet', '-print_format', 'json', 
+                '-show_streams', video_path
+            ]
+            
+            probe_result = subprocess.run(probe_cmd, capture_output=True, text=True)
+            if probe_result.returncode == 0:
+                import json
+                probe_data = json.loads(probe_result.stdout)
+                video_stream = next((s for s in probe_data.get('streams', []) if s.get('codec_type') == 'video'), None)
+                if video_stream:
+                    current_width = int(video_stream.get('width', 0))
+                    current_height = int(video_stream.get('height', 0))
+                    current_aspect = current_width / current_height if current_height > 0 else 0
+                    target_aspect_ratio = target_width / target_height
+                    
+                    logger.info(f"📊 Current: {current_width}x{current_height} (aspect: {current_aspect:.2f})")
+                    logger.info(f"📊 Target: {target_width}x{target_height} (aspect: {target_aspect_ratio:.2f})")
+                    
+                    # If already correct aspect ratio, return original
+                    if abs(current_aspect - target_aspect_ratio) < 0.01:
+                        logger.info("✅ Video already has correct aspect ratio")
+                        return video_path
+            
+            # Get temp directory - handle different session context types
+            temp_dir = None
+            try:
+                if hasattr(session_context, 'get_output_path'):
+                    temp_dir = session_context.get_output_path("temp")
+                elif hasattr(session_context, 'session_id'):
+                    # Create temp directory manually
+                    temp_dir = os.path.join("data", "sessions", session_context.session_id, "temp")
+                    os.makedirs(temp_dir, exist_ok=True)
+                else:
+                    # Fallback - create temp dir next to video
+                    temp_dir = os.path.join(os.path.dirname(video_path), "temp")
+                    os.makedirs(temp_dir, exist_ok=True)
+            except Exception as e:
+                logger.warning(f"⚠️ Session context issue: {e}")
+                # Fallback - create temp dir next to video
+                temp_dir = os.path.join(os.path.dirname(video_path), "temp")
+                os.makedirs(temp_dir, exist_ok=True)
+                
+            if not temp_dir:
+                logger.warning("⚠️ No temp directory, skipping aspect ratio fix")
+                return video_path
+                
+            # Create unique output path to avoid conflicts
+            base_name = os.path.splitext(os.path.basename(video_path))[0]
+            output_path = os.path.join(temp_dir, f"fixed_aspect_{base_name}_{int(time.time())}.mp4")
+            
+            # Use ffmpeg to fix aspect ratio with proper scaling and cropping for mobile format
+            # For 9:16 (portrait), we want to crop from center if source is landscape
+            if target_aspect == "9:16":
+                # Portrait target - crop and scale appropriately
+                cmd = [
+                    'ffmpeg', '-y',
+                    '-i', video_path,
+                    '-vf', f'scale={target_width}:{target_height}:force_original_aspect_ratio=increase,crop={target_width}:{target_height}',
+                    '-c:a', 'copy',  # Copy audio without re-encoding
+                    '-preset', 'fast',  # Faster encoding
+                    output_path
+                ]
+            else:
+                # Landscape or other - use padding approach
+                cmd = [
+                    'ffmpeg', '-y',
+                    '-i', video_path,
+                    '-vf', f'scale={target_width}:{target_height}:force_original_aspect_ratio=decrease,pad={target_width}:{target_height}:(ow-iw)/2:(oh-ih)/2:black',
+                    '-c:a', 'copy',  # Copy audio without re-encoding
+                    '-preset', 'fast',  # Faster encoding
+                    output_path
+                ]
+            
+            logger.info(f"🔧 Running ffmpeg aspect ratio correction...")
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+            
+            if os.path.exists(output_path):
+                # Verify the output has correct dimensions
+                verify_result = subprocess.run(probe_cmd[:-1] + [output_path], capture_output=True, text=True)
+                if verify_result.returncode == 0:
+                    verify_data = json.loads(verify_result.stdout)
+                    verify_stream = next((s for s in verify_data.get('streams', []) if s.get('codec_type') == 'video'), None)
+                    if verify_stream:
+                        final_width = int(verify_stream.get('width', 0))
+                        final_height = int(verify_stream.get('height', 0))
+                        logger.info(f"✅ Aspect ratio fixed: {final_width}x{final_height} -> {output_path}")
+                        return output_path
+                
+                logger.info(f"✅ Aspect ratio fixed: {output_path}")
+                return output_path
+            else:
+                logger.warning("⚠️ Aspect ratio fix failed, using original")
+                return video_path
+                
+        except subprocess.CalledProcessError as e:
+            logger.error(f"❌ FFmpeg aspect ratio fix failed: {e.stderr}")
+            return video_path
+        except Exception as e:
+            logger.error(f"❌ Aspect ratio fix failed: {str(e)}")
+            return video_path 

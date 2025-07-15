@@ -1,6 +1,7 @@
 """
 Session Manager - Comprehensive session organization system
-Creates dedicated folders for each session with all logs, data, AI agent outputs, and generated content
+Creates dedicated folders for each session with all logs, data, AI agent outputs, and
+        generated content
 Enhanced to ensure 100% file capture and organization
 """
 
@@ -17,26 +18,30 @@ from .logging_config import get_logger
 
 logger = get_logger(__name__)
 
-
 class SessionManager:
     """Manages session organization and data storage with comprehensive file tracking"""
-    
+
     def __init__(self, base_output_dir: str = "outputs"):
         self.base_output_dir = base_output_dir
         self.current_session = None
         self.session_data = {}
         self.tracked_files = {}  # Track all files created during session
-        
-    def create_session(self, topic: str, platform: str, duration: int, category: str) -> str:
+
+    def create_session(
+        self,
+        topic: str,
+        platform: str,
+        duration: int,
+        category: str) -> str:
         """Create a new session with organized folder structure"""
-        
+
         # Generate session ID
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         session_id = f"session_{timestamp}"
-        
+
         # Create session directory structure
         session_dir = os.path.join(self.base_output_dir, session_id)
-        
+
         # Create all subdirectories - COMPREHENSIVE LIST
         subdirs = [
             "logs",                    # All log files
@@ -57,10 +62,10 @@ class SessionManager:
             "error_logs",              # Error-specific logs
             "success_metrics"          # Success tracking metrics
         ]
-        
+
         for subdir in subdirs:
             os.makedirs(os.path.join(session_dir, subdir), exist_ok=True)
-        
+
         # Initialize session data
         self.current_session = session_id
         self.session_data = {
@@ -81,19 +86,19 @@ class SessionManager:
             "total_files_created": 0,
             "comprehensive_logger": None
         }
-        
+
         # Initialize comprehensive logger for this session
         self._initialize_comprehensive_logger()
-        
+
         # Save session metadata
         self._save_session_metadata()
-        
+
         logger.info(f"📁 Created session: {session_id}")
         logger.info(f"📂 Session directory: {session_dir}")
         logger.info(f"📊 Subdirectories created: {len(subdirs)}")
-        
+
         return session_id
-    
+
     def _initialize_comprehensive_logger(self):
         """Initialize comprehensive logger for this session"""
         try:
@@ -105,26 +110,40 @@ class SessionManager:
             logger.info("📊 Comprehensive logger initialized for session")
         except Exception as e:
             logger.warning(f"Failed to initialize comprehensive logger: {e}")
-    
+
+    @staticmethod
+    def get_static_session_path(session_id: str, subdir: str = None) -> str:
+        """Get path for session or specific subdirectory (static method)"""
+        base_session_dir = os.path.join("outputs", "sessions", session_id)
+        
+        if subdir:
+            return os.path.join(base_session_dir, subdir)
+        else:
+            return base_session_dir
+
     def get_session_path(self, subdir: str = None) -> str:
         """Get path for session or specific subdirectory"""
         if not self.current_session:
             raise ValueError("No active session")
-        
+
         if subdir:
             return self.session_data["subdirs"][subdir]
         return self.session_data["session_dir"]
-    
-    def track_file(self, file_path: str, file_type: str, source: str = "system") -> str:
-        """Track a file created during session and ensure it's in the session directory"""
+
+    def track_file(
+        self,
+        file_path: str,
+        file_type: str,
+        source: str = "system") -> str:
+        """Track a file created during session and ensure it is in the session directory"""
         if not self.current_session:
             return file_path
-        
+
         try:
             # Determine target subdirectory based on file type
             subdir_mapping = {
                 "script": "scripts",
-                "audio": "audio", 
+                "audio": "audio",
                 "video_clip": "video_clips",
                 "image": "images",
                 "log": "logs",
@@ -140,9 +159,9 @@ class SessionManager:
                 "config": "user_configs",
                 "error": "error_logs"
             }
-            
+
             target_subdir = subdir_mapping.get(file_type, "temp_files")
-            
+
             # If file is already in session directory, just track it
             session_dir = self.session_data["session_dir"]
             if file_path.startswith(session_dir):
@@ -155,24 +174,24 @@ class SessionManager:
                 self.session_data["file_counts"][target_subdir] += 1
                 self.session_data["total_files_created"] += 1
                 return file_path
-            
+
             # Move file to session directory
             target_dir = self.get_session_path(target_subdir)
             filename = os.path.basename(file_path)
-            
+
             # Handle duplicate filenames
             counter = 1
             base_name, ext = os.path.splitext(filename)
             while os.path.exists(os.path.join(target_dir, filename)):
                 filename = f"{base_name}_{counter}{ext}"
                 counter += 1
-            
+
             target_path = os.path.join(target_dir, filename)
-            
+
             # Copy/move file
             if os.path.exists(file_path):
                 shutil.copy2(file_path, target_path)
-                
+
                 # Track the file
                 self.tracked_files[target_path] = {
                     "type": file_type,
@@ -181,175 +200,188 @@ class SessionManager:
                     "original_path": file_path,
                     "subdir": target_subdir
                 }
-                
+
                 self.session_data["file_counts"][target_subdir] += 1
                 self.session_data["total_files_created"] += 1
-                
+
                 logger.info(f"📁 Tracked {file_type} file: {filename} -> {target_subdir}/")
-                
+
                 return target_path
             else:
                 logger.warning(f"⚠️ File not found for tracking: {file_path}")
                 return file_path
-                
+
         except Exception as e:
             logger.error(f"❌ Failed to track file {file_path}: {e}")
             return file_path
-    
+
     def log_ai_decision(self, agent_name: str, decision_data: Dict[str, Any]):
         """Log AI agent decision to session"""
         if not self.current_session:
             return
-        
+
         decision_entry = {
             "timestamp": datetime.now().isoformat(),
             "agent": agent_name,
             "decision": decision_data
         }
-        
+
         self.session_data["ai_decisions"][agent_name] = decision_entry
-        
+
         # Save to AI agents directory
-        agent_file = os.path.join(self.get_session_path("ai_agents"), f"{agent_name}_decision.json")
+        agent_file = os.path.join(
+            self.get_session_path("ai_agents"),
+            f"{agent_name}_decision.json")
         with open(agent_file, 'w') as f:
             json.dump(decision_entry, f, indent=2)
-        
+
         # Track the file
         self.track_file(agent_file, "ai_decision", agent_name)
-        
+
         logger.info(f"💾 Logged {agent_name} decision to session")
-    
-    def save_discussion(self, discussion_data: Dict[str, Any], discussion_id: str) -> str:
+
+    def save_discussion(
+        self,
+        discussion_data: Dict[str,
+        Any],
+        discussion_id: str) -> str:
         """Save AI agent discussion to session"""
         if not self.current_session:
             return ""
-        
+
         discussion_file = os.path.join(
-            self.get_session_path("discussions"), 
+            self.get_session_path("discussions"),
             f"discussion_{discussion_id}.json"
         )
-        
+
         with open(discussion_file, 'w') as f:
             json.dump(discussion_data, f, indent=2, default=str)
-        
+
         # Track the file
         self.track_file(discussion_file, "discussion", "MultiAgentDiscussion")
-        
+
         logger.info(f"💾 Saved discussion to session: {discussion_id}")
         return discussion_file
-    
+
     def save_script(self, script_content: str, script_type: str = "main") -> str:
         """Save script to session"""
         if not self.current_session:
             return ""
-        
+
         # Handle different script formats
         if isinstance(script_content, dict):
-            script_file = os.path.join(self.get_session_path("scripts"), f"{script_type}_script.json")
+            script_file = os.path.join(
+                self.get_session_path("scripts"),
+                f"{script_type}_script.json")
             with open(script_file, 'w') as f:
                 json.dump(script_content, f, indent=2)
         else:
-            script_file = os.path.join(self.get_session_path("scripts"), f"{script_type}_script.txt")
+            script_file = os.path.join(
+                self.get_session_path("scripts"),
+                f"{script_type}_script.txt")
             with open(script_file, 'w') as f:
                 f.write(str(script_content))
-        
+
         # Track the file
         self.track_file(script_file, "script", "ScriptProcessor")
-        
+
         logger.info(f"💾 Saved {script_type} script to session")
         return script_file
-    
+
     def save_audio(self, audio_path: str, clip_id: str) -> str:
         """Save audio file to session"""
         if not self.current_session:
             return audio_path
-        
+
         session_audio_dir = self.get_session_path("audio")
         filename = f"audio_clip_{clip_id}.mp3"
         session_audio_path = os.path.join(session_audio_dir, filename)
-        
+
         if os.path.exists(audio_path):
             shutil.copy2(audio_path, session_audio_path)
             self.track_file(session_audio_path, "audio", "TTS")
             logger.info(f"💾 Saved audio clip {clip_id} to session")
             return session_audio_path
-        
+
         return audio_path
-    
+
     def save_video_clip(self, video_path: str, clip_id: str) -> str:
         """Save video clip to session"""
         if not self.current_session:
             return video_path
-        
+
         session_video_dir = self.get_session_path("video_clips")
         filename = f"video_clip_{clip_id}.mp4"
         session_video_path = os.path.join(session_video_dir, filename)
-        
+
         if os.path.exists(video_path):
             shutil.copy2(video_path, session_video_path)
             self.track_file(session_video_path, "video_clip", "VEO/Gemini")
             logger.info(f"💾 Saved video clip {clip_id} to session")
             return session_video_path
-        
+
         return video_path
-    
+
     def save_image(self, image_path: str, image_id: str) -> str:
         """Save image to session"""
         if not self.current_session:
             return image_path
-        
+
         session_images_dir = self.get_session_path("images")
-        
+
         # Determine file extension
         _, ext = os.path.splitext(image_path)
         if not ext:
             ext = ".jpg"
-        
+
         filename = f"image_{image_id}{ext}"
         session_image_path = os.path.join(session_images_dir, filename)
-        
+
         if os.path.exists(image_path):
             shutil.copy2(image_path, session_image_path)
             self.track_file(session_image_path, "image", "Gemini")
             logger.info(f"💾 Saved image {image_id} to session")
             return session_image_path
-        
+
         return image_path
-    
+
     def save_final_video(self, video_path: str) -> str:
         """Save final video to session"""
         if not self.current_session:
             return video_path
-        
+
         session_final_dir = self.get_session_path("final_output")
+        # Ensure directory exists
+        os.makedirs(session_final_dir, exist_ok=True)
+        
         filename = f"final_video_{self.current_session}.mp4"
         session_final_path = os.path.join(session_final_dir, filename)
-        
+
         if os.path.exists(video_path):
             shutil.copy2(video_path, session_final_path)
             self.track_file(session_final_path, "final_video", "VideoComposer")
-            logger.info(f"💾 Saved final video to session")
+            logger.info("💾 Saved final video to session")
             return session_final_path
-        
+
         return video_path
-    
+
     def copy_logs_to_session(self):
         """Copy current log files to session"""
         if not self.current_session:
             return
-        
+
         session_logs_dir = self.get_session_path("logs")
-        
+
         # Copy main log files
         log_patterns = [
             "logs/*.log",
-            "logs/*.txt", 
+            "logs/*.txt",
             "*.log",
             "generation.log",
             "error.log",
             "debug.log"
         ]
-        
+
         copied_count = 0
         for pattern in log_patterns:
             for log_file in glob.glob(pattern):
@@ -359,24 +391,24 @@ class SessionManager:
                     shutil.copy2(log_file, session_log_path)
                     self.track_file(session_log_path, "log", "System")
                     copied_count += 1
-        
+
         logger.info(f"💾 Copied {copied_count} log files to session")
-    
+
     def collect_temp_files(self):
         """Collect temporary files that might have been created outside session"""
         if not self.current_session:
             return
-        
+
         temp_patterns = [
             "/tmp/viral_*",
-            "/tmp/veo_*", 
+            "/tmp/veo_*",
             "/tmp/gemini_*",
             "/tmp/tts_*",
             "/var/folders/*/viral_*",
             "temp_*",
             "*.tmp"
         ]
-        
+
         collected_count = 0
         for pattern in temp_patterns:
             for temp_file in glob.glob(pattern):
@@ -392,26 +424,26 @@ class SessionManager:
                             file_type = "image"
                         else:
                             file_type = "temp"
-                        
+
                         self.track_file(temp_file, file_type, "TempCollector")
                         collected_count += 1
                     except Exception as e:
                         logger.warning(f"Failed to collect temp file {temp_file}: {e}")
-        
+
         if collected_count > 0:
             logger.info(f"🧹 Collected {collected_count} temporary files to session")
-    
+
     def finalize_session(self) -> str:
         """Finalize session and return summary"""
         if not self.current_session:
             return "No active session"
-        
+
         # Collect any remaining temp files
         self.collect_temp_files()
-        
+
         # Copy final logs
         self.copy_logs_to_session()
-        
+
         # Finalize comprehensive logger if available
         if self.session_data.get("comprehensive_logger"):
             try:
@@ -421,7 +453,7 @@ class SessionManager:
                 )
             except Exception as e:
                 logger.warning(f"Failed to finalize comprehensive logger: {e}")
-        
+
         # Create comprehensive session summary
         summary = {
             "session_id": self.current_session,
@@ -437,103 +469,129 @@ class SessionManager:
             "session_directory": self.session_data["session_dir"],
             "tracked_files": len(self.tracked_files)
         }
-        
+
         # Save final summary
-        summary_file = os.path.join(self.get_session_path("metadata"), "session_summary.json")
+        summary_file = os.path.join(
+            self.get_session_path("metadata"),
+            "session_summary.json")
         with open(summary_file, 'w') as f:
             json.dump(summary, f, indent=2)
-        
+
         # Save detailed file tracking
-        tracking_file = os.path.join(self.get_session_path("metadata"), "file_tracking.json")
+        tracking_file = os.path.join(
+            self.get_session_path("metadata"),
+            "file_tracking.json")
         with open(tracking_file, 'w') as f:
             json.dump(self.tracked_files, f, indent=2, default=str)
-        
+
         logger.info(f"✅ Finalized session: {self.current_session}")
-        logger.info(f"📊 Summary: {summary['total_ai_decisions']} AI decisions, {summary['total_generation_steps']} steps, {summary['total_errors']} errors")
-        logger.info(f"📁 Files created: {summary['total_files_created']} total, {summary['tracked_files']} tracked")
-        
+        logger.info(
+            f"📊 Summary: {summary['total_ai_decisions']} AI decisions,"
+            f"{summary['total_generation_steps']} steps, "
+            f"{summary['total_errors']} errors")
+        logger.info(
+            f"📁 Files created: {summary['total_files_created']} total,"
+            f"{summary['tracked_files']} tracked")
+
         session_dir = self.session_data["session_dir"]
         self.current_session = None
         self.session_data = {}
         self.tracked_files = {}
-        
+
         return session_dir
-    
+
     def _save_session_metadata(self):
         """Save session metadata to file"""
         if not self.current_session:
             return
-        
-        metadata_file = os.path.join(self.get_session_path("metadata"), "session_metadata.json")
-        
+
+        metadata_file = os.path.join(
+            self.get_session_path("metadata"),
+            "session_metadata.json")
+
         # Create serializable session data
         serializable_data = {
             key: value for key, value in self.session_data.items()
             if key != "comprehensive_logger"  # Skip non-serializable objects
         }
-        
+
         with open(metadata_file, 'w') as f:
             json.dump(serializable_data, f, indent=2, default=str)
-    
-    def log_generation_step(self, step: str, status: str, details: Dict[str, Any] = None):
+
+    def log_generation_step(
+        self,
+        step: str,
+        status: str,
+        details: Dict[str,
+        Any] = None):
         """Log generation step to session"""
         if not self.current_session:
             return
-        
+
         log_entry = {
             "timestamp": datetime.now().isoformat(),
             "step": step,
             "status": status,
             "details": details or {}
         }
-        
+
         self.session_data["generation_log"].append(log_entry)
         self._save_session_metadata()
-        
+
         logger.info(f"📝 Logged generation step: {step} - {status}")
-    
-    def log_error(self, error_type: str, error_message: str, details: Dict[str, Any] = None):
+
+    def log_error(
+        self,
+        error_type: str,
+        error_message: str,
+        details: Dict[str,
+        Any] = None):
         """Log error to session"""
         if not self.current_session:
             return
-        
+
         error_entry = {
             "timestamp": datetime.now().isoformat(),
             "type": error_type,
             "message": error_message,
             "details": details or {}
         }
-        
+
         self.session_data["errors"].append(error_entry)
         self._save_session_metadata()
-        
+
         logger.error(f"❌ Logged session error: {error_type} - {error_message}")
-    
-    def log_warning(self, warning_type: str, warning_message: str, details: Dict[str, Any] = None):
+
+    def log_warning(
+        self,
+        warning_type: str,
+        warning_message: str,
+        details: Dict[str,
+        Any] = None):
         """Log warning to session"""
         if not self.current_session:
             return
-        
+
         warning_entry = {
             "timestamp": datetime.now().isoformat(),
             "type": warning_type,
             "message": warning_message,
             "details": details or {}
         }
-        
+
         self.session_data["warnings"].append(warning_entry)
         self._save_session_metadata()
-        
+
         logger.warning(f"⚠️ Logged session warning: {warning_type} - {warning_message}")
 
     def get_session_info(self, session_id: str = None) -> Dict[str, Any]:
         """Get information about a session"""
         if session_id is None:
             session_id = self.current_session
-        
+
         if not session_id:
             raise ValueError("No session ID provided and no active session")
-        
+
         # If this is the current session, return stored data
         if session_id == self.current_session and self.session_data:
             session_info = {
@@ -550,7 +608,7 @@ class SessionManager:
                 "warnings": self.session_data.get("warnings", []),
                 "is_active": True
             }
-            
+
             # Count files in session
             session_dir = self.session_data.get("session_dir", "")
             if os.path.exists(session_dir):
@@ -558,19 +616,19 @@ class SessionManager:
                 for root, dirs, files in os.walk(session_dir):
                     total_files += len(files)
                 session_info["total_files"] = total_files
-            
+
             return session_info
-        
+
         # For non-current sessions, construct from directory
         session_dir = os.path.join(self.base_output_dir, session_id)
         if not os.path.exists(session_dir):
             raise ValueError(f"Session {session_id} not found")
-        
+
         # Count files in session
         total_files = 0
         for root, dirs, files in os.walk(session_dir):
             total_files += len(files)
-        
+
         return {
             "session_id": session_id,
             "session_dir": session_dir,
@@ -586,14 +644,17 @@ class SessionManager:
             "errors": [],
             "warnings": []
         }
-    
-    def cleanup_session(self, session_id: str, keep_final_output: bool = True) -> bool:
+
+    def cleanup_session(
+        self,
+        session_id: str,
+        keep_final_output: bool = True) -> bool:
         """Clean up session files"""
         try:
             session_dir = os.path.join(self.base_output_dir, session_id)
             if not os.path.exists(session_dir):
                 return False
-            
+
             if keep_final_output:
                 # Keep final_output directory, clean everything else
                 final_output_dir = os.path.join(session_dir, "final_output")
@@ -601,10 +662,10 @@ class SessionManager:
                     # Move final output to temp location
                     temp_final = os.path.join(self.base_output_dir, f"temp_final_{session_id}")
                     shutil.move(final_output_dir, temp_final)
-                    
+
                     # Remove session directory
                     shutil.rmtree(session_dir)
-                    
+
                     # Recreate session directory with just final output
                     os.makedirs(session_dir, exist_ok=True)
                     shutil.move(temp_final, final_output_dir)
@@ -614,13 +675,11 @@ class SessionManager:
             else:
                 # Remove everything
                 shutil.rmtree(session_dir)
-            
+
             return True
         except Exception as e:
             logger.error(f"Failed to cleanup session {session_id}: {e}")
             return False
 
-
 # Global session manager instance
 session_manager = SessionManager()
-

@@ -1,7 +1,6 @@
 from src.services.monitoring_service import MonitoringService
 from src.services.file_service import FileService
 
-
 class DirectorAgent:
     def __init__(self, session_id):
         self.session_id = session_id
@@ -21,4 +20,3 @@ class DirectorAgent:
         self.file_service.save_json("storyboard.json", storyboard)
         self.monitoring_service.log("DirectorAgent: Storyboard creation complete.")
         return storyboard
-

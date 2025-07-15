@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Viral Video Generation Workflow
-Advanced AI-powered video generation with multi-agent discussions and VEO2/3 support
+Advanced AI-powered video generation with multi-agent discussions and
+        VEO2/3 support
 """
 
 import os
@@ -14,14 +15,16 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.agents.working_orchestrator import WorkingOrchestrator, OrchestratorMode
-from src.models.video_models import GeneratedVideoConfig, Platform, VideoCategory
+from src.models.video_models import (
+    GeneratedVideoConfig,
+    Platform,
+    VideoCategory
+)
 from src.utils.logging_config import get_logger
 from src.utils.session_manager import session_manager
 
 logger = get_logger(__name__)
-
-
-def main(mission: str, category: str = "Comedy", platform: str = "youtube", 
+def main(mission: str, category: str = "Comedy", platform: str = "youtube",
          duration: int = 20, image_only: bool = False, fallback_only: bool = False,
          force: bool = False, discussions: str = "enhanced", discussion_log: bool = False,
          session_id: Optional[str] = None, frame_continuity: str = "auto",
@@ -30,7 +33,7 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
          mode: str = "enhanced", **kwargs):
     """
     Main video generation workflow
-    
+
     Args:
         mission: Video mission/topic
         category: Video category
@@ -38,7 +41,7 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
         duration: Video duration in seconds
         image_only: Force image-only generation
         fallback_only: Use fallback generation only
-        force: Force generation even with quota warnings
+        force: Force generation even with quota warnings:
         discussions: AI agent discussion mode
         discussion_log: Show detailed discussion logs
         session_id: Custom session ID
@@ -49,16 +52,16 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
         visual_style: Visual style
         mode: Orchestrator mode
     """
-    
+
     start_time = time.time()
-    
+
     logger.info(f"🎯 Generating {category} video for mission: {mission}")
     logger.info(f"📱 Platform: {platform}")
     logger.info(f"⏱️ Duration: {duration} seconds")
     logger.info(f"🎭 Mode: {mode} ({_get_agent_count(mode)} agents with discussions)")
     logger.info(f"🎬 Frame Continuity: {_get_frame_continuity_emoji(frame_continuity)} {frame_continuity.title()}")
     logger.info(f"🤖 AI System: 🎯 {discussions.title()} ({_get_agent_count(mode)} agents with discussions, best viral content)")
-    
+
     try:
         # Create config dictionary for orchestrator
         config = {
@@ -73,7 +76,7 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
             "use_subtitle_overlays": True,
             "frame_continuity": frame_continuity == "on" or (frame_continuity == "auto")
         }
-        
+
         # Initialize working orchestrator
         orchestrator = WorkingOrchestrator(
             api_key=os.getenv('GOOGLE_API_KEY'),
@@ -87,36 +90,34 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
             visual_style=visual_style or "dynamic",
             mode=OrchestratorMode(mode.lower()) if mode else OrchestratorMode.ENHANCED
         )
-        
+
         # Generate video
         logger.info("🎬 Starting enhanced AI agent video generation")
         result = orchestrator.generate_video(config)
-        
+
         generation_time = time.time() - start_time
-        
         if result and hasattr(result, 'file_path') and result.file_path:
             logger.info(f"✅ Video generation completed in {generation_time:.1f}s")
             logger.info(f"📁 Output: {result.file_path}")
-            
+
             # Get session summary
             if hasattr(result, 'session_id'):
                 try:
                     session_info = session_manager.get_session_path(result.session_id)
                     logger.info(f"📊 Session: {result.session_id}")
                     logger.info(f"📂 Session Directory: {session_info}")
-                except:
+                except Exception:
                     pass
-            
+
             return result.file_path
         else:
             logger.error(f"❌ Video generation failed after {generation_time:.1f}s")
             return None
-            
+
     except Exception as e:
         generation_time = time.time() - start_time
         logger.error(f"❌ Video generation failed after {generation_time:.1f}s: {e}")
         raise
-
 
 def _get_agent_count(mode: str) -> int:
     """Get number of agents for mode"""
@@ -129,16 +130,14 @@ def _get_agent_count(mode: str) -> int:
     }
     return agent_counts.get(mode, 7)
 
-
 def _get_frame_continuity_emoji(mode: str) -> str:
     """Get emoji for frame continuity mode"""
     emojis = {
         "auto": "🤖 AI Agent Decision",
         "on": "✅ ENABLED",
-        "off": "❌ DISABLED"
+        "of": "❌ DISABLED"
     }
     return emojis.get(mode, "🤖 AI Agent Decision")
-
 
 if __name__ == "__main__":
     # Example usage
@@ -148,4 +147,3 @@ if __name__ == "__main__":
         duration=20,
         category="Comedy"
     )
-

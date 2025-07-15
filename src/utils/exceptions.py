@@ -5,7 +5,6 @@ from typing import Optional, Dict, Any
 import traceback
 from datetime import datetime
 
-
 class VVGException(Exception):
     """Base exception class for Viral Video Generator"""
 
@@ -30,11 +29,9 @@ class VVGException(Exception):
 
 # API Related Exceptions
 
-
 class APIException(VVGException):
     """Base exception for API-related errors"""
     pass
-
 
 class RateLimitError(APIException):
     """Raised when API rate limit is exceeded"""
@@ -46,7 +43,6 @@ class RateLimitError(APIException):
         )
         self.retry_after = retry_after
 
-
 class AuthenticationError(APIException):
     """Raised when API authentication fails"""
 
@@ -56,7 +52,6 @@ class AuthenticationError(APIException):
             context={'platform': platform, 'details': details}
         )
 
-
 class QuotaExceededError(APIException):
     """Raised when API quota is exceeded"""
 
@@ -65,7 +60,6 @@ class QuotaExceededError(APIException):
             f"API quota exceeded for {platform}",
             context={'platform': platform, 'quota_reset': quota_reset}
         )
-
 
 class PlatformUnavailableError(APIException):
     """Raised when platform API is unavailable"""
@@ -78,11 +72,9 @@ class PlatformUnavailableError(APIException):
 
 # Processing Exceptions
 
-
 class ProcessingError(VVGException):
     """Base exception for processing errors"""
     pass
-
 
 class AnalysisFailedError(ProcessingError):
     """Raised when video analysis fails"""
@@ -93,7 +85,6 @@ class AnalysisFailedError(ProcessingError):
             context={'video_id': video_id, 'reason': reason}
         )
 
-
 class GenerationFailedError(ProcessingError):
     """Raised when video generation fails"""
 
@@ -103,7 +94,6 @@ class GenerationFailedError(ProcessingError):
             context={'stage': stage, 'reason': reason}
         )
 
-
 class RenderingError(ProcessingError):
     """Raised when video rendering fails"""
 
@@ -112,7 +102,6 @@ class RenderingError(ProcessingError):
             f"Rendering failed for video {video_id}: {details}",
             context={'video_id': video_id, 'details': details}
         )
-
 
 class InvalidDataError(ProcessingError):
     """Raised when data validation fails"""
@@ -125,11 +114,9 @@ class InvalidDataError(ProcessingError):
 
 # System Exceptions
 
-
 class SystemError(VVGException):
     """Base exception for system errors"""
     pass
-
 
 class StorageError(SystemError):
     """Raised when storage operations fail"""
@@ -140,7 +127,6 @@ class StorageError(SystemError):
             context={'operation': operation, 'path': path, 'reason': reason}
         )
 
-
 class NetworkError(SystemError):
     """Raised when network operations fail"""
 
@@ -150,7 +136,6 @@ class NetworkError(SystemError):
             context={'operation': operation, 'details': details}
         )
 
-
 class ConfigurationError(SystemError):
     """Raised when configuration is invalid"""
 
@@ -159,7 +144,6 @@ class ConfigurationError(SystemError):
             f"Invalid configuration for {config_key}: {reason}",
             context={'config_key': config_key, 'reason': reason}
         )
-
 
 class DependencyError(SystemError):
     """Raised when external dependency fails"""
@@ -172,11 +156,9 @@ class DependencyError(SystemError):
 
 # Content Exceptions
 
-
 class ContentError(VVGException):
     """Base exception for content-related errors"""
     pass
-
 
 class ContentPolicyViolation(ContentError):
     """Raised when content violates platform policy"""
@@ -191,7 +173,6 @@ class ContentPolicyViolation(ContentError):
             }
         )
 
-
 class CopyrightViolation(ContentError):
     """Raised when copyright content is detected"""
 
@@ -202,7 +183,6 @@ class CopyrightViolation(ContentError):
         )
 
 # Retry and Recovery
-
 
 class RetryableError(VVGException):
     """Base class for errors that can be retried"""
@@ -219,4 +199,3 @@ class RetryableError(VVGException):
     def increment_retry(self):
         """Increment retry counter"""
         self.retry_count += 1
-

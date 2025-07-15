@@ -22,7 +22,10 @@ class VideoAnalyzer:
         self.model = genai.GenerativeModel(model_name)
         self.youtube_scraper = None  # Will be initialized if needed
 
-    def analyze_video(self, video: TrendingVideo, fetch_comments: bool = True) -> VideoAnalysis:
+    def analyze_video(
+        self,
+        video: TrendingVideo,
+        fetch_comments: bool = True) -> VideoAnalysis:
         """
         Analyze a single video for viral factors
 
@@ -63,7 +66,10 @@ class VideoAnalyzer:
                 emotional_tone=ai_insights.get('emotional_tone', 'neutral'),
                 target_audience=ai_insights.get('target_audience', 'general'),
                 key_moments=ai_insights.get('key_moments', []),
-                viral_score=self._calculate_viral_score(video, viral_velocity, engagement_rate),
+                viral_score=self._calculate_viral_score(
+                    video,
+                    viral_velocity,
+                    engagement_rate),
                 viral_velocity=viral_velocity,
                 engagement_rate=engagement_rate,
                 title_keywords=self._extract_keywords(video.title),
@@ -88,9 +94,12 @@ class VideoAnalyzer:
             logger.error(f"Error analyzing video {video.video_id}: {e}")
             raise
 
-    def _prepare_analysis_context(self, video: TrendingVideo, comments_data: Dict) -> str:
+    def _prepare_analysis_context(
+        self,
+        video: TrendingVideo,
+        comments_data: Dict) -> str:
         """Prepare context string for AI analysis"""
-        context = f"""
+        context = """
         Analyze this viral video:
 
         Title: {video.title}
@@ -119,7 +128,7 @@ class VideoAnalyzer:
 
     def _get_ai_analysis(self, context: str) -> Dict[str, Any]:
         """Get AI analysis using Gemini with robust JSON parsing"""
-        prompt = f"""
+        prompt = """
         {context}
 
         Analyze this video and return your insights as a JSON object.
@@ -262,7 +271,11 @@ class VideoAnalyzer:
             "improvement_suggestions": ["optimize for target audience"]
         }
 
-    def _calculate_viral_score(self, video: TrendingVideo, viral_velocity: float, engagement_rate: float) -> float:
+    def _calculate_viral_score(
+        self,
+        video: TrendingVideo,
+        viral_velocity: float,
+        engagement_rate: float) -> float:
         """Calculate viral score (0-1) based on multiple factors"""
         score = 0.0
 
@@ -309,9 +322,11 @@ class VideoAnalyzer:
     def _extract_keywords(self, title: str) -> List[str]:
         """Extract keywords from title"""
         # Remove common words and extract significant terms
-        common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'}
+        common_words = {'the', 'a', 'an', 'and',
+             'or', 'but', 'in', 'on', 'at', 'to', 'for', 'o', 'with', 'by'}
         words = re.findall(r'\b\w+\b', title.lower())
-        keywords = [word for word in words if word not in common_words and len(word) > 2]
+        keywords = [word for word in words if word not in common_words and
+                len(word) > 2]
         return keywords
 
     def _detect_cta(self, title: str, description: str) -> bool:
@@ -327,7 +342,10 @@ class VideoAnalyzer:
                 return True
         return False
 
-    def _fetch_youtube_comments(self, video_id: str, max_comments: int = 100) -> Dict[str, Any]:
+    def _fetch_youtube_comments(
+        self,
+        video_id: str,
+        max_comments: int = 100) -> Dict[str, Any]:
         """Fetch and analyze YouTube comments"""
         # This would use YouTube API to fetch comments
         # For now, returning placeholder data
@@ -341,7 +359,10 @@ class VideoAnalyzer:
             ]
         }
 
-    def batch_analyze(self, videos: List[TrendingVideo], fetch_comments: bool = True) -> List[VideoAnalysis]:
+    def batch_analyze(
+        self,
+        videos: List[TrendingVideo],
+        fetch_comments: bool = True) -> List[VideoAnalysis]:
         """Analyze multiple videos in batch"""
         analyses = []
         for video in videos:
@@ -354,7 +375,9 @@ class VideoAnalyzer:
 
         return analyses
 
-    def generate_insights_report(self, analyses: List[VideoAnalysis]) -> Dict[str, Any]:
+    def generate_insights_report(
+        self,
+        analyses: List[VideoAnalysis]) -> Dict[str, Any]:
         """Generate insights report from multiple video analyses"""
         if not analyses:
             return {}
@@ -405,4 +428,3 @@ class VideoAnalyzer:
         hooks = [a.hook_analysis for a in analyses if a.hook_analysis]
         # Would need more sophisticated analysis
         return hooks[:5]
-

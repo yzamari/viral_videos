@@ -8,19 +8,18 @@ from typing import Dict, Any
 from ...core.interfaces.services import ScriptGenerationService
 from ...core.entities.video_entity import Platform
 
-
 class ExistingScriptGenerationService(ScriptGenerationService):
     """
     Implementation of ScriptGenerationService that wraps existing script generation functionality
-    
+
     This service adapts the existing script generation components to work with
     the clean architecture interfaces.
     """
-    
+
     def __init__(self):
         """Initialize script generation service"""
         pass
-    
+
     async def generate_script(
         self,
         mission: str,
@@ -30,27 +29,27 @@ class ExistingScriptGenerationService(ScriptGenerationService):
     ) -> Dict[str, Any]:
         """
         Generate script content
-        
+
         Args:
             mission: Video mission/topic
             platform: Target platform
             duration_seconds: Target duration
             config: Generation configuration
-            
+
         Returns:
             Script content dictionary
         """
         try:
             # For now, create a placeholder script structure
             # In a real implementation, this would call the existing orchestrators
-            
+
             # Simulate script generation
             await asyncio.sleep(0.1)  # Simulate processing time
-            
+
             # Calculate segments based on duration
             segment_duration = 5  # seconds per segment
             num_segments = max(1, (duration_seconds - 3) // segment_duration)  # Reserve 3s for hook
-            
+
             # Generate script structure
             script_content = {
                 "hook": {
@@ -67,7 +66,7 @@ class ExistingScriptGenerationService(ScriptGenerationService):
                 "platform": platform.value,
                 "mission": mission
             }
-            
+
             # Generate segments
             for i in range(num_segments):
                 segment = {
@@ -77,20 +76,20 @@ class ExistingScriptGenerationService(ScriptGenerationService):
                     "order": i + 1
                 }
                 script_content["segments"].append(segment)
-            
+
             # Calculate total word count (rough estimate)
             total_text = script_content["hook"]["text"]
             for segment in script_content["segments"]:
                 total_text += " " + segment["text"]
             total_text += " " + script_content["call_to_action"]
-            
+
             script_content["word_count"] = len(total_text.split())
-            
+
             return script_content
-        
+
         except Exception as e:
             print(f"Error generating script: {e}")
-            
+
             # Return minimal fallback script
             return {
                 "hook": {
@@ -114,7 +113,7 @@ class ExistingScriptGenerationService(ScriptGenerationService):
                 "platform": platform.value,
                 "mission": mission
             }
-    
+
     def get_supported_platforms(self) -> list[Platform]:
         """Get list of supported platforms"""
         return [
@@ -125,11 +124,11 @@ class ExistingScriptGenerationService(ScriptGenerationService):
             Platform.FACEBOOK,
             Platform.LINKEDIN
         ]
-    
+
     def get_supported_styles(self) -> list[str]:
         """Get list of supported styles"""
         return ["viral", "educational", "entertaining", "professional", "casual"]
-    
+
     def get_supported_tones(self) -> list[str]:
         """Get list of supported tones"""
-        return ["engaging", "excited", "calm", "authoritative", "friendly"] 
+        return ["engaging", "excited", "calm", "authoritative", "friendly"]

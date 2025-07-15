@@ -10,7 +10,6 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-
 class ContinuityDecisionAgent:
     """
     AI Agent specialized in analyzing video content and deciding optimal
@@ -69,7 +68,7 @@ class ContinuityDecisionAgent:
 
         try:
             # Create comprehensive analysis prompt
-            analysis_prompt = f"""
+            analysis_prompt = """
 You are VisualFlow, an expert AI agent specializing in frame continuity and
 visual storytelling flow.
 
@@ -132,11 +131,22 @@ Respond in JSON format:
             # Get AI analysis
             response = self.model.generate_content(analysis_prompt)
 
+            # Check if response is valid
+            if not response or not response.text:
+                logger.warning("⚠️ Empty response from VisualFlow API")
+                return self._make_fallback_decision(topic, category, platform, duration)
+
             # Parse response
             import json
             try:
                 # Extract JSON from response
                 response_text = response.text.strip()
+                
+                # Check if response is empty or invalid
+                if not response_text:
+                    logger.warning("⚠️ Empty response text from VisualFlow API")
+                    return self._make_fallback_decision(topic, category, platform, duration)
+                
                 if response_text.startswith('```json'):
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
@@ -163,7 +173,7 @@ Respond in JSON format:
                     else "❌ DISABLED"
                 )
                 logger.info(
-                    f"🎬 VisualFlow Decision: Frame Continuity "
+                    "🎬 VisualFlow Decision: Frame Continuity "
                     f"{continuity_status}"
                 )
                 logger.info(

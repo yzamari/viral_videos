@@ -5,8 +5,7 @@ Creates slideshow-style videos with 4-5 images per second instead of 30fps
 """
 import os
 import time
-import json
-import uuid
+
 import math
 import subprocess
 import hashlib
@@ -15,7 +14,7 @@ import textwrap
 import re
 from typing import Dict, Optional, List, Tuple
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL  import Image, ImageDraw, ImageFont, ImageFilter
 from io import BytesIO
 
 from ..utils.logging_config import get_logger
@@ -64,12 +63,16 @@ class GeminiImageClient:
             'urban': 'street photography, urban environment, modern city style'
         }
 
-        logger.info(f"🎨 Real AI Image Generation client initialized")
+        logger.info("🎨 Real AI Image Generation client initialized")
         logger.info(f"📁 Images directory: {self.images_dir}")
         logger.info(f"🎬 Clips directory: {self.clips_dir}")
-        logger.info(f"✨ Using Gemini 2.0 Flash Preview Image Generation model")
+        logger.info("✨ Using Gemini 2.0 Flash Preview Image Generation model")
 
-    def generate_image_based_clips(self, prompts: List[Dict], config: Dict, video_id: str) -> List[Dict]:
+    def generate_image_based_clips(
+        self,
+        prompts: List[Dict],
+        config: Dict,
+        video_id: str) -> List[Dict]:
         """
         Generate image-based clips using enhanced scene-specific generation with AI-powered timing
         Enhanced for fallback generation with 5-10 second intelligent timing decisions
@@ -91,10 +94,10 @@ class GeminiImageClient:
         try:
             from ..agents.image_timing_agent import ImageTimingAgent
             timing_agent = ImageTimingAgent(self.api_key)
-            
+
             # Use fallback timing analysis for 5-10 second optimization
             if is_fallback:
-                logger.info(f"🎯 Using FALLBACK timing analysis for 5-10 second image display")
+                logger.info("🎯 Using FALLBACK timing analysis for 5-10 second image display")
                 timing_analysis = timing_agent.analyze_fallback_timing_requirements(
                     prompts=prompts,
                     platform=platform,
@@ -109,15 +112,15 @@ class GeminiImageClient:
                     total_duration=total_duration,
                     category=category
                 )
-            
-            logger.info(f"🎨 ENHANCED IMAGE GENERATION WITH AI TIMING:")
+
+            logger.info("🎨 ENHANCED IMAGE GENERATION WITH AI TIMING:")
             logger.info(f"   Target duration: {total_duration}s")
             logger.info(f"   Platform: {platform}")
             logger.info(f"   Generation mode: {'FALLBACK (5-10s frames)' if is_fallback else 'STANDARD'}")
             logger.info(f"   Timing strategy: {timing_analysis.get('timing_strategy', 'N/A')}")
             logger.info(f"   Average per image: {timing_analysis.get('average_duration_per_image', 0):.2f}s")
             logger.info(f"   Number of clips: {len(prompts)}")
-            
+
         except Exception as e:
             logger.warning(f"⚠️ ImageTimingAgent failed, using fallback timing: {e}")
             # Enhanced fallback timing for 5-10 second range
@@ -126,7 +129,7 @@ class GeminiImageClient:
                 logger.info(f"🎯 Using enhanced fallback timing: {avg_duration:.1f}s per image (5-10s range)")
             else:
                 avg_duration = max(1.5, total_duration / len(prompts))
-            
+
             timing_analysis = {
                 'timing_strategy': f'Enhanced {"fallback" if is_fallback else "standard"} timing',
                 'average_duration_per_image': avg_duration,
@@ -146,11 +149,18 @@ class GeminiImageClient:
 
             try:
                 # Get AI-determined timing for this specific image
-                if 'image_timings' in timing_analysis and i < len(timing_analysis['image_timings']):
-                    image_duration = timing_analysis['image_timings'][i].get('duration', 7.0 if is_fallback else 2.0)
-                    timing_rationale = timing_analysis['image_timings'][i].get('timing_rationale', 'AI-determined')
+                if ('image_timings' in timing_analysis and
+                        i < len(timing_analysis['image_timings'])):
+                    image_duration = timing_analysis['image_timings'][i].get(
+                        'duration',
+                        7.0 if is_fallback else 2.0)
+                    timing_rationale = timing_analysis['image_timings'][i].get(
+                        'timing_rationale',
+                        'AI-determined')
                 else:
-                    image_duration = timing_analysis.get('average_duration_per_image', 7.0 if is_fallback else 2.0)
+                    image_duration = timing_analysis.get(
+                        'average_duration_per_image',
+                        7.0 if is_fallback else 2.0)
                     timing_rationale = 'Average duration fallback'
 
                 # Ensure proper duration bounds
@@ -180,7 +190,8 @@ class GeminiImageClient:
                     images=images,
                     clip_id=clip_id,
                     duration=image_duration,
-                    timing_info=timing_analysis['image_timings'][i] if 'image_timings' in timing_analysis and i < len(timing_analysis['image_timings']) else None
+                    timing_info=timing_analysis['image_timings'][i] if 'image_timings' in timing_analysis and
+                            i < len(timing_analysis['image_timings']) else None
                 )
 
                 if clip_path:
@@ -198,7 +209,9 @@ class GeminiImageClient:
                     }
 
                     clips.append(clip_info)
-                    logger.info(f"✅ Enhanced clip {i+1}/{len(prompts)} complete: {len(images)} images, {image_duration:.2f}s")
+                    logger.info(
+                        f"✅ Enhanced clip {i+1}/{len(prompts)} complete: {len(images)} images, "
+                        f"{image_duration:.2f}s")
                 else:
                     logger.warning(f"⚠️ Failed to create video from images for clip {i+1}")
 
@@ -210,12 +223,19 @@ class GeminiImageClient:
         logger.info(f"🧠 AI Timing Summary: {timing_analysis.get('user_experience_optimization', 'Optimized for engagement')}")
         return clips
 
-    def _generate_images_for_clip(self, prompt_data: Dict, clip_id: str, num_images: int, config: Dict) -> List[str]:
+    def _generate_images_for_clip(
+        self,
+        prompt_data: Dict,
+        clip_id: str,
+        num_images: int,
+        config: Dict) -> List[str]:
         """Generate multiple scene-specific images for a single clip"""
         images = []
 
         # Extract base prompt and style
-        base_prompt = prompt_data.get('veo2_prompt', prompt_data.get('description', ''))
+        base_prompt = prompt_data.get(
+            'veo2_prompt',
+            prompt_data.get('description', ''))
         style = self._detect_style(base_prompt)
 
         # Generate multiple images with scene progression
@@ -253,13 +273,21 @@ class GeminiImageClient:
 
         return images
 
-    def _generate_enhanced_scene_image(self, prompt: str, image_id: str, scene_index: int, total_scenes: int) -> Optional[str]:
+    def _generate_enhanced_scene_image(
+        self,
+        prompt: str,
+        image_id: str,
+        scene_index: int,
+        total_scenes: int) -> Optional[str]:
         """Generate a real AI image using Gemini 2.0 Flash Preview Image Generation"""
         try:
             logger.info(f"🎨 Generating real AI image: {image_id}")
 
             # Create enhanced DALL-E style prompt
-            enhanced_prompt = self._create_dalle_style_prompt(prompt, scene_index, total_scenes)
+            enhanced_prompt = self._create_dalle_style_prompt(
+                prompt,
+                scene_index,
+                total_scenes)
 
             # Try to generate real AI image using correct Gemini image generation API
             try:
@@ -294,7 +322,7 @@ class GeminiImageClient:
 
                 # If no image data found, try alternative approach
                 logger.warning("⚠️ No image data in response, trying alternative approach")
-                
+
                 # Try with simpler configuration
                 response = self.model.generate_content(
                     contents=[f"Generate an image: {enhanced_prompt}"],
@@ -302,7 +330,7 @@ class GeminiImageClient:
                         "response_modalities": ["IMAGE"]
                     }
                 )
-                
+
                 if hasattr(response, 'candidates') and response.candidates:
                     candidate = response.candidates[0]
                     if hasattr(candidate, 'content') and candidate.content:
@@ -321,19 +349,37 @@ class GeminiImageClient:
                                     return image_path
 
                 # If still no image data, create artistic placeholder
-                logger.warning("⚠️ Gemini Image Generation not returning image data, creating artistic placeholder")
-                return self._create_artistic_placeholder(prompt, image_id, scene_index, total_scenes)
+                logger.warning(
+                    "⚠️ Gemini Image Generation not returning image data, "
+                    "creating artistic placeholder")
+                return self._create_artistic_placeholder(
+                    prompt,
+                    image_id,
+                    scene_index,
+                    total_scenes)
 
             except Exception as e:
                 logger.warning(f"⚠️ AI image generation failed: {e}")
-                return self._create_artistic_placeholder(prompt, image_id, scene_index, total_scenes)
+                return self._create_artistic_placeholder(
+                    prompt,
+                    image_id,
+                    scene_index,
+                    total_scenes)
 
         except Exception as e:
             logger.error(f"❌ Error in AI image generation: {e}")
             # Fallback to artistic placeholder
-            return self._create_artistic_placeholder(prompt, image_id, scene_index, total_scenes)
+            return self._create_artistic_placeholder(
+                prompt,
+                image_id,
+                scene_index,
+                total_scenes)
 
-    def _create_dalle_style_prompt(self, original_prompt: str, scene_index: int, total_scenes: int) -> str:
+    def _create_dalle_style_prompt(
+        self,
+        original_prompt: str,
+        scene_index: int,
+        total_scenes: int) -> str:
         """Create a DALL-E style prompt for high-quality image generation"""
 
         # Analyze the original prompt
@@ -360,9 +406,8 @@ class GeminiImageClient:
             composition = "medium shot, balanced composition"
 
         # Create enhanced prompt
-        enhanced_prompt = f"""
+        enhanced_prompt = """
         Create a beautiful, high-quality image with the following specifications:
-
         Scene: {original_prompt}
 
         Style: {style}
@@ -372,13 +417,20 @@ class GeminiImageClient:
         Colors: Vibrant but natural color palette, high contrast
         Mood: Engaging, visually striking, suitable for viral social media content
 
-        The image should be visually appealing, professional quality, and capture the essence of the scene description.
-        Make it look like it could be from a high-budget film or professional photoshoot.
+        The image should be visually appealing, professional quality, and
+                capture the essence of the scene description.
+        Make it look like it could be from a high-budget film or
+                professional photoshoot.
         """
 
         return enhanced_prompt
 
-    def _create_artistic_placeholder(self, prompt: str, image_id: str, scene_index: int, total_scenes: int) -> str:
+    def _create_artistic_placeholder(
+        self,
+        prompt: str,
+        image_id: str,
+        scene_index: int,
+        total_scenes: int) -> str:
         """Create a beautiful artistic placeholder when AI generation fails"""
         try:
             # Ensure output directory exists
@@ -391,10 +443,19 @@ class GeminiImageClient:
             scene_analysis = self._analyze_scene_for_art(prompt)
 
             # Create beautiful gradient background
-            img = self._create_artistic_background(width, height, scene_analysis, scene_index, total_scenes)
+            img = self._create_artistic_background(
+                width,
+                height,
+                scene_analysis,
+                scene_index,
+                total_scenes)
 
             # Add artistic elements
-            img = self._add_artistic_elements(img, scene_analysis, scene_index, total_scenes)
+            img = self._add_artistic_elements(
+                img,
+                scene_analysis,
+                scene_index,
+                total_scenes)
 
             # Add beautiful typography
             img = self._add_artistic_typography(img, prompt, scene_analysis)
@@ -457,7 +518,13 @@ class GeminiImageClient:
 
         return analysis
 
-    def _create_artistic_background(self, width: int, height: int, analysis: dict, scene_index: int, total_scenes: int) -> Image.Image:
+    def _create_artistic_background(
+        self,
+        width: int,
+        height: int,
+        analysis: dict,
+        scene_index: int,
+        total_scenes: int) -> Image.Image:
         """Create a beautiful artistic background"""
         img = Image.new('RGB', (width, height))
         draw = ImageDraw.Draw(img)
@@ -484,7 +551,12 @@ class GeminiImageClient:
 
         return img
 
-    def _add_artistic_elements(self, img: Image.Image, analysis: dict, scene_index: int, total_scenes: int) -> Image.Image:
+    def _add_artistic_elements(
+        self,
+        img: Image.Image,
+        analysis: dict,
+        scene_index: int,
+        total_scenes: int) -> Image.Image:
         """Add beautiful artistic elements"""
         draw = ImageDraw.Draw(img)
         width, height = img.size
@@ -504,11 +576,22 @@ class GeminiImageClient:
             self._add_tech_art(draw, width, height, analysis)
 
         # Add progress indicators
-        self._add_progress_art(draw, width, height, scene_index, total_scenes, analysis)
+        self._add_progress_art(
+            draw,
+            width,
+            height,
+            scene_index,
+            total_scenes,
+            analysis)
 
         return img
 
-    def _add_news_interface_art(self, draw: ImageDraw.Draw, width: int, height: int, analysis: dict):
+    def _add_news_interface_art(
+        self,
+        draw: ImageDraw.Draw,
+        width: int,
+        height: int,
+        analysis: dict):
         """Add artistic news interface elements"""
         # Modern news ticker
         ticker_y = height - 200
@@ -524,7 +607,12 @@ class GeminiImageClient:
             draw.rectangle([x, y, x + card_width - 40, y + 150],
                           fill=(255, 255, 255, 200), outline=(100, 100, 100), width=2)
 
-    def _add_portrait_art(self, draw: ImageDraw.Draw, width: int, height: int, analysis: dict):
+    def _add_portrait_art(
+        self,
+        draw: ImageDraw.Draw,
+        width: int,
+        height: int,
+        analysis: dict):
         """Add artistic portrait elements"""
         # Portrait frame
         frame_size = min(width, height) // 3
@@ -539,7 +627,12 @@ class GeminiImageClient:
         draw.ellipse([frame_x, frame_y, frame_x + frame_size, frame_y + frame_size],
                     fill=tuple(int(analysis['accent_color'][i:i+2], 16) for i in (1, 3, 5)))
 
-    def _add_crowd_art(self, draw: ImageDraw.Draw, width: int, height: int, analysis: dict):
+    def _add_crowd_art(
+        self,
+        draw: ImageDraw.Draw,
+        width: int,
+        height: int,
+        analysis: dict):
         """Add artistic crowd elements"""
         # Multiple overlapping circles representing people
         import random
@@ -549,14 +642,19 @@ class GeminiImageClient:
             x = random.randint(50, width - 50)
             y = random.randint(height // 3, height - 100)
             size = random.randint(30, 80)
-            alpha = random.randint(100, 200)
+            _alpha = random.randint(100, 200)
 
             # Create semi-transparent circles
             circle_color = tuple(int(analysis['secondary_color'][i:i+2], 16) for i in (1, 3, 5))
             draw.ellipse([x - size//2, y - size//2, x + size//2, y + size//2],
                         fill=circle_color, outline=(255, 255, 255), width=2)
 
-    def _add_tech_art(self, draw: ImageDraw.Draw, width: int, height: int, analysis: dict):
+    def _add_tech_art(
+        self,
+        draw: ImageDraw.Draw,
+        width: int,
+        height: int,
+        analysis: dict):
         """Add artistic tech elements"""
         # Grid pattern
         grid_spacing = 60
@@ -575,7 +673,14 @@ class GeminiImageClient:
         draw.rectangle([center_x - 100, center_y - 60, center_x + 100, center_y + 60],
                       fill=(0, 0, 0, 150), outline=grid_color, width=3)
 
-    def _add_progress_art(self, draw: ImageDraw.Draw, width: int, height: int, scene_index: int, total_scenes: int, analysis: dict):
+    def _add_progress_art(
+        self,
+        draw: ImageDraw.Draw,
+        width: int,
+        height: int,
+        scene_index: int,
+        total_scenes: int,
+        analysis: dict):
         """Add artistic progress indicators"""
         # Progress dots
         dot_size = 12
@@ -594,7 +699,11 @@ class GeminiImageClient:
                 draw.ellipse([x, y, x + dot_size, y + dot_size],
                            fill=(150, 150, 150), outline=(100, 100, 100), width=2)
 
-    def _add_artistic_typography(self, img: Image.Image, prompt: str, analysis: dict) -> Image.Image:
+    def _add_artistic_typography(
+        self,
+        img: Image.Image,
+        prompt: str,
+        analysis: dict) -> Image.Image:
         """Add beautiful typography"""
         draw = ImageDraw.Draw(img)
         width, height = img.size
@@ -603,8 +712,8 @@ class GeminiImageClient:
             # Try to use beautiful system fonts
             title_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 72)
             subtitle_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 48)
-            body_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 32)
-        except:
+            _body_font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 32)
+        except Exception:
             # Fallback fonts
             title_font = ImageFont.load_default()
             subtitle_font = ImageFont.load_default()
@@ -626,7 +735,11 @@ class GeminiImageClient:
 
         # Shadow
         for offset in range(1, 5):
-            draw.text((title_x + offset, title_y + offset), title, font=title_font, fill=shadow_color)
+            draw.text(
+                (title_x + offset, title_y + offset),
+                title,
+                font=title_font,
+                fill=shadow_color)
 
         # Main text
         draw.text((title_x, title_y), title, font=title_font, fill=text_color)
@@ -638,7 +751,11 @@ class GeminiImageClient:
         subtitle_y = title_y + 120
 
         accent_color = tuple(int(analysis['accent_color'][i:i+2], 16) for i in (1, 3, 5))
-        draw.text((subtitle_x, subtitle_y), subtitle, font=subtitle_font, fill=accent_color)
+        draw.text(
+            (subtitle_x, subtitle_y),
+            subtitle,
+            font=subtitle_font,
+            fill=accent_color)
 
         return img
 
@@ -670,7 +787,10 @@ class GeminiImageClient:
         else:
             return "Trending Now"
 
-    def _apply_artistic_effects(self, img: Image.Image, analysis: dict) -> Image.Image:
+    def _apply_artistic_effects(
+        self,
+        img: Image.Image,
+        analysis: dict) -> Image.Image:
         """Apply beautiful artistic effects"""
 
         # Add subtle blur for depth
@@ -711,7 +831,7 @@ class GeminiImageClient:
             text = "AI Content"
             try:
                 font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 48)
-            except:
+            except Exception:
                 font = ImageFont.load_default()
 
             bbox = draw.textbbox((0, 0), text, font=font)
@@ -724,11 +844,17 @@ class GeminiImageClient:
             image_path = os.path.join(self.output_dir, f"{image_id}.png")
             img.save(image_path, 'PNG')
             return image_path
-        except:
+        except Exception:
             # Return path even if save fails
             return os.path.join(self.output_dir, f"{image_id}.png")
 
-    def _create_image_prompt(self, base_prompt: str, style: str, image_index: int, total_images: int, config: Dict) -> str:
+    def _create_image_prompt(
+        self,
+        base_prompt: str,
+        style: str,
+        image_index: int,
+        total_images: int,
+        config: Dict) -> str:
         """Create a varied image prompt for scene progression"""
 
         # Scene progression keywords
@@ -773,18 +899,35 @@ class GeminiImageClient:
         # Default style based on content
         if any(word in prompt_lower for word in ['funny', 'comedy', 'humor', 'joke']):
             return self.style_keywords['comedy']
-        elif any(word in prompt_lower for word in ['tech', 'technology', 'digital', 'computer']):
+        elif any(
+            word in prompt_lower for word in ['tech',
+            'technology',
+            'digital',
+            'computer']):
             return self.style_keywords['tech']
-        elif any(word in prompt_lower for word in ['nature', 'forest', 'mountain', 'ocean']):
+        elif any(
+            word in prompt_lower for word in ['nature',
+            'forest',
+            'mountain',
+            'ocean']):
             return self.style_keywords['nature']
-        elif any(word in prompt_lower for word in ['city', 'urban', 'street', 'building']):
+        elif any(
+            word in prompt_lower for word in ['city',
+            'urban',
+            'street',
+            'building']):
             return self.style_keywords['urban']
         elif any(word in prompt_lower for word in ['dramatic', 'intense', 'serious']):
             return self.style_keywords['dramatic']
         else:
             return self.style_keywords['cinematic']
 
-    def _create_video_from_images(self, images: List[str], clip_id: str, duration: float, fps: int) -> Optional[str]:
+    def _create_video_from_images(
+        self,
+        images: List[str],
+        clip_id: str,
+        duration: float,
+        fps: int) -> Optional[str]:
         """Create video clip from generated images"""
         if not images:
             return None
@@ -832,14 +975,14 @@ class GeminiImageClient:
 
             cmd = [
                 'ffmpeg', '-y',
-                '-f', 'concat',
+                '-', 'concat',
                 '-safe', '0',
                 '-i', os.path.abspath(image_list_path),
-                '-vf', f'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
+                '-v', f'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
                 '-r', str(fps),
                 '-c:v', 'libx264',
                 '-preset', 'medium',
-                '-crf', '23',
+                '-cr', '23',
                 '-pix_fmt', 'yuv420p',
                 '-movflags', '+faststart',
                 abs_output_path
@@ -849,7 +992,11 @@ class GeminiImageClient:
             logger.info(f"📁 Image list file: {image_list_path}")
             logger.info(f"📁 Output path: {abs_output_path}")
 
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=os.path.dirname(abs_output_path))
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                cwd=os.path.dirname(abs_output_path))
 
             if result.returncode == 0 and os.path.exists(abs_output_path):
                 file_size = os.path.getsize(abs_output_path) / (1024 * 1024)
@@ -858,8 +1005,8 @@ class GeminiImageClient:
                 # Clean up temporary files
                 try:
                     os.remove(image_list_path)
-                except:
-                    pass  # Don't fail if cleanup fails
+                except Exception:
+                    pass  # Don't fail if cleanup fails'
 
                 return abs_output_path
             else:
@@ -868,13 +1015,22 @@ class GeminiImageClient:
                 logger.error(f"❌ FFmpeg stdout: {result.stdout}")
 
                 # Try a simpler approach without concat
-                return self._create_video_simple_method(valid_images, abs_output_path, duration, fps)
+                return self._create_video_simple_method(
+                    valid_images,
+                    abs_output_path,
+                    duration,
+                    fps)
 
         except Exception as e:
             logger.error(f"❌ Error creating video from images: {e}")
             return None
 
-    def _create_video_simple_method(self, images: List[str], output_path: str, duration: float, fps: int) -> Optional[str]:
+    def _create_video_simple_method(
+        self,
+        images: List[str],
+        output_path: str,
+        duration: float,
+        fps: int) -> Optional[str]:
         """Create video using a simpler method without concat"""
         try:
             if not images:
@@ -889,16 +1045,16 @@ class GeminiImageClient:
                 '-loop', '1',
                 '-i', first_image,
                 '-t', str(duration),
-                '-vf', f'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
+                '-v', f'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
                 '-r', str(fps),
                 '-c:v', 'libx264',
                 '-preset', 'fast',
-                '-crf', '28',
+                '-cr', '28',
                 '-pix_fmt', 'yuv420p',
                 output_path
             ]
 
-            logger.info(f"🎬 Creating simple video from first image...")
+            logger.info("🎬 Creating simple video from first image...")
             result = subprocess.run(cmd, capture_output=True, text=True)
 
             if result.returncode == 0 and os.path.exists(output_path):
@@ -917,7 +1073,7 @@ class GeminiImageClient:
         """Get file size in MB"""
         try:
             return os.path.getsize(file_path) / (1024 * 1024)
-        except:
+        except Exception:
             return 0.0
 
     def is_available(self) -> bool:
@@ -931,12 +1087,12 @@ class GeminiImageClient:
 
     def generate_image(self, prompt: str, style: str, output_path: str) -> str:
         """Generate a single image - compatibility method for VideoGenerator"""
-        
+
         try:
             # Extract image ID from output path
             import os
             image_id = os.path.splitext(os.path.basename(output_path))[0]
-            
+
             # Generate the image
             result_path = self._generate_enhanced_scene_image(
                 prompt=prompt,
@@ -944,7 +1100,7 @@ class GeminiImageClient:
                 scene_index=0,
                 total_scenes=1
             )
-            
+
             if result_path and os.path.exists(result_path):
                 # Move to desired output path if different
                 if result_path != output_path:
@@ -956,12 +1112,17 @@ class GeminiImageClient:
             else:
                 logger.warning(f"⚠️ Failed to generate image for: {prompt}")
                 return None
-                
+
         except Exception as e:
             logger.error(f"❌ Error in generate_image: {e}")
             return None
 
-    def _create_video_from_images_with_timing(self, images: List[str], clip_id: str, duration: float, timing_info: Dict = None) -> Optional[str]:
+    def _create_video_from_images_with_timing(
+        self,
+        images: List[str],
+        clip_id: str,
+        duration: float,
+        timing_info: Dict = None) -> Optional[str]:
         """Create video clip from generated images with AI-determined timing"""
         if not images:
             return None
@@ -994,8 +1155,10 @@ class GeminiImageClient:
                 # (This is rare in the new system, but handle it gracefully)
                 duration_per_image = duration / len(valid_images)
 
-            logger.info(f"🎬 Creating AI-timed video: {duration:.2f}s total, {duration_per_image:.2f}s per image")
-            
+            logger.info(
+                f"🎬 Creating AI-timed video: {duration:.2f}s total,"
+                f"{duration_per_image:.2f}s per image")
+
             if timing_info:
                 logger.info(f"📊 Timing rationale: {timing_info.get('timing_rationale', 'N/A')}")
                 logger.info(f"📊 Content type: {timing_info.get('content_type', 'N/A')}")
@@ -1026,14 +1189,14 @@ class GeminiImageClient:
 
             cmd = [
                 'ffmpeg', '-y',
-                '-f', 'concat',
+                '-', 'concat',
                 '-safe', '0',
                 '-i', os.path.abspath(image_list_path),
-                '-vf', f'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
+                '-v', f'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
                 '-r', str(fps),
                 '-c:v', 'libx264',
                 '-preset', 'medium',
-                '-crf', '23',
+                '-cr', '23',
                 '-pix_fmt', 'yuv420p',
                 '-movflags', '+faststart',
                 abs_output_path
@@ -1044,7 +1207,11 @@ class GeminiImageClient:
             logger.info(f"📁 Output path: {abs_output_path}")
             logger.info(f"⏱️ Duration: {duration:.2f}s (AI-optimized for content)")
 
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=os.path.dirname(abs_output_path))
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                cwd=os.path.dirname(abs_output_path))
 
             if result.returncode == 0 and os.path.exists(abs_output_path):
                 file_size = os.path.getsize(abs_output_path) / (1024 * 1024)
@@ -1053,8 +1220,8 @@ class GeminiImageClient:
                 # Clean up temporary files
                 try:
                     os.remove(image_list_path)
-                except:
-                    pass  # Don't fail if cleanup fails
+                except Exception:
+                    pass  # Don't fail if cleanup fails'
 
                 return abs_output_path
             else:
@@ -1063,13 +1230,20 @@ class GeminiImageClient:
                 logger.error(f"❌ FFmpeg stdout: {result.stdout}")
 
                 # Try a simpler approach without concat
-                return self._create_video_simple_method_with_timing(valid_images, abs_output_path, duration)
+                return self._create_video_simple_method_with_timing(
+                    valid_images,
+                    abs_output_path,
+                    duration)
 
         except Exception as e:
             logger.error(f"❌ Error creating AI-timed video from images: {e}")
             return None
 
-    def _create_video_simple_method_with_timing(self, images: List[str], output_path: str, duration: float) -> Optional[str]:
+    def _create_video_simple_method_with_timing(
+        self,
+        images: List[str],
+        output_path: str,
+        duration: float) -> Optional[str]:
         """Create video using a simpler method without concat but with AI timing"""
         try:
             if not images:
@@ -1084,11 +1258,11 @@ class GeminiImageClient:
                 '-loop', '1',
                 '-i', first_image,
                 '-t', str(duration),
-                '-vf', f'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
+                '-v', f'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
                 '-r', '30',  # Standard fps
                 '-c:v', 'libx264',
                 '-preset', 'fast',
-                '-crf', '28',
+                '-cr', '28',
                 '-pix_fmt', 'yuv420p',
                 output_path
             ]
@@ -1107,4 +1281,3 @@ class GeminiImageClient:
         except Exception as e:
             logger.error(f"❌ Simple AI-timed video creation failed: {e}")
             return None
-

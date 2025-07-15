@@ -13,7 +13,6 @@ from ..utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-
 class YouTubeScraper:
     """Scrape trending videos from YouTube"""
 
@@ -29,7 +28,9 @@ class YouTubeScraper:
             self.pytrends = None
             logger.info("YouTube scraper initialized in mock mode - no API key provided")
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=10))
     def get_trending_videos(self,
                             max_results: int = 50,
                             region_code: str = 'US',
@@ -96,7 +97,10 @@ class YouTubeScraper:
             logger.error(f"Unexpected error fetching trending videos: {e}")
             raise
 
-    def _parse_video_item(self, item: Dict, position: int) -> Optional[TrendingVideo]:
+    def _parse_video_item(
+        self,
+        item: Dict,
+        position: int) -> Optional[TrendingVideo]:
         """Parse YouTube API response item into TrendingVideo model"""
         try:
             snippet = item['snippet']
@@ -194,7 +198,10 @@ class YouTubeScraper:
 
         return category_map.get(category_id, VideoCategory.OTHER)
 
-    def get_search_trends(self, keywords: List[str], timeframe: str = 'now 7-d') -> pd.DataFrame:
+    def get_search_trends(
+        self,
+        keywords: List[str],
+        timeframe: str = 'now 7-d') -> pd.DataFrame:
         """
         Get Google Trends data for keywords
 
@@ -417,7 +424,11 @@ class YouTubeScraper:
         logger.info(f"Generated {len(mock_videos)} mock trending videos from last {days_back} days")
         return mock_videos
 
-    def _get_mock_search_videos(self, query: str, max_results: int = 50, days_back: int = 6) -> List[TrendingVideo]:
+    def _get_mock_search_videos(
+        self,
+        query: str,
+        max_results: int = 50,
+        days_back: int = 6) -> List[TrendingVideo]:
         """Generate mock search results for testing purposes"""
         logger.info(f"Generating {max_results} mock search videos for query '{query}' from last {days_back} days")
 
@@ -484,4 +495,3 @@ class YouTubeScraper:
 
         logger.info(f"Generated {len(mock_videos)} mock search videos for '{query}' from last {days_back} days")
         return mock_videos
-

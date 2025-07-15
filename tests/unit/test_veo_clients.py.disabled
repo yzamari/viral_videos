@@ -1,0 +1,440 @@
+"""
+Unit tests for VEO-2 and VEO-3 clients
+Tests both regular and continuous mode video generation to ensure clients are always working
+"""
+
+from src.generators.vertex_veo3_client import VertexAIVeo3Client
+from src.generators.vertex_ai_veo2_client import VertexAIVeo2Client
+import unittest
+import os
+import sys
+import tempfile
+import shutil
+from unittest.mock import Mock, patch
+import base64
+
+# Add project root to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+
+class TestVeo2Client(unittest.TestCase):
+    """Test VEO-2 client functionality"""
+
+    def setUp(self):
+        """Set up test fixtures"""
+        self.project_id = 'test-project'
+        self.location = 'us-central1'
+        self.gcs_bucket = 'test-bucket'
+        self.temp_dir = tempfile.mkdtemp()
+
+        # Create VEO-2 client
+        self.veo2_client = VertexAIVeo2Client(
+            project_id=self.project_id,
+            location=self.location,
+            gcs_bucket=self.gcs_bucket,
+            output_dir=self.temp_dir
+        )
+
+    def tearDown(self):
+        """Clean up test fixtures"""
+        if os.path.exists(self.temp_dir):
+            shutil.rmtree(self.temp_dir)
+
+    def test_veo2_client_initialization(self):
+        """Test VEO-2 client initialization"""
+        self.assertEqual(self.veo2_client.project_id, self.project_id)
+        self.assertEqual(self.veo2_client.location, self.location)
+        self.assertEqual(self.veo2_client.gcs_bucket, self.gcs_bucket)
+        self.assertEqual(self.veo2_client.output_dir, self.temp_dir)
+        self.assertTrue(self.veo2_client.is_available)
+        self.assertEqual(self.veo2_client.get_model_name(), "veo-2.0-generate-001")
+
+    def test_veo2_prompt_enhancement(self):
+        """Test VEO-2 prompt enhancement"""
+        original_prompt = "A cat playing"
+        enhanced_prompt = self.veo2_client._enhance_prompt_with_gemini(original_prompt)
+
+        # Enhanced prompt should contain original content
+        self.assertIn("cat", enhanced_prompt.lower())
+        self.assertIn("playing", enhanced_prompt.lower())
+
+        # Should add cinematic elements
+        self.assertTrue(any(word in enhanced_prompt.lower() for word in
+                            ['cinematic', 'professional', 'high quality', 'detailed']))
+
+    @patch('src.generators.vertex_ai_veo2_client.requests.post')
+    def test_veo2_single_video_generation(self, mock_post):
+        """Test VEO-2 single video generation"""
+        # Mock successful API response
+        mock_operation_response = {
+            "name": "projects/test-project/locations/us-central1/publishers/google/models/veo-2.0-generate-001/operations/123456",
+            "metadata": {
+                "@type": "type.googleapis.com/google.cloud.aiplatform.v1.GenericOperationMetadata"}}
+
+        mock_completed_response = {
+            "name": "projects/test-project/locations/us-central1/publishers/google/models/veo-2.0-generate-001/operations/123456",
+            "done": True,
+            "response": {
+                "videos": [{
+                    "mimeType": "video/mp4",
+                    "videoData": self._create_mock_video_data_string()
+                }]
+            }
+        }
+
+        # Mock the requests - expect 3 calls (availability check + initial + polling)
+        mock_post.side_effect = [
+            Mock(status_code=200, json=lambda: mock_operation_response),  # Availability check
+            Mock(status_code=200, json=lambda: mock_operation_response),  # Initial request
+            Mock(status_code=200, json=lambda: mock_completed_response)   # Polling request
+        ]
+
+        # Test video generation
+        result = self.veo2_client.generate_video(
+            prompt="Benjamin Netanyahu hugging Donald Trump in Iran",
+            duration=8.0,
+            clip_id="test_single"
+        )
+
+        # Verify result
+        self.assertIsNotNone(result)
+        if result:
+            self.assertTrue(os.path.exists(result))
+            self.assertTrue(result.endswith('.mp4'))
+            self.assertIn('test_single', result)
+
+        # Verify API calls - should be exactly 3 (availability + initial + polling)
+        self.assertEqual(mock_post.call_count, 3)
+
+    @patch('src.generators.vertex_ai_veo2_client.VertexAIVeo2Client.generate_video')
+    @patch('src.generators.vertex_ai_veo2_client.VertexAIVeo2Client._extract_last_frame')
+    @patch('src.generators.vertex_ai_veo2_client.VertexAIVeo2Client._concatenate_clips')
+    def test_veo2_continuous_mode_generation(self, mock_concat, mock_extract, mock_generate):
+        """Test VEO-2 continuous mode video generation"""
+        # Mock successful individual video generation
+        mock_generate.side_effect = [
+            os.path.join(self.temp_dir, "veo_clips", "test_continuous_clip1.mp4"),
+            os.path.join(self.temp_dir, "veo_clips", "test_continuous_clip2.mp4")
+        ]
+
+        # Create mock video files
+        for i in range(1, 3):
+            clip_path = os.path.join(self.temp_dir, "veo_clips", f"test_continuous_clip{i}.mp4")
+            os.makedirs(os.path.dirname(clip_path), exist_ok=True)
+            with open(clip_path, 'wb') as f:
+                f.write(b'mock video data')
+
+        # Mock frame extraction
+        mock_extract.return_value = os.path.join(self.temp_dir, "frame.jpg")
+
+        # Mock successful concatenation
+        final_video_path = os.path.join(
+            self.temp_dir,
+            "veo_clips",
+            "test_continuous_continuous.mp4")
+        with open(final_video_path, 'wb') as f:
+            f.write(b'concatenated video data')
+        mock_concat.return_value = final_video_path
+
+        # Test continuous mode generation
+        result = self.veo2_client.generate_continuous_video(
+            base_prompt="Benjamin Netanyahu and Donald Trump meeting",
+            num_clips=2,
+            clip_duration=8.0,
+            base_clip_id="test_continuous"
+        )
+
+        # Verify result
+        self.assertIsNotNone(result)
+        if result:
+            self.assertTrue(os.path.exists(result))
+            self.assertTrue(result.endswith('.mp4'))
+            self.assertIn('continuous', result)
+
+        # Verify method calls
+        self.assertEqual(mock_generate.call_count, 2)
+        self.assertEqual(mock_extract.call_count, 1)  # Only called once (for first clip)
+        self.assertEqual(mock_concat.call_count, 1)
+
+    @patch('src.generators.vertex_ai_veo2_client.requests.post')
+    def test_veo2_error_handling(self, mock_post):
+        """Test VEO-2 error handling"""
+        # Mock API failure
+        mock_post.return_value = Mock(status_code=400, text="Bad Request")
+
+        # Test error handling - should fall back to fallback video creation
+        result = self.veo2_client.generate_video(
+            prompt="Test prompt",
+            duration=5.0,
+            clip_id="test_error"
+        )
+
+        # Should create a fallback video, not return None
+        self.assertIsNotNone(result)
+        if result:
+            self.assertTrue(os.path.exists(result))
+            self.assertTrue(result.endswith('.mp4'))
+
+    def _create_mock_video_data_string(self):
+        """Create mock base64 video data string for testing"""
+        # Create a longer mock video data that meets the regex requirement (1000+ chars)
+        mock_mp4_data = b'\x00\x00\x00\x20ftypmp42\x00\x00\x00\x00mp42isom' * 100  # Repeat to make it longer
+        base64_data = base64.b64encode(mock_mp4_data).decode('utf-8')
+
+        # Ensure it's at least 1000 characters long for the regex pattern
+        while len(base64_data) < 1000:
+            base64_data += base64_data
+
+        return base64_data[:2000]  # Limit to reasonable size
+
+
+class TestVeo3Client(unittest.TestCase):
+    """Test VEO-3 client functionality"""
+
+    def setUp(self):
+        """Set up test fixtures"""
+        self.project_id = 'test-project'
+        self.location = 'us-central1'
+        self.gcs_bucket = 'test-bucket'
+        self.temp_dir = tempfile.mkdtemp()
+
+        # Create VEO-3 client
+        self.veo3_client = VertexAIVeo3Client(
+            project_id=self.project_id,
+            location=self.location,
+            gcs_bucket=self.gcs_bucket,
+            output_dir=self.temp_dir
+        )
+
+    def tearDown(self):
+        """Clean up test fixtures"""
+        if os.path.exists(self.temp_dir):
+            shutil.rmtree(self.temp_dir)
+
+    def test_veo3_client_initialization(self):
+        """Test VEO-3 client initialization"""
+        self.assertEqual(self.veo3_client.project_id, self.project_id)
+        self.assertEqual(self.veo3_client.location, self.location)
+        self.assertEqual(self.veo3_client.gcs_bucket, self.gcs_bucket)
+        self.assertEqual(self.veo3_client.output_dir, self.temp_dir)
+        self.assertTrue(self.veo3_client.is_available)
+        # Update to match actual model name
+        self.assertEqual(self.veo3_client.get_model_name(), "veo-3.0-generate-preview")
+
+    @patch('src.generators.vertex_veo3_client.VertexAIVeo3Client._submit_veo3_generation_request')
+    @patch('src.generators.vertex_veo3_client.VertexAIVeo3Client._poll_operation_status')
+    @patch('src.generators.vertex_veo3_client.VertexAIVeo3Client._download_video_from_gcs')
+    def test_veo3_single_video_generation(self, mock_download, mock_poll, mock_submit):
+        """Test VEO-3 single video generation"""
+        # Mock successful operation
+        mock_submit.return_value = "projects/test-project/locations/us-central1/operations/123456"
+        mock_poll.return_value = "gs://test-bucket/output/video.mp4"
+
+        # Create a mock video file for download
+        mock_video_path = os.path.join(self.temp_dir, "test_single.mp4")
+        with open(mock_video_path, 'wb') as f:
+            f.write(b'mock video data')
+        mock_download.return_value = mock_video_path
+
+        # Test video generation
+        result = self.veo3_client.generate_video(
+            prompt="Benjamin Netanyahu hugging Donald Trump in Iran",
+            duration=8.0,
+            clip_id="test_single"
+        )
+
+        # Verify result
+        self.assertIsNotNone(result)
+        if result:
+            self.assertTrue(result.endswith('.mp4'))
+            self.assertIn('test_single', result)
+
+    @patch('src.generators.vertex_veo3_client.VertexAIVeo3Client.generate_video')
+    @patch('src.generators.vertex_veo3_client.VertexAIVeo3Client._extract_last_frame')
+    @patch('src.generators.vertex_veo3_client.VertexAIVeo3Client._concatenate_clips')
+    def test_veo3_continuous_mode_generation(self, mock_concat, mock_extract, mock_generate):
+        """Test VEO-3 continuous mode video generation"""
+        # Mock successful individual video generation
+        mock_generate.side_effect = [
+            os.path.join(self.temp_dir, "veo3_clips", "test_continuous_clip1.mp4"),
+            os.path.join(self.temp_dir, "veo3_clips", "test_continuous_clip2.mp4")
+        ]
+
+        # Create mock video files
+        for i in range(1, 3):
+            clip_path = os.path.join(self.temp_dir, "veo3_clips", f"test_continuous_clip{i}.mp4")
+            os.makedirs(os.path.dirname(clip_path), exist_ok=True)
+            with open(clip_path, 'wb') as f:
+                f.write(b'mock video data')
+
+        # Mock frame extraction
+        mock_extract.return_value = os.path.join(self.temp_dir, "frame.jpg")
+
+        # Mock successful concatenation
+        final_video_path = os.path.join(
+            self.temp_dir,
+            "veo3_clips",
+            "test_continuous_continuous.mp4")
+        with open(final_video_path, 'wb') as f:
+            f.write(b'concatenated video data')
+        mock_concat.return_value = final_video_path
+
+        # Test continuous mode generation
+        result = self.veo3_client.generate_continuous_video(
+            base_prompt="Benjamin Netanyahu and Donald Trump meeting",
+            num_clips=2,
+            clip_duration=8.0,
+            base_clip_id="test_continuous"
+        )
+
+        # Verify result
+        self.assertIsNotNone(result)
+        if result:
+            self.assertTrue(result.endswith('.mp4'))
+            self.assertIn('continuous', result)
+
+        # Verify method calls
+        self.assertEqual(mock_generate.call_count, 2)
+        self.assertEqual(mock_extract.call_count, 1)  # Only called once (for first clip)
+        self.assertEqual(mock_concat.call_count, 1)
+
+    @patch('src.generators.vertex_veo3_client.VertexAIVeo3Client._submit_veo3_generation_request')
+    def test_veo3_error_handling(self, mock_submit):
+        """Test VEO-3 error handling"""
+        # Mock API failure
+        mock_submit.side_effect = Exception("API Error")
+
+        # Test error handling - should fall back to fallback video creation
+        result = self.veo3_client.generate_video(
+            prompt="Test prompt",
+            duration=5.0,
+            clip_id="test_error"
+        )
+
+        # Should create a fallback video, not return None
+        self.assertIsNotNone(result)
+        if result:
+            self.assertTrue(os.path.exists(result))
+            self.assertTrue(result.endswith('.mp4'))
+
+
+class TestVeoClientIntegration(unittest.TestCase):
+    """Test VEO client integration scenarios"""
+
+    def setUp(self):
+        """Set up test fixtures"""
+        self.project_id = 'test-project'
+        self.location = 'us-central1'
+        self.gcs_bucket = 'test-bucket'
+        self.temp_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        """Clean up test fixtures"""
+        if os.path.exists(self.temp_dir):
+            shutil.rmtree(self.temp_dir)
+
+    def test_both_clients_available(self):
+        """Test that both VEO-2 and VEO-3 clients are available"""
+        veo2_client = VertexAIVeo2Client(
+            project_id=self.project_id,
+            location=self.location,
+            gcs_bucket=self.gcs_bucket,
+            output_dir=self.temp_dir
+        )
+
+        veo3_client = VertexAIVeo3Client(
+            project_id=self.project_id,
+            location=self.location,
+            gcs_bucket=self.gcs_bucket,
+            output_dir=self.temp_dir
+        )
+
+        # Both clients should be available
+        self.assertTrue(veo2_client.is_available)
+        self.assertTrue(veo3_client.is_available)
+
+        # Should have different model names
+        self.assertNotEqual(veo2_client.get_model_name(), veo3_client.get_model_name())
+
+    def test_client_output_directory_structure(self):
+        """Test that clients create proper output directory structure"""
+        veo2_client = VertexAIVeo2Client(
+            project_id=self.project_id,
+            location=self.location,
+            gcs_bucket=self.gcs_bucket,
+            output_dir=os.path.join(self.temp_dir, 'veo2')
+        )
+
+        veo3_client = VertexAIVeo3Client(
+            project_id=self.project_id,
+            location=self.location,
+            gcs_bucket=self.gcs_bucket,
+            output_dir=os.path.join(self.temp_dir, 'veo3')
+        )
+
+        # Test directory creation (happens during initialization)
+        self.assertTrue(os.path.exists(os.path.join(self.temp_dir, 'veo2')))
+        self.assertTrue(os.path.exists(os.path.join(self.temp_dir, 'veo3')))
+
+    @patch('src.generators.vertex_ai_veo2_client.requests.post')
+    @patch('src.generators.vertex_veo3_client.VertexAIVeo3Client._submit_veo3_generation_request')
+    def test_parallel_generation_different_clients(self, mock_veo3_submit, mock_veo2_post):
+        """Test parallel video generation with different clients"""
+        # This test ensures both clients can work independently
+
+        # Mock VEO-2 response
+        mock_veo2_operation = {
+            "name": "projects/test-project/locations/us-central1/publishers/google/models/veo-2.0-generate-001/operations/123456",
+            "metadata": {
+                "@type": "type.googleapis.com/google.cloud.aiplatform.v1.GenericOperationMetadata"}}
+
+        mock_veo2_completed = {
+            "name": "projects/test-project/locations/us-central1/publishers/google/models/veo-2.0-generate-001/operations/123456",
+            "done": True,
+            "response": {
+                "videos": [{
+                    "mimeType": "video/mp4",
+                    "videoData": self._create_mock_video_data_string()
+                }]
+            }
+        }
+
+        mock_veo2_post.side_effect = [
+            Mock(status_code=200, json=lambda: mock_veo2_operation),
+            Mock(status_code=200, json=lambda: mock_veo2_completed)
+        ]
+
+        # Mock VEO-3 response
+        mock_veo3_submit.return_value = "projects/test-project/locations/us-central1/operations/789012"
+
+        # Create clients
+        veo2_client = VertexAIVeo2Client(
+            project_id=self.project_id,
+            location=self.location,
+            gcs_bucket=self.gcs_bucket,
+            output_dir=os.path.join(self.temp_dir, 'veo2')
+        )
+
+        veo3_client = VertexAIVeo3Client(
+            project_id=self.project_id,
+            location=self.location,
+            gcs_bucket=self.gcs_bucket,
+            output_dir=os.path.join(self.temp_dir, 'veo3')
+        )
+
+        # Test that both clients can be instantiated and configured
+        self.assertIsNotNone(veo2_client)
+        self.assertIsNotNone(veo3_client)
+        self.assertTrue(veo2_client.is_available)
+        self.assertTrue(veo3_client.is_available)
+
+    def _create_mock_video_data_string(self):
+        """Create mock base64 video data string for testing"""
+        # Minimal MP4 header for testing
+        mock_mp4_data = b'\x00\x00\x00\x20ftypmp42\x00\x00\x00\x00mp42isom'
+        return base64.b64encode(mock_mp4_data).decode('utf-8')
+
+
+if __name__ == '__main__':
+    # Run the tests
+    unittest.main(verbosity=2)

@@ -1,28 +1,36 @@
 import os
 import json
 from datetime import datetime
-from ..utils.session_manager import SessionManager
 from typing import Dict, List
 import logging
 
-logger = logging.getLogger(__name__)
+from ..utils.session_manager import session_manager, SessionManager
 
+logger = logging.getLogger(__name__)
 
 class FileService:
     def __init__(self, session_id):
         self.session_id = session_id
-        self.session_path = SessionManager.get_session_path(session_id)
+        # Use the session_manager instance if available, otherwise use static method
+        if hasattr(session_manager, 'current_session') and session_manager.current_session:
+            self.session_path = session_manager.get_session_path()
+        else:
+            # Fallback using static method
+            self.session_path = SessionManager.get_static_session_path(session_id)
         os.makedirs(self.session_path, exist_ok=True)
 
     @staticmethod
     def create_session_folder():
         """Create session folder using centralized session manager"""
-        session_id = SessionManager.create_session_id()
-        return f"session_{session_id}"  # Return with prefix for backward compatibility
+        # Use timestamp-based session ID for backward compatibility
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        session_id = f"session_{timestamp}"
+        return session_id
 
     def setup_session_directories(self, session_id: str) -> Dict[str, str]:
         """Setup session directories and ensure they contain data"""
-        session_dir = SessionManager.get_session_path(session_id)
+        session_dir = SessionManager.get_static_session_path(session_id)
 
         # Create main session directory
         os.makedirs(session_dir, exist_ok=True)
@@ -47,14 +55,18 @@ class FileService:
             placeholder_file = os.path.join(directories[dir_name], '.gitkeep')
             if not os.path.exists(placeholder_file):
                 with open(placeholder_file, 'w') as f:
-                    f.write(f"# {dir_name.title()} directory for session {session_id}\n")
+                    f.write("")
 
         logger.info(f"📁 Session directories setup: session_{session_id}")
         return directories
 
-    def save_session_metadata(self, session_id: str, config: Dict, start_time: datetime) -> str:
+    def save_session_metadata(
+        self,
+        session_id: str,
+        config: Dict,
+        start_time: datetime) -> str:
         """Save comprehensive session metadata"""
-        session_dir = SessionManager.get_session_path(session_id)
+        session_dir = SessionManager.get_static_session_path(session_id)
         metadata_file = os.path.join(session_dir, 'session_metadata.json')
 
         metadata = {
@@ -84,14 +96,14 @@ class FileService:
         }
 
         with open(metadata_file, 'w', encoding='utf-8') as f:
-            json.dump(metadata, f, indent=2, ensure_ascii=False)
+            json.dump(metadata, f, indent=4)
 
         logger.info(f"📄 Session metadata saved: {metadata_file}")
         return metadata_file
 
     def cleanup_empty_directories(self, session_id: str) -> int:
         """Remove empty directories and log what was cleaned up"""
-        session_dir = SessionManager.get_session_path(session_id)
+        session_dir = SessionManager.get_static_session_path(session_id)
         cleaned_count = 0
 
         # Walk through all subdirectories
@@ -121,16 +133,16 @@ class FileService:
         with open(os.path.join(self.session_path, filename), "w") as f:
             json.dump(data, f, indent=4)
 
-    def create_final_video(self, clips: List[str], audio_path: str, 
+    def create_final_video(self, clips: List[str], audio_path: str,
                           session_id: str, output_dir: str = "outputs") -> str:
         """Create final video from clips and audio"""
         logger.info("🎞️ Creating final video from clips and audio")
-        
+
         try:
             # Create session directory
             session_path = os.path.join(output_dir, f"session_{session_id}")
             os.makedirs(session_path, exist_ok=True)
-            
+
             # For now, create a placeholder video file
             video_path = os.path.join(session_path, "final_video.mp4")
             with open(video_path, "w") as f:
@@ -139,4 +151,3 @@ class FileService:
         except Exception as e:
             logger.error(f"Error creating final video: {e}")
             return ""
-

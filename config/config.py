@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     veo_fallback_enabled: bool = True
     force_veo_only: bool = False  # NEW: Force VEO-only, no fallbacks
     prefer_google_ai_veo: bool = True  # NEW: Prefer Google AI Studio VEO over Vertex AI
+    disable_veo3: bool = True  # NEW: Disable VEO3 completely (force VEO2 only)
+    prefer_veo2_over_veo3: bool = True  # NEW: Always prefer VEO2 over VEO3
 
     # Google Cloud TTS Configuration
     google_tts_voice_type: str = "en-US-Neural2-F"

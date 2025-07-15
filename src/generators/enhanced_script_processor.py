@@ -6,17 +6,21 @@ import re
 import os
 from typing import List, Dict, Any, Optional
 import google.generativeai as genai
+import json
+from datetime import datetime
 
 from ..utils.logging_config import get_logger
 from ..models.video_models import Language, Platform, VideoCategory
 
 logger = get_logger(__name__)
 
-
 class EnhancedScriptProcessor:
     """Processes scripts for optimal TTS delivery with proper punctuation and structure"""
 
     def __init__(self, api_key: str):
+        if not api_key:
+            raise ValueError("API key cannot be None or empty")
+        
         self.api_key = api_key
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-2.5-flash')
@@ -71,125 +75,203 @@ class EnhancedScriptProcessor:
 
         logger.info("✅ Enhanced Script Processor initialized")
 
-    def process_script_for_tts(self,
-                               script: str,
-                               language: Language,
-                               target_duration: int,
-                               platform: Platform,
-                               category: VideoCategory) -> Dict[str, Any]:
-        """Process script for optimal TTS delivery"""
-
-        logger.info(
-            f"📝 Processing script for TTS optimization ({
-                language.value})")
-
+    def process_script_for_tts(self, script_content: str, language,
+                             target_duration: float = None) -> Dict[str, Any]:
+        """Process script with AI optimization for exact duration matching"""
         try:
-            # Step 1: AI-enhanced script improvement
-            enhanced_script = self._ai_enhance_script(
-                script, language, target_duration, platform, category)
+            # Handle both string and enum inputs for language
+            if isinstance(language, str):
+                language_value = language
+                # Try to convert to enum if possible
+                try:
+                    from src.models.video_models import Language
+                    language_enum = Language(language)
+                    language_value = language_enum.value
+                except (ValueError, ImportError):
+                    # If conversion fails, use string as-is
+                    language_value = language
+            else:
+                # Assume it's already an enum
+                language_value = language.value if hasattr(language, 'value') else str(language)
+            
+            logger.info(f"📝 Processing script for TTS optimization ({language_value})")
+            if target_duration:
+                logger.info(f"🎯 Target duration: {target_duration} seconds")
 
-            # Step 2: Apply language-specific formatting
-            formatted_script = self._apply_language_formatting(
-                enhanced_script, language)
+            # Enhanced prompt for duration-aware script processing
+            processing_prompt = f"""
+You are an expert script processor specializing in TTS optimization and duration control.
 
-            # Step 3: Optimize punctuation and sentence structure
-            optimized_script = self._optimize_for_tts(
-                formatted_script, language)
+ORIGINAL SCRIPT:
+{script_content}
 
-            # Step 4: Validate and measure
-            validation_results = self._validate_script(
-                optimized_script, language, target_duration)
+TARGET LANGUAGE: {language_value}
+TARGET DURATION: {target_duration} seconds (if specified)
 
-            return {
-                "original_script": script,
-                "enhanced_script": enhanced_script,
-                "formatted_script": formatted_script,
-                "final_script": optimized_script,
-                "validation": validation_results,
-                "word_count": len(
-                    optimized_script.split()),
-                "sentence_count": len(
-                    self._split_into_sentences(
-                        optimized_script,
-                        language)),
-                "estimated_duration": self._estimate_duration(
-                    optimized_script,
-                    language),
-                "tts_ready": validation_results["is_valid"]}
+TASK: Optimize this script for Text-to-Speech generation with perfect duration control.
 
+REQUIREMENTS:
+1. DURATION CONTROL: If target duration is specified ({target_duration}s), ensure the script can be spoken in exactly that time
+2. TTS OPTIMIZATION: Use clear, pronounceable words
+3. NATURAL FLOW: Maintain conversational tone
+4. SEGMENT BREAKDOWN: Split into logical segments for multi-voice generation
+5. TIMING CALCULATION: Estimate speaking time (average 3 words per second)
+
+DURATION CALCULATION:
+- Average speaking speed: 3 words per second
+- Target words for {target_duration}s: {int(target_duration * 3) if target_duration else 'Not specified'}
+- Adjust content to fit this word count precisely
+
+Please return a JSON response with the following structure:
+{{
+    "optimized_script": "The optimized script text (exactly the right length for {target_duration}s)",
+    "segments": [
+        {{
+            "text": "First segment text",
+            "duration": estimated_seconds,
+            "word_count": number_of_words,
+            "voice_suggestion": "storyteller/narrator/enthusiastic/calm"
+        }}
+    ],
+    "total_estimated_duration": total_seconds,
+    "total_word_count": total_words,
+    "optimization_notes": "Brief notes about changes made",
+    "duration_match": "perfect/close/adjusted",
+    "tts_optimizations": ["List of TTS-specific improvements made"]
+}}
+
+CRITICAL: If target duration is {target_duration}s, ensure total_estimated_duration is within ±2 seconds of this target.
+"""
+
+            response = self.model.generate_content(processing_prompt)
+            
+            # Parse AI response
+            response_text = response.text.strip()
+            
+            # Clean response and extract JSON
+            if response_text.startswith('```json'):
+                response_text = response_text[7:-3]
+            elif response_text.startswith('```'):
+                response_text = response_text[3:-3]
+            
+            try:
+                result = json.loads(response_text)
+                
+                # Validate duration matching if target was specified
+                if target_duration:
+                    estimated_duration = result.get('total_estimated_duration', 0)
+                    duration_diff = abs(estimated_duration - target_duration)
+                    
+                    if duration_diff > 5:  # More than 5 seconds off
+                        logger.warning(f"⚠️ Duration mismatch: {estimated_duration}s vs target {target_duration}s")
+                        # Trigger re-processing with stricter constraints
+                        result = self._reprocess_for_duration(script_content, target_duration, language)
+                    else:
+                        logger.info(f"✅ Duration match: {estimated_duration}s (target: {target_duration}s)")
+                
+                # Add metadata
+                result['language'] = language_value
+                result['processing_timestamp'] = datetime.now().isoformat()
+                result['target_duration'] = target_duration
+                
+                logger.info(f"✅ AI enhanced script: {result.get('total_word_count', 0)} words")
+                return result
+                
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse AI response: {e}")
+                return self._create_fallback_result(script_content, language, target_duration)
+                
         except Exception as e:
-            logger.error(f"❌ Script processing failed: {e}")
-            # Return basic processed version
+            logger.error(f"Script processing failed: {e}")
+            return self._create_fallback_result(script_content, language, target_duration)
+
+    def _reprocess_for_duration(self, script_content: str, target_duration: float, language: Language) -> Dict[str, Any]:
+        """Re-process script with stricter duration constraints"""
+        try:
+            target_words = int(target_duration * 3)  # 3 words per second
+            
+            # Simple word-based trimming/expansion
+            words = script_content.split()
+            
+            if len(words) > target_words:
+                # Trim to target word count
+                optimized_text = ' '.join(words[:target_words])
+                logger.info(f"📏 Trimmed script from {len(words)} to {target_words} words")
+            elif len(words) < target_words * 0.8:
+                # Expand if significantly short (less than 80% of target)
+                optimized_text = script_content + " " + script_content[:target_words - len(words)]
+                logger.info(f"📏 Expanded script to reach target word count")
+            else:
+                optimized_text = script_content
+            
+            # Create segments
+            segment_count = max(1, min(4, target_duration // 3))  # 1-4 segments based on duration
+            words_per_segment = len(optimized_text.split()) // segment_count
+            
+            segments = []
+            words = optimized_text.split()
+            
+            for i in range(segment_count):
+                start_idx = i * words_per_segment
+                end_idx = (i + 1) * words_per_segment if i < segment_count - 1 else len(words)
+                
+                segment_text = ' '.join(words[start_idx:end_idx])
+                segment_duration = len(segment_text.split()) / 3.0  # 3 words per second
+                
+                segments.append({
+                    "text": segment_text,
+                    "duration": segment_duration,
+                    "word_count": len(segment_text.split()),
+                    "voice_suggestion": "storyteller"
+                })
+            
             return {
-                "original_script": script,
-                "final_script": self._basic_cleanup(script, language),
-                "validation": {"is_valid": True, "issues": []},
-                "word_count": len(script.split()),
-                "tts_ready": True
+                "optimized_script": optimized_text,
+                "segments": segments,
+                "total_estimated_duration": sum(seg['duration'] for seg in segments),
+                "total_word_count": len(optimized_text.split()),
+                "optimization_notes": f"Reprocessed for exact {target_duration}s duration",
+                "duration_match": "adjusted",
+                "tts_optimizations": ["Duration-based word count adjustment"],
+                "language": language_value,
+                "processing_timestamp": datetime.now().isoformat(),
+                "target_duration": target_duration
             }
-
-    def _ai_enhance_script(
-            self,
-            script: str,
-            language: Language,
-            target_duration: int,
-            platform: Platform,
-            category: VideoCategory) -> str:
-        """Use AI to enhance script for better TTS delivery"""
-
-        try:
-            language_rules = self.language_rules.get(
-                language, self.language_rules[Language.ENGLISH_US])
-            max_sentence_length = language_rules["max_sentence_length"]
-
-            enhancement_prompt = f"""
-            You are a professional script writer specializing in TTS-optimized content for {platform.value} videos.
-
-            TASK: Enhance this script for optimal Text-to-Speech delivery in {language.value}
-
-            ORIGINAL SCRIPT:
-            {script}
-
-            TARGET SPECIFICATIONS:
-            - Language: {language.value}
-            - Platform: {platform.value}
-            - Category: {category.value}
-            - Target Duration: {target_duration} seconds
-            - Max words per sentence: {max_sentence_length}
-
-            TTS OPTIMIZATION REQUIREMENTS:
-            1. SHORT SENTENCES: Maximum {max_sentence_length} words per sentence
-            2. CLEAR PUNCTUATION: Use proper punctuation marks for natural pauses
-            3. NATURAL FLOW: Ensure smooth transitions between sentences
-            4. PRONUNCIATION-FRIENDLY: Avoid complex words that TTS might mispronounce
-            5. ENGAGING RHYTHM: Vary sentence lengths for dynamic delivery
-            6. PLATFORM OPTIMIZATION: Match {platform.value} content style
-
-            LANGUAGE-SPECIFIC RULES:
-            {"- RTL LANGUAGE: Ensure proper word order and sentence structure" if language in [Language.HEBREW, Language.ARABIC] else ""}
-            {"- Use native punctuation marks where appropriate" if language in [Language.ARABIC, Language.SPANISH] else ""}
-
-            OUTPUT REQUIREMENTS:
-            - Keep the same core message and content
-            - Maintain engaging and viral-worthy tone
-            - Ensure every sentence ends with proper punctuation
-            - Add natural pauses with commas where needed
-            - Make it sound conversational and natural when spoken
-
-            Return ONLY the enhanced script text, nothing else.
-            """
-
-            response = self.model.generate_content(enhancement_prompt)
-            enhanced_script = response.text.strip()
-
-            logger.info(
-                f"✅ AI enhanced script: {
-                    len(enhanced_script)} characters")
-            return enhanced_script
-
+            
         except Exception as e:
-            logger.error(f"❌ AI script enhancement failed: {e}")
-            return script
+            logger.error(f"Script reprocessing failed: {e}")
+            return self._create_fallback_result(script_content, language, target_duration)
+
+    def _create_fallback_result(self, script_content: str, language: Language, target_duration: float = None) -> Dict[str, Any]:
+        """Create fallback result when AI processing fails"""
+        words = script_content.split()
+        word_count = len(words)
+        estimated_duration = word_count / 3.0  # 3 words per second
+        
+        # If target duration specified, trim to fit
+        if target_duration and estimated_duration > target_duration:
+            target_words = int(target_duration * 3)
+            script_content = ' '.join(words[:target_words])
+            word_count = target_words
+            estimated_duration = target_duration
+        
+        return {
+            "optimized_script": script_content,
+            "segments": [{
+                "text": script_content,
+                "duration": estimated_duration,
+                "word_count": word_count,
+                "voice_suggestion": "storyteller"
+            }],
+            "total_estimated_duration": estimated_duration,
+            "total_word_count": word_count,
+            "optimization_notes": "Fallback processing applied",
+            "duration_match": "fallback",
+            "tts_optimizations": ["Basic fallback processing"],
+            "language": language_value,
+            "processing_timestamp": datetime.now().isoformat(),
+            "target_duration": target_duration
+        }
 
     def _apply_language_formatting(
             self,
@@ -271,7 +353,7 @@ class EnhancedScriptProcessor:
         endings_pattern = "|".join(re.escape(ending) for ending in endings)
 
         # Split on sentence endings followed by space or end of string
-        sentences = re.split(f'({endings_pattern})\\s*', text)
+        sentences = re.split(f'(endings_pattern)\\s*', text)
 
         # Reconstruct sentences with their endings
         result = []
@@ -281,7 +363,7 @@ class EnhancedScriptProcessor:
                 if sentence.strip():
                     result.append(sentence.strip())
 
-        # Handle last sentence if it doesn't end with punctuation
+        # Handle last sentence if it doesn't end with punctuation'
         if sentences and sentences[-1].strip():
             result.append(sentences[-1].strip())
 
@@ -311,7 +393,7 @@ class EnhancedScriptProcessor:
             "because",
             "when",
             "while",
-            "if",
+            "i",
             "although"]
 
         for word in words:
@@ -319,8 +401,7 @@ class EnhancedScriptProcessor:
 
             # Check if we should break here
             should_break = (
-                len(current_sentence) >= max_length or
-                (len(current_sentence) >= max_length // 2 and
+                len(current_sentence) >= max_length or(len(current_sentence) >= max_length // 2 and
                  (word.endswith(',') or word.lower() in break_words))
             )
 
@@ -360,7 +441,11 @@ class EnhancedScriptProcessor:
         if "?" in sentence or sentence.lower().startswith(
                 ("what", "who", "when", "where", "why", "how")):
             return sentence + "?"
-        elif "!" in sentence or any(word in sentence.lower() for word in ["amazing", "wow", "incredible", "awesome"]):
+        elif "!" in sentence or any(
+            word in sentence.lower() for word in ["amazing",
+            "wow",
+            "incredible",
+            "awesome"]):
             return sentence + "!"
         else:
             return sentence + "."
@@ -419,14 +504,18 @@ class EnhancedScriptProcessor:
         long_sentences = [s for s in sentences if len(s.split()) > max_length * 1.5]  # More lenient
         if len(long_sentences) > len(sentences) * 0.3:  # Only flag if more than 30% are too long
             issues.append(
-                f"Found {
-                    len(long_sentences)} sentences significantly longer than {max_length} words")
+                f"Found {len(long_sentences)} sentences significantly longer than {max_length} words")
 
         # Check punctuation - more lenient
         has_punctuation = any(script.endswith(ending)
                    for ending in language_rules["sentence_endings"])
-        has_internal_punctuation = any(punct in script for punct in ['.', '!', '?', ','])
-        
+        has_internal_punctuation = any(
+            punct in script for punct in ['.',
+            '!',
+            '?',
+            ','
+            ])
+
         if not has_punctuation and not has_internal_punctuation:
             issues.append("Script lacks proper punctuation")
 
@@ -439,16 +528,15 @@ class EnhancedScriptProcessor:
                 f"Duration estimate ({estimated_duration}s) differs significantly from target ({target_duration}s)")
 
         # Script is valid if it has basic punctuation and reasonable length
-        is_valid = (has_punctuation or has_internal_punctuation) and len(script.strip()) > 10
+        is_valid = (has_punctuation or has_internal_punctuation) and \
+                len(script.strip()) > 10
 
         return {
             "is_valid": is_valid,
             "issues": issues,
             "estimated_duration": estimated_duration,
             "sentence_count": len(sentences),
-            "avg_sentence_length": sum(
-                len(
-                    s.split()) for s in sentences) /
+            "avg_sentence_length": sum(len(s.split()) for s in sentences) / \
             len(sentences) if sentences else 0}
 
     def _estimate_duration(self, script: str, language: Language) -> float:
@@ -472,117 +560,127 @@ class EnhancedScriptProcessor:
 
         return estimated_seconds
 
-    def ensure_complete_sentences(self, text: str, max_duration: float, speech_rate: float = 2.2) -> str:
+    def ensure_complete_sentences(
+        self,
+        text: str,
+        max_duration: float,
+        speech_rate: float = 2.2) -> str:
         """Ensure script fits within duration without cutting sentences"""
-        
+
         logger.info(f"📝 Ensuring complete sentences within {max_duration:.1f}s duration")
-        
+
         try:
             import re
-            
+
             # Clean the text
             clean_text = text.strip()
-            
+
             # Split into sentences using proper sentence boundaries
             sentence_endings = r'[.!?]+(?:\s|$)'
             sentences = re.split(sentence_endings, clean_text)
             sentences = [s.strip() for s in sentences if s.strip()]
-            
+
             # Calculate words and timing
             total_words = sum(len(sentence.split()) for sentence in sentences)
             estimated_duration = total_words / speech_rate
-            
-            logger.info(f"📊 Original: {len(sentences)} sentences, {total_words} words, {estimated_duration:.1f}s estimated")
-            
+
+            logger.info(
+                f"📊 Original: {len(sentences)} sentences,"
+                f"{total_words} words, "
+                f"{estimated_duration:.1f}s estimated")
+
             # If it fits, return as-is
             if estimated_duration <= max_duration:
                 logger.info("✅ Script fits within duration perfectly")
                 return clean_text
-            
+
             # If too long, trim sentences from the end (never cut mid-sentence)
             target_words = int(max_duration * speech_rate)
-            
+
             logger.info(f"🎯 Target: {target_words} words for {max_duration:.1f}s duration")
-            
+
             # Build script up to target word count
             selected_sentences = []
             current_word_count = 0
-            
+
             for sentence in sentences:
                 sentence_words = len(sentence.split())
-                
+
                 # Check if adding this sentence would exceed target
                 if current_word_count + sentence_words > target_words:
-                    # If we haven't selected any sentences yet, include this one anyway
+                    # If we haven't selected any sentences yet, include this one anyway'
                     # to avoid empty script
                     if not selected_sentences:
                         selected_sentences.append(sentence)
                         current_word_count += sentence_words
-                        logger.info(f"⚠️ Including oversized sentence to avoid empty script")
+                        logger.info("⚠️ Including oversized sentence to avoid empty script")
                     break
-                
+
                 selected_sentences.append(sentence)
                 current_word_count += sentence_words
-                
-                logger.info(f"✅ Added sentence: {sentence_words} words (total: {current_word_count})")
-            
+
+                logger.info(f"✅ Added sentence: {sentence_words} words (total: {current_word_count}")
+
             # Reconstruct the script with proper sentence endings
             if selected_sentences:
                 final_script = '. '.join(selected_sentences)
                 if not final_script.endswith(('.', '!', '?')):
                     final_script += '.'
-                
+
                 final_words = len(final_script.split())
                 final_duration = final_words / speech_rate
-                
-                logger.info(f"✅ Final script: {len(selected_sentences)} sentences, {final_words} words, {final_duration:.1f}s")
-                
+
+                logger.info(
+                    f"✅ Final script: {len(selected_sentences)} sentences,"
+                    f"{final_words} words, "
+                    f"{final_duration:.1f}s")
+
                 return final_script
             else:
                 logger.warning("⚠️ No sentences selected, returning original text")
                 return clean_text
-                
+
         except Exception as e:
             logger.error(f"❌ Sentence completion failed: {e}")
             return text
-    
-    def validate_script_timing(self, script: str, target_duration: float, 
+
+    def validate_script_timing(self, script: str, target_duration: float,
                              tolerance: float = 5.0) -> Dict[str, Any]:
         """Validate that script timing matches target duration within tolerance"""
-        
+
         try:
             words = len(script.split())
-            
+
             # Calculate timing with different speech rates
             speech_rates = {
                 'slow': 1.8,     # Slow, clear speech
                 'normal': 2.2,   # Normal conversational pace
                 'fast': 2.6      # Fast, energetic pace
             }
-            
+
             timing_analysis = {}
-            
+
             for rate_name, rate_value in speech_rates.items():
                 duration = words / rate_value
                 within_tolerance = abs(duration - target_duration) <= tolerance
-                
+
                 timing_analysis[rate_name] = {
                     'duration': duration,
                     'within_tolerance': within_tolerance,
                     'difference': duration - target_duration
                 }
-            
+
             # Find the best matching rate
-            best_rate = min(timing_analysis.items(), 
+            best_rate = min(timing_analysis.items(),
                           key=lambda x: abs(x[1]['difference']))
-            
-            logger.info(f"📊 Script timing analysis:")
+
+            logger.info("📊 Script timing analysis:")
             logger.info(f"   Words: {words}")
             logger.info(f"   Target duration: {target_duration:.1f}s")
             logger.info(f"   Best rate: {best_rate[0]} ({speech_rates[best_rate[0]]:.1f} words/sec)")
             logger.info(f"   Estimated duration: {best_rate[1]['duration']:.1f}s")
             logger.info(f"   Within tolerance: {best_rate[1]['within_tolerance']}")
-            
+
             return {
                 'words': words,
                 'target_duration': target_duration,
@@ -593,7 +691,7 @@ class EnhancedScriptProcessor:
                 'within_tolerance': best_rate[1]['within_tolerance'],
                 'needs_adjustment': not best_rate[1]['within_tolerance']
             }
-            
+
         except Exception as e:
             logger.error(f"❌ Script timing validation failed: {e}")
             return {

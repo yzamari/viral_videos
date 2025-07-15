@@ -22,7 +22,7 @@ youtube-transcript-api==0.6.1
 # Video Generation & Processing
 moviepy==1.0.3
 pillow==10.1.0
-numpy==1.26.2
+numpy==1.26.4
 opencv-python==4.8.1.78
 gtts==2.5.0  # Google Text-to-Speech fallback
 imageio==2.33.0  # Video I/O support
@@ -52,6 +52,9 @@ schedule==1.2.0
 pytest==7.4.3
 pytest-asyncio==0.23.2
 pytest-cov==4.1.0
+pytest-mock==3.12.0  # Enhanced mocking capabilities
+pytest-playwright==0.4.4  # For browser testing
+pytest-xdist==3.5.0  # Parallel test execution
 
 # Utilities
 tqdm==4.66.1

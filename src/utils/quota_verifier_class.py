@@ -13,7 +13,6 @@ from .quota_verification import (
 
 logger = get_logger(__name__)
 
-
 class QuotaVerifier:
     """
     Quota verification class that provides a unified interface for checking
@@ -184,13 +183,16 @@ class QuotaVerifier:
         veo = quota_status.get('veo_quota', {})
 
         if not google_ai.get('api_accessible', False):
-            return False, f"Google AI Studio API not accessible: {google_ai.get('message', 'Unknown error')}"
+            return False, f"Google AI Studio API not accessible: {google_ai.get(
+                'message',
+                'Unknown error')}"
 
         if not usage.get('can_generate', False):
-            return False, f"Google AI quota exhausted: {usage.get('message', 'Unknown error')}"
+            return False, f"Google AI quota exhausted: {usage.get(
+                'message',
+                'Unknown error')}"
 
         if veo.get('status') in ['FORBIDDEN', 'UNAUTHORIZED']:
             return False, f"VEO access denied: {veo.get('message', 'Unknown error')}"
 
         return True, "Generation possible with potential limitations"
-

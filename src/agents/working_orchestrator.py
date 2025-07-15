@@ -1,24 +1,38 @@
 """
 Enhanced Working AI Agent Orchestrator
-Comprehensive mission-driven system with ALL features and proper OOP design
-"""
+Comprehensive mission-driven system with ALL features and proper OOP design """
 
-from typing import Dict, Any
-from datetime import datetime
-from enum import Enum
+import time
+from typing  import Dict, Any, Optional
+from datetime  import datetime
+from enum   import Enum
+import uuid
 
 try:
-    from ..generators.video_generator import VideoGenerator
-    from ..generators.director import Director
-    from ..generators.enhanced_script_processor import EnhancedScriptProcessor
-    from ..generators.integrated_multilang_generator import IntegratedMultilingualGenerator
-    from ..models.video_models import (GeneratedVideoConfig, Platform, VideoCategory, 
-                                       Language, VideoOrientation)
-    from ..utils.logging_config import get_logger
-    from .continuity_decision_agent import ContinuityDecisionAgent
-    from .voice_director_agent import VoiceDirectorAgent
-    from .video_composition_agents import VideoStructureAgent, ClipTimingAgent, VisualElementsAgent, MediaTypeAgent
-    from .multi_agent_discussion import MultiAgentDiscussionSystem, AgentRole, DiscussionTopic
+    from ..generators.video_generator  import VideoGenerator
+    from ..generators.director  import Director
+    from ..generators.enhanced_script_processor  import EnhancedScriptProcessor
+    from ..generators.integrated_multilang_generator  import IntegratedMultilingualGenerator
+    from ..models.video_models import (
+        GeneratedVideoConfig,
+        Platform,
+        VideoCategory,
+        Language
+    )
+    from ..utils.logging_config  import get_logger
+    from .continuity_decision_agent  import ContinuityDecisionAgent
+    from .voice_director_agent  import VoiceDirectorAgent
+    from .video_composition_agents import (
+        VideoStructureAgent,
+        ClipTimingAgent,
+        VisualElementsAgent,
+        MediaTypeAgent
+    )
+    from .multi_agent_discussion import (
+        MultiAgentDiscussionSystem,
+        AgentRole,
+        DiscussionTopic
+    )
 except ImportError:
     # Fallback for direct execution
     import sys
@@ -28,16 +42,17 @@ except ImportError:
     from src.generators.director import Director
     from src.generators.enhanced_script_processor import EnhancedScriptProcessor
     from src.generators.integrated_multilang_generator import IntegratedMultilingualGenerator
-    from src.models.video_models import (GeneratedVideoConfig, Platform, VideoCategory, 
-                                         Language, VideoOrientation)
+    from src.models.video_models import (
+        GeneratedVideoConfig,
+        Platform,
+        VideoCategory,
+        Language
+    )
     from src.utils.logging_config import get_logger
     from src.agents.continuity_decision_agent import ContinuityDecisionAgent
     from src.agents.voice_director_agent import VoiceDirectorAgent
-    from src.agents.video_composition_agents import VideoStructureAgent, ClipTimingAgent, VisualElementsAgent, MediaTypeAgent
-    from src.agents.multi_agent_discussion import MultiAgentDiscussionSystem, AgentRole, DiscussionTopic
 
 logger = get_logger(__name__)
-
 
 class OrchestratorMode(str, Enum):
     """Available orchestrator modes for different use cases"""
@@ -47,19 +62,10 @@ class OrchestratorMode(str, Enum):
     MULTILINGUAL = "multilingual"  # Multilingual generation (8 agents)
     PROFESSIONAL = "professional"  # Maximum quality with all features (19+ agents)
 
-
 class WorkingOrchestrator:
     """
-    Comprehensive mission-driven orchestrator with ALL features and proper OOP design
-
-    This orchestrator provides:
-    - Multiple operation modes (Simple to Professional)
-    - Mission-driven content creation
-    - User-configurable parameters
-    - Advanced AI agent discussions
-    - Multilingual support
-    - Enhanced script processing
-    - Comprehensive composition analysis
+    Enhanced working orchestrator with multi-agent AI system
+    Supports multiple generation modes and comprehensive video creation
     """
 
     def __init__(self, api_key: str, mission: str, platform: Platform,
@@ -67,13 +73,15 @@ class WorkingOrchestrator:
                  style: str = "viral", tone: str = "engaging",
                  target_audience: str = "general audience",
                  visual_style: str = "dynamic",
-                 mode: OrchestratorMode = OrchestratorMode.ENHANCED):
+                 mode: OrchestratorMode = OrchestratorMode.ENHANCED,
+                 session_id: Optional[str] = None,
+                 language: Language = Language.ENGLISH_US):
         """
-        Initialize the comprehensive orchestrator
+        Initialize Working Orchestrator
 
         Args:
             api_key: Google AI API key
-            mission: What you want to accomplish (not just topic)
+            mission: Video mission/topic
             platform: Target platform
             category: Video category
             duration: Video duration in seconds
@@ -82,8 +90,9 @@ class WorkingOrchestrator:
             target_audience: Target audience description
             visual_style: Visual style (dynamic, minimalist, cinematic)
             mode: Orchestrator mode (simple to professional)
+            session_id: Optional session ID
+            language: Target language for content
         """
-        # Core properties
         self.api_key = api_key
         self.mission = mission
         self.platform = platform
@@ -94,7 +103,26 @@ class WorkingOrchestrator:
         self.target_audience = target_audience
         self.visual_style = visual_style
         self.mode = mode
-        self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.language = language
+        
+        # Generate session ID if not provided
+        if session_id:
+            self.session_id = session_id
+        else:
+            self.session_id = f"session_{uuid.uuid4().hex[:8]}"
+        
+        # Initialize AI clients
+        self.multilang_generator = IntegratedMultilingualGenerator(api_key, "outputs")
+
+        logger.info(f"🎬 WorkingOrchestrator initialized")
+        logger.info(f"   Mission: {mission}")
+        logger.info(f"   Platform: {platform.value}")
+        logger.info(f"   Duration: {duration}s")
+        logger.info(f"   Mode: {mode.value}")
+        logger.info(f"   Style: {style}")
+        logger.info(f"   Tone: {tone}")
+        logger.info(f"   Target Audience: {target_audience}")
+        logger.info(f"   Visual Style: {visual_style}")
 
         # Initialize core AI agents (always available)
         self.director = Director(api_key)
@@ -106,14 +134,15 @@ class WorkingOrchestrator:
 
         # Initialize discussion systems based on mode
         self._initialize_discussion_systems()
-
+        
         # Results storage
         self.agent_decisions = {}
         self.discussion_results = {}
         self.composition_decisions = {}
         self.trending_insights = {}
-
-        logger.info(f"🎬 Enhanced Working Orchestrator initialized ({mode.value})")
+        # Session ID already set above, don't overwrite it
+        
+        logger.info(f"🎬 Enhanced Working Orchestrator initialized (mode.value)")
         logger.info(f"   Mission: {mission}")
         logger.info(f"   Platform: {platform.value}")
         logger.info(f"   Duration: {duration}s")
@@ -165,12 +194,16 @@ class WorkingOrchestrator:
             self.discussion_system = None
 
         elif self.mode in [OrchestratorMode.ENHANCED, OrchestratorMode.MULTILINGUAL]:
-            self.discussion_system = MultiAgentDiscussionSystem(self.api_key, self.session_id)
+            self.discussion_system = MultiAgentDiscussionSystem(
+                self.api_key,
+                self.session_id)
 
         else:  # ADVANCED or PROFESSIONAL
-            self.discussion_system = MultiAgentDiscussionSystem(self.api_key, self.session_id)
+            self.discussion_system = MultiAgentDiscussionSystem(
+                self.api_key,
+                self.session_id)
             # Enhanced discussion systems would be initialized here for future expansion
-
+    
     def generate_video(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """
         Generate video using comprehensive AI agent system
@@ -179,27 +212,26 @@ class WorkingOrchestrator:
             config: Generation configuration dictionary
 
         Returns:
-            Generation result with success status and metadata
-        """
+            Generation result with success status and metadata """
         logger.info(f"🎬 Starting {self.mode.value} AI agent video generation")
 
         try:
             # Phase 1: CRITICAL - Make frame continuity decision FIRST
             # This decision impacts ALL subsequent choices (VEO model selection, composition, etc.)
             frame_continuity_decision = self._make_frame_continuity_decision(config)
-            
+
             # Store decision for use throughout generation
             self.agent_decisions['frame_continuity'] = {
                 'agent': 'ContinuityDecisionAgent',
                 'decision': frame_continuity_decision
             }
-            
+
             # Log the decision prominently
             continuity_status = "✅ ENABLED" if frame_continuity_decision['use_frame_continuity'] else "❌ DISABLED"
             logger.info(f"🎬 Frame Continuity Decision: {continuity_status}")
             logger.info(f"   Confidence: {frame_continuity_decision['confidence']:.2f}")
             logger.info(f"   Reason: {frame_continuity_decision['primary_reason']}")
-            
+
             # Phase 2: Trending Analysis (if enabled)
             if config.get('enable_trending', False):
                 self._analyze_trending_content(config)
@@ -207,21 +239,23 @@ class WorkingOrchestrator:
             # Phase 3: AI Agent Discussions (mode-dependent)
             if self.mode != OrchestratorMode.SIMPLE:
                 self._conduct_agent_discussions(config)
-
+            
             # Phase 4: Script Generation with AI Enhancement
             script_data = self._generate_enhanced_script(config)
 
             # Phase 5: Comprehensive AI Decision Making (with continuity context)
-            decisions = self._make_comprehensive_decisions(script_data, config, frame_continuity_decision)
+            decisions = self._make_comprehensive_decisions(
+                script_data,
+                config,
+                frame_continuity_decision)
 
             # Phase 6: Video Generation with All Features (continuity-aware)
             if self.mode == OrchestratorMode.MULTILINGUAL and config.get('languages'):
                 video_path = self._generate_multilingual_video(script_data, decisions, config)
             else:
                 video_path = self._generate_enhanced_video(script_data, decisions, config)
-
             logger.info(f"✅ {self.mode.value} video generation completed: {video_path}")
-
+            
             return {
                 'success': True,
                 'final_video_path': video_path,
@@ -234,7 +268,7 @@ class WorkingOrchestrator:
                 'mode': self.mode.value,
                 'frame_continuity_decision': frame_continuity_decision
             }
-
+            
         except Exception as e:
             logger.error(f"❌ {self.mode.value} video generation failed: {e}")
             return {
@@ -246,7 +280,10 @@ class WorkingOrchestrator:
                 'mode': self.mode.value
             }
 
-    def _make_frame_continuity_decision(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _make_frame_continuity_decision(
+        self,
+        config: Dict[str,
+        Any]) -> Dict[str, Any]:
         """
         Make frame continuity decision at the beginning of generation
         This decision impacts:
@@ -255,7 +292,7 @@ class WorkingOrchestrator:
         - Clip generation strategy
         """
         frame_continuity_mode = config.get('frame_continuity', 'auto')
-        
+
         if frame_continuity_mode == 'on':
             # User forced continuity ON
             decision = {
@@ -287,7 +324,7 @@ class WorkingOrchestrator:
                 duration=self.duration,
                 style=self.style
             )
-            
+
             # Enhance decision with technical requirements
             if decision['use_frame_continuity']:
                 decision['requires_veo2_only'] = True
@@ -297,7 +334,7 @@ class WorkingOrchestrator:
                 decision['requires_veo2_only'] = False
                 decision['frame_overlap_handling'] = 'none'
                 decision['transition_strategy'] = 'standard_cuts'
-        
+
         return decision
 
     def _analyze_trending_content(self, config: Dict[str, Any]):
@@ -328,8 +365,8 @@ class WorkingOrchestrator:
             'insights': self.trending_insights,
             'videos_analyzed': 0,
             'note': 'Using fallback trending data'
-        }
-
+            }
+    
     def _conduct_agent_discussions(self, config: Dict[str, Any]):
         """Conduct AI agent discussions based on mode"""
         logger.info("🤝 Conducting AI agent discussions...")
@@ -349,10 +386,7 @@ class WorkingOrchestrator:
             return
 
         # Discussion 1: Script Strategy & Viral Optimization
-        script_topic = DiscussionTopic(
-            topic_id="script_strategy",
-            title="Script Strategy & Viral Optimization",
-            description=f"Create the most engaging script for mission: {self.mission}",
+        script_topic = DiscussionTopic( topic_id="script_strategy", title="Script Strategy & Viral Optimization", description=f"Create the most engaging script for mission: {self.mission}",
             context={
                 'mission': self.mission,
                 'platform': self.platform.value,
@@ -362,8 +396,7 @@ class WorkingOrchestrator:
                 'tone': self.tone,
                 'target_audience': self.target_audience,
                 'trending_insights': self.trending_insights
-            },
-            required_decisions=["script_structure", "viral_hooks", "engagement_strategy"]
+            }, required_decisions=["script_structure", "viral_hooks", "engagement_strategy"]
         )
 
         script_result = self.discussion_system.start_discussion(
@@ -371,20 +404,16 @@ class WorkingOrchestrator:
             [AgentRole.SCRIPT_WRITER, AgentRole.DIRECTOR]
         )
         self.discussion_results['script_strategy'] = script_result
-
+        
         # Discussion 2: Visual & Technical Strategy
-        visual_topic = DiscussionTopic(
-            topic_id="visual_strategy",
-            title="Visual Composition & Technical Approach",
-            description=f"Optimal visual strategy for {self.platform.value} content",
+        visual_topic = DiscussionTopic( topic_id="visual_strategy", title="Visual Composition & Technical Approach", description=f"Optimal visual strategy for {self.platform.value} content",
             context={
                 'mission': self.mission,
                 'platform': self.platform.value,
                 'visual_style': self.visual_style,
                 'force_generation': config.get('force_generation', 'auto'),
                 'trending_insights': self.trending_insights
-            },
-            required_decisions=["visual_style", "technical_approach", "generation_mode"]
+            }, required_decisions=["visual_style", "technical_approach", "generation_mode"]
         )
 
         visual_result = self.discussion_system.start_discussion(
@@ -392,19 +421,15 @@ class WorkingOrchestrator:
             [AgentRole.VIDEO_GENERATOR, AgentRole.EDITOR]
         )
         self.discussion_results['visual_strategy'] = visual_result
-
+        
         # Discussion 3: Audio & Production Strategy
-        audio_topic = DiscussionTopic(
-            topic_id="audio_strategy",
-            title="Audio Production & Voice Strategy",
-            description="Optimal audio approach for maximum engagement",
+        audio_topic = DiscussionTopic( topic_id="audio_strategy", title="Audio Production & Voice Strategy", description="Optimal audio approach for maximum engagement",
             context={
                 'mission': self.mission,
                 'duration': self.duration,
                 'platform': self.platform.value,
                 'target_audience': self.target_audience
-            },
-            required_decisions=["voice_style", "audio_approach", "sound_design"]
+            }, required_decisions=["voice_style", "audio_approach", "sound_design"]
         )
 
         audio_result = self.discussion_system.start_discussion(
@@ -412,7 +437,6 @@ class WorkingOrchestrator:
             [AgentRole.SOUNDMAN, AgentRole.EDITOR]
         )
         self.discussion_results['audio_strategy'] = audio_result
-
         logger.info(f"✅ Completed {len(self.discussion_results)} enhanced discussions")
 
     def _conduct_advanced_discussions(self, config: Dict[str, Any]):
@@ -420,7 +444,6 @@ class WorkingOrchestrator:
         # Enhanced discussions would be implemented here
         # For now, use enhanced discussions as base
         self._conduct_enhanced_discussions(config)
-
         logger.info("✅ Advanced discussions completed")
 
     def _conduct_multilingual_discussions(self, config: Dict[str, Any]):
@@ -429,20 +452,17 @@ class WorkingOrchestrator:
         self._conduct_enhanced_discussions(config)
 
         if not self.discussion_system:
-            logger.warning("Discussion system not available, skipping multilingual discussions")
+            logger.warning( "Discussion system not available, " "skipping enhanced discussions"
+            )
             return
 
         # Add multilingual-specific discussion
-        multilang_topic = DiscussionTopic(
-            topic_id="multilingual_strategy",
-            title="Multilingual Content Strategy",
-            description="Optimize content for multiple languages and cultures",
+        multilang_topic = DiscussionTopic( topic_id="multilingual_strategy", title="Multilingual Content Strategy", description="Optimize content for multiple languages and cultures",
             context={
                 'mission': self.mission,
                 'languages': config.get('languages', [Language.ENGLISH_US]),
                 'cultural_adaptation': config.get('cultural_adaptation', True)
-            },
-            required_decisions=["language_priority", "cultural_adaptation", "voice_selection"]
+            }, required_decisions=["language_priority", "cultural_adaptation", "voice_selection"]
         )
 
         multilang_result = self.discussion_system.start_discussion(
@@ -450,7 +470,6 @@ class WorkingOrchestrator:
             [AgentRole.SCRIPT_WRITER, AgentRole.SOUNDMAN]
         )
         self.discussion_results['multilingual_strategy'] = multilang_result
-
         logger.info("✅ Multilingual discussions completed")
 
     def _generate_enhanced_script(self, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -468,18 +487,15 @@ class WorkingOrchestrator:
                 'hooks': self.trending_insights.get('viral_hooks', []),
                 'themes': [self.tone],
                 'success_factors': [self.style, 'engaging']
-            },
-            incorporate_news=config.get('incorporate_news', False)
+            }
         )
 
         # Enhanced script processing for advanced modes
         if self.script_processor and self.mode != OrchestratorMode.SIMPLE:
             processed_script = self.script_processor.process_script_for_tts(
-                script=str(script_data),
+                script_content=str(script_data),
                 language=config.get('language', Language.ENGLISH_US),
-                target_duration=self.duration,
-                platform=self.platform,
-                category=self.category
+                target_duration=self.duration
             )
 
             script_data['processed'] = processed_script
@@ -496,9 +512,9 @@ class WorkingOrchestrator:
             'data': script_data,
             'enhanced': self.mode != OrchestratorMode.SIMPLE
         }
-
+        
         return script_data
-
+    
     def _make_comprehensive_decisions(self, script_data: Dict[str, Any], config: Dict[str, Any],
                                       frame_continuity_decision: Dict[str, Any]) -> Dict[str, Any]:
         """Make comprehensive AI decisions based on mode"""
@@ -525,7 +541,7 @@ class WorkingOrchestrator:
             'agent': 'VoiceDirectorAgent',
             'decision': voice_decision
         }
-
+        
         # Enhanced decisions for advanced modes
         if self.mode in [OrchestratorMode.ENHANCED, OrchestratorMode.ADVANCED,
                          OrchestratorMode.PROFESSIONAL, OrchestratorMode.MULTILINGUAL]:
@@ -580,7 +596,7 @@ class WorkingOrchestrator:
                     'agent': 'MediaTypeAgent',
                     'analysis': media_analysis
                 }
-
+        
         logger.info(f"✅ Made {len(decisions)} comprehensive AI decisions")
         return decisions
 
@@ -590,13 +606,17 @@ class WorkingOrchestrator:
         logger.info("🌍 Generating multilingual video...")
 
         if not self.multilang_generator:
-            logger.warning("Multilingual generator not available, falling back to enhanced video")
+            logger.warning( "Multilingual generator not available, " "using standard video generation"
+            )
             return self._generate_enhanced_video(script_data, decisions, config)
 
         languages = config.get('languages', [Language.ENGLISH_US])
 
         # Create enhanced video config
-        video_config = self._create_enhanced_video_config(script_data, decisions, config)
+        video_config = self._create_enhanced_video_config(
+            script_data,
+            decisions,
+            config)
 
         # Generate multilingual video
         try:
@@ -623,15 +643,19 @@ class WorkingOrchestrator:
         """Generate enhanced video with all AI decisions"""
         logger.info("🎬 Generating enhanced video with AI decisions...")
 
-        # Create video generator
+        # Create video generator with VEO3 disabled
         video_generator = VideoGenerator(
             api_key=self.api_key,
             use_real_veo2=config.get('force_generation') != 'force_image_gen',
-            use_vertex_ai=True
+            use_vertex_ai=True,
+            prefer_veo3=False  # CRITICAL: Disable VEO3 as requested
         )
 
         # Create enhanced video config
-        video_config = self._create_enhanced_video_config(script_data, decisions, config)
+        video_config = self._create_enhanced_video_config(
+            script_data,
+            decisions,
+            config)
 
         # Generate video with AI-enhanced config
         video_result = video_generator.generate_video(video_config)
@@ -664,17 +688,15 @@ class WorkingOrchestrator:
             category=self.category,
             duration_seconds=self.duration,
             topic=self.mission,
+            session_id=self.session_id,
             style=self.style,
             tone=self.tone,
             target_audience=self.target_audience,
             hook=hook,
             main_content=main_content,
             call_to_action=cta,
-            visual_style=visual_style,
-            color_scheme=config.get('color_scheme', ["#FF6B6B", "#4ECDC4", "#FFFFFF"]),
-            text_overlays=config.get('text_overlays', []),
-            transitions=config.get('transitions', ["fade", "slide"]),
-            background_music_style=config.get('background_music_style', "upbeat"),
+            visual_style=visual_style, color_scheme=config.get('color_scheme', ["#FF6B6B", "#4ECDC4", "#FFFFFF"]),
+            text_overlays=config.get('text_overlays', []), transitions=config.get('transitions', ["fade", "slide"]), background_music_style=config.get('background_music_style', "upbeat"),
             voiceover_style=voice_style,
             sound_effects=config.get('sound_effects', []),
             inspired_by_videos=config.get('inspired_by_videos', []),
@@ -682,7 +704,7 @@ class WorkingOrchestrator:
             frame_continuity=frame_continuity,
             image_only_mode=config.get('force_generation') == 'force_image_gen',
             use_real_veo2=config.get('force_generation') != 'force_image_gen',
-            video_orientation=VideoOrientation(config.get('orientation', 'auto')),
+            video_orientation=config.get('orientation', 'auto'),
             ai_decide_orientation=config.get('ai_decide_orientation', True)
         )
         
@@ -691,7 +713,7 @@ class WorkingOrchestrator:
         enhanced_config.category_name = self.category.value
         
         return enhanced_config
-
+    
     def _extract_hook_from_script(self, script_data: Dict[str, Any]) -> str:
         """Extract hook from script data"""
         if isinstance(script_data, dict):
@@ -704,12 +726,12 @@ class WorkingOrchestrator:
         # Generate hook from mission
         mission_words = self.mission.split()
         meaningful_words = [word for word in mission_words if len(word) > 3]
-
+            
         if meaningful_words:
             return f"Mission: {meaningful_words[0]}"
         else:
             return f"Mission: {self.mission}"
-
+    
     def _extract_content_from_script(self, script_data: Dict[str, Any]) -> list:
         """Extract main content from script data"""
         if isinstance(script_data, dict):
@@ -721,9 +743,8 @@ class WorkingOrchestrator:
                     else:
                         content.append(str(segment))
                 return content
-
         return [f"Content for mission: {self.mission}"]
-
+    
     def _extract_cta_from_script(self, script_data: Dict[str, Any]) -> str:
         """Extract call-to-action from script data"""
         if isinstance(script_data, dict):
@@ -734,9 +755,8 @@ class WorkingOrchestrator:
                 return sentences[-1].strip() if sentences else "Follow for more!"
             elif 'call_to_action' in script_data:
                 return str(script_data['call_to_action'])
-
         return "Follow for more!"
-
+    
     def _count_agents_used(self) -> int:
         """Count the number of agents used based on mode"""
         if self.mode == OrchestratorMode.SIMPLE:
@@ -762,7 +782,6 @@ class WorkingOrchestrator:
             'agents_used': self._count_agents_used()
         }
 
-
 def create_working_orchestrator(mission: str, platform: str, category: str,
                                 duration: int, api_key: str,
                                 style: str = "viral", tone: str = "engaging",
@@ -783,16 +802,20 @@ def create_working_orchestrator(mission: str, platform: str, category: str,
         tone: Content tone
         target_audience: Target audience
         visual_style: Visual style
-        mode: Orchestrator mode (simple, enhanced, advanced, multilingual, professional)
+        mode: Orchestrator mode (
+            simple,
+            enhanced,
+            advanced,
+            multilingual,
+            professional)
 
     Returns:
-        Configured WorkingOrchestrator instance
-    """
+        Configured WorkingOrchestrator instance """
     try:
         platform_enum = Platform(platform.lower())
     except ValueError:
         platform_enum = Platform.INSTAGRAM
-
+    
     try:
         # Try direct match first
         category_enum = VideoCategory(category)
@@ -831,7 +854,7 @@ def create_working_orchestrator(mission: str, platform: str, category: str,
         mode_enum = OrchestratorMode(mode.lower())
     except ValueError:
         mode_enum = OrchestratorMode.ENHANCED
-
+    
     return WorkingOrchestrator(
         api_key=api_key,
         mission=mission,

@@ -9,7 +9,6 @@ from ..utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-
 class ModelSelector:
     """
     Smart model selector that handles quota limits and fallbacks
@@ -84,10 +83,8 @@ class ModelSelector:
         """Get safe fallback model when quota is exhausted"""
         return 'gemini-2.5-flash'  # Use primary model
 
-
 # Global model selector instance
 _model_selector = None
-
 
 def get_model_selector() -> ModelSelector:
     """Get or create global model selector"""
@@ -98,7 +95,6 @@ def get_model_selector() -> ModelSelector:
             raise ValueError("No API key found for model selector")
         _model_selector = ModelSelector(api_key)
     return _model_selector
-
 
 def get_best_gemini_model(task_type: str = 'general') -> str:
     """
@@ -118,7 +114,6 @@ def get_best_gemini_model(task_type: str = 'general') -> str:
     except Exception as e:
         logger.error(f"❌ Model selection failed: {e}")
         return 'gemini-2.5-flash'  # Safe fallback
-
 
 def log_quota_usage():
     """Log current quota usage across all models"""

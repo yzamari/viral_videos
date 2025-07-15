@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-"""
-AI Video Generator - Main Entry Point
+"""AI Video Generator - Main Entry Point
 Comprehensive AI-powered video generation system with VEO-2/3, multi-agent discussions, and session management
 """
-
 import os
 import sys
 import click
@@ -23,8 +21,7 @@ from src.utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 def handle_authentication_automatically():
-    """
-    Automatically handle authentication problems
+    """Automatically handle authentication problems
     
     Returns:
         True if authentication is working, False otherwise
@@ -35,7 +32,6 @@ def handle_authentication_automatically():
         
         # Quick check first
         status = auth_handler.quick_auth_check()
-        
         if status.get("overall_ready", False):
             logger.info("✅ Authentication already configured")
             return True
@@ -61,7 +57,6 @@ def test_auth():
     try:
         # Initialize VEO factory (this will show if it's working)
         veo_factory = VeoClientFactory()
-        
         print("🔐 Testing Google Cloud authentication...")
         
         # Run comprehensive authentication test
@@ -89,31 +84,25 @@ def test_auth():
 
 
 @cli.command()
-@click.option('--category', type=click.Choice(['Comedy', 'Educational', 'Entertainment', 'News', 'Tech']), 
-              help='Video category')
+@click.option('--category', type=click.Choice(['Comedy', 'Educational', 'Entertainment', 'News', 'Tech']), help='Video category')
 @click.option('--mission', required=True, help='Video mission - what you want to accomplish')
-@click.option('--platform', type=click.Choice(['youtube', 'tiktok', 'instagram', 'twitter']), 
-              help='Target platform')
+@click.option('--platform', type=click.Choice(['youtube', 'tiktok', 'instagram', 'twitter']), help='Target platform')
 @click.option('--duration', type=int, default=20, help='Video duration in seconds (default: 20)')
 @click.option('--image-only', is_flag=True, help='Force image-only generation (Gemini images)')
 @click.option('--fallback-only', is_flag=True, help='Use fallback generation only')
 @click.option('--force', is_flag=True, help='Force generation even with quota warnings')
 @click.option('--skip-auth-test', is_flag=True, help='Skip authentication test (not recommended)')
-@click.option('--discussions', type=click.Choice(['off', 'light', 'standard', 'deep', 'streamlined', 'enhanced']), 
-              default='enhanced', help='AI agent mode (default: enhanced with discussions for best viral content)')
+@click.option('--discussions', type=click.Choice(['off', 'light', 'standard', 'deep', 'streamlined', 'enhanced']), default='enhanced', help='AI agent mode (default: enhanced with discussions for best viral content)')
 @click.option('--discussion-log', is_flag=True, help='Show detailed discussion logs')
 @click.option('--session-id', help='Custom session ID')
-@click.option('--frame-continuity', type=click.Choice(['auto', 'on', 'off']), default='auto',
-              help='Frame continuity mode: auto (AI decides), on (always enabled), off (disabled)')
+@click.option('--frame-continuity', type=click.Choice(['auto', 'on', 'off']), default='auto', help='Frame continuity mode: auto (AI decides), on (always enabled), off (disabled)')
 @click.option('--target-audience', help='Target audience (e.g., "young adults", "professionals")')
 @click.option('--style', help='Content style (e.g., "viral", "educational", "professional")')
 @click.option('--tone', help='Content tone (e.g., "engaging", "professional", "humorous")')
 @click.option('--visual-style', help='Visual style (e.g., "dynamic", "minimalist", "professional")')
-@click.option('--mode', type=click.Choice(['simple', 'enhanced', 'advanced', 'multilingual', 'professional']), 
-              default='enhanced', help='Orchestrator mode (simple=3 agents, enhanced=7 agents, advanced=15 agents, professional=19 agents)')
+@click.option('--mode', type=click.Choice(['simple', 'enhanced', 'advanced', 'professional']), default='enhanced', help='Orchestrator mode (simple=3 agents, enhanced=7 agents, advanced=15 agents, professional=19 agents)')
 def generate(**kwargs):
     """🎬 Generate viral video with optimized AI system"""
-    
     try:
         # Test authentication first (unless skipped)
         if not kwargs.get('skip_auth_test', False):
@@ -130,22 +119,22 @@ def generate(**kwargs):
         generate_main(
             mission=kwargs['mission'],
             category=kwargs.get('category', 'Comedy'),
-            platform=kwargs.get('platform', 'youtube'),
-            duration=kwargs.get('duration', 20),
+            platform=kwargs.get('platform', 'tiktok'),
+            duration=kwargs.get('duration', 40),
             image_only=kwargs.get('image_only', False),
             fallback_only=kwargs.get('fallback_only', False),
             force=kwargs.get('force', False),
             discussions=kwargs.get('discussions', 'enhanced'),
             discussion_log=kwargs.get('discussion_log', False),
             session_id=kwargs.get('session_id'),
-            frame_continuity=kwargs.get('frame_continuity', 'auto'),
+            frame_continuity=kwargs.get('frame_continuity', 'on'),
             target_audience=kwargs.get('target_audience'),
             style=kwargs.get('style'),
             tone=kwargs.get('tone'),
             visual_style=kwargs.get('visual_style'),
             mode=kwargs.get('mode', 'enhanced')
         )
-        
+    
     except KeyboardInterrupt:
         print("\n🛑 Generation cancelled by user")
         sys.exit(0)
@@ -153,7 +142,7 @@ def generate(**kwargs):
         logger.error(f"❌ Generation failed: {e}")
         traceback.print_exc()
         sys.exit(1)
-
+    
 
 if __name__ == '__main__':
     cli() 

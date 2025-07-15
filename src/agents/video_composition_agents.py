@@ -11,7 +11,6 @@ import json
 
 logger = logging.getLogger(__name__)
 
-
 class VideoStructureAgent:
     """
     AI Agent specialized in video structure and clip composition strategy
@@ -49,8 +48,9 @@ class VideoStructureAgent:
             f"🏗️ StructureMaster analyzing video structure for: {topic}")
 
         try:
-            analysis_prompt = f"""
-You are StructureMaster, an expert AI agent specializing in video structure and composition strategy.
+            analysis_prompt = """
+You are StructureMaster, an expert AI agent specializing in video structure and
+        composition strategy.
 
 ANALYZE THIS VIDEO CONTENT:
 - Topic: {topic}
@@ -67,7 +67,9 @@ DESIGN OPTIMAL VIDEO STRUCTURE:
    - What's the optimal pacing for each segment?
 
 2. CONTINUITY STRATEGY:
-   - Identify segments that should flow continuously (e.g., 3 clips of 8s = 24s continuous)
+   - Identify segments that should flow continuously (
+       e.g.,
+       3 clips of 8s = 24s continuous)
    - Identify segments that should be standalone clips
    - Consider narrative flow and audience engagement
 
@@ -114,8 +116,19 @@ Respond in JSON format:
 
             response = self.model.generate_content(analysis_prompt)
 
+            # Check if response is valid
+            if not response or not response.text:
+                logger.warning("⚠️ Empty response from StructureMaster API")
+                return self._create_fallback_structure(total_duration)
+
             try:
                 response_text = response.text.strip()
+                
+                # Check if response is empty or invalid
+                if not response_text:
+                    logger.warning("⚠️ Empty response text from StructureMaster API")
+                    return self._create_fallback_structure(total_duration)
+                
                 if response_text.startswith('```json'):
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
@@ -233,7 +246,6 @@ Respond in JSON format:
             'agent_name': 'StructureMaster (Fallback)',
             'analysis_timestamp': datetime.now().isoformat()}
 
-
 class ClipTimingAgent:
     """
     AI Agent specialized in determining optimal timing for individual clips
@@ -270,8 +282,9 @@ class ClipTimingAgent:
                 video_structure['total_segments']} segments")
 
         try:
-            timing_prompt = f"""
-You are TimingMaster, an expert AI agent specializing in clip timing and pacing optimization.
+            timing_prompt = """
+You are TimingMaster, an expert AI agent specializing in clip timing and
+        pacing optimization.
 
 ANALYZE CLIP TIMING REQUIREMENTS:
 
@@ -323,7 +336,15 @@ Respond in JSON format:
             response = self.model.generate_content(timing_prompt)
 
             try:
-                response_text = response.text.strip()
+                response_text = response.text.strip() if response.text else ""
+                
+                # Log the raw response for debugging
+                logger.debug(f"TimingMaster raw response: {response_text[:200]}...")
+                
+                if not response_text:
+                    logger.warning("TimingMaster received empty response from Gemini")
+                    return self._create_fallback_timing(video_structure)
+                
                 if response_text.startswith('```json'):
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
@@ -345,6 +366,7 @@ Respond in JSON format:
 
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse TimingMaster response: {e}")
+                logger.error(f"Raw response was: {response_text}")
                 return self._create_fallback_timing(video_structure)
 
         except Exception as e:
@@ -388,7 +410,6 @@ Respond in JSON format:
             'analysis_timestamp': datetime.now().isoformat()
         }
 
-
 class VisualElementsAgent:
     """
     AI Agent specialized in visual elements design (headers, titles, subtitles)
@@ -424,8 +445,9 @@ class VisualElementsAgent:
             f"🎨 VisualDesigner designing visual elements for {platform}")
 
         try:
-            design_prompt = f"""
-You are VisualDesigner, an expert AI agent specializing in visual elements and typography design.
+            design_prompt = """
+You are VisualDesigner, an expert AI agent specializing in visual elements and
+        typography design.
 
 DESIGN VISUAL ELEMENTS FOR:
 
@@ -561,9 +583,9 @@ Respond in JSON format:
             'design_strategy': f'Fallback design optimized for {platform}',
             'color_palette': color_palette,
             'typography': {
-                "main_font": "Arial, sans-serif",
-                "header_font": "Arial Black, sans-serif",
-                "subtitle_font": "Arial, sans-serif",
+                "main_font": "Arial, sans-seri",
+                "header_font": "Arial Black, sans-seri",
+                "subtitle_font": "Arial, sans-seri",
                 "font_weights": ["normal", "bold", "extra-bold"]
             },
             'text_elements': [
@@ -589,7 +611,6 @@ Respond in JSON format:
             'agent_name': 'VisualDesigner (Fallback)',
             'analysis_timestamp': datetime.now().isoformat()
         }
-
 
 class MediaTypeAgent:
     """
@@ -627,7 +648,7 @@ class MediaTypeAgent:
                 clip_plan['total_clips']} clips")
 
         try:
-            media_prompt = f"""
+            media_prompt = """
 You are MediaStrategist, an expert AI agent specializing in media type optimization.
 
 ANALYZE MEDIA TYPE REQUIREMENTS:
@@ -764,7 +785,6 @@ Respond in JSON format:
             'agent_name': 'MediaStrategist (Fallback)',
             'analysis_timestamp': datetime.now().isoformat()
         }
-
 
 def get_composition_agents_summary() -> Dict[str, Any]:
     """Get summary of all video composition agents"""

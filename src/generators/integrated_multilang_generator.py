@@ -1,6 +1,7 @@
 """
 Integrated Multilingual Video Generator
-Combines AI voice selection, enhanced script processing, RTL validation, and video generation
+Combines AI voice selection, enhanced script processing, RTL validation, and
+        video generation
 """
 import os
 import time
@@ -19,7 +20,6 @@ from ..generators.enhanced_multilang_tts import EnhancedMultilingualTTS
 
 logger = get_logger(__name__)
 
-
 @dataclass
 class VoiceSelectionResult:
     """Result of AI voice selection process"""
@@ -28,7 +28,6 @@ class VoiceSelectionResult:
     voice_variety: bool
     ai_reasoning: str
     confidence_score: float
-
 
 @dataclass
 class ProcessedScript:
@@ -41,7 +40,6 @@ class ProcessedScript:
     sentence_count: int
     estimated_duration: float
     validation_notes: List[str]
-
 
 class IntegratedMultilingualGenerator:
     """Integrated generator with AI voice selection and enhanced multilingual support"""
@@ -98,7 +96,7 @@ class IntegratedMultilingualGenerator:
 
         # Step 2: Generate AI voice strategy for primary language
         logger.info("🎭 Step 2: AI voice strategy analysis...")
-        voice_strategy = self._get_ai_voice_strategy(
+        _voice_strategy = self._get_ai_voice_strategy(
             script=processed_script.final_script,
             language=primary_language,
             config=config
@@ -294,9 +292,10 @@ class IntegratedMultilingualGenerator:
             target_lang_name = language_names.get(
                 target_language, target_language.value)
 
-            translation_prompt = f"""
+            translation_prompt = """
             Translate this video script to {target_lang_name}.
-            Keep it natural, engaging, and appropriate for {config.target_platform.value} content.
+            Keep it natural, engaging, and appropria
+                te for {config.target_platform.value} content.
 
             Original script: {script}
 

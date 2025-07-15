@@ -7,7 +7,6 @@ import colorlog
 from datetime import datetime
 import os
 
-
 def get_logger(name: str) -> logging.Logger:
     """
     Get a configured logger instance with session-aware logging
@@ -72,11 +71,10 @@ def get_logger(name: str) -> logging.Logger:
 
     return logger
 
-
 def setup_session_logging(session_id: str, session_dir: str):
     """
     Set up session-specific logging handlers
-    
+
     Args:
         session_id: Session identifier
         session_dir: Session directory path
@@ -85,9 +83,9 @@ def setup_session_logging(session_id: str, session_dir: str):
         # Create session-specific log file
         session_log_dir = os.path.join(session_dir, "logs")
         os.makedirs(session_log_dir, exist_ok=True)
-        
+
         session_log_file = os.path.join(session_log_dir, f"session_{session_id}.log")
-        
+
         # Create session-specific handler
         session_handler = logging.FileHandler(session_log_file)
         session_handler.setFormatter(
@@ -96,19 +94,18 @@ def setup_session_logging(session_id: str, session_dir: str):
                 datefmt='%Y-%m-%d %H:%M:%S'
             )
         )
-        
+
         # Add to root logger
         root_logger = logging.getLogger()
         root_logger.addHandler(session_handler)
-        
+
         # Track with session manager
         from .session_manager import session_manager
         if session_manager.current_session:
             session_manager.track_file(session_log_file, "log", "SessionLogging")
-        
+
         return session_log_file
-        
+
     except Exception as e:
         print(f"Failed to set up session logging: {e}")
         return None
-

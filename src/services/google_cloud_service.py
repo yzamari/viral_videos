@@ -1,6 +1,5 @@
 from src.services.monitoring_service import MonitoringService
 
-
 class GoogleCloudService:
     def __init__(self, session_id):
         self.session_id = session_id
@@ -15,4 +14,3 @@ class GoogleCloudService:
         self.monitoring_service.log("GoogleCloudService: Initializing VEO client.")
         # Placeholder for VEO client initialization
         return None
-

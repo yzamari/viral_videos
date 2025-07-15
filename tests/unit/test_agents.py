@@ -47,33 +47,33 @@ class TestDirectorAgent(unittest.TestCase):
     @patch('src.generators.director.genai.GenerativeModel')
     def test_write_script_with_basic_params(self, mock_model):
         """Test script writing with basic parameters"""
-        # Mock the AI response
+        # Mock the response
         mock_response = Mock()
         mock_response.text = """
         {
-            "hook": {"text": "Did you know about yoga?"},
-            "segments": [
-                {"text": "Yoga is amazing for health"},
-                {"text": "Ashtanga yoga is particularly beneficial"}
-            ],
-            "call_to_action": "Follow for more yoga tips!"
+            "script": "Check out this amazing AI breakthrough in video generation! 🤖✨ This technology is revolutionizing how we create content. From concept to completion in minutes! #AI #VideoGeneration #Tech",
+            "hook": "Mind-blowing AI creates videos instantly!",
+            "call_to_action": "Follow for more AI updates!"
         }
         """
         mock_model.return_value.generate_content.return_value = mock_response
         
         # Test script generation with patterns parameter
         result = self.director.write_script(
-            topic=self.test_topic,
+            topic="Amazing AI breakthrough in video generation",
             style='viral',
             duration=25,
             platform=Platform.INSTAGRAM,
             category=VideoCategory.EDUCATION,
-            patterns={'hooks': ['Did you know...'], 'themes': ['educational']},
-            incorporate_news=False
+            patterns={"hooks": ["Mind-blowing AI creates videos instantly!"], "themes": ["technology", "AI"]}
         )
         
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, (dict, str))
+        # Verify the result structure
+        self.assertIsInstance(result, dict)
+        self.assertIn('hook', result)
+        self.assertIn('segments', result)
+        self.assertIn('cta', result)
+        self.assertIn('full_text', result)
     
     def test_write_script_with_all_params(self):
         """Test script writing with all parameters"""

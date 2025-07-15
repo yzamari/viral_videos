@@ -14,7 +14,6 @@ from ..utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-
 @dataclass
 class AgentActivity:
     """Real-time agent activity data"""
@@ -24,7 +23,6 @@ class AgentActivity:
     round_num: int
     vote: Optional[str] = None
     reasoning: Optional[str] = None
-
 
 @dataclass
 class PhaseStatus:
@@ -36,14 +34,16 @@ class PhaseStatus:
     start_time: datetime
     status: str  # "active", "completed", "pending"
 
-
 class RealTimeDiscussionVisualizer:
     """
     Real-time visualizer for AI agent discussions
     Provides live updates and monitoring capabilities
     """
 
-    def __init__(self, session_dir: str, update_callback: Optional[Callable] = None):
+    def __init__(
+        self,
+        session_dir: str,
+        update_callback: Optional[Callable] = None):
         self.session_dir = session_dir
         self.update_callback = update_callback
 
@@ -62,7 +62,7 @@ class RealTimeDiscussionVisualizer:
         self.total_messages = 0
         self.average_consensus = 0.0
 
-        logger.info(f"🎬 Real-time discussion visualizer initialized")
+        logger.info("🎬 Real-time discussion visualizer initialized")
 
     def start_discussion_phase(self, phase_name: str, agent_names: List[str],
                                max_rounds: int, target_consensus: float):
@@ -237,7 +237,9 @@ class RealTimeDiscussionVisualizer:
                 categories[category].append(agent_data)
 
         html = """
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        <div style="display: grid; grid-template-columns: repeat(
+            auto-fit,
+            minmax(280px, 1fr));
                    gap: 0.8rem; margin: 1rem 0;">
         """
 
@@ -246,13 +248,15 @@ class RealTimeDiscussionVisualizer:
                 continue
 
             # Category color based on activity
-            active_count = sum(1 for agent in agents if agent["status"] in ["active", "speaking"])
+            active_count = sum(
+                1 for agent in agents if agent["status"] in ["active",
+                "speaking"])
             if active_count > 0:
                 bg_color = "linear-gradient(135deg, #4CAF50 0%, #45a049 100%)"  # Green for active
             else:
                 bg_color = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"  # Blue for idle
 
-            html += f"""
+            html += """
             <div style="background: {bg_color}; color: white; padding: 0.8rem;
                        border-radius: 8px; min-height: 100px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9em;">
@@ -284,7 +288,7 @@ class RealTimeDiscussionVisualizer:
                     status_text = "IDLE"
                     pulse_animation = ""
 
-                html += f"""
+                html += """
                 <div style="display: flex; align-items: center; margin: 0.2rem 0;
                            padding: 0.3rem; background: rgba(255,255,255,0.15);
                            border-radius: 4px; font-size: 0.8em; {pulse_animation}">
@@ -334,7 +338,7 @@ class RealTimeDiscussionVisualizer:
             vote_color = "#28a745" if activity.vote == "agree" else "#dc3545" if activity.vote == "disagree" else "#6c757d"
             vote_text = activity.vote.upper() if activity.vote else "NEUTRAL"
 
-            html += f"""
+            html += """
             <div style="margin: 0.5rem 0; padding: 0.7rem; background: white;
                        border-radius: 6px; border-left: 4px solid {vote_color};
                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
@@ -347,7 +351,8 @@ class RealTimeDiscussionVisualizer:
                     </span>
                 </div>
                 <div style="color: #555; font-size: 0.9em; line-height: 1.4;">
-                    {activity.message[:150] + '...' if len(activity.message) > 150 else activity.message}
+                    {activity.message[:150] +
+                        '...' if len(activity.message) > 150 else activity.message}
                 </div>
             </div>
             """
@@ -368,7 +373,7 @@ class RealTimeDiscussionVisualizer:
             phase = status["current_phase"]
             progress_percent = int(phase["consensus"] * 100)
 
-            html += f"""
+            html += """
             <h3 style="margin-top: 0; color: #333;">📊 Current Phase: {phase["name"]}</h3>
             <div style="margin: 1rem 0;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
@@ -398,8 +403,10 @@ class RealTimeDiscussionVisualizer:
             """
 
         # Session statistics
-        html += f"""
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        html += """
+        <div style="display: grid; grid-template-columns: repeat(
+            auto-fit,
+            minmax(120px, 1fr));
                    gap: 1rem; margin-top: 1.5rem; padding-top: 1rem;
                    border-top: 1px solid #dee2e6;">
             <div style="text-align: center;">
@@ -464,4 +471,3 @@ class RealTimeDiscussionVisualizer:
             logger.info(f"💾 Real-time session data saved: {session_file}")
         except Exception as e:
             logger.error(f"Error saving real-time session data: {e}")
-

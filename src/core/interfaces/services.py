@@ -6,10 +6,9 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Tuple
 from ..entities.video_entity import Platform
 
-
 class VideoGenerationService(ABC):
     """Abstract service for video generation"""
-    
+
     @abstractmethod
     async def generate_content(
         self,
@@ -19,12 +18,12 @@ class VideoGenerationService(ABC):
     ) -> Tuple[List[str], List[str]]:
         """
         Generate video content (clips and images)
-        
+
         Returns:
             Tuple of (video_clips, image_files)
         """
         pass
-    
+
     @abstractmethod
     async def compose_final_video(
         self,
@@ -37,16 +36,15 @@ class VideoGenerationService(ABC):
     ) -> str:
         """
         Compose final video from components
-        
+
         Returns:
             Path to final video file
         """
         pass
 
-
 class ScriptGenerationService(ABC):
     """Abstract service for script generation"""
-    
+
     @abstractmethod
     async def generate_script(
         self,
@@ -57,16 +55,15 @@ class ScriptGenerationService(ABC):
     ) -> Dict[str, Any]:
         """
         Generate script content
-        
+
         Returns:
             Script content dictionary
         """
         pass
 
-
 class AudioGenerationService(ABC):
     """Abstract service for audio generation"""
-    
+
     @abstractmethod
     async def generate_audio(
         self,
@@ -75,8 +72,8 @@ class AudioGenerationService(ABC):
     ) -> List[str]:
         """
         Generate audio files from script
-        
+
         Returns:
             List of audio file paths
         """
-        pass 
+        pass

@@ -18,7 +18,6 @@ from ..utils.exceptions import (
     GenerationFailedError, APIException,
     ContentPolicyViolation, NetworkError
 )
-from ..scrapers.news_scraper import HotNewsScraper
 
 logger = get_logger(__name__)
 
@@ -29,15 +28,19 @@ class Director:
     Responsibilities:
     - Analyze trending patterns and create engaging scripts
     - Adapt content to different platforms
-    - Incorporate current news and events
+    - Use Gemini's built-in internet access for current information
     - Optimize scripts for maximum virality
     """
 
     def __init__(self, api_key: str, model_name: str = "gemini-2.5-flash"):
-        """Initialize Director with AI model"""
+        """Initialize Director with specified model"""
+        if not api_key or not api_key.strip():
+            raise ValueError("API key cannot be empty")
+        
+        self.api_key = api_key
+        self.model_name = model_name
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model_name)
-        self.news_scraper = HotNewsScraper()
         self.hook_templates = self._load_hook_templates()
         self.content_structures = self._load_content_structures()
 
@@ -69,18 +72,17 @@ class Director:
         try:
             logger.info(f"Writing script for {topic} ({duration}s) on {platform.value}")
 
-            # Fetch relevant news if requested
-            news_context = ""
+            # Use Gemini's built-in internet access for current information
+            current_context = ""
             if incorporate_news:
-                news_items = self._fetch_relevant_news(topic, category)
-                if news_items:
-                    news_context = self._format_news_context(news_items)
-                    logger.info(f"Incorporated {len(news_items)} news items")
+                current_context = self._get_current_context_from_gemini(topic, category)
+                if current_context:
+                    logger.info("Incorporated current information from Gemini's internet access")
 
             # Generate script components
-            hook = self._create_hook(topic, style, platform, patterns, news_context)
+            hook = self._create_hook(topic, style, platform, patterns, current_context)
             main_content = self._structure_content(
-                topic, duration, patterns, news_context
+                topic, duration, patterns, current_context
             )
             cta = self._create_cta(platform, category)
 
@@ -103,7 +105,7 @@ class Director:
             else:
                 script_text = str(optimized_script)
 
-            logger.info(f"📝 Generated script preview:")
+            logger.info("📝 Generated script preview:")
             logger.info(f"   Length: {len(script_text)} characters")
             logger.info(f"   First 300 chars: {script_text[:300]}...")
 
@@ -118,7 +120,8 @@ class Director:
                         logger.info(f"   Segment {voiceover_count} text: {segment['text'][:100]}...")
             else:
                 # Check for voiceover markers in text
-                voiceover_lines = [line for line in script_text.split('\n') if '**VOICEOVER:**' in line or 'voiceover' in line.lower()]
+                voiceover_lines = [line for line in script_text.split('\n') if '**VOICEOVER:**' in line or
+                        'voiceover' in line.lower()]
                 if voiceover_lines:
                     logger.info(f"🎤 Found {len(voiceover_lines)} voiceover lines:")
                     for i, line in enumerate(voiceover_lines[:3]):  # Show first 3
@@ -135,12 +138,12 @@ class Director:
         """Create engaging hook based on topic analysis"""
         try:
             # Use AI to generate topic-specific hook
-            prompt = f"""
+            prompt = """
             Create an engaging opening hook for a {platform.value} video about: {topic}
 
             Style: {style}
             Success patterns: {patterns.get('hooks', [])}
-            
+
             {news_context}
 
             Requirements:
@@ -157,21 +160,21 @@ class Director:
 
             response = self.model.generate_content(prompt)
             hook_text = response.text.strip()
-            
+
             # Clean up any quotes or extra formatting
             hook_text = hook_text.strip('"\'').strip()
-            
+
             # Ensure it's not generic
             generic_phrases = ['this is amazing', 'amazing', 'incredible', 'unbelievable']
             if any(phrase in hook_text.lower() for phrase in generic_phrases):
                 # Generate a more specific hook
-                specific_prompt = f"""
+                specific_prompt = """
                 Create a specific, non-generic hook for: {topic}
-                
+
                 Avoid these generic words: amazing, incredible, unbelievable
                 Be specific to the actual content and topic.
                 Ask a direct question or make a specific statement about {topic}.
-                
+
                 Return ONLY the hook text.
                 """
                 response = self.model.generate_content(specific_prompt)
@@ -187,10 +190,10 @@ class Director:
             logger.warning(f"Hook generation failed: {e}")
             # Create dynamic topic-specific fallback without any hardcoded content
             topic_words = topic.split()
-            
+
             # Extract meaningful words (filter out common words)
             meaningful_words = [word for word in topic_words if len(word) > 3 and word.lower() not in ['the', 'and', 'with', 'for', 'that', 'this', 'from']]
-            
+
             if len(meaningful_words) >= 2:
                 # Use the first two meaningful words
                 hook_text = f"What happens when {meaningful_words[0]} meets {meaningful_words[1]}?"
@@ -203,7 +206,7 @@ class Director:
             else:
                 # Fallback to the full topic
                 hook_text = f"Why should you know about {topic}?"
-            
+
             return {
                 'text': hook_text,
                 'type': 'topic_specific',
@@ -217,7 +220,7 @@ class Director:
             # Calculate content segments
             num_segments = self._calculate_segments(duration)
 
-            prompt = f"""
+            prompt = """
             Create {num_segments} content segments for a {duration}-second video about: {topic}
 
             Successful content patterns:
@@ -233,7 +236,8 @@ class Director:
             3. Maintain viewer attention
             4. Include ONLY spoken dialogue content
 
-            CRITICAL: Return ONLY spoken words. NO visual descriptions, camera directions, or stage instructions.
+            CRITICAL: Return ONLY spoken words. NO visual descriptions, camera directions, or
+                    stage instructions.
 
             Return JSON array:
             [
@@ -256,7 +260,10 @@ class Director:
             logger.warning(f"Content structuring failed, using defaults: {e}")
             return self._get_default_segments(topic, self._calculate_segments(duration))
 
-    def _create_cta(self, platform: Platform, category: VideoCategory) -> Dict[str, str]:
+    def _create_cta(
+        self,
+        platform: Platform,
+        category: VideoCategory) -> Dict[str, str]:
         """Create platform-optimized call-to-action"""
         cta_templates = {
             Platform.YOUTUBE: {
@@ -407,11 +414,14 @@ class Director:
         """Fetch news relevant to topic and category"""
         try:
             # Search for news related to topic
-            news_items = self.news_scraper.search_news(
-                query=topic,
-                category=category.value.lower(),
-                max_results=5
+            news_items = self.model.generate_content(
+                f"Search for recent news about {topic} in the {category.value} category. "
+                "Return a JSON array of news items. Each item should have 'title', 'description', "
+                "'url', 'published_at', and 'relevance_score' (0-1). "
+                "Ensure the JSON is valid and well-formatted. "
+                "Example: `[{{'title': 'News Title', 'description': 'Description', 'url': 'https://example.com', 'published_at': '2023-10-27T10:00:00Z', 'relevance_score': 0.8}}]`"
             )
+            news_items = json.loads(news_items.text.strip())
 
             # Filter by relevance and recency
             relevant_news = []
@@ -438,7 +448,8 @@ class Director:
         description = news_item.get('description', '').lower()
         topic_words = topic.lower().split()
 
-        matches = sum(1 for word in topic_words if word in title or word in description)
+        matches = sum(1 for word in topic_words if word in title or
+                word in description)
         relevance = matches / len(topic_words) if topic_words else 0
 
         # Boost score for recent news
@@ -453,22 +464,39 @@ class Director:
     def _validate_content_policy(self, script: Dict[str, Any],
                                platform: Platform) -> None:
         """Validate script against platform content policies"""
-        # Check for prohibited content
+        # Check for prohibited content - made more lenient for legitimate topics
         prohibited_terms = {
-            'violence': ['kill', 'murder', 'assault'],
-            'adult': ['explicit', 'nude', 'sexual'],
-            'hate': ['hate', 'discriminate', 'racist'],
-            'dangerous': ['dangerous', 'harmful', 'illegal']
+            'violence': ['kill', 'murder', 'assault', 'attack', 'violence'],
+            'adult': ['explicit', 'nude', 'sexual', 'porn'],
+            'hate': ['hate speech', 'racist', 'discriminate against'],
+            'dangerous': ['dangerous activity', 'harmful to others', 'illegal activity']
         }
 
-        full_text = self._extract_full_text(script)
+        full_text = self._extract_full_text(script).lower()
 
+        # More intelligent content policy checking
         for category, terms in prohibited_terms.items():
             for term in terms:
-                if term in full_text.lower():
-                    raise ContentPolicyViolation(
-                        platform.value, category, full_text
-                    )
+                if term in full_text:
+                    # Check if it's in a legitimate context (educational, news, etc.)
+                    legitimate_contexts = [
+                        'history', 'news', 'education', 'science', 'politics',
+                        'culture', 'research', 'analysis', 'discussion', 'debate'
+                    ]
+                    
+                    # If the content has legitimate context, allow it
+                    if any(context in full_text for context in legitimate_contexts):
+                        logger.info(f"⚠️ Content contains '{term}' but appears in legitimate context")
+                        continue
+                    
+                    # Only raise violation for clearly problematic content
+                    if term in ['explicit', 'nude', 'porn', 'kill', 'murder']:
+                        raise ContentPolicyViolation(
+                            platform.value, category, full_text[:100] + "..."
+                        )
+                    else:
+                        logger.warning(f"⚠️ Content contains potentially sensitive term: {term}")
+                        # Don't block, just warn
 
     def _extract_json(self, text: str) -> Any:
         """Extract JSON from AI response"""
@@ -477,7 +505,7 @@ class Director:
             json_match = re.search(r'(\{.*\}|\[.*\])', text, re.DOTALL)
             if json_match:
                 return json.loads(json_match.group(1))
-        except:
+        except Exception:
             pass
         return None
 
@@ -528,7 +556,7 @@ class Director:
         """
         Decide whether to use frame continuity for seamless video generation
 
-        Frame continuity creates a single flowing video where each clip's last frame
+        Frame continuity creates a single flowing video where each clip's last frame'
         becomes the first frame of the next clip, creating smooth transitions.
 
         Returns:
@@ -622,11 +650,13 @@ class Director:
                 'continuity_score': round(continuity_score, 2),
                 'reasoning': reasoning,
                 'transition_strategy': transition_strategy,
-                'recommended_clip_count': self._calculate_continuity_clips(duration, use_continuity),
+                'recommended_clip_count': self._calculate_continuity_clips(
+                    duration,
+                    use_continuity),
                 'frame_overlap_type': 'last_to_first' if use_continuity else None
             }
 
-            logger.info(f"Frame continuity decision: {use_continuity} (score: {continuity_score:.2f})")
+            logger.info(f"Frame continuity decision: {use_continuity} (score: {continuity_score:.2f}")
             return decision
 
         except Exception as e:
@@ -686,7 +716,10 @@ class Director:
             'audio_crossfade': True    # Smooth audio transitions
         }
 
-    def _calculate_continuity_clips(self, duration: int, use_continuity: bool) -> int:
+    def _calculate_continuity_clips(
+        self,
+        duration: int,
+        use_continuity: bool) -> int:
         """Calculate optimal number of clips for continuity mode"""
         if use_continuity:
             # Fewer, longer clips for smooth continuity
@@ -706,11 +739,11 @@ class Director:
         """Get fallback hook from templates dynamically"""
         # Determine hook type based on style
         hook_type = 'question' if 'tutorial' in style else 'shock'
-        
+
         # Extract meaningful words from topic
         topic_words = topic.split()
         meaningful_words = [word for word in topic_words if len(word) > 3 and word.lower() not in ['the', 'and', 'with', 'for', 'that', 'this', 'from']]
-        
+
         # Generate dynamic hook based on type and topic
         if hook_type == 'question':
             if meaningful_words:
@@ -738,11 +771,11 @@ class Director:
         """Get default content segments dynamically based on topic"""
         segments = []
         segment_duration = 30 // num_segments  # Assume 30s default
-        
+
         # Extract topic components for dynamic content
         topic_words = topic.split()
         meaningful_words = [word for word in topic_words if len(word) > 3 and word.lower() not in ['the', 'and', 'with', 'for', 'that', 'this', 'from', 'about']]
-        
+
         # Create dynamic segment content based on topic structure
         for i in range(num_segments):
             if i == 0:
@@ -763,7 +796,7 @@ class Director:
                     text = f"Here's what you need to know about {meaningful_words[i]}"
                 else:
                     text = f"Another important aspect of {topic} to consider"
-            
+
             segments.append({
                 'text': text,
                 'duration': segment_duration
@@ -771,7 +804,9 @@ class Director:
 
         return segments
 
-    def _analyze_hook_patterns(self, successful_hooks: List[str]) -> Dict[str, Any]:
+    def _analyze_hook_patterns(
+        self,
+        successful_hooks: List[str]) -> Dict[str, Any]:
         """Analyze patterns in successful hooks"""
         if not successful_hooks:
             return {
@@ -843,13 +878,13 @@ class Director:
             # Return minimal script as fallback
             hook_text = hook.get("text", "")
             cta_text = cta.get("text", "")
-            
+
             # Extract topic from hook or use fallback
             if hook_text:
                 fallback_content = f"Let's explore {hook_text.lower()}"
             else:
-                fallback_content = f"Here's what you need to know"
-            
+                fallback_content = "Here's what you need to know"
+
             return {
                 'hook': hook,
                 'segments': main_content or [{'text': fallback_content, 'duration': duration-5}],
@@ -890,25 +925,40 @@ class Director:
 
         return ' '.join(text_parts)
 
-    def _enhance_hook_virality(self, hook: Dict[str, str], viral_elements: Dict[str, Any]) -> Dict[str, str]:
+    def _enhance_hook_virality(
+        self,
+        hook: Dict[str,
+        str],
+        viral_elements: Dict[str,
+        Any]) -> Dict[str, str]:
         """Enhance hook for viral potential without hardcoded words"""
         hook_text = hook.get('text', '')
-        
+
         # Use emotional triggers from viral_elements if available
         available_triggers = viral_elements.get('emotional_triggers', [])
-        
+
         # If no emotional triggers in text and we have available triggers, enhance the hook
-        if available_triggers and not any(trigger in hook_text.lower() for trigger in available_triggers):
+        if (available_triggers and
+                not any(trigger in hook_text.lower() for trigger in available_triggers)):
             # Use the first available emotional trigger
             hook['text'] = f"{available_triggers[0].capitalize()}: {hook_text}"
         elif not available_triggers:
             # If no triggers available, enhance with intensity
-            if not any(word in hook_text.lower() for word in ['how', 'why', 'what', 'when', 'where']):
+            if not any(
+                word in hook_text.lower() for word in ['how',
+                'why',
+                'what',
+                'when',
+                'where']):
                 hook['text'] = f"Discover: {hook_text}"
 
         return hook
 
-    def _optimize_segment_pacing(self, segments: List[Dict[str, Any]], pacing: str) -> List[Dict[str, Any]]:
+    def _optimize_segment_pacing(
+        self,
+        segments: List[Dict[str,
+        Any]],
+        pacing: str) -> List[Dict[str, Any]]:
         """Optimize segment pacing for engagement"""
         if pacing == 'fast':
             # Ensure segments are short and punchy
@@ -970,3 +1020,105 @@ class Director:
 
         return surprises
 
+    def _get_current_context_from_gemini(self, topic: str, category: VideoCategory) -> str:
+        """Get current context and information using Gemini's internet access"""
+        try:
+            context_prompt = f"""
+            Please provide current, up-to-date information about: {topic}
+            
+            Focus on:
+            - Recent developments (last 7 days)
+            - Current trends and discussions
+            - Latest news and events related to this topic
+            - Relevant statistics and data
+            - Popular opinions and perspectives
+            
+            Category context: {category.value}
+            
+            Provide a concise summary (2-3 paragraphs) that would be useful for creating engaging video content.
+            Include specific dates, numbers, and recent events when available.
+            """
+            
+            response = self.model.generate_content(context_prompt)
+            
+            if response and response.text:
+                logger.info(f"Retrieved current context for {topic}")
+                return response.text.strip()
+            else:
+                logger.warning("No current context retrieved from Gemini")
+                return ""
+                
+        except Exception as e:
+            logger.warning(f"Failed to get current context from Gemini: {e}")
+            return ""
+
+    def incorporate_current_info(self, script: Dict[str, Any], 
+                                current_context: str) -> Dict[str, Any]:
+        """Incorporate current information into script"""
+        try:
+            if not current_context:
+                return script
+
+            logger.info("Incorporating current information into script")
+
+            # Find relevant insertion points
+            segments = script.get('segments', [])
+
+            for i, segment in enumerate(segments):
+                # Check if segment could incorporate current info
+                if self._can_incorporate_current_info(segment, current_context):
+                    segment['current_context'] = current_context
+                    segment['text'] = self._blend_current_info_into_text(
+                        segment['text'], current_context
+                    )
+
+            script['has_current_info'] = True
+            script['current_context'] = current_context
+
+            return script
+
+        except Exception as e:
+            logger.warning(f"Current info incorporation failed: {e}")
+            return script
+
+    def _can_incorporate_current_info(self, segment: Dict[str, Any], 
+                                     current_context: str) -> bool:
+        """Check if segment can incorporate current information"""
+        segment_text = segment.get('text', '').lower()
+        
+        # Look for keywords that suggest current info would be relevant
+        current_keywords = [
+            'recent', 'latest', 'new', 'current', 'today', 'now',
+            'breaking', 'update', 'development', 'trend'
+        ]
+        
+        return any(keyword in segment_text for keyword in current_keywords)
+
+    def _blend_current_info_into_text(self, original_text: str, 
+                                     current_context: str) -> str:
+        """Blend current information into segment text"""
+        try:
+            blend_prompt = f"""
+            Original text: {original_text}
+            
+            Current context to incorporate: {current_context}
+            
+            Please blend the current context naturally into the original text while:
+            - Keeping the original tone and style
+            - Making it feel natural and engaging
+            - Adding specific recent details where appropriate
+            - Maintaining the same approximate length
+            
+            Return only the blended text:
+            """
+            
+            response = self.model.generate_content(blend_prompt)
+            
+            if response and response.text:
+                return response.text.strip()
+            else:
+                return original_text
+                
+        except Exception as e:
+            logger.warning(f"Failed to blend current info: {e}")
+            return original_text

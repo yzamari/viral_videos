@@ -38,7 +38,11 @@ class AIVoiceProvider(ABC):
     """Abstract base class for AI voice providers"""
 
     @abstractmethod
-    def generate_speech(self, text: str, emotion: VoiceEmotion, duration_target: float) -> str:
+    def generate_speech(
+        self,
+        text: str,
+        emotion: VoiceEmotion,
+        duration_target: float) -> str:
         """Generate speech audio file"""
         pass
 
@@ -66,10 +70,16 @@ class ElevenLabsProvider(AIVoiceProvider):
             VoiceEmotion.NEUTRAL: "21m00Tcm4TlvDq8ikWAM"    # Rachel - default
         }
 
-    def generate_speech(self, text: str, emotion: VoiceEmotion, duration_target: float) -> str:
+    def generate_speech(
+        self,
+        text: str,
+        emotion: VoiceEmotion,
+        duration_target: float) -> str:
         """Generate ultra-realistic AI speech with ElevenLabs"""
         try:
-            voice_id = self.voice_mapping.get(emotion, self.voice_mapping[VoiceEmotion.NEUTRAL])
+            voice_id = self.voice_mapping.get(
+                emotion,
+                self.voice_mapping[VoiceEmotion.NEUTRAL])
 
             # Advanced ElevenLabs settings for realistic speech
             data = {
@@ -108,7 +118,9 @@ class ElevenLabsProvider(AIVoiceProvider):
 
             if response.status_code == 200:
                 # Save to temporary file
-                audio_path = os.path.join(tempfile.gettempdir(), f"elevenlabs_voice_{uuid.uuid4()}.mp3")
+                audio_path = os.path.join(
+                    tempfile.gettempdir(),
+                    f"elevenlabs_voice_{uuid.uuid4()}.mp3")
                 with open(audio_path, 'wb') as f:
                     f.write(response.content)
 
@@ -130,7 +142,7 @@ class ElevenLabsProvider(AIVoiceProvider):
                 headers={"xi-api-key": self.api_key}
             )
             return response.json() if response.status_code == 200 else {}
-        except:
+        except Exception:
             return {}
 
 class OpenAIVoiceProvider(AIVoiceProvider):
@@ -151,7 +163,11 @@ class OpenAIVoiceProvider(AIVoiceProvider):
             VoiceEmotion.NEUTRAL: "alloy"     # Balanced default
         }
 
-    def generate_speech(self, text: str, emotion: VoiceEmotion, duration_target: float) -> str:
+    def generate_speech(
+        self,
+        text: str,
+        emotion: VoiceEmotion,
+        duration_target: float) -> str:
         """Generate speech with OpenAI's advanced TTS"""
         try:
             import openai
@@ -169,7 +185,9 @@ class OpenAIVoiceProvider(AIVoiceProvider):
             )
 
             # Save to file
-            audio_path = os.path.join(tempfile.gettempdir(), f"openai_voice_{uuid.uuid4()}.mp3")
+            audio_path = os.path.join(
+                tempfile.gettempdir(),
+                f"openai_voice_{uuid.uuid4()}.mp3")
             response.stream_to_file(audio_path)
 
             file_size = os.path.getsize(audio_path) / (1024 * 1024)
@@ -194,7 +212,11 @@ class OpenAIVoiceProvider(AIVoiceProvider):
 class GTTSFallbackProvider(AIVoiceProvider):
     """Fallback to basic gTTS if advanced providers fail"""
 
-    def generate_speech(self, text: str, emotion: VoiceEmotion, duration_target: float) -> str:
+    def generate_speech(
+        self,
+        text: str,
+        emotion: VoiceEmotion,
+        duration_target: float) -> str:
         """Basic gTTS fallback"""
         try:
             from gtts import gTTS
@@ -208,7 +230,9 @@ class GTTSFallbackProvider(AIVoiceProvider):
             }
 
             tts = gTTS(text=text, **tts_config)
-            audio_path = os.path.join(tempfile.gettempdir(), f"gtts_fallback_{uuid.uuid4()}.mp3")
+            audio_path = os.path.join(
+                tempfile.gettempdir(),
+                f"gtts_fallback_{uuid.uuid4()}.mp3")
             tts.save(audio_path)
 
             logger.info(f"✅ Basic TTS fallback generated: {audio_path}")
@@ -287,8 +311,7 @@ class SmartAIVoiceGenerator:
                 # Simple test to check if provider is working
                 voices = provider.get_available_voices()
                 status[provider_name] = len(voices) > 0
-            except:
+            except Exception:
                 status[provider_name] = False
 
         return status
-

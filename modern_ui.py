@@ -1,52 +1,48 @@
 #!/usr/bin/env python3
-"""
+""""
 🎬 Enhanced Ultimate Modern Video Generator UI
 All features with real-time updates, force generation options, trending analysis, and more
-"""
+""""
 
+from config.config import settings
 import os
 import sys
 import threading
-import time
-import json
-import re
 import logging
-from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional
-import requests
-import subprocess
+from typing import List, Dict, Any
 
 import gradio as gr
 
 # Add src to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
-from config.config import settings
 # Removed complex orchestrators - using simple one that works
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
 class TrendingAnalyzer:
     """Analyze trending videos for content optimization"""
-    
+
     def __init__(self, api_key: str):
         self.api_key = api_key
-        
+
     def get_trending_videos(self, platform: str, hours: int = 24, count: int = 10) -> List[Dict]:
         """Get trending videos from platform"""
         try:
             # This is a placeholder - in production you'd use actual APIs
             # YouTube Data API, TikTok API, etc.
             logger.info(f"🔍 Analyzing {count} trending videos from {platform} (past {hours}h)")
-            
+
             # Simulated trending data for demo
             trending_videos = []
             for i in range(count):
                 trending_videos.append({
-                    'title': f'Trending Video {i+1}',
+                    'title': f'Trending Video {i + 1}',
                     'views': 1000000 + i * 100000,
                     'engagement_rate': 0.05 + i * 0.01,
                     'keywords': ['viral', 'trending', 'engaging'],
@@ -54,18 +50,18 @@ class TrendingAnalyzer:
                     'duration': 15 + i * 5,
                     'platform': platform
                 })
-            
+
             return trending_videos
-            
+
         except Exception as e:
             logger.error(f"Error getting trending videos: {e}")
             return []
-    
+
     def analyze_trends(self, videos: List[Dict]) -> Dict[str, Any]:
         """Analyze trending patterns"""
         if not videos:
             return {'error': 'No videos to analyze'}
-        
+
         analysis = {
             'common_keywords': ['viral', 'trending', 'engaging', 'amazing'],
             'avg_duration': sum(v['duration'] for v in videos) / len(videos),
@@ -82,13 +78,13 @@ class TrendingAnalyzer:
                 'youtube': 'Strong thumbnails and compelling titles'
             }
         }
-        
+
         return analysis
 
 
 class EnhancedModernVideoGeneratorUI:
     """Enhanced ultimate modern video generator UI with all features"""
-    
+
     def __init__(self):
         self.current_session = None
         self.orchestrator = None
@@ -99,23 +95,23 @@ class EnhancedModernVideoGeneratorUI:
         self.discussion_data = {}
         self.trending_analyzer = TrendingAnalyzer(settings.google_api_key)
         self.final_video_path = None
-        
+
         # Real-time monitoring
         self.progress_file = None
         self.discussion_file = None
-        
+
     def create_interface(self):
         """Create the enhanced ultimate modern interface"""
-        
+
         # Enhanced CSS for modern look
-        custom_css = """
+        custom_css = """"
         /* Modern Design System */
         .gradio-container {
             max-width: 1400px !important;
             margin: 0 auto;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        
+
         .main-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -125,7 +121,7 @@ class EnhancedModernVideoGeneratorUI:
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-        
+
         .feature-card {
             background: white;
             border-radius: 15px;
@@ -134,7 +130,7 @@ class EnhancedModernVideoGeneratorUI:
             border: 1px solid #e5e7eb;
             margin-bottom: 1rem;
         }
-        
+
         .progress-container {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border-radius: 15px;
@@ -142,7 +138,7 @@ class EnhancedModernVideoGeneratorUI:
             margin: 2rem 0;
             color: white;
         }
-        
+
         .progress-bar {
             background: rgba(255,255,255,0.2);
             border-radius: 10px;
@@ -150,21 +146,21 @@ class EnhancedModernVideoGeneratorUI:
             overflow: hidden;
             margin: 1rem 0;
         }
-        
+
         .progress-fill {
             background: white;
             height: 100%;
             border-radius: 10px;
             transition: width 0.3s ease;
         }
-        
+
         .agent-status-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1rem;
             margin: 1rem 0;
         }
-        
+
         .agent-card {
             background: white;
             border-radius: 12px;
@@ -172,18 +168,18 @@ class EnhancedModernVideoGeneratorUI:
             border-left: 4px solid #cbd5e0;
             transition: all 0.3s ease;
         }
-        
+
         .agent-card.active {
             border-left-color: #10b981;
             background: #f0fdf4;
             transform: scale(1.02);
         }
-        
+
         .agent-card.completed {
             border-left-color: #059669;
             background: #ecfdf5;
         }
-        
+
         .discussion-container {
             background: #f8fafc;
             border-radius: 15px;
@@ -193,7 +189,7 @@ class EnhancedModernVideoGeneratorUI:
             max-height: 400px;
             overflow-y: auto;
         }
-        
+
         .discussion-pair {
             background: white;
             border-radius: 12px;
@@ -202,17 +198,17 @@ class EnhancedModernVideoGeneratorUI:
             border-left: 4px solid #3b82f6;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        
+
         .discussion-pair.active {
             border-left-color: #10b981;
             background: #f0fdf4;
         }
-        
+
         .discussion-pair.completed {
             border-left-color: #059669;
             background: #ecfdf5;
         }
-        
+
         .force-option {
             background: #fef3c7;
             border: 1px solid #f59e0b;
@@ -220,7 +216,7 @@ class EnhancedModernVideoGeneratorUI:
             padding: 1rem;
             margin: 0.5rem 0;
         }
-        
+
         .trending-section {
             background: #ede9fe;
             border: 1px solid #8b5cf6;
@@ -228,7 +224,7 @@ class EnhancedModernVideoGeneratorUI:
             padding: 1.5rem;
             margin: 1rem 0;
         }
-        
+
         .video-result {
             background: #dcfce7;
             border: 1px solid #16a34a;
@@ -237,7 +233,7 @@ class EnhancedModernVideoGeneratorUI:
             margin: 2rem 0;
             text-align: center;
         }
-        
+
         .download-button {
             background: #059669;
             color: white;
@@ -248,37 +244,37 @@ class EnhancedModernVideoGeneratorUI:
             display: inline-block;
             margin: 0.5rem;
         }
-        
+
         .download-button:hover {
             background: #047857;
         }
-        """
-        
+        """"
+
         with gr.Blocks(
             css=custom_css,
             title="🎬 Enhanced Ultimate Modern Video Generator"
         ) as interface:
-            
+
             # Header
-            gr.HTML("""
+            gr.HTML(""""
             <div class="main-header">
                 <h1>🎬 Enhanced Ultimate Modern Video Generator</h1>
                 <p>AI-Powered Viral Content Creation with Real-Time Updates & Advanced Features</p>
             </div>
-            """)
-            
+            """")
+
             with gr.Row():
                 with gr.Column(scale=2):
                     # Configuration Section
                     gr.HTML("<h2>📝 Video Configuration</h2>")
-                    
+
                     mission_input = gr.Textbox(
                         label="Mission/Topic",
                         placeholder="Enter your video mission or topic...",
                         lines=3,
                         value="Create engaging content about Hila Pinto's Ashtanga Yoga journey, balancing family life with spiritual practice"
                     )
-                    
+
                     with gr.Row():
                         platform_dropdown = gr.Dropdown(
                             choices=["instagram", "tiktok", "youtube", "twitter"],
@@ -286,14 +282,20 @@ class EnhancedModernVideoGeneratorUI:
                             label="Platform",
                             info="Target social media platform"
                         )
-                        
+
                         category_dropdown = gr.Dropdown(
-                            choices=["Educational", "Comedy", "Entertainment", "News", "Tech", "Health", "Lifestyle"],
-                            value="Educational", 
+                            choices=[
+                                "Educational",
+                                "Comedy",
+                                "Entertainment",
+                                "News",
+                                "Tech",
+                                "Health",
+                                "Lifestyle"],
+                            value="Educational",
                             label="Category",
-                            info="Video content category"
-                        )
-                    
+                            info="Video content category")
+
                     with gr.Row():
                         duration_slider = gr.Slider(
                             minimum=10,
@@ -303,43 +305,50 @@ class EnhancedModernVideoGeneratorUI:
                             label="Duration (seconds)",
                             info="Video length in seconds"
                         )
-                        
+
                         system_dropdown = gr.Dropdown(
-                            choices=["simple", "enhanced", "advanced", "multilingual", "professional"],
+                            choices=[
+                                "simple",
+                                "enhanced",
+                                "advanced",
+                                "multilingual",
+                                "professional"],
                             value="enhanced",
                             label="AI System",
-                            info="Simple=3 agents, Enhanced=7 agents, Advanced=15 agents, Multilingual=8 agents, Professional=19 agents"
-                        )
-                    
+                            info="Simple=3 agents",
+                                Enhanced=7 agents, Advanced=15 agents, Multilingual=8 agents, Professional=19 agents"")
+
                     # Force Generation Options
                     with gr.Accordion("⚡ Force Generation Options", open=False):
                         gr.HTML('<div class="force-option">Choose specific generation method to force</div>')
-                        
+
                         force_generation = gr.Dropdown(
                             choices=["auto", "force_veo3", "force_veo2", "force_image_gen"],
                             value="auto",
                             label="Force Generation Method",
                             info="Auto uses intelligent fallback, force options override"
                         )
-                        
-                        gr.HTML("""
+
+                        gr.HTML(""""
                         <div style="font-size: 0.9rem; color: #6b7280; margin-top: 0.5rem;">
                             <strong>force_veo3:</strong> Latest VEO-3 model (highest quality)<br>
                             <strong>force_veo2:</strong> Stable VEO-2 model (reliable)<br>
                             <strong>force_image_gen:</strong> Image-based generation (fastest)
                         </div>
-                        """)
-                    
+                        """")
+
                     # Trending Analysis Options
                     with gr.Accordion("📈 Trending Analysis (ContentSpecialist)", open=False):
-                        gr.HTML('<div class="trending-section">Analyze trending content for optimization</div>')
-                        
+                        gr.HTML(
+                            '<div class="trending-section">Analyze trending content for 
+                                optimization</div>')
+
                         enable_trending = gr.Checkbox(
                             label="Enable Trending Analysis",
                             value=False,
                             info="ContentSpecialist will analyze trending videos"
                         )
-                        
+
                         with gr.Row():
                             trending_count = gr.Slider(
                                 minimum=5,
@@ -349,7 +358,7 @@ class EnhancedModernVideoGeneratorUI:
                                 label="Videos to Analyze",
                                 info="Number of trending videos to study"
                             )
-                            
+
                             trending_hours = gr.Slider(
                                 minimum=1,
                                 maximum=72,
@@ -358,7 +367,7 @@ class EnhancedModernVideoGeneratorUI:
                                 label="Time Range (hours)",
                                 info="How recent should trending videos be"
                             )
-                    
+
                     # Advanced Options
                     with gr.Accordion("⚙️ Advanced Options", open=False):
                         with gr.Row():
@@ -367,20 +376,20 @@ class EnhancedModernVideoGeneratorUI:
                                 value=False,
                                 info="Generate using images only"
                             )
-                            
+
                             fallback_only = gr.Checkbox(
                                 label="Fallback Only",
                                 value=False,
                                 info="Use fallback generation methods"
                             )
-                        
+
                         frame_continuity = gr.Dropdown(
-                            choices=["auto", "on", "off"],
+                            choices=["auto", "on", "of"],
                             value="auto",
                             label="Frame Continuity",
                             info="AI decides frame continuity automatically"
                         )
-                    
+
                     # Generation Controls
                     with gr.Row():
                         generate_btn = gr.Button(
@@ -389,31 +398,32 @@ class EnhancedModernVideoGeneratorUI:
                             size="lg",
                             scale=3
                         )
-                        
+
                         stop_btn = gr.Button(
                             "⏹️ Stop",
                             variant="stop",
                             visible=False,
                             scale=1
                         )
-                
+
                 with gr.Column(scale=1):
                     # Real-time Status Section
                     gr.HTML("<h2>⚡ Live Status</h2>")
-                    
+
                     status_display = gr.HTML(
-                        """
+                        """"
                         <div style="background: #e0e7ff; color: #3730a3; padding: 1rem; border-radius: 8px;">
                             <strong>🎯 Ready to Generate</strong><br>
                             <small>Configure your video and click Generate</small>
                         </div>
-                        """
+                        """"
                     )
-                    
+
                     # Progress Section with auto-refresh
                     progress_display = gr.HTML(
-                        """
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0;">
+                        """"
+                        <div style="display: grid; grid-template-columns: repeat(3",
+                            1fr); gap: 1rem; margin: 1rem 0;">"
                             <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center;">
                                 <div style="font-size: 1.5rem; font-weight: bold;">7</div>
                                 <div style="color: #6b7280; font-size: 0.9rem;">AI Agents</div>
@@ -427,20 +437,20 @@ class EnhancedModernVideoGeneratorUI:
                                 <div style="color: #6b7280; font-size: 0.9rem;">Progress</div>
                             </div>
                         </div>
-                        """
+                        """"
                     )
-            
+
             # Agent Status Section with auto-refresh
             gr.HTML("<h2>🤖 AI Agent Status</h2>")
             agent_status_display = gr.HTML(self._create_initial_agent_status())
-            
+
             # Discussion Section with auto-refresh
             gr.HTML("<h2>💬 Real-Time Agent Discussions</h2>")
             discussion_display = gr.HTML(self._create_initial_discussion_display())
-            
+
             # Results Section
             gr.HTML("<h2>📊 Generation Results</h2>")
-            
+
             with gr.Row():
                 with gr.Column():
                     # Video Display
@@ -448,30 +458,30 @@ class EnhancedModernVideoGeneratorUI:
                         label="Generated Video",
                         visible=False
                     )
-                    
+
                     # Video Result Section
                     video_result_display = gr.HTML(
                         "<p>Video will appear here after generation</p>"
                     )
-                    
+
                     # Results JSON
                     results_json = gr.JSON(
                         label="Detailed Results",
                         visible=False
                     )
-                
+
                 with gr.Column():
                     # Download Section
                     download_section = gr.HTML(
                         "<p>Download links will appear here after generation</p>"
                     )
-                    
+
                     # Session Info
                     session_info = gr.JSON(
                         label="Session Information",
                         visible=False
                     )
-            
+
             # Auto-refresh components for real-time updates
             def update_progress():
                 """Update progress in real-time"""
@@ -481,9 +491,9 @@ class EnhancedModernVideoGeneratorUI:
                         progress = progress_info.get('progress', 0)
                         current_phase = progress_info.get('current_phase', 'Processing')
                         discussions_completed = progress_info.get('discussions_completed', 0)
-                        
+
                         # Update progress display
-                        progress_html = f"""
+                        progress_html = """"
                         <div class="progress-container">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
                                 <h3 style="margin: 0;">Progress: {progress}%</h3>
@@ -493,8 +503,9 @@ class EnhancedModernVideoGeneratorUI:
                                 <div class="progress-fill" style="width: {progress}%;"></div>
                             </div>
                         </div>
-                        
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+
+                        <div style="display: grid; grid-template-columns: repeat(3",
+                            1fr); gap: 1rem;">"
                             <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center;">
                                 <div style="font-size: 1.5rem; font-weight: bold;">7</div>
                                 <div style="color: #6b7280; font-size: 0.9rem;">AI Agents</div>
@@ -508,87 +519,95 @@ class EnhancedModernVideoGeneratorUI:
                                 <div style="color: #6b7280; font-size: 0.9rem;">Progress</div>
                             </div>
                         </div>
-                        """
-                        
+                        """"
+
                         # Update agent status
                         agent_html = self._create_agent_status(progress)
-                        
+
                         # Update discussion display
                         discussion_html = self._create_discussion_display(progress_info)
-                        
+
                         return progress_html, agent_html, discussion_html
-                        
+
                     except Exception as e:
                         logger.error(f"Progress update error: {e}")
-                
+
                 return progress_display.value, agent_status_display.value, discussion_display.value
-            
+
             # Event Handlers
             generate_btn.click(
                 fn=self.start_generation,
-                inputs=[mission_input, platform_dropdown, category_dropdown, 
-                       duration_slider, system_dropdown, force_generation,
-                       enable_trending, trending_count, trending_hours,
-                       image_only, fallback_only, frame_continuity],
+                inputs=[mission_input, platform_dropdown, category_dropdown,
+                        duration_slider, system_dropdown, force_generation,
+                        enable_trending, trending_count, trending_hours,
+                        image_only, fallback_only, frame_continuity],
                 outputs=[status_display, generate_btn, stop_btn, progress_display]
             )
-            
+
             stop_btn.click(
                 fn=self.stop_generation,
                 outputs=[status_display, generate_btn, stop_btn]
             )
-            
+
             # Auto-refresh timer for real-time updates
             timer = gr.Timer(value=2.0)  # Update every 2 seconds
             timer.tick(
                 fn=update_progress,
                 outputs=[progress_display, agent_status_display, discussion_display]
             )
-            
+
             # Periodic check for completion
             completion_timer = gr.Timer(value=5.0)  # Check every 5 seconds
             completion_timer.tick(
                 fn=self.check_completion,
-                outputs=[video_output, video_result_display, download_section, 
-                        results_json, session_info, generate_btn, stop_btn, timer, completion_timer]
-            )
-        
+                outputs=[
+                    video_output,
+                    video_result_display,
+                    download_section,
+                    results_json,
+                    session_info,
+                    generate_btn,
+                    stop_btn,
+                    timer,
+                    completion_timer])
+
         return interface
-    
-    def start_generation(self, mission: str, platform: str, category: str, 
-                        duration: int, system: str, force_generation: str,
-                        enable_trending: bool, trending_count: int, trending_hours: int,
-                        image_only: bool, fallback_only: bool, frame_continuity: str,
-                        target_audience: str = "general audience"):
+
+    def start_generation(self, mission: str, platform: str, category: str,
+                         duration: int, system: str, force_generation: str,
+                         enable_trending: bool, trending_count: int, trending_hours: int,
+                         image_only: bool, fallback_only: bool, frame_continuity: str,
+                         target_audience: str = "general audience"):
         """Start video generation process with all options"""
-        
+
         if self.is_generating:
             return (
-                """
+                """"
                 <div style="background: #fef3c7; color: #92400e; padding: 1rem; border-radius: 8px;">
                     <strong>🔄 Generation in Progress</strong><br>
                     <small>Please wait for current generation to complete</small>
                 </div>
-                """,
+                """",
                 gr.update(visible=False),
                 gr.update(visible=True),
                 self._create_progress_display(0, "Generation in progress...")
             )
-        
+
         self.is_generating = True
         self.progress_data = {'progress': 0, 'message': 'Initializing...'}
         self.discussion_data = {}
         self.final_video_path = None
-        
+
         # Trending analysis if enabled
         trending_insights = None
         if enable_trending:
-            logger.info(f"🔍 Performing trending analysis: {trending_count} videos, {trending_hours}h")
+            logger.info(
+                f"🔍 Performing trending analysis: {trending_count} videos, {trending_hours}h")
             trending_videos = self.trending_analyzer.get_trending_videos(
                 platform, trending_hours, trending_count
             )
             trending_insights = self.trending_analyzer.analyze_trends(trending_videos)
-        
+
         # Create working orchestrator with AI agents
         try:
             from src.agents.working_orchestrator import create_working_orchestrator
@@ -602,17 +621,17 @@ class EnhancedModernVideoGeneratorUI:
         except Exception as e:
             self.is_generating = False
             return (
-                f"""
+                """"
                 <div style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px;">
                     <strong>❌ Initialization Failed</strong><br>
                     <small>{str(e)}</small>
                 </div>
-                """,
+                """",
                 gr.update(visible=True),
                 gr.update(visible=False),
                 self._create_progress_display(0, "Failed to initialize")
             )
-        
+
         # Start generation in background thread
         def generate():
             try:
@@ -632,13 +651,13 @@ class EnhancedModernVideoGeneratorUI:
                     'trending_count': trending_count,
                     'trending_hours': trending_hours
                 }
-                
+
                 if self.orchestrator:
                     result = self.orchestrator.generate_video(config)
                 else:
                     result = {'success': False, 'error': 'Orchestrator not initialized'}
                 self.generation_result = result
-                
+
                 # Log final video path
                 if result.get('success'):
                     video_path = result.get('final_video_path')
@@ -650,29 +669,29 @@ class EnhancedModernVideoGeneratorUI:
                         # Check if there are any results that might contain the path
                         logger.info(f"🔍 Generation result: {result}")
                         print(f"\n🔍 GENERATION RESULT: {result}\n")
-                
+
             except Exception as e:
                 logger.error(f"Generation failed: {e}")
                 self.generation_result = {'success': False, 'error': str(e)}
-        
+
         self.generation_thread = threading.Thread(target=generate)
         self.generation_thread.daemon = True
         self.generation_thread.start()
-        
+
         return (
-            f"""
+            """"
             <div style="background: #dcfce7; color: #166534; padding: 1rem; border-radius: 8px;">
                 <strong>🚀 Generation Started</strong><br>
                 <small>Using {system.title()} AI System</small>
                 {f'<br><small>📈 Trending analysis enabled ({trending_count} videos)</small>' if enable_trending else ''}
                 {f'<br><small>⚡ Force: {force_generation}</small>' if force_generation != 'auto' else ''}
             </div>
-            """,
+            """",
             gr.update(visible=False),
             gr.update(visible=True),
             self._create_progress_display(0, f"Started {system} generation...")
         )
-    
+
     def check_completion(self):
         """Check if generation is completed and update UI"""
         if not self.is_generating or not hasattr(self, 'generation_result'):
@@ -687,18 +706,18 @@ class EnhancedModernVideoGeneratorUI:
                 gr.update(active=True),    # timer
                 gr.update(active=True)     # completion_timer
             )
-        
+
         result = getattr(self, 'generation_result', {})
-        
+
         if result and result.get('success') is not None:
             self.is_generating = False
-            
+
             if result.get('success'):
                 video_path = result.get('final_video_path')
                 session_id = result.get('session_id', 'N/A')
-                
+
                 # Create proper video result display
-                video_result_html = f"""
+                video_result_html = """"
                 <div class="video-result">
                     <h3>✅ Video Generation Completed!</h3>
                     <p><strong>Session:</strong> {session_id}</p>
@@ -706,13 +725,15 @@ class EnhancedModernVideoGeneratorUI:
                     <p><strong>Discussions:</strong> {result.get('discussions_conducted', 3)}</p>
                     {f'<p><strong>Video Path:</strong> {video_path}</p>' if video_path else ''}
                 </div>
-                """
-                
+                """"
+
                 # Create download section with proper video download
                 download_html = self._create_download_section(result)
-                
+
                 return (
-                    gr.update(visible=True, value=video_path if video_path and os.path.exists(video_path) else None),
+                    gr.update(
+                        visible=True,
+                        value=video_path if video_path and os.path.exists(video_path) else None),
                     video_result_html,
                     download_html,
                     gr.update(visible=True, value=result),
@@ -726,12 +747,12 @@ class EnhancedModernVideoGeneratorUI:
                 error_msg = result.get('error', 'Unknown error')
                 return (
                     gr.update(visible=False),
-                    f"""
+                    """"
                     <div style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px;">
                         <strong>❌ Generation Failed</strong><br>
                         <small>{error_msg}</small>
                     </div>
-                    """,
+                    """",
                     "<p>Generation failed</p>",
                     gr.update(visible=False),
                     gr.update(visible=False),
@@ -740,7 +761,7 @@ class EnhancedModernVideoGeneratorUI:
                     gr.update(active=False),
                     gr.update(active=False)
                 )
-        
+
         # Still generating
         return (
             gr.update(visible=False),
@@ -753,22 +774,22 @@ class EnhancedModernVideoGeneratorUI:
             gr.update(active=True),
             gr.update(active=True)
         )
-    
+
     def stop_generation(self):
         """Stop video generation"""
         self.is_generating = False
-        
+
         return (
-            """
+            """"
             <div style="background: #e0e7ff; color: #3730a3; padding: 1rem; border-radius: 8px;">
                 <strong>⏹️ Generation Stopped</strong><br>
                 <small>Ready for new generation</small>
             </div>
-            """,
+            """",
             gr.update(visible=True),
             gr.update(visible=False)
         )
-    
+
     def _create_initial_agent_status(self):
         """Create initial agent status display"""
         agents = [
@@ -780,10 +801,10 @@ class EnhancedModernVideoGeneratorUI:
             ("VideoEditor", "✂️", "Video assembly & post-production"),
             ("QualityController", "🛡️", "Quality assurance & optimization")
         ]
-        
+
         html = '<div class="agent-status-grid">'
         for name, emoji, desc in agents:
-            html += f'''
+            html += '''
             <div class="agent-card">
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                     <span style="font-size: 1.2rem;">{emoji}</span>
@@ -797,20 +818,20 @@ class EnhancedModernVideoGeneratorUI:
             '''
         html += '</div>'
         return html
-    
+
     def _create_initial_discussion_display(self):
         """Create initial discussion display"""
-        return """
+        return """"
         <div class="discussion-container">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h3>🤝 AI Agent Discussions</h3>
                 <div style="background: #dbeafe; color: #1e40af; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem;">Enhanced Mode Active</div>
             </div>
-            
+
             <div style="text-align: center; padding: 2rem; color: #6b7280;">
                 <p>💬 AI agents are ready to discuss your content strategy</p>
                 <p>Start generation to see live discussions!</p>
-                
+
                 <div style="margin-top: 1.5rem;">
                     <div class="discussion-pair">
                         <strong>📝 ScriptMaster ↔ 🧠 ViralismSpecialist</strong>
@@ -818,14 +839,14 @@ class EnhancedModernVideoGeneratorUI:
                             Script optimization with viral psychology
                         </div>
                     </div>
-                    
+
                     <div class="discussion-pair">
                         <strong>🎯 ContentSpecialist ↔ 🎨 VisualDirector</strong>
                         <div style="font-size: 0.9rem; color: #6b7280; margin-top: 0.5rem;">
                             Content strategy meets visual storytelling
                         </div>
                     </div>
-                    
+
                     <div class="discussion-pair">
                         <strong>🎵 AudioEngineer ↔ ✂️ VideoEditor</strong>
                         <div style="font-size: 0.9rem; color: #6b7280; margin-top: 0.5rem;">
@@ -835,11 +856,11 @@ class EnhancedModernVideoGeneratorUI:
                 </div>
             </div>
         </div>
-        """
-    
+        """"
+
     def _create_progress_display(self, progress: int, message: str):
         """Create progress display HTML"""
-        return f"""
+        return """"
         <div class="progress-container">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h3 style="margin: 0; color: white;">Progress: {progress}%</h3>
@@ -849,7 +870,7 @@ class EnhancedModernVideoGeneratorUI:
                 <div class="progress-fill" style="width: {progress}%;"></div>
             </div>
         </div>
-        
+
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
             <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center;">
                 <div style="font-size: 1.5rem; font-weight: bold;">7</div>
@@ -864,8 +885,8 @@ class EnhancedModernVideoGeneratorUI:
                 <div style="color: #6b7280; font-size: 0.9rem;">Progress</div>
             </div>
         </div>
-        """
-    
+        """"
+
     def _create_agent_status(self, progress: int):
         """Create agent status based on progress"""
         agents = [
@@ -877,13 +898,13 @@ class EnhancedModernVideoGeneratorUI:
             ("VideoEditor", "✂️", 50, 85),
             ("QualityController", "🛡️", 85, 100)
         ]
-        
+
         html = '<div class="agent-status-grid">'
         for name, emoji, start, end in agents:
             if progress < start:
                 status_class = ""
                 status_text = "⏳ Waiting"
-                status_color = "#9ca3af"
+                status_color = "#9ca3a"
             elif start <= progress < end:
                 status_class = "active"
                 status_text = "🔄 Active"
@@ -892,8 +913,8 @@ class EnhancedModernVideoGeneratorUI:
                 status_class = "completed"
                 status_text = "✅ Completed"
                 status_color = "#059669"
-            
-            html += f'''
+
+            html += '''
             <div class="agent-card {status_class}">
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                     <span style="font-size: 1.2rem;">{emoji}</span>
@@ -906,29 +927,29 @@ class EnhancedModernVideoGeneratorUI:
             '''
         html += '</div>'
         return html
-    
+
     def _create_discussion_display(self, progress_info: dict):
         """Create discussion display based on progress"""
         discussions_completed = progress_info.get('discussions_completed', 0)
-        
+
         pairs = [
             ("ScriptMaster", "ViralismSpecialist", "Script & Viral Psychology", "📝", "🧠"),
             ("ContentSpecialist", "VisualDirector", "Content Strategy & Visuals", "🎯", "🎨"),
             ("AudioEngineer", "VideoEditor", "Audio-Visual Integration", "🎵", "✂️")
         ]
-        
-        html = f"""
+
+        html = """"
         <div class="discussion-container">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h3>🤝 AI Agent Discussions</h3>
                 <div style="background: #dbeafe; color: #1e40af; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem;">Enhanced Mode Active</div>
             </div>
-            
+
             <div style="margin-bottom: 1rem;">
                 <strong>Discussions Completed: {discussions_completed}/3</strong>
             </div>
-        """
-        
+        """"
+
         for i, (agent1, agent2, topic, emoji1, emoji2) in enumerate(pairs):
             if discussions_completed > i:
                 status_class = "completed"
@@ -939,8 +960,8 @@ class EnhancedModernVideoGeneratorUI:
             else:
                 status_class = ""
                 status_text = "⏳ Waiting"
-            
-            html += f'''
+
+            html += '''
             <div class="discussion-pair {status_class}">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <strong>{emoji1} {agent1} ↔ {emoji2} {agent2}</strong>
@@ -951,24 +972,24 @@ class EnhancedModernVideoGeneratorUI:
                 </div>
             </div>
             '''
-        
+
         html += '</div>'
         return html
-    
+
     def _create_download_section(self, result: dict):
         """Create download section with proper video file handling"""
         if not result or not result.get('success'):
             return "<p>No download available</p>"
-        
+
         video_path = result.get('final_video_path', '')
         session_id = result.get('session_id', 'N/A')
         agents_used = result.get('agents_used', 7)
         discussions = result.get('discussions_conducted', 3)
-        
+
         # Create actual file download link
         download_link = f"/file={video_path}" if video_path and os.path.exists(video_path) else "#"
-        
-        return f"""
+
+        return """"
         <div style="background: #dcfce7; border: 1px solid #16a34a; border-radius: 12px; padding: 2rem; margin: 2rem 0;">
             <h3 style="color: #166534; margin-bottom: 1rem;">📁 Download & Results</h3>
             
@@ -981,7 +1002,8 @@ class EnhancedModernVideoGeneratorUI:
                 </a>
             </div>
             
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center; padding-top: 1rem; border-top: 1px solid #16a34a;">
+            <div style="display: grid; grid-template-columns: repeat(3",
+                1fr); gap: 1rem; text-align: center; padding-top: 1rem; border-top: 1px solid #16a34a;">"
                 <div>
                     <div style="font-size: 1.5rem; font-weight: 600; color: #166534;">{agents_used}</div>
                     <div style="font-size: 0.9rem; color: #6b7280;">AI Agents</div>
@@ -998,7 +1020,7 @@ class EnhancedModernVideoGeneratorUI:
             
             {f'<div style="margin-top: 1rem; padding: 0.5rem; background: #f0fdf4; border-radius: 6px; font-size: 0.9rem;"><strong>Path:</strong> {video_path}</div>' if video_path else ''}
         </div>
-        """
+        """"
 
 
 def launch_enhanced_ultimate_ui():
@@ -1011,10 +1033,10 @@ def launch_enhanced_ultimate_ui():
     print("📁 Proper video download and display")
     print("📍 Access at: http://localhost:7860")
     print()
-    
+
     ui = EnhancedModernVideoGeneratorUI()
     interface = ui.create_interface()
-    
+
     interface.launch(
         server_name="0.0.0.0",
         server_port=7860,
@@ -1036,5 +1058,6 @@ def main():
     print()
     launch_enhanced_ultimate_ui()
 
+
 if __name__ == "__main__":
-    main() 
+    main()

@@ -11,6 +11,6 @@ from .agent_entity import AgentEntity
 
 __all__ = [
     "VideoEntity",
-    "SessionEntity", 
+    "SessionEntity",
     "AgentEntity"
-] 
+]

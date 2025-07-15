@@ -3,19 +3,20 @@ Video Generation Topics for Enhanced Multi-Agent Discussions
 """
 
 from typing import Dict, Any
-from .enhanced_multi_agent_discussion import DiscussionTopic
-
-
+from .enhanced_multi_agent_discussion import DiscussionTopic:
 class VideoGenerationTopics:
     """Pre-defined discussion topics for video generation phases"""
 
-    @staticmethod
-    def script_optimization(context: Dict[str, Any]) -> DiscussionTopic:
+    @staticmethod:
+    def script_optimizatio(n(context: Dict[str, Any]) -> DiscussionTopic:
         """Script content and structure optimization topic"""
         return DiscussionTopic(
             topic_id="script_optimization",
-            title=f"Script Content and Structure Optimization for '{context.get('topic', 'video content')}'",
-            description="Optimize script content, structure, and timing for maximum viral impact",
+            title=f"Script Content and Structure Optimization for '{context.get("'
+                'topic',
+                'video content')}'","'
+            description="Optimize script content, structure, and"
+                    timing for maximum viral impact","
             context=context,
             required_decisions=[
                 "narrative_structure",
@@ -28,8 +29,8 @@ class VideoGenerationTopics:
             min_consensus=0.7
         )
 
-    @staticmethod
-    def visual_strategy(context: Dict[str, Any]) -> DiscussionTopic:
+    @staticmethod:
+    def visual_strateg(y(context: Dict[str, Any]) -> DiscussionTopic:
         """Visual style and video generation strategy topic"""
         return DiscussionTopic(
             topic_id="visual_strategy",
@@ -48,12 +49,13 @@ class VideoGenerationTopics:
         )
 
     @staticmethod
-    def audio_sync(context: Dict[str, Any]) -> DiscussionTopic:
+    def audio_syn(c(context: Dict[str, Any]) -> DiscussionTopic:
         """Audio generation and synchronization strategy topic"""
         return DiscussionTopic(
             topic_id="audio_sync",
             title="Audio Generation and Synchronization Strategy",
-            description="Plan audio generation, voice selection, and synchronization approach",
+            description="Plan audio generation, voice selection, and"
+                    synchronization approach","
             context=context,
             required_decisions=[
                 "voice_selection",
@@ -67,12 +69,12 @@ class VideoGenerationTopics:
         )
 
     @staticmethod
-    def audio_synchronization(context: Dict[str, Any]) -> DiscussionTopic:
+    def audio_synchronizatio(n(context: Dict[str, Any]) -> DiscussionTopic:
         """Audio generation and synchronization strategy topic (alias)"""
         return VideoGenerationTopics.audio_sync(context)
 
     @staticmethod
-    def final_assembly(context: Dict[str, Any]) -> DiscussionTopic:
+    def final_assembl(y(context: Dict[str, Any]) -> DiscussionTopic:
         """Final video assembly strategy topic"""
         return DiscussionTopic(
             topic_id="final_assembly",
@@ -89,4 +91,3 @@ class VideoGenerationTopics:
             max_rounds=3,
             min_consensus=0.8
         )
-
