@@ -25,7 +25,23 @@ def run_all_tests():
     total_tests = 0
     test_categories = []
     
-    # 1. Constructor Syntax Tests (CRITICAL)
+    # 1. Subtitle and Overlay Fix Tests (NEW)
+    print("🔧 Loading Subtitle and Overlay Fix Tests...")
+    try:
+        from tests.test_subtitle_timing_unit import TestSubtitleTimingUnit
+        fix_suite = unittest.TestSuite()
+        fix_suite.addTests(loader.loadTestsFromTestCase(TestSubtitleTimingUnit))
+        suite.addTest(fix_suite)
+        
+        fix_count = fix_suite.countTestCases()
+        total_tests += fix_count
+        test_categories.append(f"Subtitle/Overlay Fix Tests: {fix_count}")
+        print(f"✅ Loaded {fix_count} subtitle and overlay fix tests")
+        
+    except ImportError as e:
+        print(f"⚠️ Failed to load subtitle/overlay tests: {e}")
+
+    # 2. Constructor Syntax Tests (CRITICAL)
     print("🔍 Loading Constructor Syntax Tests...")
     try:
         from tests.unit.test_constructor_syntax import TestConstructorSyntax, TestConstructorParameters
@@ -185,7 +201,7 @@ def run_all_tests():
     if success:
         print("\n🎉 All tests passed!")
         print("✅ System is ready for deployment.")
-            else:
+    else:
         print(f"\n❌ {len(result.failures + result.errors)} tests failed!")
         print("🔧 Please fix the failing tests before deployment.")
         

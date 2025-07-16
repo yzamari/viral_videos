@@ -92,27 +92,28 @@ class MultiAgentDiscussionSystem:
         from ..utils.session_manager import session_manager
         self.session_manager = session_manager
 
-        # Create discussions directory
-        session_dir_name = session_id if session_id.startswith('session_') else f"session_{session_id}"
-        self.discussions_dir = os.path.join(
-            "outputs", session_dir_name, "agent_discussions")
-        os.makedirs(self.discussions_dir, exist_ok=True)
+        # Get discussions directory from session manager
+        if self.session_manager and self.session_manager.current_session:
+            self.discussions_dir = self.session_manager.get_session_path("discussions")
+        else:
+            # Fallback to manual path creation if session manager not available
+            session_dir_name = session_id if session_id.startswith('session_') else f"session_{session_id}"
+            self.discussions_dir = os.path.join(
+                "outputs", session_dir_name, "agent_discussions")
+            os.makedirs(self.discussions_dir, exist_ok=True)
         
         # Session management
-        session_dir = f"outputs/{session_dir_name}"
-        self.session_managed = session_id is not None
-        if self.session_managed:
-            os.makedirs(session_dir, exist_ok=True)
+        self.session_managed = session_id is not None and self.session_manager and self.session_manager.current_session
 
         # Initialize monitoring
         self.monitoring_service = MonitoringService(session_id)
 
         # Initialize visualizer
         if enable_visualization:
-            if hasattr(self.session_manager, 'current_session') and self.session_manager.current_session:
+            if self.session_managed:
                 session_dir = self.session_manager.get_session_path()
             else:
-                # Fix to avoid double session_ prefix
+                # Fallback for when session manager not available
                 session_dir = f"outputs/{session_id}" if session_id.startswith("session_") else f"outputs/session_{session_id}"
 
             self.visualizer = DiscussionVisualizer(session_dir)

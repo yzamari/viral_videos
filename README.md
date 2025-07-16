@@ -40,7 +40,8 @@
 - **Multi-format** - 9:16, 16:9, 1:1 aspect ratios
 - **Frame Continuity** - Seamless transitions between clips
 - **Audio Integration** - Synchronized voice and background music
-- **Subtitle Overlays** - Dynamic text positioning
+- **Intelligent Subtitles** - Audio-synchronized timing with multiple segments
+- **Dynamic Overlays** - Animated TikTok-optimized positioning with sine wave effects
 - **Quality Control** - Automated content policy validation
 
 ### 🌍 Multilingual Support
@@ -75,7 +76,7 @@
 │   └── Cloud Services (TTS, Storage)
 └── 🖥️ Presentation Layer (User Interface)
     ├── CLI Interface
-    ├── Web UI (Modern React)
+    ├── Web UI (Modern React + FastAPI)
     └── API Endpoints (RESTful)
 ```
 
@@ -167,23 +168,40 @@ print(f'✅ Supported platforms: {[p.value for p in Platform]}')
 "
 ```
 
-### 4. Generate Your First Video
-```python
-from src.agents.working_orchestrator import create_working_orchestrator
+### 4. Run the Web Application
 
-# Create orchestrator
-orchestrator = create_working_orchestrator(
-    mission="Create engaging AI content about space exploration",
-    platform="youtube",
-    category="Education",
-    duration=30,
-    api_key="your_api_key"
-)
+**🎨 Launch Full Stack App (Recommended)**
+```bash
+# Install Node.js dependencies and start both frontend + backend
+./run_app.sh
 
-# Generate video
-result = orchestrator.generate_video()
-print(f"Video generated: {result['video_path']}")
+# Or for development mode with hot reload
+./run_app.sh --dev
 ```
+
+**🖥️ CLI Usage (Alternative)**
+```bash
+# Generate video via command line
+python main.py generate \
+  --mission "Create engaging AI content about space exploration" \
+  --platform youtube \
+  --duration 30 \
+  --category Educational \
+  --mode enhanced
+```
+
+**🌐 Web Interface**
+- **Production App**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+- **Development Frontend**: http://localhost:5173 (with --dev flag)
+
+**🎬 Features Available in Web UI**
+- Real-time video generation progress
+- AI agent discussion monitoring
+- Script editing with live preview
+- Overlay and subtitle management
+- Video download and sharing
+- Session management and history
 
 ## 📊 Performance Metrics
 

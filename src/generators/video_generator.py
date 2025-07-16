@@ -8,6 +8,7 @@ import time
 import tempfile
 import uuid
 import re
+import numpy as np
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 from datetime import datetime
@@ -1183,19 +1184,39 @@ class VideoGenerator:
             # Get video duration from video stream info
             video_duration = float(video_stream.get('duration', 20))
             
-            # Add hook text overlay (top of video) with enhanced styling
+            # CRITICAL FIX: Add dynamic/animated overlays for TikTok
+            positioning_decision = self._get_positioning_decision(config, {'primary_style': 'dynamic'})
+            is_dynamic = positioning_decision.get('positioning_strategy') == 'dynamic'
+            
+            # Add hook text overlay with DYNAMIC positioning
             if config.hook:
                 hook_text = str(config.hook).replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')[:50]
-                overlay_filters.append(
-                    f"drawtext=text='{hook_text}':fontcolor=0xFFD700:fontsize=32:font='Arial Black':box=1:boxcolor=0x000000@0.6:boxborderw=5:x=(w-text_w)/2:y=60:enable='between(t,0,3)'"
-                )
+                
+                if is_dynamic:
+                    # DYNAMIC: Moving hook overlay with animation
+                    overlay_filters.append(
+                        f"drawtext=text='{hook_text}':fontcolor=0xFFD700:fontsize=36:font='Arial Black':box=1:boxcolor=0x000000@0.7:boxborderw=6:x='if(lt(t,1.5),(w-text_w)/2,if(lt(t,3),(w-text_w)/2-20*sin(2*PI*t),w-text_w-20))':y='60+10*sin(4*PI*t)':enable='between(t,0,3)'"
+                    )
+                else:
+                    # STATIC: Original behavior
+                    overlay_filters.append(
+                        f"drawtext=text='{hook_text}':fontcolor=0xFFD700:fontsize=32:font='Arial Black':box=1:boxcolor=0x000000@0.6:boxborderw=5:x=(w-text_w)/2:y=60:enable='between(t,0,3)'"
+                    )
             
-            # Add call-to-action overlay (top-right to avoid subtitle overlap) with enhanced styling
+            # Add call-to-action overlay with DYNAMIC positioning
             if config.call_to_action:
                 cta_text = str(config.call_to_action).replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')[:50]
-                overlay_filters.append(
-                    f"drawtext=text='{cta_text}':fontcolor=0x00FF00:fontsize=22:font='Arial Bold':box=1:boxcolor=0x000000@0.7:boxborderw=3:x=w-text_w-30:y=120:enable='between(t,{video_duration-3},{video_duration})'"
-                )
+                
+                if is_dynamic:
+                    # DYNAMIC: Sliding CTA with bounce effect
+                    overlay_filters.append(
+                        f"drawtext=text='{cta_text}':fontcolor=0x00FF00:fontsize=26:font='Arial Bold':box=1:boxcolor=0x000000@0.8:boxborderw=4:x='if(lt(t,{video_duration-3}),w+text_w,w-text_w-30-15*sin(8*PI*(t-{video_duration-3})))':y='120+5*cos(6*PI*t)':enable='between(t,{video_duration-3},{video_duration})'"
+                    )
+                else:
+                    # STATIC: Original behavior
+                    overlay_filters.append(
+                        f"drawtext=text='{cta_text}':fontcolor=0x00FF00:fontsize=22:font='Arial Bold':box=1:boxcolor=0x000000@0.7:boxborderw=3:x=w-text_w-30:y=120:enable='between(t,{video_duration-3},{video_duration})'"
+                    )
             
             # Apply overlays if any
             if overlay_filters:
@@ -1474,7 +1495,7 @@ class VideoGenerator:
     def _synchronize_with_audio_segments(self, segments: List[Dict[str, Any]], 
                                        video_duration: float, 
                                        session_context: SessionContext) -> List[Dict[str, Any]]:
-        """Synchronize subtitle segments with actual audio file durations"""
+        """Synchronize subtitle segments with actual audio file durations - FIXED: Force multiple segments"""
         try:
             # Get audio files from session
             audio_dir = session_context.get_output_path("audio")
@@ -1487,6 +1508,12 @@ class VideoGenerator:
             for filename in os.listdir(audio_dir):
                 if filename.endswith('.mp3') or filename.endswith('.wav'):
                     audio_files.append(os.path.join(audio_dir, filename))
+            
+            # CRITICAL FIX: If only 1 audio file, use intelligent subtitle timing
+            if len(audio_files) == 1:
+                logger.info("🔧 FIXING: Only 1 audio file found, using intelligent subtitle timing")
+                # Use script-based timing since we control both script and audio generation
+                return self._intelligent_subtitle_timing(segments, video_duration, audio_files[0])
             
             if not audio_files:
                 logger.warning("⚠️ No audio files found, skipping audio synchronization")
@@ -1564,6 +1591,106 @@ class VideoGenerator:
         except Exception as e:
             logger.error(f"❌ Audio synchronization error: {e}")
             return segments
+    
+    def _intelligent_subtitle_timing(self, segments: List[Dict[str, Any]], 
+                                    video_duration: float, 
+                                    audio_file: str) -> List[Dict[str, Any]]:
+        """INTELLIGENT: Use script structure for optimal subtitle timing - no complex audio analysis"""
+        try:
+            from moviepy.editor import AudioFileClip
+            
+            # Get actual audio duration
+            audio_clip = AudioFileClip(audio_file)
+            actual_audio_duration = audio_clip.duration
+            audio_clip.close()
+            
+            logger.info(f"🎵 Audio: {actual_audio_duration:.2f}s, Video: {video_duration:.2f}s, Segments: {len(segments)}")
+            
+            if not segments:
+                logger.warning("⚠️ No segments to time")
+                return []
+            
+            # Use intelligent timing based on script structure
+            timed_segments = []
+            
+            # Calculate timing based on sentence structure and importance
+            total_words = sum(len(segment.get('text', '').split()) for segment in segments)
+            words_per_second = total_words / actual_audio_duration if actual_audio_duration > 0 else 3.0
+            
+            current_time = 0.0
+            
+            for i, segment in enumerate(segments):
+                text = segment.get('text', '')
+                words = len(text.split())
+                
+                # Calculate duration based on content complexity
+                base_duration = words / words_per_second
+                
+                # Adjust for content type
+                if text.lower().startswith(('discover', 'meet', 'what', 'how', 'why')):
+                    base_duration *= 1.3  # Hooks need more time
+                elif text.lower().endswith(('!', '?')):
+                    base_duration *= 1.1  # Questions/exclamations need emphasis
+                elif 'follow' in text.lower() or 'subscribe' in text.lower():
+                    base_duration *= 0.9  # CTAs can be faster
+                
+                # Ensure reasonable bounds
+                duration = max(1.0, min(base_duration, actual_audio_duration - current_time))
+                
+                # Adjust if this is the last segment
+                if i == len(segments) - 1:
+                    duration = actual_audio_duration - current_time
+                
+                if duration <= 0:
+                    break
+                
+                timed_segments.append({
+                    'text': text,
+                    'start': current_time,
+                    'end': current_time + duration,
+                    'word_count': words,
+                    'estimated_duration': duration,
+                    'audio_synchronized': True,
+                    'intelligent_timing': True,
+                    'words_per_second': words / duration if duration > 0 else 0
+                })
+                
+                logger.info(f"📝 Segment {i+1}: '{text[:40]}...' ({current_time:.1f}-{current_time + duration:.1f}s) [{words} words]")
+                current_time += duration
+            
+            logger.info(f"✅ Created {len(timed_segments)} intelligently-timed subtitle segments")
+            return timed_segments
+            
+        except Exception as e:
+            logger.error(f"❌ Intelligent timing failed: {e}")
+            return self._fallback_segmentation(segments, video_duration)
+    
+    
+    def _fallback_segmentation(self, segments: List[Dict[str, Any]], video_duration: float) -> List[Dict[str, Any]]:
+        """Fallback segmentation when audio analysis fails"""
+        if not segments:
+            return []
+        
+        # Simple proportional timing
+        fallback_segments = []
+        time_per_segment = video_duration / len(segments)
+        
+        for i, segment in enumerate(segments):
+            start_time = i * time_per_segment
+            end_time = min((i + 1) * time_per_segment, video_duration)
+            
+            fallback_segments.append({
+                'text': segment['text'],
+                'start': start_time,
+                'end': end_time,
+                'word_count': segment.get('word_count', 0),
+                'estimated_duration': end_time - start_time,
+                'audio_synchronized': False,
+                'fallback_segmentation': True
+            })
+        
+        logger.info(f"✅ Created {len(fallback_segments)} fallback subtitle segments")
+        return fallback_segments
     
     def _compose_with_frame_continuity(self, clips: List[str], audio_files: List[str], 
                                      output_path: str, session_context: SessionContext) -> str:

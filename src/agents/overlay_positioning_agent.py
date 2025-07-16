@@ -260,15 +260,19 @@ Return JSON:
             primary_position = "bottom_third"
             secondary_position = "top_center"
 
+        # CRITICAL FIX: Use dynamic positioning for TikTok viral content
+        strategy = "dynamic" if platform == "tiktok" and duration_seconds <= 30 else "static"
+        
         return {
             "primary_subtitle_position": primary_position,
             "secondary_overlay_position": secondary_position,
-            "positioning_strategy": "static",
+            "positioning_strategy": strategy,
             "safe_zones": ["bottom_third", "top_third"],
             "avoid_zones": ["center"],
-            "reasoning": f"Fallback positioning for {platform} with {video_style} style",
+            "reasoning": f"FIXED: Using {strategy} positioning for {platform} with {video_style} style - TikTok videos benefit from dynamic overlays",
             "mobile_optimized": True,
-            "accessibility_compliant": True
+            "accessibility_compliant": True,
+            "animation_enabled": strategy == "dynamic"
         }
 
     def calculate_precise_coordinates(self, position: str, video_width: int, video_height: int,

@@ -3,6 +3,11 @@ python-dotenv==1.0.0
 pydantic==2.5.2
 pydantic-settings==2.1.0
 
+# FastAPI Backend
+fastapi==0.108.0
+uvicorn==0.25.0
+websockets>=13.0,<15.1.0
+
 # Google Cloud & AI
 google-cloud-storage==2.13.0
 google-cloud-firestore==2.13.1
@@ -42,8 +47,6 @@ seaborn==0.13.0
 scikit-learn==1.3.2
 
 # API & Scheduling
-fastapi==0.108.0
-uvicorn==0.25.0
 celery==5.3.4
 redis==5.0.1
 schedule==1.2.0
@@ -66,11 +69,9 @@ click==8.1.7  # CLI framework
 pathlib2>=2.3.0  # Path handling compatibility
 json5>=0.9.0  # Enhanced JSON parsing
 
-# Web UI Dependencies
-gradio==4.16.0  # Main UI framework
+# Web UI Dependencies (React frontend + FastAPI backend)
 plotly==5.17.0  # Interactive charts and graphs
-dash==2.16.1  # Dashboard components
-websockets==12.0  # Real-time communication
+websockets>=13.0,<15.1.0  # Real-time communication
 asyncio-mqtt==0.13.0  # Async messaging for real-time updates
 
 # Note: Built-in Python modules (os, sys, time, math, random, datetime, logging, uuid, tempfile, subprocess, re, collections) don't need to be installed

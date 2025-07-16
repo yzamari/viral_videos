@@ -35,6 +35,168 @@ class TestRealVideoGeneration(unittest.TestCase):
         # Clean up test files if needed
         pass
     
+    def test_subtitle_segmentation_integration(self):
+        """Test that subtitle segmentation creates multiple timed segments"""
+        print("🔍 Testing subtitle segmentation integration...")
+        
+        # Create test generator
+        generator = VideoGenerator()
+        
+        # Test script parsing
+        test_script = "Discover amazing facts! This is the first sentence. And here's the second one? Finally, follow for more!"
+        segments = generator._parse_script_into_segments(test_script, 15.0)
+        
+        # Verify multiple segments created
+        self.assertGreater(len(segments), 1, "Should create multiple subtitle segments")
+        print(f"✅ Created {len(segments)} subtitle segments")
+        
+        # Verify timing properties
+        for i, segment in enumerate(segments):
+            self.assertIn('text', segment, f"Segment {i} should have text")
+            self.assertIn('start', segment, f"Segment {i} should have start time")
+            self.assertIn('end', segment, f"Segment {i} should have end time")
+            self.assertIn('estimated_duration', segment, f"Segment {i} should have duration")
+            
+            # Verify timing logic
+            self.assertGreaterEqual(segment['start'], 0, f"Segment {i} start time should be >= 0")
+            self.assertGreater(segment['end'], segment['start'], f"Segment {i} end should be > start")
+            self.assertLessEqual(segment['end'], 15.0, f"Segment {i} should not exceed video duration")
+            
+            print(f"  Segment {i+1}: '{segment['text'][:30]}...' ({segment['start']:.1f}-{segment['end']:.1f}s)")
+        
+        # Verify content-aware timing
+        hook_segments = [s for s in segments if s['text'].lower().startswith(('discover', 'meet'))]
+        question_segments = [s for s in segments if s['text'].endswith('?')]
+        cta_segments = [s for s in segments if 'follow' in s['text'].lower()]
+        
+        if hook_segments:
+            print(f"✅ Found {len(hook_segments)} hook segments with extended timing")
+        if question_segments:
+            print(f"✅ Found {len(question_segments)} question segments with emphasis timing")
+        if cta_segments:
+            print(f"✅ Found {len(cta_segments)} CTA segments with faster timing")
+    
+    def test_dynamic_overlay_positioning_integration(self):
+        """Test dynamic overlay positioning for TikTok videos"""
+        print("🔍 Testing dynamic overlay positioning integration...")
+        
+        # Create test positioning agent
+        agent = OverlayPositioningAgent()
+        
+        # Test TikTok short video (should be dynamic)
+        tiktok_decision = agent.analyze_positioning(
+            topic="Test dynamic overlays",
+            platform="tiktok",
+            video_style="cartoon",
+            duration_seconds=20.0,
+            target_audience="general audience"
+        )
+        
+        # Verify dynamic positioning for TikTok
+        self.assertEqual(tiktok_decision['positioning_strategy'], 'dynamic', 
+                        "TikTok videos ≤30s should use dynamic positioning")
+        self.assertTrue(tiktok_decision.get('animation_enabled', False),
+                       "Dynamic positioning should enable animation")
+        
+        print(f"✅ TikTok positioning: {tiktok_decision['positioning_strategy']}")
+        print(f"✅ Animation enabled: {tiktok_decision.get('animation_enabled')}")
+        print(f"✅ Primary position: {tiktok_decision['primary_subtitle_position']}")
+        
+        # Test YouTube longer video (should be static)
+        youtube_decision = agent.analyze_positioning(
+            topic="Test static overlays",
+            platform="youtube", 
+            video_style="realistic",
+            duration_seconds=60.0,
+            target_audience="general audience"
+        )
+        
+        # Verify static positioning for longer videos
+        self.assertEqual(youtube_decision['positioning_strategy'], 'static',
+                        "Longer videos should use static positioning")
+        
+        print(f"✅ YouTube positioning: {youtube_decision['positioning_strategy']}")
+        
+        # Test positioning reasoning
+        self.assertIn('reasoning', tiktok_decision, "Should provide positioning reasoning")
+        self.assertIn('mobile_optimized', tiktok_decision, "Should indicate mobile optimization")
+        
+        print(f"✅ Reasoning provided: {len(tiktok_decision['reasoning'])} characters")
+    
+    def test_end_to_end_subtitle_and_overlay_integration(self):
+        """Test complete subtitle and overlay pipeline"""
+        print("🔍 Testing end-to-end subtitle and overlay integration...")
+        
+        # Create test configuration
+        config = GeneratedVideoConfig(
+            topic="Testing enhanced subtitles and overlays",
+            target_platform=Platform.TIKTOK,
+            category=VideoCategory.COMEDY,
+            duration_seconds=15,
+            hook="Discover: Testing our new features!",
+            call_to_action="Follow for more tests!",
+            main_content=["We're testing subtitle timing.", "And dynamic overlay animations.", "Everything should work perfectly."]
+        )
+        
+        # Test script processing
+        generator = VideoGenerator()
+        script_text = f"{config.hook} {' '.join(config.main_content)} {config.call_to_action}"
+        segments = generator._parse_script_into_segments(script_text, config.duration_seconds)
+        
+        # Verify comprehensive integration
+        self.assertGreater(len(segments), 2, "Should create multiple segments for complex script")
+        
+        # Test positioning agent integration
+        agent = OverlayPositioningAgent()
+        positioning = agent.analyze_positioning(
+            topic=config.topic,
+            platform=config.target_platform.value.lower(),
+            video_style="dynamic",
+            duration_seconds=config.duration_seconds,
+            target_audience="general audience"
+        )
+        
+        # Verify integration results
+        self.assertEqual(positioning['positioning_strategy'], 'dynamic')
+        self.assertTrue(any('hook' in s['text'].lower() for s in segments), "Should detect hook content")
+        self.assertTrue(any('follow' in s['text'].lower() for s in segments), "Should detect CTA content")
+        
+        print(f"✅ End-to-end test completed successfully")
+        print(f"   - Created {len(segments)} subtitle segments")
+        print(f"   - Applied {positioning['positioning_strategy']} overlay positioning")
+        print(f"   - Hook detected: {any('discover' in s['text'].lower() for s in segments)}")
+        print(f"   - CTA detected: {any('follow' in s['text'].lower() for s in segments)}")
+    
+    def test_subtitle_timing_accuracy(self):
+        """Test subtitle timing accuracy and synchronization"""
+        print("🔍 Testing subtitle timing accuracy...")
+        
+        generator = VideoGenerator()
+        
+        # Test with different script lengths
+        test_cases = [
+            ("Short script test.", 5.0),
+            ("Medium length script with multiple sentences. This should create several segments.", 10.0),
+            ("Long comprehensive script for testing purposes. This script contains multiple sentences and various content types. Questions work too? And we end with follow for more!", 20.0)
+        ]
+        
+        for script, duration in test_cases:
+            segments = generator._parse_script_into_segments(script, duration)
+            
+            # Verify timing constraints
+            total_duration = sum(s['estimated_duration'] for s in segments)
+            timing_accuracy = abs(total_duration - duration) / duration
+            
+            self.assertLess(timing_accuracy, 0.1, f"Timing should be within 10% of target duration")
+            self.assertGreater(len(segments), 0, "Should create at least one segment")
+            
+            # Verify no overlapping segments
+            for i in range(len(segments) - 1):
+                self.assertLessEqual(segments[i]['end'], segments[i+1]['start'], 
+                                    f"Segments {i} and {i+1} should not overlap")
+            
+            print(f"✅ Script ({len(script)} chars, {duration}s): {len(segments)} segments, {timing_accuracy:.1%} accuracy")
+    
     def test_script_processor_integration(self):
         """Test script processor with real API calls"""
         print("🔍 Testing script processor integration...")

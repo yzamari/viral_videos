@@ -38,8 +38,14 @@ class DiscussionVisualizer:
 
     def __init__(self, session_dir: str):
         self.session_dir = session_dir
-        self.discussions_dir = os.path.join(session_dir, "agent_discussions")
-        os.makedirs(self.discussions_dir, exist_ok=True)
+        
+        # Use unified session structure - look for 'discussions' subdirectory first
+        if os.path.exists(os.path.join(session_dir, "discussions")):
+            self.discussions_dir = os.path.join(session_dir, "discussions")
+        else:
+            # Fallback to agent_discussions for backward compatibility
+            self.discussions_dir = os.path.join(session_dir, "agent_discussions")
+            os.makedirs(self.discussions_dir, exist_ok=True)
 
         # Real-time tracking
         self.current_discussion: Optional[Dict[str, Any]] = None
@@ -142,7 +148,7 @@ class DiscussionVisualizer:
         self._print_consensus_update(consensus_level, round_number)
 
     def complete_discussion(self, final_consensus: float, total_rounds: int,
-                            key_insights: List[str], final_decision: Dict):
+                            key_insights: List[str], final_decision: Optional[Dict] = None):
         """Complete discussion visualization"""
         if not self.current_discussion:
             return
