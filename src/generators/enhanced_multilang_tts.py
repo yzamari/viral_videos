@@ -247,7 +247,7 @@ class EnhancedMultilingualTTS:
                 audio_config = texttospeech.AudioConfig(
                     audio_encoding=texttospeech.AudioEncoding.MP3,
                     speaking_rate=speed,
-                    sample_rate_hertz=24000,
+                    sample_rate_hertz=48000,
                     effects_profile_id=["headphone-class-device"]
                 )
             else:
@@ -279,7 +279,7 @@ class EnhancedMultilingualTTS:
                 # Configure audio with SSML support
                 audio_config = texttospeech.AudioConfig(
                     audio_encoding=texttospeech.AudioEncoding.MP3,
-                    sample_rate_hertz=24000,
+                    sample_rate_hertz=48000,
                     effects_profile_id=["headphone-class-device"]
                 )
 
@@ -340,8 +340,8 @@ class EnhancedMultilingualTTS:
                 if gtts_config['lang'] == 'en':
                     gtts_config['tld'] = 'com.au'  # Australian for authority
 
-            # Generate with gTTS
-            tts = gTTS(text=enhanced_script, lang=gtts_config['lang'], tld=gtts_config['tld'], slow=False)
+            # Generate with gTTS - use slow=True for better articulation
+            tts = gTTS(text=enhanced_script, lang=gtts_config['lang'], tld=gtts_config['tld'], slow=True)
 
             audio_path = os.path.join(
                 tempfile.gettempdir(),
@@ -457,8 +457,8 @@ class EnhancedMultilingualTTS:
             
             # Create 5 seconds of silence
             cmd = [
-                'ffmpeg', '-y', '-f', 'lavfi', '-i', 'anullsrc=r=22050:cl=mono', 
-                '-t', '5', '-acodec', 'mp3', audio_path
+                'ffmpeg', '-y', '-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo', 
+                '-t', '5', '-acodec', 'mp3', '-b:a', '192k', audio_path
             ]
             
             result = subprocess.run(cmd, capture_output=True, text=True)

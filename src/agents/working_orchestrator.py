@@ -3,9 +3,9 @@ Enhanced Working AI Agent Orchestrator
 Comprehensive mission-driven system with ALL features and proper OOP design """
 
 import time
-from typing  import Dict, Any, Optional
-from datetime  import datetime
-from enum   import Enum
+from typing import Dict, Any, Optional
+from datetime import datetime
+from enum import Enum
 import uuid
 
 try:
@@ -155,7 +155,7 @@ class WorkingOrchestrator:
         self.trending_insights = {}
         # Session ID already set above, don't overwrite it
         
-        logger.info(f"🎬 Enhanced Working Orchestrator initialized (mode.value)")
+        logger.info(f"🎬 Enhanced Working Orchestrator initialized ({mode.value})")
         logger.info(f"   Mission: {mission}")
         logger.info(f"   Platform: {platform.value}")
         logger.info(f"   Duration: {duration}s")

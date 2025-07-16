@@ -57,7 +57,7 @@ class FileService:
                 with open(placeholder_file, 'w') as f:
                     f.write("")
 
-        logger.info(f"📁 Session directories setup: session_{session_id}")
+        logger.info(f"📁 Session directories setup: {session_id}")
         return directories
 
     def save_session_metadata(
@@ -139,8 +139,11 @@ class FileService:
         logger.info("🎞️ Creating final video from clips and audio")
 
         try:
-            # Create session directory
-            session_path = os.path.join(output_dir, f"session_{session_id}")
+            # Create session directory - fix to prevent double session_ prefix
+            if session_id.startswith("session_"):
+                session_path = os.path.join(output_dir, session_id)
+            else:
+                session_path = os.path.join(output_dir, f"session_{session_id}")
             os.makedirs(session_path, exist_ok=True)
 
             # For now, create a placeholder video file

@@ -49,6 +49,7 @@ class VideoCategory(str, Enum):
     HEALTH = "Health"
     ARTS = "Arts"
     AUTOMOTIVE = "Automotive"
+    PETS = "Pets"
     OTHER = "Other"
 
 class ForceGenerationMode(str, Enum):

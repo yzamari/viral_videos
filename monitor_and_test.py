@@ -14,7 +14,8 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 def monitor_session_files(session_id):
     """Monitor session files in real-time"""
-    session_dir = f"outputs/session_{session_id}"
+    # Fix to avoid double session_ prefix
+    session_dir = f"outputs/{session_id}" if session_id.startswith("session_") else f"outputs/session_{session_id}"
     
     # Create session directory if it doesn't exist
     os.makedirs(session_dir, exist_ok=True)
@@ -62,7 +63,8 @@ def monitor_session_files(session_id):
 
 def check_discussion_content(session_id):
     """Check if discussions contain the correct mission content"""
-    discussions_dir = f"outputs/session_{session_id}/discussions"
+    # Fix to avoid double session_ prefix
+    discussions_dir = f"outputs/{session_id}/discussions" if session_id.startswith("session_") else f"outputs/session_{session_id}/discussions"
 
     print("\n🤖 CHECKING AI DISCUSSIONS")
     print("=" * 50)

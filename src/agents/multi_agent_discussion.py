@@ -112,7 +112,8 @@ class MultiAgentDiscussionSystem:
             if hasattr(self.session_manager, 'current_session') and self.session_manager.current_session:
                 session_dir = self.session_manager.get_session_path()
             else:
-                session_dir = f"outputs/session_{session_id}"
+                # Fix to avoid double session_ prefix
+                session_dir = f"outputs/{session_id}" if session_id.startswith("session_") else f"outputs/session_{session_id}"
 
             self.visualizer = DiscussionVisualizer(session_dir)
         else:

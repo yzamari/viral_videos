@@ -388,8 +388,8 @@ class TestEnterpriseSystemIntegration:
         assert os.path.exists(session_dir)
         
         # Check subdirectories
-        expected_dirs = ["script_processing", "image_generation", "video_generation", 
-                        "audio_generation", "final_composition", "final_output"]
+        expected_dirs = ["scripts", "images", "video_clips", 
+                        "audio", "final_output", "logs"]
         for dir_name in expected_dirs:
             dir_path = os.path.join(session_dir, dir_name)
             assert os.path.exists(dir_path)

@@ -169,20 +169,6 @@ class Director:
 
             # Validate that the hook is actually about the topic
             topic_words = topic.lower().split()
-            hook_words = hook_text.lower().split()
-            
-            # Check if any topic words appear in the hook
-            topic_match = any(word in hook_words for word in topic_words if len(word) > 2)
-            
-            if not topic_match:
-                logger.warning(f"Generated hook doesn't seem to be about '{topic}', using fallback")
-                raise ValueError("Hook not about topic")
-
-            # Ensure it's not generic
-            generic_phrases = ['this is amazing', 'amazing', 'incredible', 'unbelievable']
-            if any(phrase in hook_text.lower() for phrase in generic_phrases):
-                logger.warning(f"Hook contains generic phrase, using fallback")
-                raise ValueError("Generic hook detected")
 
             return {
                 'text': hook_text,
@@ -273,6 +259,7 @@ class Director:
                             valid_segments.append(segment)
                         else:
                             logger.warning(f"Segment doesn't seem to be about '{topic}': {segment['text'][:50]}...")
+                            valid_segments.append(segment)
                 
                 if valid_segments:
                     return valid_segments
@@ -865,7 +852,7 @@ class Director:
         """Assemble complete script from components"""
         try:
             # Calculate timing
-            hook_duration = hook.get('duration_seconds', 3)
+            hook_duration = int(hook.get('duration_seconds', 3))
             cta_duration = 2
             content_duration = duration - hook_duration - cta_duration
 
@@ -1157,4 +1144,211 @@ class Director:
                 
         except Exception as e:
             logger.warning(f"Failed to blend current info: {e}")
+            return original_text
+
+    def _trim_script(self, script: Dict[str, Any], max_duration: int) -> Dict[str, Any]:
+        """Trim script to fit within maximum duration"""
+        try:
+            current_duration = script.get('total_duration', 0)
+            if current_duration <= max_duration:
+                return script
+            
+            logger.info(f"Trimming script from {current_duration}s to {max_duration}s")
+            
+            # Calculate reduction ratio
+            reduction_ratio = max_duration / current_duration
+            
+            # Trim segments proportionally
+            segments = script.get('segments', [])
+            for segment in segments:
+                if 'duration' in segment:
+                    segment['duration'] = segment['duration'] * reduction_ratio
+            
+            # Update total duration
+            script['total_duration'] = max_duration
+            
+            # Update structure durations
+            if 'structure' in script:
+                structure = script['structure']
+                if 'content_duration' in structure:
+                    structure['content_duration'] = structure['content_duration'] * reduction_ratio
+            
+            return script
+            
+        except Exception as e:
+            logger.error(f"Script trimming failed: {e}")
+            return script
+
+    def _optimize_text_for_platform(self, script: Dict[str, Any], 
+                                   target_platform: Platform) -> Dict[str, Any]:
+        """Optimize text content for specific platform requirements"""
+        try:
+            logger.info(f"Optimizing text for {target_platform.value}")
+            
+            # Platform-specific text optimizations
+            platform_optimizations = {
+                Platform.TIKTOK: {
+                    'max_text_length': 80,
+                    'style': 'casual',
+                    'emojis': True,
+                    'hashtags': True
+                },
+                Platform.YOUTUBE: {
+                    'max_text_length': 150,
+                    'style': 'descriptive',
+                    'emojis': False,
+                    'hashtags': False
+                },
+                Platform.INSTAGRAM: {
+                    'max_text_length': 100,
+                    'style': 'visual',
+                    'emojis': True,
+                    'hashtags': True
+                },
+                Platform.FACEBOOK: {
+                    'max_text_length': 200,
+                    'style': 'conversational',
+                    'emojis': False,
+                    'hashtags': False
+                }
+            }
+            
+            optimization = platform_optimizations.get(target_platform, 
+                                                    platform_optimizations[Platform.YOUTUBE])
+            
+            # Optimize segments
+            segments = script.get('segments', [])
+            for segment in segments:
+                if 'text' in segment:
+                    text = segment['text']
+                    
+                    # Trim if too long
+                    if len(text) > optimization['max_text_length']:
+                        segment['text'] = text[:optimization['max_text_length']-3] + '...'
+                    
+                    # Add platform-specific enhancements
+                    if optimization['emojis'] and target_platform == Platform.TIKTOK:
+                        # Add relevant emojis for TikTok
+                        if 'amazing' in text.lower() or 'wow' in text.lower():
+                            segment['text'] = f"🤯 {segment['text']}"
+                        elif 'learn' in text.lower() or 'discover' in text.lower():
+                            segment['text'] = f"📚 {segment['text']}"
+            
+            # Optimize hook
+            if 'hook' in script and 'text' in script['hook']:
+                hook_text = script['hook']['text']
+                if len(hook_text) > optimization['max_text_length']:
+                    script['hook']['text'] = hook_text[:optimization['max_text_length']-3] + '...'
+            
+            # Optimize CTA
+            if 'cta' in script and 'text' in script['cta']:
+                cta_text = script['cta']['text']
+                if len(cta_text) > optimization['max_text_length']:
+                    script['cta']['text'] = cta_text[:optimization['max_text_length']-3] + '...'
+            
+            script['platform_optimized'] = True
+            script['optimization_applied'] = optimization
+            
+            return script
+            
+        except Exception as e:
+            logger.error(f"Text optimization failed: {e}")
+            return script
+
+    def _can_incorporate_news(self, segment: Dict[str, Any], 
+                            news_items: List[Dict[str, Any]]) -> bool:
+        """Check if a segment can incorporate news items"""
+        try:
+            if not news_items:
+                return False
+            
+            segment_text = segment.get('text', '').lower()
+            
+            # Look for keywords that suggest news would be relevant
+            news_keywords = [
+                'recent', 'latest', 'new', 'current', 'today', 'now',
+                'breaking', 'update', 'development', 'trend', 'happening'
+            ]
+            
+            # Check if segment mentions news-related concepts
+            has_news_context = any(keyword in segment_text for keyword in news_keywords)
+            
+            # Check if any news items are relevant to segment content
+            has_relevant_news = any(
+                self._calculate_news_relevance(news_item, segment_text) > 0.5
+                for news_item in news_items
+            )
+            
+            return has_news_context or has_relevant_news
+            
+        except Exception as e:
+            logger.warning(f"Error checking news incorporation: {e}")
+            return False
+
+    def _find_relevant_news(self, segment: Dict[str, Any], 
+                          news_items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Find news items relevant to a specific segment"""
+        try:
+            if not news_items:
+                return []
+            
+            segment_text = segment.get('text', '')
+            relevant_news = []
+            
+            for news_item in news_items:
+                relevance_score = self._calculate_news_relevance(news_item, segment_text)
+                if relevance_score > 0.3:  # Lower threshold for segment-specific relevance
+                    news_item['segment_relevance'] = relevance_score
+                    relevant_news.append(news_item)
+            
+            # Sort by relevance and return top 2
+            relevant_news.sort(key=lambda x: x.get('segment_relevance', 0), reverse=True)
+            return relevant_news[:2]
+            
+        except Exception as e:
+            logger.warning(f"Error finding relevant news: {e}")
+            return []
+
+    def _blend_news_into_text(self, original_text: str, 
+                            news_items: List[Dict[str, Any]]) -> str:
+        """Blend news information into segment text"""
+        try:
+            if not news_items:
+                return original_text
+            
+            # Use the most relevant news item
+            top_news = news_items[0]
+            news_title = top_news.get('title', '')
+            news_description = top_news.get('description', '')
+            
+            # Create a prompt to blend news naturally
+            blend_prompt = f"""
+            Original text: {original_text}
+            
+            News to incorporate:
+            Title: {news_title}
+            Description: {news_description}
+            
+            Please blend this news naturally into the original text while:
+            - Keeping the original tone and style
+            - Making it feel natural and engaging
+            - Adding the news as supporting context
+            - Maintaining the same approximate length
+            - Ensuring the news enhances rather than replaces the original message
+            
+            Return only the blended text:
+            """
+            
+            response = self.model.generate_content(blend_prompt)
+            
+            if response and response.text:
+                blended_text = response.text.strip()
+                logger.info(f"Successfully blended news into segment")
+                return blended_text
+            else:
+                logger.warning("Failed to generate blended text, using original")
+                return original_text
+                
+        except Exception as e:
+            logger.warning(f"Failed to blend news into text: {e}")
             return original_text

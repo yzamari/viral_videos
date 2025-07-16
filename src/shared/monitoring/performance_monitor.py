@@ -40,7 +40,7 @@ class PerformanceMonitor:
     with real-time monitoring and historical analysis.
     """
 
-    def __init(self, name: str = "ai_video_generator"):
+    def __init__(self, name: str = "ai_video_generator"):
         """
         Initialize performance monitor
 
@@ -152,7 +152,7 @@ class PerformanceMonitor:
         return TimingContext(
             name=name,
             start_time=time.time(),
-            tags=tags or {)
+            tags=tags or {})
 
     def finish_timing(self, context: TimingContext):
         """
@@ -171,8 +171,7 @@ class PerformanceMonitor:
 
         # Check thresholds
         threshold_key = f"{context.name}_time"
-        if threshold_key in self.thresholds and
-                duration > self.thresholds[threshold_key]:
+        if threshold_key in self.thresholds and duration > self.thresholds[threshold_key]:
             logger.warning(f"⚠️ Operation '{context.name}' took {duration:.2f}s (threshold: {self.thresholds[threshold_key]}s)")
 
     def timer(self, name: str, tags: Optional[Dict[str, str]] = None):
@@ -394,7 +393,7 @@ class PerformanceMonitor:
 class VideoGenerationMonitor:
     """Specialized monitor for video generation operations"""
 
-    def __init(self, base_monitor: PerformanceMonitor):
+    def __init__(self, base_monitor: PerformanceMonitor):
         """
         Initialize video generation monitor
 
@@ -430,7 +429,7 @@ class VideoGenerationMonitor:
         self.monitor.record_metric("generation_started", 1, {
             "session_id": session_id,
             "platform": platform
-        )
+        })
 
         logger.info(f"📹 Started monitoring generation: {tracking_id}")
         return tracking_id
@@ -512,7 +511,7 @@ class VideoGenerationMonitor:
         else:
             self.monitor.increment_counter("video_generations_failed")
 
-        logger.info(f"📹 Finished monitoring generation: {tracking_id} ('success' if success else 'failure'}, {total_duration:.2f}s)")
+        logger.info(f"📹 Finished monitoring generation: {tracking_id} ({'success' if success else 'failure'}), {total_duration:.2f}s")
 
     def get_generation_stats(self) -> Dict[str, Any]:
         """

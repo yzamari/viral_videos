@@ -1173,18 +1173,18 @@ class VideoGenerator:
             # Get video duration from video stream info
             video_duration = float(video_stream.get('duration', 20))
             
-            # Add hook text overlay (top of video)
+            # Add hook text overlay (top of video) with enhanced styling
             if config.hook:
                 hook_text = str(config.hook).replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')[:50]
                 overlay_filters.append(
-                    f"drawtext=text='{hook_text}':fontcolor=yellow:fontsize=28:x=(w-text_w)/2:y=50:enable='between(t,0,3)'"
+                    f"drawtext=text='{hook_text}':fontcolor=0xFFD700:fontsize=32:font='Arial Black':box=1:boxcolor=0x000000@0.6:boxborderw=5:x=(w-text_w)/2:y=60:enable='between(t,0,3)'"
                 )
             
-            # Add call-to-action overlay (bottom of video)
+            # Add call-to-action overlay (top-right to avoid subtitle overlap) with enhanced styling
             if config.call_to_action:
                 cta_text = str(config.call_to_action).replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')[:50]
                 overlay_filters.append(
-                    f"drawtext=text='{cta_text}':fontcolor=white:fontsize=24:x=(w-text_w)/2:y=h-80:enable='between(t,{video_duration-3},{video_duration})'"
+                    f"drawtext=text='{cta_text}':fontcolor=0x00FF00:fontsize=22:font='Arial Bold':box=1:boxcolor=0x000000@0.7:boxborderw=3:x=w-text_w-30:y=120:enable='between(t,{video_duration-3},{video_duration})'"
                 )
             
             # Apply overlays if any

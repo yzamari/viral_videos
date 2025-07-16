@@ -117,7 +117,8 @@ class SessionManager:
     @staticmethod
     def get_static_session_path(session_id: str, subdir: str = None) -> str:
         """Get path for session or specific subdirectory (static method)"""
-        base_session_dir = os.path.join("outputs", "sessions", session_id)
+        # Fix to match actual session directory structure (no 'sessions' subdirectory)
+        base_session_dir = os.path.join("outputs", session_id)
         
         if subdir:
             return os.path.join(base_session_dir, subdir)

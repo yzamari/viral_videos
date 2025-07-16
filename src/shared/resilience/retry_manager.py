@@ -67,6 +67,10 @@ class RetryManager:
         
         logger.info(f"🔄 Retry manager '{name}' initialized with {self.config.strategy.value} strategy")
     
+    def retry(self, func: Callable, *args, **kwargs) -> Any:
+        """Alias for execute method for backwards compatibility"""
+        return self.execute(func, *args, **kwargs)
+
     def execute(self, func: Callable, *args, **kwargs) -> Any:
         """
         Execute function with retry logic

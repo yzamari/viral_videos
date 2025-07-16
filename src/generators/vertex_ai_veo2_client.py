@@ -95,36 +95,42 @@ class VertexAIVeo2Client(BaseVeoClient):
             enhanced_prompt = self._enhance_prompt_with_gemini(prompt)
 
             # Submit generation request to Vertex AI VEO-2
-            result = self._submit_generation_request(
+            operation_name = self._submit_generation_request(
                 enhanced_prompt,
                 duration,
                 clip_id,
                 image_path)
 
-            if result:
-                # Process the operation result to extract video path
-                video_path = self._process_operation_result(result, clip_id)
-                
-                if video_path:
-                    # Check if result is a local file path or GCS URI
-                    if isinstance(video_path, str) and os.path.exists(video_path):
-                        # Result is already a local file path (base64 video was processed)
-                        logger.info(f"✅ VEO-2 generation completed: {video_path}")
-                        return video_path
-                    elif isinstance(video_path, str) and video_path.startswith("gs://"):
-                        # Result is a GCS URI, download it
-                        local_path = self._download_video_from_gcs(video_path, clip_id)
-                        if local_path and os.path.exists(local_path):
-                            logger.info(f"✅ VEO-2 generation completed: {local_path}")
-                            return local_path
+            if operation_name:
+                # Poll for completion
+                operation_result = self._poll_operation(operation_name)
+                if operation_result:
+                    # Process the operation result to extract video path
+                    video_path = self._process_operation_result(operation_result, clip_id)
+                    
+                    if video_path:
+                        # Check if result is a local file path or GCS URI
+                        if isinstance(video_path, str) and os.path.exists(video_path):
+                            # Result is already a local file path (base64 video was processed)
+                            logger.info(f"✅ VEO-2 generation completed: {video_path}")
+                            return video_path
+                        elif isinstance(video_path, str) and video_path.startswith("gs://"):
+                            # Result is a GCS URI, download it
+                            local_path = self._download_video_from_gcs(video_path, clip_id)
+                            if local_path and os.path.exists(local_path):
+                                logger.info(f"✅ VEO-2 generation completed: {local_path}")
+                                return local_path
+                            else:
+                                logger.error("❌ Failed to download VEO-2 video from GCS")
+                                return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
                         else:
-                            logger.error("❌ Failed to download VEO-2 video from GCS")
+                            logger.error(f"❌ Invalid result format: {video_path} (type: {type(video_path)})")
                             return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
                     else:
-                        logger.error(f"❌ Invalid result format: {video_path} (type: {type(video_path)})")
+                        logger.error("❌ Failed to process VEO-2 operation result")
                         return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
                 else:
-                    logger.error("❌ Failed to process VEO-2 operation result")
+                    logger.error("❌ Polling operation failed")
                     return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
             else:
                 logger.error("❌ VEO-2 generation failed")
@@ -208,16 +214,8 @@ class VertexAIVeo2Client(BaseVeoClient):
                 logger.info(f"✅ VEO-2 request successful: {result}")
                 operation_name = result.get("name")
                 if operation_name:
-                    # Add a small delay before polling
-                    time.sleep(2)
-                    # Poll for completion
-                    result = self._poll_operation(operation_name)
-                    if result:
-                        # Process the operation result to extract video path
-                        return self._process_operation_result(result, clip_id)
-                    else:
-                        logger.error("❌ Polling operation failed")
-                        return None
+                    # Return operation name for polling
+                    return operation_name
                 else:
                     logger.error("❌ No operation name in response")
                     return None
@@ -323,34 +321,41 @@ class VertexAIVeo2Client(BaseVeoClient):
             response = result.get('response', {})
             if not response:
                 logger.error("❌ No response in operation result")
-                return None
+                # Handle cases where response is directly in result
+                if 'videos' in result:
+                    response = result
+                else:
+                    return None
             
-            # Try to extract video data
+            # VEO-2 API returns a list of videos under the 'videos' key
+            if 'videos' in response:
+                videos = response.get('videos', [])
+                if not videos:
+                    logger.error("❌ No videos found in response")
+                    return None
+                
+                # Get the first video's data
+                video_info = videos[0]
+                
+                if 'videoBase64' in video_info:
+                    video_data = video_info['videoBase64']
+                    mime_type = video_info.get('mimeType', 'video/mp4')
+                    return self._save_base64_video(video_data, clip_id, mime_type)
+                elif 'bytesBase64Encoded' in video_info:
+                    video_data = video_info['bytesBase64Encoded']
+                    mime_type = video_info.get('mimeType', 'video/mp4')
+                    return self._save_base64_video(video_data, clip_id, mime_type)
+                elif 'gcsUri' in video_info:
+                    return video_info['gcsUri']
+            
+            # Fallback to previous logic for other response structures
             predictions = response.get('predictions', [])
             if not predictions:
                 logger.error("❌ No predictions in response")
                 logger.error(f"🔍 Full response structure: {json.dumps(response, indent=2)}")
                 logger.error(f"🔍 Response type: {type(response)}")
                 logger.error(f"🔍 Response keys: {list(response.keys()) if isinstance(response, dict) else 'Not a dict'}")
-                
-                # Check for alternative response structures
-                if 'prediction' in response:
-                    predictions = [response['prediction']]
-                    logger.info("✅ Found prediction in alternative format")
-                elif 'outputs' in response:
-                    predictions = response['outputs']
-                    logger.info("✅ Found outputs in alternative format")
-                elif 'videoBase64' in response:
-                    # Direct video data in response
-                    predictions = [response]
-                    logger.info("✅ Found direct video data in response")
-                elif 'gcsUri' in response:
-                    # Direct GCS URI in response
-                    predictions = [response]
-                    logger.info("✅ Found direct GCS URI in response")
-                else:
-                    logger.error(f"❌ Response keys: {list(response.keys())}")
-                    return None
+                return None
             
             prediction = predictions[0]
             
@@ -362,6 +367,11 @@ class VertexAIVeo2Client(BaseVeoClient):
                 video_data = prediction['videoBase64']
                 mime_type = prediction.get('mimeType', 'video/mp4')
                 logger.info("✅ Found base64 video data")
+                return self._save_base64_video(video_data, clip_id, mime_type)
+            elif 'bytesBase64Encoded' in prediction:
+                video_data = prediction['bytesBase64Encoded']
+                mime_type = prediction.get('mimeType', 'video/mp4')
+                logger.info("✅ Found base64 video data (bytesBase64Encoded)")
                 return self._save_base64_video(video_data, clip_id, mime_type)
             
             # Check for GCS URI

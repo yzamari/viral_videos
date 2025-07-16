@@ -59,7 +59,7 @@ def test_debug_session():
     print("📁 Session context created")
 
     # Test session directory creation
-    session_dir = f"outputs/session_{session_id}"
+    session_dir = f"outputs/{session_id}"
     
     # Check if session directory exists
     if not os.path.exists(session_dir):
