@@ -1604,7 +1604,11 @@ class VideoGenerator:
             actual_audio_duration = audio_clip.duration
             audio_clip.close()
             
-            logger.info(f"🎵 Audio: {actual_audio_duration:.2f}s, Video: {video_duration:.2f}s, Segments: {len(segments)}")
+            # CRITICAL FIX: Use target duration instead of actual audio duration for timing
+            # This ensures subtitles match the intended video length
+            target_duration = min(video_duration, actual_audio_duration)
+            
+            logger.info(f"🎵 Audio: {actual_audio_duration:.2f}s, Target: {target_duration:.2f}s, Video: {video_duration:.2f}s, Segments: {len(segments)}")
             
             if not segments:
                 logger.warning("⚠️ No segments to time")
@@ -1615,7 +1619,7 @@ class VideoGenerator:
             
             # Calculate timing based on sentence structure and importance
             total_words = sum(len(segment.get('text', '').split()) for segment in segments)
-            words_per_second = total_words / actual_audio_duration if actual_audio_duration > 0 else 3.0
+            words_per_second = total_words / target_duration if target_duration > 0 else 3.0
             
             current_time = 0.0
             
@@ -1635,11 +1639,11 @@ class VideoGenerator:
                     base_duration *= 0.9  # CTAs can be faster
                 
                 # Ensure reasonable bounds
-                duration = max(1.0, min(base_duration, actual_audio_duration - current_time))
+                duration = max(1.0, min(base_duration, target_duration - current_time))
                 
                 # Adjust if this is the last segment
                 if i == len(segments) - 1:
-                    duration = actual_audio_duration - current_time
+                    duration = target_duration - current_time
                 
                 if duration <= 0:
                     break

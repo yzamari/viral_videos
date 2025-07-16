@@ -112,6 +112,11 @@ class GeneratedVideoConfig:
     tone: str = "engaging"
     style: str = "professional"
     target_audience: str = "general audience"  # Add target_audience parameter
+    
+    # Platform alias for backward compatibility
+    @property
+    def platform(self) -> Platform:
+        return self.target_platform
 
     # Content structure
     hook: str = "Amazing content ahead!"
