@@ -102,22 +102,29 @@ class VertexAIVeo2Client(BaseVeoClient):
                 image_path)
 
             if result:
-                # Check if result is a local file path or GCS URI
-                if os.path.exists(result):
-                    # Result is already a local file path (base64 video was processed)
-                    logger.info(f"✅ VEO-2 generation completed: {result}")
-                    return result
-                elif result.startswith("gs://"):
-                    # Result is a GCS URI, download it
-                    local_path = self._download_video_from_gcs(result, clip_id)
-                    if local_path and os.path.exists(local_path):
-                        logger.info(f"✅ VEO-2 generation completed: {local_path}")
-                        return local_path
+                # Process the operation result to extract video path
+                video_path = self._process_operation_result(result, clip_id)
+                
+                if video_path:
+                    # Check if result is a local file path or GCS URI
+                    if isinstance(video_path, str) and os.path.exists(video_path):
+                        # Result is already a local file path (base64 video was processed)
+                        logger.info(f"✅ VEO-2 generation completed: {video_path}")
+                        return video_path
+                    elif isinstance(video_path, str) and video_path.startswith("gs://"):
+                        # Result is a GCS URI, download it
+                        local_path = self._download_video_from_gcs(video_path, clip_id)
+                        if local_path and os.path.exists(local_path):
+                            logger.info(f"✅ VEO-2 generation completed: {local_path}")
+                            return local_path
+                        else:
+                            logger.error("❌ Failed to download VEO-2 video from GCS")
+                            return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
                     else:
-                        logger.error("❌ Failed to download VEO-2 video from GCS")
+                        logger.error(f"❌ Invalid result format: {video_path} (type: {type(video_path)})")
                         return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
                 else:
-                    logger.error(f"❌ Invalid result format: {result}")
+                    logger.error("❌ Failed to process VEO-2 operation result")
                     return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
             else:
                 logger.error("❌ VEO-2 generation failed")
@@ -157,7 +164,7 @@ class VertexAIVeo2Client(BaseVeoClient):
             url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{self.veo2_model}:predictLongRunning"
             headers = self._get_auth_headers()
 
-            # Prepare request data
+            # Prepare request data with correct parameter structure
             request_data = {
                 "instances": [{
                     "prompt": prompt,
@@ -204,7 +211,13 @@ class VertexAIVeo2Client(BaseVeoClient):
                     # Add a small delay before polling
                     time.sleep(2)
                     # Poll for completion
-                    return self._poll_operation_status(operation_name, clip_id)
+                    result = self._poll_operation(operation_name)
+                    if result:
+                        # Process the operation result to extract video path
+                        return self._process_operation_result(result, clip_id)
+                    else:
+                        logger.error("❌ Polling operation failed")
+                        return None
                 else:
                     logger.error("❌ No operation name in response")
                     return None
@@ -216,108 +229,164 @@ class VertexAIVeo2Client(BaseVeoClient):
             logger.error(f"❌ VEO-2 request failed: {e}")
             return None
 
-    def _poll_operation_status(
-            self,
-            operation_name: str,
-        clip_id: str) -> Optional[str]:
-        """Poll operation status until completion using the correct VEO API endpoint"""
-        try:
-            # Extract operation ID from the full operation name
-            # Format: projects/{project}/locations/{location}/publishers/google/models/{model}/operations/{operation_id}
-            if "/operations/" in operation_name:
-                operation_id = operation_name.split("/operations/")[-1]
-            else:
-                operation_id = operation_name
-
-            # Use the correct fetchPredictOperation endpoint for VEO models
-            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{self.veo2_model}:fetchPredictOperation"
-            headers = self._get_auth_headers()
-
-            # Request body with the full operation name
-            request_body = {
-                "operationName": operation_name
-            }
-
-            logger.info(f"⏳ Polling VEO-2 operation using fetchPredictOperation: {operation_id}")
-
-            max_attempts = 60  # 10 minutes max
-            for attempt in range(max_attempts):
-                response = requests.post(url, headers=headers, json=request_body, timeout=30)
-
-                if response.status_code == 200:
-                    result = response.json()
-
-                    if result.get("done"):
-                        if "error" in result:
-                            logger.error(f"❌ VEO-2 operation failed: {result['error']}")
-                            return None
-
-                        # Log the full response for debugging
-                        logger.info(f"🔍 VEO-2 operation completed. Full response: ...")
-
-                        # Extract video data from response - VEO-2 returns base64 video directly
-                        response_data = result.get("response", {})
-
-                        # Try format 1: response.videos[0] (VEO-2 format)
-                        if "videos" in response_data:
-                            video = response_data["videos"][0]
-                            mime_type = video.get("mimeType", "video/mp4")
-
-                            # Check for base64 video data in the correct format
-                            video_data = None
-                            
-                            # Try different possible keys for base64 data
-                            for key in ["bytesBase64Encoded", "base64", "data", "videoData"]:
-                                if key in video:
-                                    video_data = video[key]
-                                    logger.info(f"✅ Found base64 video data using key '{key}' (length: {len(str(video_data))} chars)")
-                                    break
-
-                            if video_data:
-                                local_path = self._save_base64_video(video_data, clip_id, mime_type)
-                                if local_path and os.path.exists(local_path):
-                                    logger.info(f"✅ VEO-2 video saved successfully: {local_path}")
-                                    return local_path
-                                else:
-                                    logger.error("❌ Failed to save VEO-2 video")
-                            else:
-                                logger.error("❌ No base64 video data found in response")
-                                logger.error(f"Response keys: {list(video.keys()) if isinstance(video, dict) else 'Not a dict'}")
-
-                            # Check for GCS URI as fallback only if no base64 data was found
-                            gcs_uri = video.get("gcsUri")
-                            if gcs_uri:
-                                logger.info(f"✅ Found GCS URI in VEO-2 response: {gcs_uri}")
-                                return self._download_video_from_gcs(gcs_uri, clip_id)
-
-                        # Try format 2: response.generatedVideo (alternative format)
-                        elif "generatedVideo" in response_data:
-                            generated_video = response_data["generatedVideo"]
-                            gcs_uri = generated_video.get("gcsUri")
-                            if gcs_uri:
-                                logger.info(f"✅ Found GCS URI in generatedVideo: {gcs_uri}")
-                                return self._download_video_from_gcs(gcs_uri, clip_id)
-
-                        logger.error("❌ No video data found in VEO-2 response")
-                        return None
-                    else:
-                        logger.info(f"⏳ VEO-2 generation in progress... (attempt {attempt + 1}/{max_attempts})")
-                        time.sleep(10)
-                else:
+    def _poll_operation(self, operation_name: str, max_attempts: int = 60) -> Optional[Dict]:
+        """Poll VEO-2 operation with network retry logic"""
+        import time
+        import requests
+        from requests.exceptions import ConnectionError, Timeout
+        
+        operation_id = operation_name.split('/')[-1]
+        logger.info(f"⏳ Polling VEO-2 operation using fetchPredictOperation: {operation_id}")
+        
+        for attempt in range(max_attempts):
+            try:
+                # Network retry logic with exponential backoff
+                max_network_retries = 3
+                base_delay = 2
+                
+                for network_retry in range(max_network_retries):
+                    try:
+                        # Use correct POST method and URL format for fetchPredictOperation
+                        url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{self.veo2_model}:fetchPredictOperation"
+                        
+                        headers = {
+                            "Authorization": f"Bearer {self.access_token}",
+                            "Content-Type": "application/json"
+                        }
+                        
+                        # Use POST method with operation name in request body
+                        request_data = {
+                            "operationName": operation_name
+                        }
+                        
+                        response = requests.post(url, headers=headers, json=request_data, timeout=30)
+                        break  # Success, exit retry loop
+                        
+                    except (ConnectionError, Timeout, requests.exceptions.RequestException) as network_error:
+                        if network_retry < max_network_retries - 1:
+                            retry_delay = base_delay * (2 ** network_retry)
+                            logger.warning(f"🔄 Network error (attempt {network_retry + 1}/{max_network_retries}): {network_error}")
+                            logger.info(f"⏳ Retrying in {retry_delay}s...")
+                            time.sleep(retry_delay)
+                        else:
+                            logger.error(f"❌ Network failure after {max_network_retries} attempts: {network_error}")
+                            raise
+                
+                if response.status_code != 200:
                     logger.error(f"❌ Failed to poll VEO-2 operation: {response.status_code}")
-                    if response.status_code == 400:
-                        logger.error(f"❌ Bad request - Response: {response.text}")
-                    elif response.status_code == 404:
-                        logger.error("❌ Operation not found - may have expired")
+                    if response.status_code == 503:
+                        logger.error("Response: Service temporarily unavailable")
                     else:
                         logger.error(f"Response: {response.text}")
-                        return None
+                    return None
+                
+                result = response.json()
+                
+                # Check if operation is complete
+                if result.get('done', False):
+                    logger.info("🔍 VEO-2 operation completed. Full response: ...")
+                    return result
+                
+                # Operation still in progress
+                logger.info(f"⏳ VEO-2 generation in progress... (attempt {attempt + 1}/{max_attempts})")
+                time.sleep(12)  # Wait 12 seconds between polls
+                
+            except Exception as e:
+                logger.error(f"❌ Error polling VEO-2 operation: {e}")
+                if attempt < max_attempts - 1:
+                    time.sleep(5)
+                else:
+                    return None
+        
+        logger.error(f"❌ VEO-2 operation timed out after {max_attempts} attempts")
+        return None
 
-            logger.error("❌ VEO-2 generation timed out")
+    def _process_operation_result(self, result: Dict, clip_id: str) -> Optional[str]:
+        """Process VEO-2 operation result to extract video path"""
+        try:
+            if not result or not isinstance(result, dict):
+                logger.error("❌ Invalid operation result format")
+                return None
+            
+            # Check if operation completed successfully
+            if not result.get('done', False):
+                logger.error("❌ Operation not completed")
+                return None
+            
+            # Check for errors
+            if 'error' in result:
+                error_msg = result['error'].get('message', 'Unknown error')
+                logger.error(f"❌ VEO-2 operation failed: {error_msg}")
+                return None
+            
+            # Extract response from result
+            response = result.get('response', {})
+            if not response:
+                logger.error("❌ No response in operation result")
+                return None
+            
+            # Try to extract video data
+            predictions = response.get('predictions', [])
+            if not predictions:
+                logger.error("❌ No predictions in response")
+                logger.error(f"🔍 Full response structure: {json.dumps(response, indent=2)}")
+                logger.error(f"🔍 Response type: {type(response)}")
+                logger.error(f"🔍 Response keys: {list(response.keys()) if isinstance(response, dict) else 'Not a dict'}")
+                
+                # Check for alternative response structures
+                if 'prediction' in response:
+                    predictions = [response['prediction']]
+                    logger.info("✅ Found prediction in alternative format")
+                elif 'outputs' in response:
+                    predictions = response['outputs']
+                    logger.info("✅ Found outputs in alternative format")
+                elif 'videoBase64' in response:
+                    # Direct video data in response
+                    predictions = [response]
+                    logger.info("✅ Found direct video data in response")
+                elif 'gcsUri' in response:
+                    # Direct GCS URI in response
+                    predictions = [response]
+                    logger.info("✅ Found direct GCS URI in response")
+                else:
+                    logger.error(f"❌ Response keys: {list(response.keys())}")
+                    return None
+            
+            prediction = predictions[0]
+            
+            # Log prediction structure for debugging
+            logger.debug(f"🔍 Prediction structure: {list(prediction.keys())}")
+            
+            # Check for base64 video data
+            if 'videoBase64' in prediction:
+                video_data = prediction['videoBase64']
+                mime_type = prediction.get('mimeType', 'video/mp4')
+                logger.info("✅ Found base64 video data")
+                return self._save_base64_video(video_data, clip_id, mime_type)
+            
+            # Check for GCS URI
+            if 'gcsUri' in prediction:
+                gcs_uri = prediction['gcsUri']
+                logger.info(f"✅ Found GCS URI: {gcs_uri}")
+                return gcs_uri
+            
+            # Check for direct URI
+            if 'uri' in prediction:
+                uri = prediction['uri']
+                logger.info(f"✅ Found direct URI: {uri}")
+                return uri
+            
+            # Check for videoUri (alternative field name)
+            if 'videoUri' in prediction:
+                video_uri = prediction['videoUri']
+                logger.info(f"✅ Found video URI: {video_uri}")
+                return video_uri
+            
+            logger.error(f"❌ No video data found in prediction. Available keys: {list(prediction.keys())}")
             return None
-
+            
         except Exception as e:
-            logger.error(f"❌ Failed to poll VEO-2 operation: {e}")
+            logger.error(f"❌ Failed to process operation result: {e}")
             return None
 
     def _save_base64_video(

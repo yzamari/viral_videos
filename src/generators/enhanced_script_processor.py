@@ -148,13 +148,26 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
             # Parse AI response
             response_text = response.text.strip()
             
-            # Clean response and extract JSON
-            if response_text.startswith('```json'):
-                response_text = response_text[7:-3]
-            elif response_text.startswith('```'):
-                response_text = response_text[3:-3]
-            
             try:
+                # Clean response and extract JSON with robust parsing
+                if response_text.startswith('```json'):
+                    response_text = response_text[7:-3]
+                elif response_text.startswith('```'):
+                    response_text = response_text[3:-3]
+                
+                # Additional JSON cleaning
+                response_text = response_text.strip()
+                
+                # Fix common JSON issues
+                response_text = response_text.replace('\\n', '\n')
+                response_text = response_text.replace('\\"', '"')
+                
+                # Try to extract JSON from response if it contains other text
+                import re
+                json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+                if json_match:
+                    response_text = json_match.group()
+                
                 result = json.loads(response_text)
                 
                 # Validate duration matching if target was specified
@@ -174,20 +187,32 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 result['processing_timestamp'] = datetime.now().isoformat()
                 result['target_duration'] = target_duration
                 
+                # Ensure final_script key exists for compatibility
+                if 'optimized_script' in result and 'final_script' not in result:
+                    result['final_script'] = result['optimized_script']
+                
                 logger.info(f"✅ AI enhanced script: {result.get('total_word_count', 0)} words")
                 return result
                 
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse AI response: {e}")
+                logger.error(f"Raw response: {response_text[:500]}...")
                 return self._create_fallback_result(script_content, language, target_duration)
                 
         except Exception as e:
             logger.error(f"Script processing failed: {e}")
             return self._create_fallback_result(script_content, language, target_duration)
 
-    def _reprocess_for_duration(self, script_content: str, target_duration: float, language: Language) -> Dict[str, Any]:
+    def _reprocess_for_duration(self, script_content: str, target_duration: float, language) -> Dict[str, Any]:
         """Re-process script with stricter duration constraints"""
         try:
+            # Handle both string and enum inputs for language
+            if isinstance(language, str):
+                language_value = language
+            else:
+                # Assume it's already an enum
+                language_value = language.value if hasattr(language, 'value') else str(language)
+                
             target_words = int(target_duration * 3)  # 3 words per second
             
             # Simple word-based trimming/expansion
@@ -241,9 +266,17 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
         except Exception as e:
             logger.error(f"Script reprocessing failed: {e}")
             return self._create_fallback_result(script_content, language, target_duration)
-
-    def _create_fallback_result(self, script_content: str, language: Language, target_duration: float = None) -> Dict[str, Any]:
+    
+    def _create_fallback_result(self, script_content: str, language, target_duration: float = None) -> Dict[str, Any]:
         """Create fallback result when AI processing fails"""
+        
+        # Handle both string and enum inputs for language
+        if isinstance(language, str):
+            language_value = language
+        else:
+            # Assume it's already an enum
+            language_value = language.value if hasattr(language, 'value') else str(language)
+            
         words = script_content.split()
         word_count = len(words)
         estimated_duration = word_count / 3.0  # 3 words per second
@@ -257,6 +290,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
         
         return {
             "optimized_script": script_content,
+            "final_script": script_content,  # Add this key for compatibility
             "segments": [{
                 "text": script_content,
                 "duration": estimated_duration,

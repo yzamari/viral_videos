@@ -51,6 +51,17 @@ except ImportError:
     from src.utils.logging_config import get_logger
     from src.agents.continuity_decision_agent import ContinuityDecisionAgent
     from src.agents.voice_director_agent import VoiceDirectorAgent
+    from src.agents.video_composition_agents import (
+        VideoStructureAgent,
+        ClipTimingAgent,
+        VisualElementsAgent,
+        MediaTypeAgent
+    )
+    from src.agents.multi_agent_discussion import (
+        MultiAgentDiscussionSystem,
+        AgentRole,
+        DiscussionTopic
+    )
 
 logger = get_logger(__name__)
 
@@ -109,7 +120,9 @@ class WorkingOrchestrator:
         if session_id:
             self.session_id = session_id
         else:
-            self.session_id = f"session_{uuid.uuid4().hex[:8]}"
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            self.session_id = f"session_{timestamp}"
         
         # Initialize AI clients
         self.multilang_generator = IntegratedMultilingualGenerator(api_key, "outputs")
@@ -526,7 +539,7 @@ class WorkingOrchestrator:
         decisions['continuity'] = frame_continuity_decision
         logger.info(f"✅ Using frame continuity decision: {frame_continuity_decision['use_frame_continuity']}")
 
-        # Voice decisions
+        # Voice decisions with safe defaults
         voice_decision = self.voice_agent.analyze_content_and_select_voices(
             script=str(script_data),
             topic=self.mission,
@@ -536,6 +549,11 @@ class WorkingOrchestrator:
             duration_seconds=self.duration,
             num_clips=4
         )
+        
+        # Ensure voice_decision is not None
+        if voice_decision is None:
+            voice_decision = {'voice_style': 'energetic', 'voices': []}
+            
         decisions['voice'] = voice_decision
         self.agent_decisions['voice'] = {
             'agent': 'VoiceDirectorAgent',
@@ -677,8 +695,8 @@ class WorkingOrchestrator:
         main_content = self._extract_content_from_script(script_data)
         cta = self._extract_cta_from_script(script_data)
 
-        # Apply AI decisions
-        frame_continuity = decisions.get('continuity', {}).get('use_frame_continuity')
+        # Apply AI decisions with safe defaults
+        frame_continuity = decisions.get('continuity', {}).get('use_frame_continuity', False)
         voice_style = decisions.get('voice', {}).get('voice_style', 'energetic')
         visual_style = decisions.get('visual', {}).get('style', self.visual_style)
 
@@ -695,8 +713,11 @@ class WorkingOrchestrator:
             hook=hook,
             main_content=main_content,
             call_to_action=cta,
-            visual_style=visual_style, color_scheme=config.get('color_scheme', ["#FF6B6B", "#4ECDC4", "#FFFFFF"]),
-            text_overlays=config.get('text_overlays', []), transitions=config.get('transitions', ["fade", "slide"]), background_music_style=config.get('background_music_style', "upbeat"),
+            visual_style=visual_style,
+            color_scheme=config.get('color_scheme', ["#FF6B6B", "#4ECDC4", "#FFFFFF"]),
+            text_overlays=config.get('text_overlays', []),
+            transitions=config.get('transitions', ["fade", "slide"]),
+            background_music_style=config.get('background_music_style', "upbeat"),
             voiceover_style=voice_style,
             sound_effects=config.get('sound_effects', []),
             inspired_by_videos=config.get('inspired_by_videos', []),

@@ -138,24 +138,27 @@ class Director:
         """Create engaging hook based on topic analysis"""
         try:
             # Use AI to generate topic-specific hook
-            prompt = """
-            Create an engaging opening hook for a {platform.value} video about: {topic}
+            prompt = f"""
+            Create an engaging opening hook for a {platform.value} video about: "{topic}"
 
+            CRITICAL: The hook MUST be about "{topic}" and nothing else.
+            
             Style: {style}
             Success patterns: {patterns.get('hooks', [])}
 
             {news_context}
 
             Requirements:
-            1. Start with an attention-grabbing question or statement
-            2. Be specific to the actual topic: {topic}
-            3. Create curiosity without revealing everything
-            4. Use emotional triggers appropriate for the topic
+            1. Start with an attention-grabbing question or statement about "{topic}"
+            2. Be specific to the actual topic: "{topic}"
+            3. Create curiosity about "{topic}" without revealing everything
+            4. Use emotional triggers appropriate for "{topic}"
             5. Keep it under 15 words for quick consumption
             6. NEVER use generic phrases like "This is amazing"
-            7. Make it topic-specific and authentic
+            7. Make it topic-specific and authentic to "{topic}"
+            8. DO NOT discuss unrelated topics like houseplants, remote work, etc.
 
-            Return ONLY the hook text, no explanations.
+            Return ONLY the hook text about "{topic}", no explanations.
             """
 
             response = self.model.generate_content(prompt)
@@ -164,25 +167,26 @@ class Director:
             # Clean up any quotes or extra formatting
             hook_text = hook_text.strip('"\'').strip()
 
+            # Validate that the hook is actually about the topic
+            topic_words = topic.lower().split()
+            hook_words = hook_text.lower().split()
+            
+            # Check if any topic words appear in the hook
+            topic_match = any(word in hook_words for word in topic_words if len(word) > 2)
+            
+            if not topic_match:
+                logger.warning(f"Generated hook doesn't seem to be about '{topic}', using fallback")
+                raise ValueError("Hook not about topic")
+
             # Ensure it's not generic
             generic_phrases = ['this is amazing', 'amazing', 'incredible', 'unbelievable']
             if any(phrase in hook_text.lower() for phrase in generic_phrases):
-                # Generate a more specific hook
-                specific_prompt = """
-                Create a specific, non-generic hook for: {topic}
-
-                Avoid these generic words: amazing, incredible, unbelievable
-                Be specific to the actual content and topic.
-                Ask a direct question or make a specific statement about {topic}.
-
-                Return ONLY the hook text.
-                """
-                response = self.model.generate_content(specific_prompt)
-                hook_text = response.text.strip().strip('"\'').strip()
+                logger.warning(f"Hook contains generic phrase, using fallback")
+                raise ValueError("Generic hook detected")
 
             return {
                 'text': hook_text,
-                'type': 'topic_specific',
+                'type': 'ai_generated',
                 'duration_seconds': 3
             }
 
@@ -220,8 +224,10 @@ class Director:
             # Calculate content segments
             num_segments = self._calculate_segments(duration)
 
-            prompt = """
-            Create {num_segments} content segments for a {duration}-second video about: {topic}
+            prompt = f"""
+            Create {num_segments} content segments for a {duration}-second video about: "{topic}"
+
+            CRITICAL: ALL segments MUST be about "{topic}" and nothing else.
 
             Successful content patterns:
             - Themes: {patterns.get('themes', [])}
@@ -231,18 +237,19 @@ class Director:
             {news_context}
 
             Each segment should:
-            1. Deliver value or entertainment
-            2. Build on previous segment
-            3. Maintain viewer attention
-            4. Include ONLY spoken dialogue content
+            1. Deliver value or entertainment about "{topic}"
+            2. Build on previous segment about "{topic}"
+            3. Maintain viewer attention with "{topic}" content
+            4. Include ONLY spoken dialogue content about "{topic}"
+            5. DO NOT discuss unrelated topics like houseplants, remote work, etc.
 
-            CRITICAL: Return ONLY spoken words. NO visual descriptions, camera directions, or
+            CRITICAL: Return ONLY spoken words about "{topic}". NO visual descriptions, camera directions, or
                     stage instructions.
 
             Return JSON array:
             [
                 {{
-                    "text": "ONLY words to be spoken aloud",
+                    "text": "ONLY words to be spoken aloud about {topic}",
                     "duration": seconds
                 }}
             ]
@@ -251,10 +258,29 @@ class Director:
             response = self.model.generate_content(prompt)
             segments = self._extract_json(response.text)
 
-            if not segments or not isinstance(segments, list):
-                segments = self._get_default_segments(topic, num_segments)
-
-            return segments
+            # Validate that segments are about the topic
+            if segments and isinstance(segments, list):
+                topic_words = topic.lower().split()
+                valid_segments = []
+                
+                for segment in segments:
+                    if isinstance(segment, dict) and 'text' in segment:
+                        segment_text = segment['text'].lower()
+                        # Check if any topic words appear in the segment
+                        topic_match = any(word in segment_text for word in topic_words if len(word) > 2)
+                        
+                        if topic_match:
+                            valid_segments.append(segment)
+                        else:
+                            logger.warning(f"Segment doesn't seem to be about '{topic}': {segment['text'][:50]}...")
+                
+                if valid_segments:
+                    return valid_segments
+                else:
+                    logger.warning("No valid segments found, using fallback")
+                    return self._get_default_segments(topic, num_segments)
+            else:
+                return self._get_default_segments(topic, num_segments)
 
         except Exception as e:
             logger.warning(f"Content structuring failed, using defaults: {e}")
@@ -1024,26 +1050,36 @@ class Director:
         """Get current context and information using Gemini's internet access"""
         try:
             context_prompt = f"""
-            Please provide current, up-to-date information about: {topic}
+            Please provide current, up-to-date information SPECIFICALLY about: "{topic}"
+            
+            CRITICAL: Stay focused ONLY on "{topic}". Do not discuss unrelated topics.
             
             Focus on:
-            - Recent developments (last 7 days)
-            - Current trends and discussions
-            - Latest news and events related to this topic
-            - Relevant statistics and data
-            - Popular opinions and perspectives
+            - Recent developments about "{topic}" (last 7 days)
+            - Current trends and discussions about "{topic}"
+            - Latest news and events related to "{topic}"
+            - Relevant statistics and data about "{topic}"
+            - Popular opinions and perspectives on "{topic}"
             
             Category context: {category.value}
             
-            Provide a concise summary (2-3 paragraphs) that would be useful for creating engaging video content.
+            Provide a concise summary (2-3 paragraphs) that would be useful for creating engaging video content about "{topic}".
             Include specific dates, numbers, and recent events when available.
+            
+            IMPORTANT: If you cannot find current information about "{topic}", say so clearly rather than providing unrelated information.
             """
             
             response = self.model.generate_content(context_prompt)
             
             if response and response.text:
-                logger.info(f"Retrieved current context for {topic}")
-                return response.text.strip()
+                # Validate that the response is actually about the topic
+                response_text = response.text.strip()
+                if topic.lower() in response_text.lower():
+                    logger.info(f"Retrieved current context for {topic}")
+                    return response_text
+                else:
+                    logger.warning(f"Retrieved context doesn't seem to be about '{topic}', ignoring")
+                    return ""
             else:
                 logger.warning("No current context retrieved from Gemini")
                 return ""

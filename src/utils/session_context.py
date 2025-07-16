@@ -124,69 +124,29 @@ class SessionContext:
             logger.error(f"Failed to save file {filename}: {e}")
             return source_path
 
-    def save_final_video(
-        self,
-        video_path: str,
-        filename: Optional[str] = None) -> str:
-        """
-        Save final video to session's final_output directory
-
-        Args:
-            video_path: Path to video file (can be temporary)
-            filename: Optional custom filename
-
-        Returns:
-            Path to saved video in session directory
-        """
-        if not filename:
-            filename = f"final_video_{self.session_id}.mp4"
-
+    def save_final_video(self, video_path: str) -> str:
+        """Save final video to session directory"""
         try:
-            # Get final output directory and ensure it exists
-            final_output_dir = self.get_output_path("final_output")
-            os.makedirs(final_output_dir, exist_ok=True)
-            final_path = os.path.join(final_output_dir, filename)
-
-            # If the video is already in the session directory, just register it
-            if os.path.abspath(video_path) == os.path.abspath(final_path):
-                logger.info(f"✅ Video already in session directory: {video_path}")
-                return self.session_manager.save_final_video(video_path)
-
-            # Copy/move video to session directory
-            if os.path.exists(video_path):
-                # Check if source and destination are the same to avoid shutil.Error
-                try:
-                    if os.path.samefile(video_path, final_path):
-                        logger.info(f"✅ Video already at target location: {final_path}")
-                        return self.session_manager.save_final_video(final_path)
-                except (FileNotFoundError, OSError):
-                    # Files don't exist or can't be compared, proceed with copy
-                    pass
-                
+            # Ensure final_output directory exists
+            final_dir = self.get_output_path("final_output")
+            os.makedirs(final_dir, exist_ok=True)
+            
+            # Generate final video filename
+            final_filename = f"final_video_{self.session_id}.mp4"
+            final_path = os.path.join(final_dir, final_filename)
+            
+            # Only copy if source and destination are different
+            if os.path.abspath(video_path) != os.path.abspath(final_path):
+                import shutil
                 shutil.copy2(video_path, final_path)
-                logger.info(f"💾 Saved final video to session: {final_path}")
-
-                # Clean up temporary file if it was outside session and is a temp file
-                if (video_path != final_path and
-                    (video_path.startswith("/tmp/") or video_path.startswith("/var/folders/"))):
-                    try:
-                        os.remove(video_path)
-                        logger.info(f"🗑️ Cleaned up temporary file: {video_path}")
-                    except Exception as e:
-                        logger.warning(f"Failed to clean up temporary file: {e}")
-
-                return self.session_manager.save_final_video(final_path)
+                logger.info(f"💾 Final video copied to: {final_path}")
             else:
-                # Create placeholder if source doesn't exist
-                logger.warning(f"⚠️ Source video not found: {video_path}, creating placeholder")
-                with open(final_path, 'w') as f:
-                    f.write(f"Video placeholder - session {self.session_id}")
-                logger.info(f"📝 Created video placeholder: {final_path}")
-                return final_path
-
+                logger.info(f"💾 Final video already in correct location: {final_path}")
+            
+            return final_path
+            
         except Exception as e:
             logger.error(f"❌ Failed to save final video: {e}")
-            # Return the original path as fallback
             return video_path
 
     def save_video_clip(self, clip_path: str, clip_id: str) -> str:

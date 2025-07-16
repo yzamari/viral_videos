@@ -8,6 +8,7 @@ from typing import Dict, Any, List, Optional, Tuple
 import logging
 from datetime import datetime
 import json
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -116,25 +117,34 @@ Respond in JSON format:
 
             response = self.model.generate_content(analysis_prompt)
 
-            # Check if response is valid
-            if not response or not response.text:
-                logger.warning("⚠️ Empty response from StructureMaster API")
-                return self._create_fallback_structure(total_duration)
-
             try:
-                response_text = response.text.strip()
+                response_text = response.text.strip() if response.text else ""
                 
-                # Check if response is empty or invalid
+                # Log the raw response for debugging
+                logger.debug(f"StructureMaster raw response: {response_text[:200]}...")
+                
                 if not response_text:
-                    logger.warning("⚠️ Empty response text from StructureMaster API")
+                    logger.warning("⚠️ Empty response from StructureMaster API")
                     return self._create_fallback_structure(total_duration)
                 
+                # Clean up response text
                 if response_text.startswith('```json'):
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
                     response_text = response_text[3:-3]
-
-                structure_data = json.loads(response_text)
+                
+                # Remove any leading/trailing whitespace and newlines
+                response_text = response_text.strip()
+                
+                # Try to find JSON content in the response
+                import re
+                json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+                if json_match:
+                    json_text = json_match.group(0)
+                    structure_data = json.loads(json_text)
+                else:
+                    logger.warning("⚠️ No JSON found in StructureMaster response")
+                    return self._create_fallback_structure(total_duration)
 
                 structure_data.update({
                     'agent_name': 'StructureMaster',
@@ -150,15 +160,16 @@ Respond in JSON format:
 
                 logger.info(
                     f"🏗️ StructureMaster Decision: {
-                        structure_data['total_segments']} segments")
+                        structure_data.get('total_segments', 0)} segments")
                 logger.info(
                     f"   Strategy: {
-                        structure_data['structure_strategy']}")
+                        structure_data.get('structure_strategy', 'Unknown')}")
 
                 return structure_data
 
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse StructureMaster response: {e}")
+                logger.error(f"Raw response was: {response_text}")
                 return self._create_fallback_structure(total_duration)
 
         except Exception as e:
@@ -345,12 +356,23 @@ Respond in JSON format:
                     logger.warning("TimingMaster received empty response from Gemini")
                     return self._create_fallback_timing(video_structure)
                 
+                # Clean up response text
                 if response_text.startswith('```json'):
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
                     response_text = response_text[3:-3]
-
-                timing_data = json.loads(response_text)
+                
+                # Remove any leading/trailing whitespace and newlines
+                response_text = response_text.strip()
+                
+                # Try to find JSON content in the response
+                json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+                if json_match:
+                    json_text = json_match.group(0)
+                    timing_data = json.loads(json_text)
+                else:
+                    logger.warning("No JSON found in TimingMaster response")
+                    return self._create_fallback_timing(video_structure)
 
                 timing_data.update({
                     'agent_name': 'TimingMaster',
@@ -359,8 +381,8 @@ Respond in JSON format:
 
                 logger.info(
                     f"⏱️ TimingMaster Decision: {
-                        timing_data['total_clips']} clips")
-                logger.info(f"   Strategy: {timing_data['timing_strategy']}")
+                        timing_data.get('total_clips', 0)} clips")
+                logger.info(f"   Strategy: {timing_data.get('timing_strategy', 'Unknown')}")
 
                 return timing_data
 
@@ -710,30 +732,51 @@ Respond in JSON format:
             response = self.model.generate_content(media_prompt)
 
             try:
-                response_text = response.text.strip()
+                response_text = response.text.strip() if response.text else ""
+                
+                # Log the raw response for debugging
+                logger.debug(f"MediaStrategist raw response: {response_text[:200]}...")
+                
+                if not response_text:
+                    logger.warning("MediaStrategist received empty response from Gemini")
+                    return self._create_fallback_media_plan(clip_plan)
+                
+                # Clean up response text
                 if response_text.startswith('```json'):
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
                     response_text = response_text[3:-3]
-
-                media_data = json.loads(response_text)
+                
+                # Remove any leading/trailing whitespace and newlines
+                response_text = response_text.strip()
+                
+                # Try to find JSON content in the response
+                import re
+                json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+                if json_match:
+                    json_text = json_match.group(0)
+                    media_data = json.loads(json_text)
+                else:
+                    logger.warning("No JSON found in MediaStrategist response")
+                    return self._create_fallback_media_plan(clip_plan)
 
                 media_data.update({
                     'agent_name': 'MediaStrategist',
                     'analysis_timestamp': datetime.now().isoformat()
                 })
 
-                allocation = media_data['resource_allocation']
+                allocation = media_data.get('resource_allocation', {})
                 logger.info(
                     f"📱 MediaStrategist Decision: {
-                        allocation['veo2_clips']} VEO2 clips, {
-                        allocation['static_images']} images")
-                logger.info(f"   Strategy: {media_data['media_strategy']}")
+                        allocation.get('veo2_clips', 0)} VEO2 clips, {
+                        allocation.get('static_images', 0)} images")
+                logger.info(f"   Strategy: {media_data.get('media_strategy', 'Unknown')}")
 
                 return media_data
 
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse MediaStrategist response: {e}")
+                logger.error(f"Raw response was: {response_text}")
                 return self._create_fallback_media_plan(clip_plan)
 
         except Exception as e:

@@ -60,7 +60,10 @@ class SessionManager:
             "performance_metrics",     # Performance and timing data
             "user_configs",            # User configuration snapshots
             "error_logs",              # Error-specific logs
-            "success_metrics"          # Success tracking metrics
+            "success_metrics",         # Success tracking metrics
+            "decisions",               # AI decision logs
+            "subtitles",               # Subtitle files (SRT, VTT)
+            "overlays"                 # Text overlays and hooks
         ]
 
         for subdir in subdirs:
@@ -157,7 +160,10 @@ class SessionManager:
                 "debug": "debug_info",
                 "performance": "performance_metrics",
                 "config": "user_configs",
-                "error": "error_logs"
+                "error": "error_logs",
+                "decision": "decisions",
+                "subtitle": "subtitles",
+                "overlay": "overlays"
             }
 
             target_subdir = subdir_mapping.get(file_type, "temp_files")

@@ -12,6 +12,10 @@ from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 from datetime import datetime
 import json
+import random
+import subprocess
+import shutil
+from pathlib import Path
 
 from ..models.video_models import GeneratedVideoConfig, GeneratedVideo, Platform, VideoCategory
 from ..utils.logging_config import get_logger
@@ -426,6 +430,14 @@ class VideoGenerator:
         self.use_vertex_ai = use_vertex_ai
         self.prefer_veo3 = prefer_veo3
         
+        # Initialize voice config to prevent AttributeError
+        self._last_voice_config = {
+            "strategy": "single",
+            "voices": [],
+            "primary_personality": "storyteller",
+            "reasoning": "Default voice configuration"
+        }
+        
         # Set output directory (fallback only)
         self.output_dir = output_dir or "outputs"
         os.makedirs(self.output_dir, exist_ok=True)
@@ -543,17 +555,35 @@ class VideoGenerator:
             except Exception as e:
                 logger.warning(f"⚠️ AI discussion generation failed: {e}")
 
-            # Step 5: Compose final video using session context
-            final_video_path = self._compose_final_video(clips, audio_files, config, session_context)
+            # Step 5: Create comprehensive session documentation
+            self._save_comprehensive_session_data(
+                config, script_result, style_decision, positioning_decision,
+                clips, audio_files, session_context
+            )
+            
+            # Step 6: Create subtitles
+            subtitle_files = self._create_subtitles(script_result, audio_files, session_context)
+            
+            # Step 7: Compose final video with subtitles and overlays
+            final_video_path = self._compose_final_video_with_subtitles(
+                clips, audio_files, script_result, style_decision, positioning_decision, 
+                config, session_context
+            )
             
             generation_time = time.time() - start_time
             
             # Generate AI agent discussions
             if hasattr(self, '_generate_ai_agent_discussions'):
                 try:
+                    last_voice_config = getattr(self, '_last_voice_config', {
+                        "strategy": "single",
+                        "voices": [],
+                        "primary_personality": "storyteller",
+                        "reasoning": "Fallback voice configuration"
+                    })
                     agent_discussion = self._generate_ai_agent_discussions(
                         config, session_context, script_result, 
-                        style_decision, positioning_decision, self._last_voice_config
+                        style_decision, positioning_decision, last_voice_config
                     )
                 except Exception as e:
                     logger.warning(f"⚠️ AI discussion generation failed: {e}")
@@ -681,10 +711,29 @@ class VideoGenerator:
         """Process script using AI script processor"""
         logger.info("📝 Processing script with AI")
         
-        # Create script from config
-        main_content = config.main_content or []
-        script_parts = [config.hook] + main_content + [config.call_to_action]
+        # Create script from config - FIX: Use actual mission content
+        script_parts = []
+        
+        # Add hook if provided
+        if config.hook:
+            script_parts.append(config.hook)
+        
+        # Add main content - FIX: Use the actual topic/mission
+        if config.main_content:
+            script_parts.extend(config.main_content)
+        else:
+            # Use the topic as main content if no main_content provided
+            script_parts.append(config.topic)
+        
+        # Add call to action if provided
+        if config.call_to_action:
+            script_parts.append(config.call_to_action)
+        
+        # Join all parts
         script = " ".join(script_parts)
+        
+        # Log the actual script being processed
+        logger.info(f"📝 Original script: {script[:100]}...")
         
         # Process with AI
         from ..models.video_models import Language
@@ -693,6 +742,9 @@ class VideoGenerator:
             language=Language.ENGLISH_US,
             target_duration=config.duration_seconds
         )
+        
+        # Log the processed result
+        logger.info(f"📝 Processed script: {result.get('final_script', 'N/A')[:100]}...")
         
         # ENHANCED: Save ALL script variations to session
         from ..utils.session_manager import session_manager
@@ -725,26 +777,19 @@ class VideoGenerator:
         # Create comprehensive session data
         try:
             import json
-            generation_time = time.time() - start_time if 'start_time' in locals() else 0
             session_data = {
-                "session_id": config.session_id,
+                "session_id": session_context.session_id,
                 "topic": config.topic,
                 "duration_seconds": config.duration_seconds,
                 "platform": str(config.target_platform),
                 "category": str(config.category),
                 "visual_style": config.visual_style,
                 "tone": config.tone,
-                "generation_time": generation_time,
                 "script_processing": {
                     "original_script": script,
                     "final_script": result.get('final_script', script),
                     "word_count": result.get('total_word_count', 0),
                     "tts_ready": result.get('tts_ready', False)
-                },
-                "files_generated": {
-                    "script_file": os.path.join(session_context.session_dir, "scripts", "processed_script.txt"),
-                    "original_script_file": os.path.join(session_context.session_dir, "scripts", "original_script.txt"),
-                    "processing_result_file": os.path.join(session_context.session_dir, "scripts", "processing_result_script.json")
                 }
             }
             
@@ -756,7 +801,7 @@ class VideoGenerator:
             logger.info(f"✅ Session data saved: {session_data_path}")
             
         except Exception as e:
-            logger.warning(f"⚠️ Session data creation failed: {e}")
+            logger.warning(f"⚠️ Failed to save prompts: {e}")
 
         return result
     
@@ -795,15 +840,15 @@ class VideoGenerator:
                             script_result: Dict[str, Any],
                             style_decision: Dict[str, Any],
                             session_context: SessionContext) -> List[str]:
-        """Generate video clips using VEO factory with clean OOP architecture"""
+        """Generate video clips using VEO factory or fallback for debugging"""
         logger.info("🎬 Generating video clips with VEO factory")
         
-        # Check if frame continuity is enabled
-        use_frame_continuity = config.frame_continuity
+        # Use frame continuity if enabled
+        use_frame_continuity = getattr(config, 'frame_continuity_enabled', False)
         logger.info(f"🎬 Frame continuity: {'✅ ENABLED' if use_frame_continuity else '❌ DISABLED'}")
         
         clips = []
-        num_clips = max(3, config.duration_seconds // 5)
+        num_clips = 3  # Standard number of clips
         last_frame_image = None
         
         # Get the best available VEO client using factory
@@ -830,63 +875,59 @@ class VideoGenerator:
                     style=style_decision.get('primary_style', 'dynamic')
                 )
                 
+                clip_path = None
+                
+                # Try VEO generation first
                 if veo_client:
-                    # Generate with VEO using factory pattern
-                    if use_frame_continuity and last_frame_image:
+                    try:
+                        logger.info(f"🎬 Generating VEO clip {i+1}/{num_clips}: {enhanced_prompt[:50]}...")
                         clip_path = veo_client.generate_video(
                             prompt=enhanced_prompt,
                             duration=5.0,
-                            clip_id=f"clip_{i}",
-                            image_path=last_frame_image
+                            clip_id=f"clip_{i+1}"
                         )
-                    else:
-                        clip_path = veo_client.generate_video(
-                            prompt=enhanced_prompt,
-                            duration=5.0,
-                            clip_id=f"clip_{i}"
-                        )
-                    
-                    # Track with session manager
-                    if clip_path:
-                        from ..utils.session_manager import session_manager
-                        clip_path = session_manager.track_file(clip_path, "video_clip", veo_client.get_model_name())
-                    
-                    # Extract last frame for next clip if frame continuity is enabled
-                    if use_frame_continuity and clip_path and os.path.exists(clip_path):
-                        try:
-                            last_frame_image = self._extract_last_frame(clip_path, f"clip_{i}")
-                            if last_frame_image:
-                                # Track the extracted frame
-                                session_manager.track_file(last_frame_image, "image", "FrameContinuity")
-                                logger.info(f"🖼️ Frame continuity: Extracted frame for next clip")
-                        except Exception as frame_error:
-                            logger.warning(f"Frame extraction failed (continuing without): {frame_error}")
-                            last_frame_image = None
-                else:
-                    # Generate with Gemini images (fallback)
-                    temp_path = f"{tempfile.gettempdir()}/clip_{i}_{uuid.uuid4().hex[:8]}.jpg"
-                    clip_path = self.image_client.generate_image(
-                        prompt=enhanced_prompt,
-                        style=style_decision.get('primary_style', 'dynamic'),
-                        output_path=temp_path
+                        
+                        if clip_path and os.path.exists(clip_path):
+                            logger.info(f"✅ Generated VEO clip {i+1}/{num_clips}")
+                        else:
+                            logger.warning(f"⚠️ VEO generation failed for clip {i+1}, using fallback")
+                            clip_path = None
+                    except Exception as e:
+                        logger.error(f"❌ VEO generation error for clip {i+1}: {e}")
+                        clip_path = None
+                
+                # If VEO failed, use fallback
+                if not clip_path:
+                    fallback_path = os.path.join(
+                        session_context.get_output_path("video_clips"), 
+                        f"fallback_clip_{i}.mp4"
                     )
                     
-                    # Save to session directory and track
+                    # Ensure clips directory exists
+                    os.makedirs(os.path.dirname(fallback_path), exist_ok=True)
+                    
+                    # Create fallback clip using FFmpeg
+                    clip_path = self._create_direct_fallback_clip(
+                        prompt=enhanced_prompt,
+                        duration=5.0,
+                        output_path=fallback_path
+                    )
+                    
                     if clip_path:
-                        from ..utils.session_manager import session_manager
-                        clip_path = session_context.save_image(clip_path, f"clip_{i}")
-                        clip_path = session_manager.track_file(clip_path, "image", "GeminiImages")
+                        logger.info(f"✅ Generated fallback clip {i+1}/{num_clips}")
                 
                 if clip_path:
                     clips.append(clip_path)
-                    logger.info(f"✅ Generated clip {i+1}/{num_clips}")
+                    
+                    # Track with session manager
+                    from ..utils.session_manager import session_manager
+                    session_manager.track_file(clip_path, "video_clip", "VEO2" if veo_client else "FallbackGenerator")
                 else:
                     logger.warning(f"⚠️ Failed to generate clip {i+1}")
                     
             except Exception as e:
                 logger.error(f"❌ Error generating clip {i+1}: {e}")
                 # Continue with other clips
-                continue
         
         logger.info(f"🎬 Generated {len(clips)} video clips")
         return clips
@@ -946,12 +987,20 @@ class VideoGenerator:
             )
             
             # Store voice_config for AI discussions
-            self._last_voice_config = voice_strategy.get("voice_config", {
-                "strategy": "single",
-                "voices": [],
-                "primary_personality": "storyteller",
-                "reasoning": "Fallback voice configuration"
-            })
+            if voice_strategy:
+                self._last_voice_config = voice_strategy.get("voice_config", {
+                    "strategy": "single",
+                    "voices": [],
+                    "primary_personality": "storyteller",
+                    "reasoning": "Fallback voice configuration"
+                })
+            else:
+                self._last_voice_config = {
+                    "strategy": "single",
+                    "voices": [],
+                    "primary_personality": "storyteller",
+                    "reasoning": "Fallback voice configuration - voice_strategy was None"
+                }
             
             # Generate audio files
             temp_audio_files = self.tts_client.generate_intelligent_voice_audio(
@@ -1038,159 +1087,149 @@ class VideoGenerator:
             logger.error(f"❌ Fallback audio creation failed: {e}")
             return None
 
-    def _compose_final_video(self, clips: List[str], audio_files: List[str], 
-                       config: GeneratedVideoConfig, session_context: SessionContext) -> str:
-        """Compose final video by combining clips with audio"""
-        logger.info("🎞️ Composing final video")
+    def _compose_final_video_with_subtitles(self, clips: List[str], audio_files: List[str], 
+                                           script_result: Dict[str, Any], style_decision: Dict[str, Any],
+                                           positioning_decision: Dict[str, Any], config: GeneratedVideoConfig,
+                                           session_context: SessionContext) -> str:
+        """Compose final video with subtitles and overlays"""
+        logger.info("🎬 Composing final video with subtitles and overlays")
         
         try:
-            import subprocess
-            import tempfile
+            # Step 1: Create video without subtitles first
+            temp_video_path = os.path.join(session_context.session_dir, "temp_files", "base_video.mp4")
+            os.makedirs(os.path.dirname(temp_video_path), exist_ok=True)
             
-            # Validate clips exist
-            valid_clips = [clip for clip in clips if clip and os.path.exists(clip)]
-            if not valid_clips:
-                logger.error("❌ No valid video clips found for composition")
+            temp_video_path = self._compose_with_standard_cuts(clips, audio_files, temp_video_path, session_context)
+            
+            if not temp_video_path or not os.path.exists(temp_video_path):
+                logger.error("❌ Failed to create base video")
                 return ""
             
-            # Validate audio files exist
-            valid_audio_files = [audio for audio in audio_files if audio and os.path.exists(audio)]
-            logger.info(f"🎬 Composing {len(valid_clips)} video clips with {len(valid_audio_files)} audio files")
+            # Step 2: Add subtitle overlays
+            video_with_subtitles = self._add_subtitle_overlays(temp_video_path, config, session_context)
             
-            # Create temporary video path in session directory
-            temp_dir = session_context.get_output_path("temp_files")
-            os.makedirs(temp_dir, exist_ok=True)
-            temp_video_path = os.path.join(temp_dir, f"temp_video_{session_context.session_id}.mp4")
+            # Step 3: Add text overlays and hooks
+            video_with_overlays = self._add_text_overlays(video_with_subtitles, style_decision, positioning_decision, config, session_context)
             
-            # Step 1: Concatenate video clips
-            if len(valid_clips) == 1:
-                # Single clip - just copy
-                import shutil
-                shutil.copy2(valid_clips[0], temp_video_path)
-                logger.info("✅ Single clip composition completed")
-            else:
-                # Multiple clips - concatenate
+            # Step 4: Apply platform orientation
+            final_video_path = self._apply_platform_orientation(
+                video_with_overlays, 
+                config.target_platform.value, 
+                session_context
+            )
+            
+            # Step 5: Save to session
+            saved_path = session_context.save_final_video(final_video_path)
+            logger.info(f"✅ Final video with subtitles created: {saved_path}")
+            
+            # Clean up temp files
+            for temp_file in [temp_video_path, video_with_subtitles, video_with_overlays, final_video_path]:
                 try:
-                    # Create concat file with absolute paths in session directory
-                    concat_file_path = os.path.join(temp_dir, f"concat_list_{session_context.session_id}.txt")
-                    with open(concat_file_path, 'w') as concat_file:
-                        for clip in valid_clips:
-                            # Ensure absolute path for FFmpeg
-                            abs_clip_path = os.path.abspath(clip)
-                            concat_file.write(f"file '{abs_clip_path}'\n")
-                    
-                    logger.info(f"🎬 Created concat file: {concat_file_path}")
-                    
-                    # Use ffmpeg to concatenate videos
-                    cmd = [
-                        'ffmpeg', '-f', 'concat', '-safe', '0', 
-                        '-i', concat_file_path, 
-                        '-c', 'copy', 
-                        '-y', temp_video_path
-                    ]
-                    
-                    result = subprocess.run(cmd, capture_output=True, text=True)
-                    
-                    # Clean up concat file
-                    try:
-                        os.unlink(concat_file_path)
-                    except Exception as e:
-                        logger.warning(f"⚠️ Failed to clean up concat file: {e}")
-                    
-                    if result.returncode == 0:
-                        logger.info("✅ Multi-clip composition completed")
-                    else:
-                        logger.error(f"❌ FFmpeg concatenation failed: {result.stderr}")
-                        # Fallback: just use first clip
-                        import shutil
-                        shutil.copy2(valid_clips[0], temp_video_path)
-                        logger.info("✅ Fallback to single clip completed")
-                        
-                except Exception as e:
-                    logger.error(f"❌ Composition failed: {e}")
-                    # Fallback: just use first clip
-                    import shutil
-                    shutil.copy2(valid_clips[0], temp_video_path)
-                    logger.info("✅ Fallback composition completed")
+                    if temp_file and os.path.exists(temp_file) and temp_file != saved_path:
+                        os.unlink(temp_file)
+                except:
+                    pass
             
-            # Step 2: Add audio if available
-            if valid_audio_files:
-                try:
-                    # Create audio concat file
-                    audio_concat_file = os.path.join(temp_dir, f"audio_concat_{session_context.session_id}.txt")
-                    with open(audio_concat_file, 'w') as f:
-                        for audio in valid_audio_files:
-                            abs_audio_path = os.path.abspath(audio)
-                            f.write(f"file '{abs_audio_path}'\n")
-                    
-                    # Concatenate audio files
-                    temp_audio_path = os.path.join(temp_dir, f"temp_audio_{session_context.session_id}.mp3")
-                    audio_cmd = [
-                        'ffmpeg', '-f', 'concat', '-safe', '0',
-                        '-i', audio_concat_file,
-                        '-c', 'copy',
-                        '-y', temp_audio_path
-                    ]
-                    
-                    audio_result = subprocess.run(audio_cmd, capture_output=True, text=True)
-                    
-                    if audio_result.returncode == 0 and os.path.exists(temp_audio_path):
-                        # Combine video with audio
-                        final_temp_path = os.path.join(temp_dir, f"final_temp_{session_context.session_id}.mp4")
-                        combine_cmd = [
-                            'ffmpeg', '-i', temp_video_path,
-                            '-i', temp_audio_path,
-                            '-c:v', 'copy',
-                            '-c:a', 'aac',
-                            '-shortest',
-                            '-y', final_temp_path
-                        ]
-                        
-                        combine_result = subprocess.run(combine_cmd, capture_output=True, text=True)
-                        
-                        if combine_result.returncode == 0 and os.path.exists(final_temp_path):
-                            # Replace temp_video_path with the version that has audio
-                            os.replace(final_temp_path, temp_video_path)
-                            logger.info("✅ Audio added to video successfully")
-                        else:
-                            logger.warning(f"⚠️ Failed to add audio to video: {combine_result.stderr}")
-                    
-                    # Clean up temp files
-                    for temp_file in [audio_concat_file, temp_audio_path]:
-                        try:
-                            if os.path.exists(temp_file):
-                                os.unlink(temp_file)
-                        except:
-                            pass
-                            
-                except Exception as e:
-                    logger.warning(f"⚠️ Audio composition failed: {e}")
-            else:
-                logger.warning("⚠️ No audio files to add to video")
-            
-            # Step 3: Save to session directory
-            if os.path.exists(temp_video_path) and os.path.getsize(temp_video_path) > 1000:
-                try:
-                    saved_path = session_context.save_final_video(temp_video_path)
-                    logger.info(f"💾 Final video saved: {saved_path}")
-                    
-                    # Clean up temp file
-                    try:
-                        os.unlink(temp_video_path)
-                    except:
-                        pass
-                    
-                    return saved_path
-                except Exception as e:
-                    logger.error(f"❌ Failed to save final video: {e}")
-                    return temp_video_path
-            else:
-                logger.error("❌ Composed video is empty or invalid")
-                return ""
+            return saved_path
             
         except Exception as e:
-            logger.error(f"❌ Video composition failed: {e}")
+            logger.error(f"❌ Final video composition failed: {e}")
             return ""
+    
+    def _add_text_overlays(self, video_path: str, style_decision: Dict[str, Any], 
+                          positioning_decision: Dict[str, Any], config: GeneratedVideoConfig,
+                          session_context: SessionContext) -> str:
+        """Add text overlays and hooks based on AI agent decisions"""
+        try:
+            logger.info("🎨 Adding text overlays and hooks")
+            
+            # Create output path
+            overlay_path = session_context.get_output_path("temp_files", f"with_overlays_{os.path.basename(video_path)}")
+            os.makedirs(os.path.dirname(overlay_path), exist_ok=True)
+            
+            # Get video info
+            import subprocess
+            probe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', video_path]
+            probe_result = subprocess.run(probe_cmd, capture_output=True, text=True)
+            
+            if probe_result.returncode != 0:
+                logger.warning("⚠️ Could not get video info, skipping overlays")
+                return video_path
+            
+            import json
+            probe_data = json.loads(probe_result.stdout)
+            video_stream = next((s for s in probe_data.get('streams', []) if s.get('codec_type') == 'video'), None)
+            
+            if not video_stream:
+                logger.warning("⚠️ No video stream found, skipping overlays")
+                return video_path
+            
+            video_width = int(video_stream.get('width', 1280))
+            video_height = int(video_stream.get('height', 720))
+            
+            # Create overlay filters based on platform and style
+            overlay_filters = []
+            
+            # Get video duration from video stream info
+            video_duration = float(video_stream.get('duration', 20))
+            
+            # Add hook text overlay (top of video)
+            if config.hook:
+                hook_text = str(config.hook).replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')[:50]
+                overlay_filters.append(
+                    f"drawtext=text='{hook_text}':fontcolor=yellow:fontsize=28:x=(w-text_w)/2:y=50:enable='between(t,0,3)'"
+                )
+            
+            # Add call-to-action overlay (bottom of video)
+            if config.call_to_action:
+                cta_text = str(config.call_to_action).replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')[:50]
+                overlay_filters.append(
+                    f"drawtext=text='{cta_text}':fontcolor=white:fontsize=24:x=(w-text_w)/2:y=h-80:enable='between(t,{video_duration-3},{video_duration})'"
+                )
+            
+            # Apply overlays if any
+            if overlay_filters:
+                filter_complex = ','.join(overlay_filters)
+                
+                cmd = [
+                    'ffmpeg', '-i', video_path,
+                    '-vf', filter_complex,
+                    '-c:a', 'copy',
+                    '-y', overlay_path
+                ]
+                
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                
+                if result.returncode == 0 and os.path.exists(overlay_path):
+                    logger.info(f"✅ Text overlays added: {len(overlay_filters)} overlays")
+                    
+                    # Save overlay metadata
+                    overlay_metadata = {
+                        'overlays_applied': len(overlay_filters),
+                        'hook_text': config.hook,
+                        'cta_text': config.call_to_action,
+                        'style_decision': style_decision,
+                        'positioning_decision': positioning_decision
+                    }
+                    
+                    metadata_path = session_context.get_output_path("overlays", "overlay_metadata.json")
+                    os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
+                    
+                    with open(metadata_path, 'w') as f:
+                        json.dump(overlay_metadata, f, indent=2)
+                    
+                    return overlay_path
+                else:
+                    logger.warning(f"⚠️ Overlay application failed: {result.stderr}")
+                    return video_path
+            else:
+                logger.info("📝 No text overlays to add")
+                return video_path
+                
+        except Exception as e:
+            logger.error(f"❌ Text overlay failed: {e}")
+            return video_path
+    
     def _add_subtitle_overlays(self, video_path: str, config: GeneratedVideoConfig, 
                              session_context: SessionContext) -> str:
         """Add subtitle overlays to the video using MoviePy"""
@@ -1714,6 +1753,366 @@ This is a placeholder file. In a full implementation, this would be a complete M
             'sync_accuracy': 1.0,
             'adjustments_made': []
         }
+
+    def _save_prompts_to_session(self, session_context: SessionContext, prompts_data: Dict[str, Any]):
+        """Save all prompts used in generation to session for debugging"""
+        try:
+            prompts_path = session_context.get_output_path("logs", "all_prompts_used.json")
+            os.makedirs(os.path.dirname(prompts_path), exist_ok=True)
+            
+            with open(prompts_path, 'w') as f:
+                json.dump(prompts_data, f, indent=2)
+            
+            logger.info(f"💾 Saved all prompts to: {prompts_path}")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to save prompts: {e}")
+    
+    def _create_subtitles(self, script_result: Dict[str, Any], audio_files: List[str], 
+                         session_context: SessionContext) -> Dict[str, str]:
+        """Create subtitle files (SRT and VTT) from script and audio timing"""
+        try:
+            # Get the actual script content
+            script_content = script_result.get('final_script', script_result.get('optimized_script', ''))
+            
+            if not script_content:
+                logger.warning("⚠️ No script content available for subtitles")
+                return {}
+            
+            # Split script into segments based on audio files
+            segments = []
+            if audio_files:
+                # Calculate timing based on audio files
+                current_time = 0.0
+                words = script_content.split()
+                words_per_segment = len(words) // len(audio_files)
+                
+                for i, audio_file in enumerate(audio_files):
+                    start_time = current_time
+                    
+                    # Get audio duration
+                    try:
+                        import subprocess
+                        result = subprocess.run([
+                            'ffprobe', '-v', 'quiet', '-print_format', 'json', 
+                            '-show_format', audio_file
+                        ], capture_output=True, text=True)
+                        
+                        if result.returncode == 0:
+                            import json
+                            data = json.loads(result.stdout)
+                            duration = float(data['format']['duration'])
+                        else:
+                            duration = 3.0  # Default duration
+                    except:
+                        duration = 3.0  # Default duration
+                    
+                    end_time = start_time + duration
+                    
+                    # Get text for this segment
+                    start_word = i * words_per_segment
+                    end_word = start_word + words_per_segment if i < len(audio_files) - 1 else len(words)
+                    segment_text = ' '.join(words[start_word:end_word])
+                    
+                    segments.append({
+                        'start': start_time,
+                        'end': end_time,
+                        'text': segment_text
+                    })
+                    
+                    current_time = end_time
+            
+            # Create subtitle files
+            subtitle_files = {}
+            
+            # Create SRT file
+            srt_path = session_context.get_output_path("subtitles", "subtitles.srt")
+            os.makedirs(os.path.dirname(srt_path), exist_ok=True)
+            
+            with open(srt_path, 'w') as f:
+                for i, segment in enumerate(segments, 1):
+                    start_time = self._format_time_srt(segment['start'])
+                    end_time = self._format_time_srt(segment['end'])
+                    f.write(f"{i}\n")
+                    f.write(f"{start_time} --> {end_time}\n")
+                    f.write(f"{segment['text']}\n\n")
+            
+            subtitle_files['srt'] = srt_path
+            
+            # Create VTT file
+            vtt_path = session_context.get_output_path("subtitles", "subtitles.vtt")
+            
+            with open(vtt_path, 'w') as f:
+                f.write("WEBVTT\n\n")
+                for segment in segments:
+                    start_time = self._format_time_vtt(segment['start'])
+                    end_time = self._format_time_vtt(segment['end'])
+                    f.write(f"{start_time} --> {end_time}\n")
+                    f.write(f"{segment['text']}\n\n")
+            
+            subtitle_files['vtt'] = vtt_path
+            
+            # Create subtitle metadata
+            metadata = {
+                'total_segments': len(segments),
+                'total_duration': segments[-1]['end'] if segments else 0,
+                'script_content': script_content,
+                'audio_files_used': audio_files
+            }
+            
+            metadata_path = session_context.get_output_path("subtitles", "subtitle_metadata.json")
+            with open(metadata_path, 'w') as f:
+                json.dump(metadata, f, indent=2)
+            
+            logger.info(f"✅ Created subtitles: SRT and VTT files")
+            return subtitle_files
+            
+        except Exception as e:
+            logger.error(f"❌ Subtitle creation failed: {e}")
+            return {}
+    
+    def _format_time_srt(self, seconds: float) -> str:
+        """Format time for SRT subtitle format"""
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        millis = int((seconds % 1) * 1000)
+        return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
+    
+    def _format_time_vtt(self, seconds: float) -> str:
+        """Format time for VTT subtitle format"""
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = seconds % 60
+        if hours > 0:
+            return f"{hours:02d}:{minutes:02d}:{secs:06.3f}"
+        else:
+            return f"{minutes:02d}:{secs:06.3f}"
+
+    def _get_video_dimensions(self, platform: str) -> tuple:
+        """Get video dimensions based on target platform"""
+        platform_dimensions = {
+            'tiktok': (720, 1280),      # 9:16 portrait
+            'instagram': (720, 1280),   # 9:16 portrait  
+            'youtube': (1280, 720),     # 16:9 landscape
+            'facebook': (1280, 720),    # 16:9 landscape
+            'twitter': (1280, 720),     # 16:9 landscape
+            'linkedin': (1280, 720)     # 16:9 landscape
+        }
+        
+        return platform_dimensions.get(platform.lower(), (1280, 720))
+    
+    def _get_platform_aspect_ratio(self, platform: str) -> str:
+        """Get aspect ratio string for platform"""
+        platform_ratios = {
+            'tiktok': '9:16',      # Portrait
+            'instagram': '9:16',   # Portrait  
+            'youtube': '16:9',     # Landscape
+            'facebook': '16:9',    # Landscape
+            'twitter': '16:9',     # Landscape
+            'linkedin': '16:9'     # Landscape
+        }
+        
+        return platform_ratios.get(platform.lower(), '16:9')
+    
+    def _apply_platform_orientation(self, video_path: str, platform: str, session_context: SessionContext) -> str:
+        """Apply correct orientation and dimensions for target platform"""
+        try:
+            target_width, target_height = self._get_video_dimensions(platform)
+            aspect_ratio = self._get_platform_aspect_ratio(platform)
+            
+            logger.info(f"🎬 Applying {platform} orientation: {target_width}x{target_height} ({aspect_ratio})")
+            
+            # Create output path
+            oriented_path = session_context.get_output_path("temp_files", f"oriented_{os.path.basename(video_path)}")
+            os.makedirs(os.path.dirname(oriented_path), exist_ok=True)
+            
+            # Use FFmpeg to resize and reorient video for platform
+            if aspect_ratio == '9:16':  # Portrait
+                # For portrait, crop from center and scale
+                cmd = [
+                    'ffmpeg', '-i', video_path,
+                    '-vf', f'scale={target_width}:{target_height}:force_original_aspect_ratio=increase,crop={target_width}:{target_height}',
+                    '-c:v', 'libx264', '-c:a', 'aac',
+                    '-preset', 'fast',
+                    '-y', oriented_path
+                ]
+            else:  # Landscape
+                # For landscape, pad with black bars
+                cmd = [
+                    'ffmpeg', '-i', video_path,
+                    '-vf', f'scale={target_width}:{target_height}:force_original_aspect_ratio=decrease,pad={target_width}:{target_height}:(ow-iw)/2:(oh-ih)/2:black',
+                    '-c:v', 'libx264', '-c:a', 'aac',
+                    '-preset', 'fast',
+                    '-y', oriented_path
+                ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0 and os.path.exists(oriented_path):
+                logger.info(f"✅ Platform orientation applied: {aspect_ratio}")
+                return oriented_path
+            else:
+                logger.warning(f"⚠️ Platform orientation failed: {result.stderr}")
+                return video_path
+                
+        except Exception as e:
+            logger.error(f"❌ Platform orientation failed: {e}")
+            return video_path
+
+    def _create_direct_fallback_clip(self, prompt: str, duration: float, output_path: str) -> str:
+        """Create fallback clip directly using FFmpeg without abstract class"""
+        logger.info(f"🎨 Creating direct fallback for: {prompt[:50]}...")
+        
+        try:
+            # Create a colorful test pattern video with FFmpeg
+            import subprocess
+            import random
+            
+            # Generate random colors for variety
+            colors = [
+                "red", "green", "blue", "yellow", "magenta", "cyan", 
+                "orange", "purple", "pink", "lime", "navy", "teal"
+            ]
+            color = random.choice(colors)
+            
+            # Properly escape text for FFmpeg
+            safe_text = prompt[:30].replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
+            
+            # Create video with text overlay showing the prompt
+            cmd = [
+                'ffmpeg', '-f', 'lavfi', 
+                '-i', f'color=c={color}:size=1280x720:duration={duration}',
+                '-vf', f'drawtext=text="{safe_text}":fontcolor=white:fontsize=24:x=(w-text_w)/2:y=(h-text_h)/2',
+                '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24',
+                '-y', output_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            
+            if result.returncode == 0 and os.path.exists(output_path):
+                file_size = os.path.getsize(output_path) / (1024 * 1024)
+                logger.info(f"✅ Direct fallback video created: {output_path} ({file_size:.1f}MB)")
+                return output_path
+            else:
+                logger.error(f"❌ FFmpeg direct fallback failed: {result.stderr}")
+                return self._create_minimal_direct_fallback(prompt, duration, output_path)
+                
+        except Exception as e:
+            logger.error(f"❌ Direct fallback creation failed: {e}")
+            return self._create_minimal_direct_fallback(prompt, duration, output_path)
+    
+    def _create_minimal_direct_fallback(self, prompt: str, duration: float, output_path: str) -> str:
+        """Create minimal fallback using basic FFmpeg"""
+        try:
+            import subprocess
+            
+            # Create simple solid color video
+            cmd = [
+                'ffmpeg', '-f', 'lavfi', 
+                '-i', f'color=c=blue:size=1280x720:duration={duration}',
+                '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24',
+                '-y', output_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+            
+            if result.returncode == 0 and os.path.exists(output_path):
+                logger.info(f"✅ Minimal direct fallback created: {output_path}")
+                return output_path
+            else:
+                logger.error(f"❌ Even minimal fallback failed: {result.stderr}")
+                return ""
+                
+        except Exception as e:
+            logger.error(f"❌ Minimal fallback failed: {e}")
+            return ""
+
+    def _save_comprehensive_session_data(self, config: GeneratedVideoConfig, 
+                                        script_result: Dict[str, Any], 
+                                        style_decision: Dict[str, Any],
+                                        positioning_decision: Dict[str, Any],
+                                        clips: List[str], audio_files: List[str],
+                                        session_context: SessionContext):
+        """Save comprehensive session data to ensure all information is properly stored"""
+        try:
+            logger.info("💾 Saving comprehensive session data")
+            
+            # Save AI agent decisions
+            decisions_path = session_context.get_output_path("decisions", "ai_decisions.json")
+            os.makedirs(os.path.dirname(decisions_path), exist_ok=True)
+            
+            decisions_data = {
+                "style_decision": style_decision,
+                "positioning_decision": positioning_decision,
+                "timestamp": datetime.now().isoformat(),
+                "config": {
+                    "topic": config.topic,
+                    "platform": str(config.target_platform),
+                    "category": str(config.category),
+                    "duration": config.duration_seconds,
+                    "visual_style": config.visual_style,
+                    "tone": config.tone
+                }
+            }
+            
+            with open(decisions_path, 'w') as f:
+                json.dump(decisions_data, f, indent=2)
+            
+            # Save generation log
+            log_path = session_context.get_output_path("logs", "generation_log.json")
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
+            
+            log_data = {
+                "session_id": session_context.session_id,
+                "generation_timestamp": datetime.now().isoformat(),
+                "files_generated": {
+                    "video_clips": len(clips),
+                    "audio_files": len(audio_files),
+                    "script_files": len([f for f in os.listdir(session_context.get_output_path("scripts")) if f.endswith('.txt')]) if os.path.exists(session_context.get_output_path("scripts")) else 0
+                },
+                "clip_paths": clips,
+                "audio_paths": audio_files,
+                "script_result": script_result
+            }
+            
+            with open(log_path, 'w') as f:
+                json.dump(log_data, f, indent=2)
+            
+            # Save all prompts used
+            prompts_path = session_context.get_output_path("logs", "all_prompts_used.json")
+            prompts_data = {
+                "veo_prompts": getattr(self, '_veo_prompts', []),
+                "audio_prompts": getattr(self, '_audio_prompts', []),
+                "script_prompts": getattr(self, '_script_prompts', []),
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            with open(prompts_path, 'w') as f:
+                json.dump(prompts_data, f, indent=2)
+            
+            logger.info("✅ Comprehensive session data saved")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to save comprehensive session data: {e}")
+    
+    def _save_veo_prompts(self, prompts: List[str], session_context: SessionContext):
+        """Save VEO prompts for transparency"""
+        if not hasattr(self, '_veo_prompts'):
+            self._veo_prompts = []
+        self._veo_prompts.extend(prompts)
+        
+    def _save_audio_prompts(self, prompts: List[str], session_context: SessionContext):
+        """Save audio prompts for transparency"""
+        if not hasattr(self, '_audio_prompts'):
+            self._audio_prompts = []
+        self._audio_prompts.extend(prompts)
+        
+    def _save_script_prompts(self, prompts: List[str], session_context: SessionContext):
+        """Save script prompts for transparency"""
+        if not hasattr(self, '_script_prompts'):
+            self._script_prompts = []
+        self._script_prompts.extend(prompts)
 
 
 

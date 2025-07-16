@@ -165,13 +165,31 @@ class GoogleTTSClient:
                 )
             else:
                 # Use SSML for Neural2/Studio voices that support it
-                ssml_text = """
-                <speak>
-                    <prosody rate="{voice_config['speed']}" pitch="{voice_config['pitch']}st" volume="{voice_config['volume']}dB">
-                        {enhanced_text}
-                    </prosody>
-                </speak>
-                """
+                # Create SSML with prosody controls
+                if voice_config.get('pitch') is not None and voice_config.get('speed') is not None:
+                    # Check if this is a Studio voice (doesn't support pitch)
+                    is_studio_voice = 'Studio' in voice_config.get('name', '')
+                    
+                    if is_studio_voice:
+                        # Studio voices don't support pitch attributes
+                        ssml_text = f"""
+                        <speak>
+                            <prosody rate="{voice_config['speed']}" volume="{voice_config['volume']}dB">
+                                {text}
+                            </prosody>
+                        </speak>
+                        """
+                    else:
+                        # Neural2/Wavenet/Standard voices support pitch
+                        ssml_text = f"""
+                        <speak>
+                            <prosody rate="{voice_config['speed']}" pitch="{voice_config['pitch']}st" volume="{voice_config['volume']}dB">
+                                {text}
+                            </prosody>
+                        </speak>
+                        """
+                else:
+                    ssml_text = f"<speak>{text}</speak>"
 
                 synthesis_input = texttospeech.SynthesisInput(ssml=ssml_text)
 

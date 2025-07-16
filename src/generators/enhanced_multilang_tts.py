@@ -101,7 +101,7 @@ class EnhancedMultilingualTTS:
                 num_clips=num_clips
             )
 
-            if not voice_strategy.get("success", False):
+            if not voice_strategy or not voice_strategy.get("success", False):
                 logger.warning("⚠️ AI voice selection failed, using single voice fallback")
                 return [self._generate_fallback_audio(script, language)]
 
@@ -184,7 +184,16 @@ class EnhancedMultilingualTTS:
         """Generate audio for a specific clip with given voice configuration"""
 
         try:
-            voice_name = voice_config["voice_name"]
+            # Check if voice_config is None or empty
+            if not voice_config or not isinstance(voice_config, dict):
+                logger.warning("⚠️ Invalid voice_config, using fallback")
+                return self._generate_fallback_audio(script, language)
+            
+            voice_name = voice_config.get("voice_name")
+            if not voice_name:
+                logger.warning("⚠️ No voice_name in voice_config, using fallback")
+                return self._generate_fallback_audio(script, language)
+                
             speed = voice_config.get("speed", 1.0)
             pitch = voice_config.get("pitch", 0.0)
             emotion = voice_config.get("emotion", "neutral")
@@ -243,13 +252,27 @@ class EnhancedMultilingualTTS:
                 )
             else:
                 # Neural2/Wavenet/Standard voices - use SSML
-                ssml_text = """
-                <speak>
-                    <prosody rate="{speed}" pitch="{pitch}st">
-                        {enhanced_script}
-                    </prosody>
-                </speak>
-                """
+                # Check if this is a Studio voice (doesn't support pitch)
+                is_studio_voice = 'Studio' in voice_name
+                
+                if is_studio_voice:
+                    # Studio voices don't support pitch attributes
+                    ssml_text = f"""
+                    <speak>
+                        <prosody rate="{speed}">
+                            {enhanced_script}
+                        </prosody>
+                    </speak>
+                    """
+                else:
+                    # Neural2/Wavenet/Standard voices support pitch
+                    ssml_text = f"""
+                    <speak>
+                        <prosody rate="{speed}" pitch="{pitch}st">
+                            {enhanced_script}
+                        </prosody>
+                    </speak>
+                    """
 
                 synthesis_input = texttospeech.SynthesisInput(ssml=ssml_text)
 
@@ -318,7 +341,7 @@ class EnhancedMultilingualTTS:
                     gtts_config['tld'] = 'com.au'  # Australian for authority
 
             # Generate with gTTS
-            tts = gTTS(text=enhanced_script, **gtts_config, slow=False)
+            tts = gTTS(text=enhanced_script, lang=gtts_config['lang'], tld=gtts_config['tld'], slow=False)
 
             audio_path = os.path.join(
                 tempfile.gettempdir(),
@@ -394,7 +417,7 @@ class EnhancedMultilingualTTS:
             # Multiple attempts for reliable generation
             for attempt in range(3):
                 try:
-                    tts = gTTS(text=enhanced_script, **gtts_config, slow=False)
+                    tts = gTTS(text=enhanced_script, lang=gtts_config['lang'], tld=gtts_config['tld'], slow=False)
                     audio_path = os.path.join(
                         tempfile.gettempdir(),
                         f"fallback_tts_{uuid.uuid4()}.mp3")

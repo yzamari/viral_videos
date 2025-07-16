@@ -377,47 +377,70 @@ class VoiceDirectorAgent:
 
             response = self.model.generate_content(analysis_prompt)
 
-            # Parse AI response
+            # Parse AI response with robust JSON handling
             import json
             import re
 
-            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
-            if json_match:
-                analysis = json.loads(json_match.group())
+            try:
+                # Clean response text and remove control characters
+                response_text = response.text.strip()
+                
+                # Remove control characters that cause JSON parsing issues
+                response_text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response_text)
+                
+                # Remove markdown formatting
+                if response_text.startswith('```json'):
+                    response_text = response_text[7:-3]
+                elif response_text.startswith('```'):
+                    response_text = response_text[3:-3]
+                
+                # Additional JSON cleaning
+                response_text = response_text.strip()
+                response_text = response_text.replace('\\n', '\n')
+                response_text = response_text.replace('\\"', '"')
+                
+                # Remove control characters that cause JSON parsing issues
+                import re
+                response_text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response_text)
+                
+                # Fix template variables that might cause issues
+                response_text = response_text.replace('{platform.value if hasattr(platform, \'value\') else str(platform)}', 'TikTok')
+                response_text = response_text.replace('{duration_seconds}', str(duration_seconds))
+                
+                # Try to extract JSON from response
+                json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+                if json_match:
+                    json_text = json_match.group()
+                    
+                    # Additional cleaning for common JSON issues
+                    json_text = re.sub(r',\s*}', '}', json_text)  # Remove trailing commas
+                    json_text = re.sub(r',\s*]', ']', json_text)  # Remove trailing commas in arrays
+                    
+                    analysis = json.loads(json_text)
 
-                logger.info(f"🎭 AI Voice Strategy: {analysis['strategy']}")
-                logger.info(
-                    f"🎤 Primary Personality: {
-                        analysis['primary_personality']}")
-                logger.info(
-                    f"👥 Multiple Voices: {
-                        analysis['use_multiple_voices']}")
-                logger.info(
-                    f"🧠 AI Reasoning: {analysis['reasoning'][:100]}...")
+                    logger.info(f"🎭 AI Voice Strategy: {analysis.get('strategy', 'unknown')}")
+                    logger.info(f"🎤 Primary Personality: {analysis.get('primary_personality', 'unknown')}")
+                    logger.info(f"👥 Multiple Voices: {analysis.get('use_multiple_voices', False)}")
+                    logger.info(f"🧠 AI Reasoning: {analysis.get('reasoning', 'No reasoning provided')[:100]}...")
 
-                # Convert to voice selections
-                voice_config = self._convert_analysis_to_voices(
-                    analysis, language, num_clips)
-
-                # Return flat structure to match test expectations
-                return {
-                    "strategy": analysis["strategy"],
-                    "primary_personality": analysis["primary_personality"],
-                    "voices": voice_config["clip_voices"],
-                    "voice_variety": analysis.get("use_multiple_voices", False),
-                    "reasoning": analysis.get("reasoning", ""),
-                    "success": True
-                }
-            else:
-                logger.warning(
-                    "⚠️ Could not parse AI voice analysis, using fallback")
-                return self._create_fallback_voice_config(
-                    topic, language, num_clips)
+                    # Convert to voice selections
+                    voice_config = self._convert_analysis_to_voices(analysis, language, num_clips)
+                else:
+                    logger.error("❌ No valid JSON found in AI response")
+                    logger.error(f"Raw response: {response_text[:500]}...")
+                    raise ValueError("No valid JSON found in response")
+                    
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.error(f"❌ AI voice analysis failed: {e}")
+                logger.error(f"Raw response: {response.text[:500]}...")
+                logger.info("🔄 Creating fallback voice configuration")
+                
+                # Create fallback configuration with proper parameters
+                voice_config = self._create_fallback_voice_config(topic, language, num_clips)
 
         except Exception as e:
             logger.error(f"❌ AI voice analysis failed: {e}")
-            return self._create_fallback_voice_config(
-                topic, language, num_clips)
+            return self._create_fallback_voice_config(topic, language, num_clips)
 
     def _convert_analysis_to_voices(
             self, analysis: Dict, language: Language, num_clips: int) -> Dict[str, Any]:

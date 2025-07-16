@@ -93,12 +93,13 @@ class MultiAgentDiscussionSystem:
         self.session_manager = session_manager
 
         # Create discussions directory
+        session_dir_name = session_id if session_id.startswith('session_') else f"session_{session_id}"
         self.discussions_dir = os.path.join(
-            "outputs", f"session_{session_id}", "agent_discussions")
+            "outputs", session_dir_name, "agent_discussions")
         os.makedirs(self.discussions_dir, exist_ok=True)
         
         # Session management
-        session_dir = f"outputs/session_{session_id}"
+        session_dir = f"outputs/{session_dir_name}"
         self.session_managed = session_id is not None
         if self.session_managed:
             os.makedirs(session_dir, exist_ok=True)

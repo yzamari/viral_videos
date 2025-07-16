@@ -147,84 +147,73 @@ class BaseVeoClient(ABC):
         logger.info(f"🎨 Creating fallback for: {prompt[:50]}...")
         
         try:
-            # Create a simple colored video as fallback
-            import cv2
-            import numpy as np
-            
+            # Create a simple colored video as fallback using FFmpeg
             fallback_path = os.path.join(self.clips_dir, f"fallback_{clip_id}.mp4")
             
-            # Create video writer
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-            fps = 24
-            width, height = 1920, 1080
-            frames = int(duration * fps)
+            # Ensure clips directory exists
+            os.makedirs(self.clips_dir, exist_ok=True)
             
-            # Ensure we have at least 1 frame
-            if frames < 1:
-                frames = 1
-            
-            out = cv2.VideoWriter(fallback_path, fourcc, fps, (width, height))
-            
-            # Generate frames with gradient colors based on prompt
-            color_base = hash(prompt) % 256
-            
-            for i in range(frames):
-                # Create gradient frame
-                frame = np.zeros((height, width, 3), dtype=np.uint8)
-                color_shift = int(255 * (i / max(frames, 1)))
-                
-                # Use prompt-based colors
-                frame[:, :] = [
-                    (color_base + color_shift) % 255,
-                    (color_base + color_shift + 85) % 255,
-                    (color_base + color_shift + 170) % 255
-                ]
-                
-                out.write(frame)
-            
-            out.release()
-            
-            # Verify the fallback was created
-            if os.path.exists(fallback_path) and os.path.getsize(fallback_path) > 1000:
-                logger.info(f"✅ Fallback video created: {fallback_path}")
-                return fallback_path
-            else:
-                logger.error(f"❌ Fallback video creation failed or too small")
-                return self._create_minimal_fallback(clip_id, duration)
-                
-        except Exception as e:
-            logger.error(f"❌ Error creating fallback clip: {e}")
-            return self._create_minimal_fallback(clip_id, duration)
-    
-    def _create_minimal_fallback(self, clip_id: str, duration: float) -> str:
-        """Create minimal fallback when even the colored video fails"""
-        try:
+            # Create a colorful test pattern video with FFmpeg
             import subprocess
+            import random
             
-            minimal_path = os.path.join(self.clips_dir, f"minimal_{clip_id}.mp4")
+            # Generate random colors for variety
+            colors = [
+                "red", "green", "blue", "yellow", "magenta", "cyan", 
+                "orange", "purple", "pink", "lime", "navy", "teal"
+            ]
+            color = random.choice(colors)
             
-            # Create minimal black video using FFmpeg
+            # Create video with text overlay showing the prompt
+            # Properly escape text for FFmpeg drawtext filter
+            safe_text = prompt[:30].replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
+            
             cmd = [
-                'ffmpeg', '-y',
-                '-f', 'lavfi',
-                '-i', f'color=black:size=1920x1080:duration={duration}',
-                '-c:v', 'libx264',
-                '-preset', 'ultrafast',
-                '-crf', '30',
-                minimal_path
+                'ffmpeg', '-f', 'lavfi', 
+                '-i', f'color=c={color}:size=1280x720:duration={duration}',
+                '-vf', f'drawtext=text="{safe_text}":fontcolor=white:fontsize=24:x=(w-text_w)/2:y=(h-text_h)/2',
+                '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24',
+                '-y', fallback_path
             ]
             
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             
-            if result.returncode == 0 and os.path.exists(minimal_path):
-                logger.info(f"✅ Minimal fallback created: {minimal_path}")
-                return minimal_path
+            if result.returncode == 0 and os.path.exists(fallback_path):
+                file_size = os.path.getsize(fallback_path) / (1024 * 1024)
+                logger.info(f"✅ Fallback video created: {fallback_path} ({file_size:.1f}MB)")
+                return fallback_path
             else:
-                logger.error(f"❌ Minimal fallback failed: {result.stderr}")
+                logger.error(f"❌ FFmpeg fallback failed: {result.stderr}")
+                return self._create_minimal_fallback(prompt, duration, clip_id)
+                
+        except Exception as e:
+            logger.error(f"❌ Fallback creation failed: {e}")
+            return self._create_minimal_fallback(prompt, duration, clip_id)
+    
+    def _create_minimal_fallback(self, prompt: str, duration: float, clip_id: str) -> str:
+        """Create minimal fallback using basic FFmpeg"""
+        try:
+            fallback_path = os.path.join(self.clips_dir, f"minimal_{clip_id}.mp4")
+            
+            # Create simple solid color video
+            cmd = [
+                'ffmpeg', '-f', 'lavfi', 
+                '-i', f'color=c=blue:size=1280x720:duration={duration}',
+                '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24',
+                '-y', fallback_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+            
+            if result.returncode == 0 and os.path.exists(fallback_path):
+                logger.info(f"✅ Minimal fallback created: {fallback_path}")
+                return fallback_path
+            else:
+                logger.error(f"❌ Even minimal fallback failed: {result.stderr}")
                 return ""
                 
         except Exception as e:
-            logger.error(f"❌ Minimal fallback creation failed: {e}")
+            logger.error(f"❌ Minimal fallback failed: {e}")
             return ""
 
     def __str__(self) -> str:
