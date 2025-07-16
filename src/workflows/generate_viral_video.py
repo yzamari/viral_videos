@@ -86,9 +86,13 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
             "News": "News"
         }
         
+        api_key = os.getenv('GOOGLE_API_KEY')
+        if not api_key:
+            raise RuntimeError('GOOGLE_API_KEY environment variable is not set. Please set it before running video generation.')
+
         # Initialize working orchestrator
         orchestrator = WorkingOrchestrator(
-            api_key=os.getenv('GOOGLE_API_KEY'),
+            api_key=api_key,
             mission=mission,
             platform=Platform(platform.lower()),
             category=VideoCategory(category_mapping.get(category, category)),
@@ -105,21 +109,25 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
         result = orchestrator.generate_video(config)
 
         generation_time = time.time() - start_time
-        if result and hasattr(result, 'file_path') and result.file_path:
+        # Check for success using the correct key from orchestrator result
+        if result and isinstance(result, dict) and result.get('success') and result.get('final_video_path'):
             logger.info(f"✅ Video generation completed in {generation_time:.1f}s")
-            logger.info(f"📁 Output: {result.file_path}")
+            logger.info(f"📁 Output: {result['final_video_path']}")
 
             # Get session summary
-            if hasattr(result, 'session_id'):
+            if 'session_id' in result:
                 try:
-                    session_info = session_manager.get_session_path(result.session_id)
-                    logger.info(f"📊 Session: {result.session_id}")
+                    session_info = session_manager.get_session_path(result['session_id'])
+                    logger.info(f"📊 Session: {result['session_id']}")
                     logger.info(f"📂 Session Directory: {session_info}")
                 except Exception:
                     pass
 
-            return result.file_path
+            return result['final_video_path']
         else:
+            # Log orchestrator error if present
+            if result and isinstance(result, dict) and result.get('error'):
+                logger.error(f"❌ Video generation failed: {result.get('error')}")
             logger.error(f"❌ Video generation failed after {generation_time:.1f}s")
             return None
 

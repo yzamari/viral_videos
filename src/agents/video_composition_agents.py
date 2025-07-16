@@ -404,8 +404,8 @@ Respond in JSON format:
         current_time = 0
 
         for segment in video_structure['segments']:
-            clip_count = segment['clip_count']
-            segment_duration = segment['duration']
+            clip_count = int(segment['clip_count'])
+            segment_duration = float(segment['duration'])
             clip_duration = segment_duration / clip_count
 
             for i in range(clip_count):

@@ -399,22 +399,24 @@ class VoiceDirectorAgent:
                 response_text = response_text.replace('\\n', '\n')
                 response_text = response_text.replace('\\"', '"')
                 
-                # Remove control characters that cause JSON parsing issues
-                import re
-                response_text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response_text)
-                
                 # Fix template variables that might cause issues
-                response_text = response_text.replace('{platform.value if hasattr(platform, \'value\') else str(platform)}', 'TikTok')
+                response_text = response_text.replace('{platform.value if hasattr(platform, \'value\') else str(platform)}', platform.value if hasattr(platform, 'value') else str(platform))
                 response_text = response_text.replace('{duration_seconds}', str(duration_seconds))
+                response_text = response_text.replace('{language.value if hasattr(language, \'value\') else str(language)}', language.value if hasattr(language, 'value') else str(language))
                 
-                # Try to extract JSON from response
-                json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+                # Try to extract JSON from response with better regex
+                json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response_text, re.DOTALL)
                 if json_match:
                     json_text = json_match.group()
                     
                     # Additional cleaning for common JSON issues
                     json_text = re.sub(r',\s*}', '}', json_text)  # Remove trailing commas
                     json_text = re.sub(r',\s*]', ']', json_text)  # Remove trailing commas in arrays
+                    
+                    # Fix any remaining template variables
+                    json_text = json_text.replace('{platform.value if hasattr(platform, \'value\') else str(platform)}', platform.value if hasattr(platform, 'value') else str(platform))
+                    json_text = json_text.replace('{duration_seconds}', str(duration_seconds))
+                    json_text = json_text.replace('{language.value if hasattr(language, \'value\') else str(language)}', language.value if hasattr(language, 'value') else str(language))
                     
                     analysis = json.loads(json_text)
 
@@ -440,7 +442,9 @@ class VoiceDirectorAgent:
 
         except Exception as e:
             logger.error(f"❌ AI voice analysis failed: {e}")
-            return self._create_fallback_voice_config(topic, language, num_clips)
+            voice_config = self._create_fallback_voice_config(topic, language, num_clips)
+        
+        return voice_config
 
     def _convert_analysis_to_voices(
             self, analysis: Dict, language: Language, num_clips: int) -> Dict[str, Any]:
@@ -705,11 +709,10 @@ class VoiceDirectorAgent:
                 "pitch": self._get_pitch_for_emotion(emotion)
             })
 
-        # Return flat structure to match test expectations
+        # Return structure that matches the expected format
         return {
             "strategy": "single",
-            "primary_personality": "professional",
-            "voices": voices,
-            "reasoning": "Fallback configuration when AI analysis fails",
-            "success": False
+            "clip_voices": voices,
+            "voice_variety": False,
+            "reasoning": "Fallback configuration when AI analysis fails"
         }

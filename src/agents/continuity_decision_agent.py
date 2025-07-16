@@ -138,6 +138,7 @@ Respond in JSON format:
 
             # Parse response
             import json
+            import re
             try:
                 # Extract JSON from response
                 response_text = response.text.strip()
@@ -147,12 +148,33 @@ Respond in JSON format:
                     logger.warning("⚠️ Empty response text from VisualFlow API")
                     return self._make_fallback_decision(topic, category, platform, duration)
                 
+                # Remove control characters that cause JSON parsing issues
+                response_text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response_text)
+                
+                # Remove markdown formatting
                 if response_text.startswith('```json'):
                     response_text = response_text[7:-3]
                 elif response_text.startswith('```'):
                     response_text = response_text[3:-3]
 
-                decision_data = json.loads(response_text)
+                # Additional JSON cleaning
+                response_text = response_text.strip()
+                response_text = response_text.replace('\\n', '\n')
+                response_text = response_text.replace('\\"', '"')
+                
+                # Try to extract JSON from response with better regex
+                json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response_text, re.DOTALL)
+                if json_match:
+                    json_text = json_match.group()
+                    
+                    # Additional cleaning for common JSON issues
+                    json_text = re.sub(r',\s*}', '}', json_text)  # Remove trailing commas
+                    json_text = re.sub(r',\s*]', ']', json_text)  # Remove trailing commas in arrays
+                    
+                    decision_data = json.loads(json_text)
+                else:
+                    logger.warning("⚠️ No valid JSON found in VisualFlow response")
+                    return self._make_fallback_decision(topic, category, platform, duration)
 
                 # Add metadata
                 decision_data.update({

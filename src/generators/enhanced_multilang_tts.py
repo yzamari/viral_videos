@@ -101,23 +101,17 @@ class EnhancedMultilingualTTS:
                 num_clips=num_clips
             )
 
-            if not voice_strategy or not voice_strategy.get("success", False):
+            if not voice_strategy:
                 logger.warning("⚠️ AI voice selection failed, using single voice fallback")
                 return [self._generate_fallback_audio(script, language)]
 
-            # Handle both old and new voice_strategy structures
-            voice_config = voice_strategy.get("voice_config")
-            if not voice_config:
-                # Try the flat structure returned by VoiceDirectorAgent
-                if "voices" in voice_strategy:
-                    voice_config = {
-                        "clip_voices": voice_strategy["voices"],
-                        "strategy": voice_strategy.get("strategy", "single"),
-                        "voice_variety": voice_strategy.get("voice_variety", False)
-                    }
-                else:
-                    logger.warning("⚠️ No voice_config or voices in voice_strategy, using fallback")
-                    return [self._generate_fallback_audio(script, language)]
+            # The voice_strategy is already the voice_config from VoiceDirectorAgent
+            voice_config = voice_strategy
+            
+            # Validate voice_config structure
+            if not isinstance(voice_config, dict) or "clip_voices" not in voice_config:
+                logger.warning("⚠️ Invalid voice_config structure, using fallback")
+                return [self._generate_fallback_audio(script, language)]
 
             # Generate audio for each clip
             audio_files = []

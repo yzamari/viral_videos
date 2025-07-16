@@ -729,9 +729,8 @@ class WorkingOrchestrator:
             ai_decide_orientation=config.get('ai_decide_orientation', True)
         )
         
-        # Add platform and category info for AI timing decisions
-        enhanced_config.platform_name = self.platform.value
-        enhanced_config.category_name = self.category.value
+        # Platform and category info are already available via enhanced_config.target_platform and enhanced_config.category
+        # No need to assign additional attributes
         
         return enhanced_config
     
