@@ -71,7 +71,7 @@ class VertexAIVeo2Client(BaseVeoClient):
         return self.veo2_model
 
     def generate_video(self, prompt: str, duration: float = 5.0,
-                      clip_id: str = "clip", image_path: Optional[str] = None) -> str:
+                      clip_id: str = "clip", image_path: Optional[str] = None, aspect_ratio: str = "9:16") -> str:
         """
         Generate video using Vertex AI VEO-2
 
@@ -80,12 +80,14 @@ class VertexAIVeo2Client(BaseVeoClient):
             duration: Video duration in seconds
             clip_id: Unique identifier for the clip
             image_path: Optional image path for image-to-video generation
+            aspect_ratio: Video aspect ratio (default: "9:16" for portrait)
 
         Returns:
             Path to generated video file
         """
         if not self.is_available:
-            logger.warning("❌ VEO-2 not available, using fallback")
+            logger.warning("⚠️ FALLBACK WARNING: VEO-2 not available, using fallback video generation")
+            print("⚠️ FALLBACK WARNING: VEO-2 service unavailable - generating fallback video with reduced quality")
             return self._create_fallback_clip(prompt, duration, clip_id)
 
         logger.info(f"🎬 Starting VEO-2 generation for clip: {clip_id}")
@@ -99,7 +101,8 @@ class VertexAIVeo2Client(BaseVeoClient):
                 enhanced_prompt,
                 duration,
                 clip_id,
-                image_path)
+                image_path,
+                aspect_ratio)
 
             if operation_name:
                 # Poll for completion
@@ -162,8 +165,9 @@ class VertexAIVeo2Client(BaseVeoClient):
             self,
             prompt: str,
             duration: float,
-        clip_id: str,
-            image_path: Optional[str] = None) -> Optional[str]:
+            clip_id: str,
+            image_path: Optional[str] = None,
+            aspect_ratio: str = "9:16") -> Optional[str]:
         """Submit VEO-2 generation request to Vertex AI"""
         try:
             # CORRECT URL format for VEO-2 predictLongRunning endpoint
@@ -174,11 +178,11 @@ class VertexAIVeo2Client(BaseVeoClient):
             request_data = {
                 "instances": [{
                     "prompt": prompt,
-                    "aspectRatio": "16:9",
                     "durationSeconds": duration
                 }],
                 "parameters": {
-                    "outputGcsBucket": self.gcs_bucket
+                    "outputGcsBucket": self.gcs_bucket,
+                    "aspectRatio": aspect_ratio
                 }
             }
 
@@ -485,7 +489,7 @@ class VertexAIVeo2Client(BaseVeoClient):
             # Make a minimal test request
             test_data = {
                 "instances": [{"prompt": "test"}],
-                "parameters": {"aspectRatio": "16:9", "durationSeconds": 5}
+                "parameters": {"aspectRatio": "9:16", "durationSeconds": 5}
             }
 
             response = requests.post(url, headers=headers, json=test_data, timeout=30)

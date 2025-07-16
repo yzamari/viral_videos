@@ -37,7 +37,7 @@ class GoogleVoiceType(str, Enum):
 class GoogleTTSClient:
     """Advanced Google Cloud Text-to-Speech Client"""
 
-    def __init(self, credentials_path: Optional[str] = None):
+    def __init__(self, credentials_path: Optional[str] = None):
         """Initialize Google TTS client"""
         try:
             if credentials_path:
@@ -119,7 +119,7 @@ class GoogleTTSClient:
                        use_ssml: bool = False, voice_override: Optional[str] = None) -> str:
         """Generate high-quality speech with Google Cloud TTS"""
         try:
-            logger.info(f"🎤 Generating Google Cloud TTS voice (feeling} emotion)")
+            logger.info(f"🎤 Generating Google Cloud TTS voice (feeling {feeling} emotion)")
 
             # Get voice configuration for emotion
             voice_config = self.emotion_voice_mapping.get(
@@ -225,11 +225,8 @@ class GoogleTTSClient:
             # Validate file
             if os.path.exists(audio_path) and os.path.getsize(audio_path) > 0:
                 file_size = os.path.getsize(audio_path) / (1024 * 1024)
-                logger.info(f"✅ Google Cloud TTS generated: {audio_path} (file_size:.2f}MB)")
-                logger.info(
-                    f"   Voice: {selected_voice},"
-                    Speed: {voice_config['speed']}x,
-                    Pitch: {voice_config['pitch']}st")"
+                logger.info(f"✅ Google Cloud TTS generated: {audio_path} ({file_size:.2f}MB)")
+                logger.info(f"Voice: {selected_voice}, Speed: {voice_config['speed']}x, Pitch: {voice_config['pitch']}st")
                 return audio_path
             else:
                 raise Exception("Generated audio file is empty or missing")

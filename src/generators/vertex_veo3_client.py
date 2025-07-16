@@ -65,7 +65,7 @@ class VertexAIVeo3Client(BaseVeoClient):
 
     def generate_video(self, prompt: str, duration: float = 8.0,
                       clip_id: str = "clip", image_path: Optional[str] = None,
-                      enable_audio: bool = True) -> str:
+                      enable_audio: bool = True, aspect_ratio: str = "9:16") -> str:
         """
         Generate video using VEO-3 with native audio support
 
@@ -75,12 +75,14 @@ class VertexAIVeo3Client(BaseVeoClient):
             clip_id: Unique identifier for the clip
             image_path: Optional image for image-to-video generation
             enable_audio: Whether to generate native audio (VEO-3 feature)
+            aspect_ratio: Video aspect ratio (default: "9:16" for portrait)
 
         Returns:
             Path to generated video file
         """
         if not self.is_available:
-            logger.warning("❌ VEO-3 not available, falling back to VEO-2")
+            logger.warning("⚠️ FALLBACK WARNING: VEO-3 not available, falling back to VEO-2")
+            print("⚠️ FALLBACK WARNING: VEO-3 service unavailable - falling back to VEO-2")
             # Import VEO-2 client as fallback
             try:
                 from .vertex_ai_veo2_client import VertexAIVeo2Client
@@ -89,7 +91,7 @@ class VertexAIVeo3Client(BaseVeoClient):
                     self.location,
                     self.gcs_bucket,
                     self.output_dir)
-                return veo2_client.generate_video(prompt, duration, clip_id, image_path)
+                return veo2_client.generate_video(prompt, duration, clip_id, image_path, aspect_ratio)
             except Exception as e:
                 logger.error(f"❌ VEO-2 fallback failed: {e}")
                 return self._create_fallback_clip(prompt, duration, clip_id)
@@ -105,7 +107,8 @@ class VertexAIVeo3Client(BaseVeoClient):
                 enhanced_prompt,
                 duration,
                 image_path,
-                enable_audio)
+                enable_audio,
+                aspect_ratio)
 
             if gcs_uri:
                 # Download video from GCS
@@ -134,7 +137,7 @@ class VertexAIVeo3Client(BaseVeoClient):
             # Make a minimal test request
             test_data = {
                 "instances": [{"prompt": "test"}],
-                "parameters": {"aspectRatio": "16:9", "durationSeconds": 5}
+                "parameters": {"aspectRatio": "9:16", "durationSeconds": 5}
             }
 
             response = requests.post(url, headers=headers, json=test_data, timeout=30)
@@ -247,7 +250,7 @@ class VertexAIVeo3Client(BaseVeoClient):
         return ", ".join(audio_elements) if audio_elements else "ambient background audio"
 
     def _submit_veo3_generation_request(self, prompt: str, duration: float,
-                                       image_path: str = None, enable_audio: bool = True) -> str:
+                                       image_path: str = None, enable_audio: bool = True, aspect_ratio: str = "9:16") -> str:
         """Submit video generation request to Vertex AI VEO-3"""
         try:
             # Build the request URL - Use predictLongRunning for VEO models
@@ -261,7 +264,7 @@ class VertexAIVeo3Client(BaseVeoClient):
                     {
                         "prompt": prompt,
                         "config": {
-                            "aspectRatio": "16:9",
+                            "aspectRatio": aspect_ratio,
                             "duration": f"{int(duration)}s",
                             "enableAudio": enable_audio,  # VEO-3 feature
                             "cinematicQuality": True,     # VEO-3 feature
@@ -402,7 +405,7 @@ class VertexAIVeo3Client(BaseVeoClient):
                 self.location,
                 self.gcs_bucket,
                 self.output_dir)
-            return veo2_client.generate_video(prompt, duration, clip_id)
+            return veo2_client.generate_video(prompt, duration, clip_id, image_path=None, aspect_ratio=aspect_ratio)
         except Exception as e:
             logger.error(f"❌ VEO-2 fallback failed: {e}")
 

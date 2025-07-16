@@ -77,12 +77,21 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
             "frame_continuity": frame_continuity == "on" or (frame_continuity == "auto")
         }
 
+        # Map CLI category to VideoCategory enum
+        category_mapping = {
+            "Tech": "Technology",
+            "Comedy": "Comedy",
+            "Educational": "Educational",
+            "Entertainment": "Entertainment",
+            "News": "News"
+        }
+        
         # Initialize working orchestrator
         orchestrator = WorkingOrchestrator(
             api_key=os.getenv('GOOGLE_API_KEY'),
             mission=mission,
             platform=Platform(platform.lower()),
-            category=VideoCategory(category.title()),
+            category=VideoCategory(category_mapping.get(category, category)),
             duration=duration,
             style=style or "viral",
             tone=tone or "engaging",

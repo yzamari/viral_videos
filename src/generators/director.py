@@ -254,12 +254,7 @@ class Director:
                         segment_text = segment['text'].lower()
                         # Check if any topic words appear in the segment
                         topic_match = any(word in segment_text for word in topic_words if len(word) > 2)
-                        
-                        if topic_match:
-                            valid_segments.append(segment)
-                        else:
-                            logger.warning(f"Segment doesn't seem to be about '{topic}': {segment['text'][:50]}...")
-                            valid_segments.append(segment)
+                        valid_segments.append(segment)
                 
                 if valid_segments:
                     return valid_segments
@@ -852,7 +847,7 @@ class Director:
         """Assemble complete script from components"""
         try:
             # Calculate timing
-            hook_duration = int(hook.get('duration_seconds', 3))
+            hook_duration = hook.get('duration_seconds', 3)
             cta_duration = 2
             content_duration = duration - hook_duration - cta_duration
 
@@ -1061,16 +1056,8 @@ class Director:
             if response and response.text:
                 # Validate that the response is actually about the topic
                 response_text = response.text.strip()
-                if topic.lower() in response_text.lower():
-                    logger.info(f"Retrieved current context for {topic}")
-                    return response_text
-                else:
-                    logger.warning(f"Retrieved context doesn't seem to be about '{topic}', ignoring")
-                    return ""
-            else:
-                logger.warning("No current context retrieved from Gemini")
-                return ""
-                
+                return response_text
+         
         except Exception as e:
             logger.warning(f"Failed to get current context from Gemini: {e}")
             return ""

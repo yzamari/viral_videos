@@ -390,7 +390,8 @@ class VideoGenerator:
                 clip_path = veo_client.generate_video(
                     prompt=prompt,
                     duration=int(script_segments[i].get('duration', 5)),
-                    clip_id=f"continuous_clip_{i+1}"
+                    clip_id=f"continuous_clip_{i+1}",
+                    aspect_ratio=self._get_platform_aspect_ratio(config.target_platform.value)
                 )
                 
                 if clip_path and os.path.exists(clip_path):
@@ -884,13 +885,15 @@ class VideoGenerator:
                         clip_path = veo_client.generate_video(
                             prompt=enhanced_prompt,
                             duration=5.0,
-                            clip_id=f"clip_{i+1}"
+                            clip_id=f"clip_{i+1}",
+                            aspect_ratio=self._get_platform_aspect_ratio(config.target_platform.value)
                         )
                         
                         if clip_path and os.path.exists(clip_path):
                             logger.info(f"✅ Generated VEO clip {i+1}/{num_clips}")
                         else:
-                            logger.warning(f"⚠️ VEO generation failed for clip {i+1}, using fallback")
+                            logger.warning(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1}, using fallback")
+                            print(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1} - using fallback with reduced quality")
                             clip_path = None
                     except Exception as e:
                         logger.error(f"❌ VEO generation error for clip {i+1}: {e}")
@@ -907,10 +910,12 @@ class VideoGenerator:
                     os.makedirs(os.path.dirname(fallback_path), exist_ok=True)
                     
                     # Create fallback clip using FFmpeg
+                    print(f"⚠️ FALLBACK WARNING: Creating fallback clip {i+1} due to VEO failure - quality may be reduced")
                     clip_path = self._create_direct_fallback_clip(
                         prompt=enhanced_prompt,
                         duration=5.0,
-                        output_path=fallback_path
+                        output_path=fallback_path,
+                        config=config
                     )
                     
                     if clip_path:
@@ -1099,7 +1104,12 @@ class VideoGenerator:
             temp_video_path = os.path.join(session_context.session_dir, "temp_files", "base_video.mp4")
             os.makedirs(os.path.dirname(temp_video_path), exist_ok=True)
             
-            temp_video_path = self._compose_with_standard_cuts(clips, audio_files, temp_video_path, session_context)
+            # Use frame continuity if enabled
+            if getattr(config, 'frame_continuity', False):
+                logger.info("🎬 Using frame continuity composition")
+                temp_video_path = self._compose_with_frame_continuity(clips, audio_files, temp_video_path, session_context)
+            else:
+                temp_video_path = self._compose_with_standard_cuts(clips, audio_files, temp_video_path, session_context)
             
             if not temp_video_path or not os.path.exists(temp_video_path):
                 logger.error("❌ Failed to create base video")
@@ -1575,20 +1585,21 @@ class VideoGenerator:
             
             # Create video filter for frame continuity
             # For clips after the first, skip the first frame to avoid duplication
-            video_filters = []
+            video_filter_parts = []
             
             for i, clip in enumerate(clips):
                 if i == 0:
                     # First clip: use as-is
-                    video_filters.append(f"[{i}:v]")
+                    video_filter_parts.append(f"[{i}:v]null[v{i}]")
                 else:
-                    # Subsequent clips: remove first frame (skip first 1/30 second)
-                    video_filters.append(f"[{i}:v]trim=start=0.033[v{i}]")
+                    # Subsequent clips: remove first frame (skip first 1/30 second to avoid double frame)
+                    video_filter_parts.append(f"[{i}:v]trim=start=0.033,setpts=PTS-STARTPTS[v{i}]")
             
             # Concatenate all video streams
-            if len(video_filters) > 1:
-                concat_inputs = "".join([f"[v{i}]" if i > 0 else f"[{i}:v]" for i in range(len(clips))])
-                video_filter = f"{';'.join([f for f in video_filters if 'trim' in f])};{concat_inputs}concat=n={len(clips)}:v=1:a=0[outv]"
+            if len(clips) > 1:
+                trim_filters = ";".join(video_filter_parts)
+                concat_inputs = "".join([f"[v{i}]" for i in range(len(clips))])
+                video_filter = f"{trim_filters};{concat_inputs}concat=n={len(clips)}:v=1:a=0[outv]"
             else:
                 video_filter = f"[0:v]copy[outv]"
             
@@ -1900,7 +1911,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             'linkedin': (1280, 720)     # 16:9 landscape
         }
         
-        return platform_dimensions.get(platform.lower(), (1280, 720))
+        return platform_dimensions.get(platform.lower(), (720, 1280))  # Default to portrait for modern social media
     
     def _get_platform_aspect_ratio(self, platform: str) -> str:
         """Get aspect ratio string for platform"""
@@ -1913,7 +1924,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             'linkedin': '16:9'     # Landscape
         }
         
-        return platform_ratios.get(platform.lower(), '16:9')
+        return platform_ratios.get(platform.lower(), '9:16')  # Default to portrait for modern social media
     
     def _apply_platform_orientation(self, video_path: str, platform: str, session_context: SessionContext) -> str:
         """Apply correct orientation and dimensions for target platform"""
@@ -1960,7 +1971,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             logger.error(f"❌ Platform orientation failed: {e}")
             return video_path
 
-    def _create_direct_fallback_clip(self, prompt: str, duration: float, output_path: str) -> str:
+    def _create_direct_fallback_clip(self, prompt: str, duration: float, output_path: str, config: GeneratedVideoConfig = None) -> str:
         """Create fallback clip directly using FFmpeg without abstract class"""
         logger.info(f"🎨 Creating direct fallback for: {prompt[:50]}...")
         
@@ -1968,6 +1979,15 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Create a colorful test pattern video with FFmpeg
             import subprocess
             import random
+            
+            # Get platform-specific dimensions
+            if config and hasattr(config, 'target_platform'):
+                platform = config.target_platform.value
+                width, height = self._get_video_dimensions(platform)
+                logger.info(f"📱 Using platform dimensions for {platform}: {width}x{height}")
+            else:
+                width, height = 720, 1280  # Default to portrait
+                logger.info(f"📱 Using default portrait dimensions: {width}x{height}")
             
             # Generate random colors for variety
             colors = [
@@ -1982,7 +2002,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Create video with text overlay showing the prompt
             cmd = [
                 'ffmpeg', '-f', 'lavfi', 
-                '-i', f'color=c={color}:size=1280x720:duration={duration}',
+                '-i', f'color=c={color}:size={width}x{height}:duration={duration}',
                 '-vf', f'drawtext=text="{safe_text}":fontcolor=white:fontsize=24:x=(w-text_w)/2:y=(h-text_h)/2',
                 '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24',
                 '-y', output_path
@@ -2010,7 +2030,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Create simple solid color video
             cmd = [
                 'ffmpeg', '-f', 'lavfi', 
-                '-i', f'color=c=blue:size=1280x720:duration={duration}',
+                '-i', f'color=c=blue:size=720x1280:duration={duration}',
                 '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24',
                 '-y', output_path
             ]
