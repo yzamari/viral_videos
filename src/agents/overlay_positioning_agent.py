@@ -116,12 +116,13 @@ Return JSON:
             TASK: Create engaging colorful text hooks and overlays that will make the video viral.
             
             REQUIREMENTS:
-            1. Create 3-5 text hooks that appear at different times
-            2. Use vibrant colors that grab attention
-            3. Choose fonts that match the content style
+            1. Create 6-10 text hooks that appear at different times throughout the video
+            2. Use vibrant colors that grab attention (#FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FECA57)
+            3. Choose fonts that match the content style (Arial-Bold, Impact, Helvetica-Bold)
             4. Position hooks strategically for maximum impact
             5. Include emojis and visual elements
-            6. Make hooks short and punchy (max 15 characters)
+            6. Make hooks short and punchy (max 20 characters)
+            7. Ensure hooks appear every 3-5 seconds for maximum engagement
             
             PLATFORM OPTIMIZATION:
             - TikTok: Bold, colorful, trending phrases
@@ -190,53 +191,52 @@ Return JSON:
         topic_words = topic.split()
         main_word = topic_words[0] if topic_words else "Content"
         
-        fallback_hooks = [
-            {
-                "text": f"🔥 {main_word.upper()}!",
-                "start_time": 0.5,
-                "end_time": 3.0,
-                "position": "top_center",
-                "font_family": "Arial-Bold",
-                "font_size": 48,
-                "color": "#FF6B6B",
-                "background_color": "#FFFFFF",
-                "stroke_color": "#000000",
-                "stroke_width": 2,
-                "animation": "bounce",
-                "opacity": 0.9,
-                "reasoning": "Opening hook"
-            },
-            {
-                "text": "💡 LEARN MORE",
-                "start_time": video_duration * 0.4,
-                "end_time": video_duration * 0.6,
-                "position": "center",
-                "font_family": "Arial-Bold",
-                "font_size": 36,
-                "color": "#4ECDC4",
-                "background_color": "#FFFFFF",
-                "stroke_color": "#000000",
-                "stroke_width": 2,
-                "animation": "fade",
-                "opacity": 0.85,
-                "reasoning": "Mid-content engagement"
-            },
-            {
-                "text": "👆 FOLLOW!",
-                "start_time": video_duration * 0.8,
-                "end_time": video_duration,
-                "position": "bottom_right",
-                "font_family": "Arial-Bold",
-                "font_size": 32,
-                "color": "#45B7D1",
-                "background_color": "#FFFFFF",
-                "stroke_color": "#000000",
-                "stroke_width": 2,
-                "animation": "pulse",
-                "opacity": 0.9,
-                "reasoning": "Call to action"
-            }
+        # Generate more frequent hooks based on video duration
+        num_hooks = max(6, min(12, int(video_duration / 3)))  # One hook every 3-5 seconds
+        
+        hook_templates = [
+            {"text": f"🔥 {main_word.upper()}!", "color": "#FF6B6B", "position": "top_center", "animation": "bounce"},
+            {"text": "💡 WATCH THIS!", "color": "#4ECDC4", "position": "center_right", "animation": "fade"},
+            {"text": "😱 MIND BLOWN!", "color": "#45B7D1", "position": "top_right", "animation": "pulse"},
+            {"text": "🚀 VIRAL CONTENT", "color": "#96CEB4", "position": "center_left", "animation": "bounce"},
+            {"text": "⚡ AMAZING FACT!", "color": "#FECA57", "position": "top_left", "animation": "fade"},
+            {"text": "🎯 MUST KNOW!", "color": "#FF9FF3", "position": "bottom_left", "animation": "pulse"},
+            {"text": "🌟 INCREDIBLE!", "color": "#54A0FF", "position": "center_right", "animation": "bounce"},
+            {"text": "🔥 SO TRUE!", "color": "#5F27CD", "position": "top_center", "animation": "fade"},
+            {"text": "💯 FACTS ONLY!", "color": "#00D2D3", "position": "bottom_right", "animation": "pulse"},
+            {"text": "👀 LOOK AT THIS!", "color": "#FF9F43", "position": "center_left", "animation": "bounce"},
+            {"text": "🎉 AWESOME!", "color": "#C44569", "position": "top_right", "animation": "fade"},
+            {"text": "👍 LIKE & FOLLOW!", "color": "#FECA57", "position": "bottom_right", "animation": "pulse"}
         ]
+        
+        fallback_hooks = []
+        hook_duration = 2.5
+        time_per_hook = video_duration / num_hooks
+        
+        for i in range(num_hooks):
+            template = hook_templates[i % len(hook_templates)]
+            start_time = i * time_per_hook + 0.5
+            end_time = min(start_time + hook_duration, video_duration - 0.5)
+            
+            # Skip if would go beyond video duration
+            if start_time >= video_duration - 1:
+                break
+                
+            fallback_hooks.append({
+                "text": template["text"],
+                "start_time": start_time,
+                "end_time": end_time,
+                "position": template["position"],
+                "font_family": "Arial-Bold" if i % 2 == 0 else "Impact",
+                "font_size": 52 if i % 3 == 0 else 46,  # Larger fonts for better visibility
+                "color": template["color"],
+                "background_color": "#000000" if i % 2 == 0 else "#FFFFFF",
+                "stroke_color": "#FFFFFF" if i % 2 == 0 else "#000000",
+                "stroke_width": 3,
+                "animation": template["animation"],
+                "opacity": 0.95,
+                "reasoning": f"Hook {i+1} for continuous engagement"
+            })
         
         # Filter hooks that fit within video duration
         valid_hooks = [hook for hook in fallback_hooks if hook['end_time'] <= video_duration]

@@ -5,29 +5,27 @@ Coordinates video generation using VEO2/VEO3, Gemini images, and TTS
 
 import os
 import time
-import tempfile
 import uuid
 import re
-import numpy as np
+import warnings
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 from datetime import datetime
 import json
-import random
 import subprocess
-import shutil
-from pathlib import Path
 
-from ..models.video_models import GeneratedVideoConfig, GeneratedVideo, Platform, VideoCategory
+# Suppress pkg_resources deprecation warnings from imageio_ffmpeg
+warnings.filterwarnings("ignore", category=UserWarning, module="imageio_ffmpeg")
+
+from ..models.video_models import GeneratedVideoConfig, Platform, VideoCategory
 from ..utils.logging_config import get_logger
-from ..generators.veo_client_factory import VeoClientFactory, VeoModel, get_best_veo_client
+from ..generators.veo_client_factory import VeoClientFactory, VeoModel
 from ..generators.gemini_image_client import GeminiImageClient
 from ..generators.enhanced_multilang_tts import EnhancedMultilingualTTS
 from ..generators.enhanced_script_processor import EnhancedScriptProcessor
 from ..agents.voice_director_agent import VoiceDirectorAgent
 from ..agents.overlay_positioning_agent import OverlayPositioningAgent
 from ..agents.visual_style_agent import VisualStyleAgent
-from ..utils.session_manager import session_manager
 from ..utils.session_context import SessionContext, create_session_context
 
 logger = get_logger(__name__)
@@ -850,7 +848,18 @@ class VideoGenerator:
         logger.info(f"🎬 Frame continuity: {'✅ ENABLED' if use_frame_continuity else '❌ DISABLED'}")
         
         clips = []
-        num_clips = 3  # Standard number of clips
+        # Get script segments to determine number of clips
+        script_segments = script_result.get('segments', [])
+        if not script_segments:
+            # Fallback to duration-based calculation
+            num_clips = max(3, int(config.duration_seconds / 5))
+            logger.warning(f"⚠️ No script segments found, using duration-based clips: {num_clips}")
+        else:
+            num_clips = len(script_segments)
+            logger.info(f"🎬 Using script segments: {num_clips} clips matching {num_clips} segments")
+        
+        avg_duration = config.duration_seconds / num_clips
+        logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips ({avg_duration:.1f}s each)")
         last_frame_image = None
         
         # Get the best available VEO client using factory
@@ -868,8 +877,17 @@ class VideoGenerator:
         
         for i in range(num_clips):
             try:
-                # Create prompt for this clip
-                prompt = f"{config.topic}, {style_decision.get('primary_style', 'dynamic')} style, scene {i+1}"
+                # Get segment-specific information if available
+                if script_segments and i < len(script_segments):
+                    segment = script_segments[i]
+                    segment_text = segment.get('text', '')
+                    clip_duration = segment.get('duration', config.duration_seconds / num_clips)
+                    # Create more specific prompt based on segment content
+                    prompt = f"{config.topic}, {segment_text[:50]}, {style_decision.get('primary_style', 'dynamic')} style, scene {i+1}"
+                else:
+                    # Fallback for when segments don't match
+                    clip_duration = config.duration_seconds / num_clips
+                    prompt = f"{config.topic}, {style_decision.get('primary_style', 'dynamic')} style, scene {i+1}"
                 
                 # Enhance prompt with style
                 enhanced_prompt = self.style_agent.enhance_prompt_with_style(
@@ -877,15 +895,20 @@ class VideoGenerator:
                     style=style_decision.get('primary_style', 'dynamic')
                 )
                 
+                # Check content policy before sending to VEO-2
+                if self._violates_content_policy(enhanced_prompt):
+                    logger.warning(f"⚠️ Content policy violation detected in prompt, using fallback for clip {i+1}")
+                    enhanced_prompt = self._create_safe_fallback_prompt(config.topic, i+1)
+                
                 clip_path = None
                 
                 # Try VEO generation first
                 if veo_client:
                     try:
-                        logger.info(f"🎬 Generating VEO clip {i+1}/{num_clips}: {enhanced_prompt[:50]}...")
+                        logger.info(f"🎬 Generating VEO clip {i+1}/{num_clips}: {enhanced_prompt[:50]}... (duration: {clip_duration:.1f}s)")
                         clip_path = veo_client.generate_video(
                             prompt=enhanced_prompt,
-                            duration=5.0,
+                            duration=clip_duration,
                             clip_id=f"clip_{i+1}",
                             aspect_ratio=self._get_platform_aspect_ratio(config.target_platform.value)
                         )
@@ -914,7 +937,7 @@ class VideoGenerator:
                     print(f"⚠️ FALLBACK WARNING: Creating fallback clip {i+1} due to VEO failure - quality may be reduced")
                     clip_path = self._create_direct_fallback_clip(
                         prompt=enhanced_prompt,
-                        duration=5.0,
+                        duration=clip_duration,
                         output_path=fallback_path,
                         config=config
                     )
@@ -1008,16 +1031,43 @@ class VideoGenerator:
                     "reasoning": "Fallback voice configuration - voice_strategy was None"
                 }
             
-            # Generate audio files
-            temp_audio_files = self.tts_client.generate_intelligent_voice_audio(
-                script=script_result.get('final_script', config.topic),
-                language=Language.ENGLISH_US,
-                topic=config.topic,
-                platform=config.target_platform,
-                category=config.category,
-                duration_seconds=config.duration_seconds,
-                num_clips=4
-            )
+            # Get script segments from script_result
+            script_segments = script_result.get('segments', [])
+            if not script_segments:
+                logger.warning("⚠️ No script segments found, using full script as single segment")
+                script_segments = [{
+                    'text': script_result.get('final_script', config.topic),
+                    'duration': config.duration_seconds
+                }]
+            
+            # Generate audio files for each segment
+            temp_audio_files = []
+            for i, segment in enumerate(script_segments):
+                segment_text = segment.get('text', '')
+                segment_duration = segment.get('duration', 5.0)
+                
+                logger.info(f"🎵 Generating audio for segment {i+1}/{len(script_segments)}: '{segment_text[:50]}...' (duration: {segment_duration:.1f}s)")
+                
+                # Generate audio for this specific segment
+                segment_audio_files = self.tts_client.generate_intelligent_voice_audio(
+                    script=segment_text,
+                    language=Language.ENGLISH_US,
+                    topic=config.topic,
+                    platform=config.target_platform,
+                    category=config.category,
+                    duration_seconds=segment_duration,
+                    num_clips=1,  # One audio file per segment
+                    clip_index=i
+                )
+                
+                if segment_audio_files and len(segment_audio_files) > 0:
+                    temp_audio_files.append(segment_audio_files[0])
+                else:
+                    logger.warning(f"⚠️ Failed to generate audio for segment {i+1}")
+                    # Create a fallback for this segment
+                    fallback_audio = self._create_fallback_audio_segment(segment_text, segment_duration, config, session_context)
+                    if fallback_audio:
+                        temp_audio_files.append(fallback_audio)
             
             # Save audio files to session directory
             audio_files = []
@@ -1066,8 +1116,6 @@ class VideoGenerator:
         """Create fallback audio when TTS fails"""
         try:
             from gtts import gTTS
-            import tempfile
-            import uuid
             
             # Create simple script from config
             script = f"{config.hook or 'Welcome!'} {config.topic} {config.call_to_action or 'Thanks for watching!'}"
@@ -1091,6 +1139,33 @@ class VideoGenerator:
                 
         except Exception as e:
             logger.error(f"❌ Fallback audio creation failed: {e}")
+            return None
+    
+    def _create_fallback_audio_segment(self, segment_text: str, segment_duration: float, 
+                                     config: GeneratedVideoConfig, session_context: SessionContext) -> Optional[str]:
+        """Create fallback audio for a specific segment when TTS fails"""
+        try:
+            from gtts import gTTS
+            
+            # Generate with gTTS
+            tts = gTTS(text=segment_text, lang='en', slow=False)
+            
+            # Save to session directory
+            audio_filename = f"fallback_audio_segment_{uuid.uuid4().hex[:8]}.mp3"
+            session_audio_path = session_context.get_output_path("audio", audio_filename)
+            os.makedirs(os.path.dirname(session_audio_path), exist_ok=True)
+            
+            tts.save(session_audio_path)
+            
+            if os.path.exists(session_audio_path) and os.path.getsize(session_audio_path) > 1000:
+                logger.info(f"✅ Created fallback audio segment: {audio_filename} for duration {segment_duration:.1f}s")
+                return session_audio_path
+            else:
+                logger.warning("⚠️ Fallback audio segment creation failed")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Fallback audio segment creation failed: {e}")
             return None
 
     def _compose_final_video_with_subtitles(self, clips: List[str], audio_files: List[str], 
@@ -1123,18 +1198,21 @@ class VideoGenerator:
             video_with_overlays = self._add_text_overlays(video_with_subtitles, style_decision, positioning_decision, config, session_context)
             
             # Step 4: Apply platform orientation
-            final_video_path = self._apply_platform_orientation(
+            oriented_video_path = self._apply_platform_orientation(
                 video_with_overlays, 
                 config.target_platform.value, 
                 session_context
             )
             
-            # Step 5: Save to session
+            # Step 5: Add 1.5 second black screen fade out
+            final_video_path = self._add_fade_out_ending(oriented_video_path, session_context)
+            
+            # Step 6: Save to session
             saved_path = session_context.save_final_video(final_video_path)
             logger.info(f"✅ Final video with subtitles created: {saved_path}")
             
             # Clean up temp files
-            for temp_file in [temp_video_path, video_with_subtitles, video_with_overlays, final_video_path]:
+            for temp_file in [temp_video_path, video_with_subtitles, video_with_overlays, oriented_video_path, final_video_path]:
                 try:
                     if temp_file and os.path.exists(temp_file) and temp_file != saved_path:
                         os.unlink(temp_file)
@@ -1190,32 +1268,34 @@ class VideoGenerator:
             
             # Add hook text overlay with DYNAMIC positioning
             if config.hook:
-                hook_text = str(config.hook).replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')[:50]
+                # Create short, multi-line hook text (4-5 words per line)
+                hook_text = self._create_short_multi_line_text(str(config.hook), max_words_per_line=4)
                 
                 if is_dynamic:
                     # DYNAMIC: Moving hook overlay with animation
                     overlay_filters.append(
-                        f"drawtext=text='{hook_text}':fontcolor=0xFFD700:fontsize=36:font='Arial Black':box=1:boxcolor=0x000000@0.7:boxborderw=6:x='if(lt(t,1.5),(w-text_w)/2,if(lt(t,3),(w-text_w)/2-20*sin(2*PI*t),w-text_w-20))':y='60+10*sin(4*PI*t)':enable='between(t,0,3)'"
+                        f"drawtext=text='{hook_text}':fontcolor=0xFFD700:fontsize=32:font='Arial Black':box=1:boxcolor=0x000000@0.7:boxborderw=6:x='if(lt(t,1.5),(w-text_w)/2,if(lt(t,3),(w-text_w)/2-20*sin(2*PI*t),w-text_w-20))':y='60+10*sin(4*PI*t)':enable='between(t,0,3)'"
                     )
                 else:
                     # STATIC: Original behavior
                     overlay_filters.append(
-                        f"drawtext=text='{hook_text}':fontcolor=0xFFD700:fontsize=32:font='Arial Black':box=1:boxcolor=0x000000@0.6:boxborderw=5:x=(w-text_w)/2:y=60:enable='between(t,0,3)'"
+                        f"drawtext=text='{hook_text}':fontcolor=0xFFD700:fontsize=28:font='Arial Black':box=1:boxcolor=0x000000@0.6:boxborderw=5:x=(w-text_w)/2:y=60:enable='between(t,0,3)'"
                     )
             
             # Add call-to-action overlay with DYNAMIC positioning
             if config.call_to_action:
-                cta_text = str(config.call_to_action).replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')[:50]
+                # Create short, multi-line CTA text (4-5 words per line)
+                cta_text = self._create_short_multi_line_text(str(config.call_to_action), max_words_per_line=4)
                 
                 if is_dynamic:
                     # DYNAMIC: Sliding CTA with bounce effect
                     overlay_filters.append(
-                        f"drawtext=text='{cta_text}':fontcolor=0x00FF00:fontsize=26:font='Arial Bold':box=1:boxcolor=0x000000@0.8:boxborderw=4:x='if(lt(t,{video_duration-3}),w+text_w,w-text_w-30-15*sin(8*PI*(t-{video_duration-3})))':y='120+5*cos(6*PI*t)':enable='between(t,{video_duration-3},{video_duration})'"
+                        f"drawtext=text='{cta_text}':fontcolor=0x00FF00:fontsize=24:font='Arial Bold':box=1:boxcolor=0x000000@0.8:boxborderw=4:x='if(lt(t,{video_duration-3}),w+text_w,w-text_w-30-15*sin(8*PI*(t-{video_duration-3})))':y='120+5*cos(6*PI*t)':enable='between(t,{video_duration-3},{video_duration})'"
                     )
                 else:
                     # STATIC: Original behavior
                     overlay_filters.append(
-                        f"drawtext=text='{cta_text}':fontcolor=0x00FF00:fontsize=22:font='Arial Bold':box=1:boxcolor=0x000000@0.7:boxborderw=3:x=w-text_w-30:y=120:enable='between(t,{video_duration-3},{video_duration})'"
+                        f"drawtext=text='{cta_text}':fontcolor=0x00FF00:fontsize=20:font='Arial Bold':box=1:boxcolor=0x000000@0.7:boxborderw=3:x=w-text_w-30:y=120:enable='between(t,{video_duration-3},{video_duration})'"
                     )
             
             # Apply overlays if any
@@ -2102,6 +2182,65 @@ This is a placeholder file. In a full implementation, this would be a complete M
             logger.error(f"❌ Platform orientation failed: {e}")
             return video_path
 
+    def _add_fade_out_ending(self, video_path: str, session_context: SessionContext) -> str:
+        """Add 1.5 second black screen fade out at the end of the video"""
+        try:
+            logger.info("🎬 Adding 1.5 second black screen fade out")
+            
+            # Create output path
+            output_path = session_context.get_output_path("temp_files", f"fade_out_{os.path.basename(video_path)}")
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            
+            # Get video duration and dimensions
+            probe_cmd = [
+                'ffprobe', '-v', 'quiet', '-print_format', 'json', 
+                '-show_format', '-show_streams', video_path
+            ]
+            probe_result = subprocess.run(probe_cmd, capture_output=True, text=True)
+            probe_data = json.loads(probe_result.stdout)
+            
+            # Extract video info
+            video_duration = float(probe_data['format']['duration'])
+            video_stream = next((s for s in probe_data['streams'] if s['codec_type'] == 'video'), None)
+            if video_stream:
+                width = int(video_stream['width'])
+                height = int(video_stream['height'])
+            else:
+                width, height = 720, 1280  # Default
+            
+            # Create 1.5 second black screen
+            black_duration = 1.5
+            fade_start_time = video_duration + black_duration - 0.5  # Start fade 0.5s before end
+            
+            # FFmpeg command to:
+            # 1. Concatenate original video with black screen
+            # 2. Add fade out effect
+            cmd = [
+                'ffmpeg', '-y',
+                '-i', video_path,
+                '-f', 'lavfi', '-i', f'color=c=black:size={width}x{height}:duration={black_duration}:rate=30',
+                '-filter_complex', 
+                f'[0:v][1:v]concat=n=2:v=1:a=0[v_concat];[v_concat]fade=t=out:st={fade_start_time}:d=0.5[v_out]',
+                '-map', '[v_out]',
+                '-map', '0:a',  # Keep original audio
+                '-c:v', 'libx264', '-c:a', 'aac',
+                '-preset', 'fast',
+                output_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            
+            if result.returncode == 0 and os.path.exists(output_path):
+                logger.info(f"✅ Added fade out ending: {output_path}")
+                return output_path
+            else:
+                logger.error(f"❌ Fade out failed: {result.stderr}")
+                return video_path
+                
+        except Exception as e:
+            logger.error(f"❌ Fade out ending failed: {e}")
+            return video_path
+
     def _create_direct_fallback_clip(self, prompt: str, duration: float, output_path: str, config: GeneratedVideoConfig = None) -> str:
         """Create fallback clip directly using FFmpeg without abstract class"""
         logger.info(f"🎨 Creating direct fallback for: {prompt[:50]}...")
@@ -2264,6 +2403,110 @@ This is a placeholder file. In a full implementation, this would be a complete M
         if not hasattr(self, '_script_prompts'):
             self._script_prompts = []
         self._script_prompts.extend(prompts)
+
+    def _violates_content_policy(self, prompt: str) -> bool:
+        """Check if prompt violates Google's content policies"""
+        # Convert to lowercase for easier matching
+        prompt_lower = prompt.lower()
+        
+        # Keywords that typically violate content policies
+        policy_violations = [
+            # Violence
+            'violence', 'violent', 'fighting', 'battle', 'war', 'attack', 'assault',
+            'shooting', 'gun', 'weapon', 'blood', 'gore', 'death', 'kill', 'murder',
+            
+            # Political controversy
+            'president', 'political', 'government', 'election', 'protest', 'riot',
+            'arrest', 'police', 'officer', 'law enforcement', 'criminal', 'crime',
+            
+            # Discrimination
+            'racist', 'discrimination', 'hate', 'offensive', 'inappropriate',
+            
+            # Adult content
+            'nude', 'naked', 'sexual', 'adult', 'explicit',
+            
+            # Dangerous activities
+            'dangerous', 'harmful', 'illegal', 'drugs', 'alcohol',
+            
+            # Specific problematic scenarios
+            'black president', 'police officer', 'arresting', 'violence against',
+            'officer sees', 'officer apologize', 'treat him like'
+        ]
+        
+        # Check for violations
+        for violation in policy_violations:
+            if violation in prompt_lower:
+                logger.warning(f"⚠️ Content policy violation detected: '{violation}' in prompt")
+                return True
+        
+        return False
+
+    def _create_safe_fallback_prompt(self, topic: str, scene_number: int) -> str:
+        """Create a safe fallback prompt that won't violate content policies"""
+        # Extract safe keywords from the original topic
+        safe_keywords = []
+        topic_lower = topic.lower()
+        
+        # Safe words that are generally acceptable
+        safe_words = [
+            'explain', 'show', 'demonstrate', 'illustrate', 'present', 'display',
+            'create', 'build', 'make', 'design', 'develop', 'produce', 'generate',
+            'learn', 'teach', 'educate', 'inform', 'guide', 'help', 'support',
+            'fun', 'entertaining', 'engaging', 'interesting', 'amazing', 'wonderful',
+            'beautiful', 'creative', 'innovative', 'modern', 'trendy', 'popular'
+        ]
+        
+        for word in safe_words:
+            if word in topic_lower:
+                safe_keywords.append(word)
+        
+        # Create a generic safe prompt
+        if safe_keywords:
+            safe_prompt = f"An engaging and informative scene about {topic.split(',')[0]}, {', '.join(safe_keywords[:3])}, scene {scene_number}"
+        else:
+            safe_prompt = f"An engaging and informative educational scene, dynamic style, scene {scene_number}"
+        
+        logger.info(f"✅ Created safe fallback prompt: {safe_prompt}")
+        return safe_prompt
+
+    def _create_short_multi_line_text(self, text: str, max_words_per_line: int = 4) -> str:
+        """Create short, multi-line text for overlays (4-5 words per line)"""
+        try:
+            # Clean the text
+            cleaned_text = text.replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
+            
+            # Split into words
+            words = cleaned_text.split()
+            
+            # Limit total words to prevent overly long overlays
+            max_total_words = 12  # Maximum 3 lines of 4 words each
+            if len(words) > max_total_words:
+                words = words[:max_total_words]
+            
+            # Create lines with max_words_per_line words each
+            lines = []
+            current_line = []
+            
+            for word in words:
+                current_line.append(word)
+                if len(current_line) >= max_words_per_line:
+                    lines.append(' '.join(current_line))
+                    current_line = []
+            
+            # Add remaining words to the last line
+            if current_line:
+                lines.append(' '.join(current_line))
+            
+            # Join lines with newline character for FFmpeg
+            multi_line_text = '\\N'.join(lines)
+            
+            logger.info(f"📝 Created multi-line overlay: {len(lines)} lines, {len(words)} words")
+            return multi_line_text
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to create multi-line text: {e}")
+            # Fallback to simple truncation
+            return text[:50].replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
 
 
 

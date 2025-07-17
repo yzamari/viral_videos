@@ -69,10 +69,10 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
             "platform": platform,
             "category": category,
             "duration": duration,
-            "style": style or "viral",
-            "tone": tone or "engaging",
+            "style": style,  # Don't override user's style choice
+            "tone": tone,    # Don't override user's tone choice
             "target_audience": target_audience or "general audience",
-            "visual_style": visual_style or "dynamic",
+            "visual_style": visual_style,  # Don't override user's visual style choice
             "use_subtitle_overlays": True,
             "frame_continuity": frame_continuity == "on" or (frame_continuity == "auto")
         }
@@ -97,11 +97,12 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
             platform=Platform(platform.lower()),
             category=VideoCategory(category_mapping.get(category, category)),
             duration=duration,
-            style=style or "viral",
-            tone=tone or "engaging",
+            style=style or "viral",  # Use user's style choice or default
+            tone=tone or "engaging",    # Use user's tone choice or default
             target_audience=target_audience or "general audience",
-            visual_style=visual_style or "dynamic",
-            mode=OrchestratorMode(mode.lower()) if mode else OrchestratorMode.ENHANCED
+            visual_style=visual_style or "dynamic",  # Use user's visual style choice or default
+            mode=OrchestratorMode(mode.lower()) if mode else OrchestratorMode.ENHANCED,
+            session_id=session_id  # Pass session_id to ensure consistent session management
         )
 
         # Generate video

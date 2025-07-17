@@ -7,7 +7,7 @@ import os
 import json
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from enum import Enum
 try:
@@ -91,19 +91,48 @@ class MultiAgentDiscussionSystem:
         # ENHANCED: Use session manager for proper file organization
         from ..utils.session_manager import session_manager
         self.session_manager = session_manager
+        
+        # Try to activate session in session manager if not already active
+        session_managed = False
+        if self.session_manager:
+            try:
+                # Check if session is already active
+                if self.session_manager.current_session:
+                    self.discussions_dir = self.session_manager.get_session_path("discussions")
+                    session_managed = True
+                    logger.info(f"🎭 Using active session manager for discussions")
+                else:
+                    # Session manager exists but no active session - discussions will use fallback
+                    logger.info(f"🎭 Session manager available but no active session - using fallback directory creation")
+            except Exception as e:
+                logger.warning(f"⚠️ Could not use session manager: {e}")
 
-        # Get discussions directory from session manager
-        if self.session_manager and self.session_manager.current_session:
-            self.discussions_dir = self.session_manager.get_session_path("discussions")
-        else:
+        # Get discussions directory from session manager or fallback
+        if not session_managed:
             # Fallback to manual path creation if session manager not available
             session_dir_name = session_id if session_id.startswith('session_') else f"session_{session_id}"
-            self.discussions_dir = os.path.join(
-                "outputs", session_dir_name, "agent_discussions")
+            
+            # Look for existing session directory in outputs
+            outputs_dir = "outputs"
+            session_pattern = os.path.join(outputs_dir, f"session_*{session_id.split('_')[-1] if '_' in session_id else session_id}*")
+            
+            import glob
+            existing_sessions = glob.glob(session_pattern)
+            if existing_sessions:
+                # Use the most recent existing session directory
+                existing_sessions.sort(key=os.path.getmtime, reverse=True)
+                session_dir = existing_sessions[0]
+                self.discussions_dir = os.path.join(session_dir, "discussions")
+                logger.info(f"🎭 Using existing session directory for discussions: {session_dir}")
+            else:
+                # Create new session directory
+                self.discussions_dir = os.path.join(outputs_dir, session_dir_name, "discussions")
+                logger.info(f"🎭 Creating new session directory for discussions: {session_dir_name}")
+            
             os.makedirs(self.discussions_dir, exist_ok=True)
         
         # Session management
-        self.session_managed = session_id is not None and self.session_manager and self.session_manager.current_session
+        self.session_managed = session_managed
 
         # Initialize monitoring
         self.monitoring_service = MonitoringService(session_id)
@@ -113,10 +142,11 @@ class MultiAgentDiscussionSystem:
             if self.session_managed:
                 session_dir = self.session_manager.get_session_path()
             else:
-                # Fallback for when session manager not available
-                session_dir = f"outputs/{session_id}" if session_id.startswith("session_") else f"outputs/session_{session_id}"
+                # Use the same logic as discussions directory
+                session_dir = os.path.dirname(self.discussions_dir)  # Get parent of discussions dir
 
             self.visualizer = DiscussionVisualizer(session_dir)
+            logger.info(f"🎭 Discussion visualizer initialized with session dir: {session_dir}")
         else:
             self.visualizer = None
 

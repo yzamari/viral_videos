@@ -3,10 +3,17 @@ Frame Continuity Decision Agent
 Analyzes video topics and makes intelligent decisions about frame continuity
 """
 
-import google.generativeai as genai
+try:
+    from google.generativeai.generative_models import GenerativeModel
+    genai_available = True
+except ImportError:
+    GenerativeModel = None
+    genai_available = False
+
 from typing import Dict, Any
 import logging
 from datetime import datetime
+from ..utils.json_fixer import create_json_fixer
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +26,14 @@ class ContinuityDecisionAgent:
     def __init__(self, api_key: str):
         """Initialize the Continuity Decision Agent"""
         self.api_key = api_key
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        if genai_available and GenerativeModel:
+            self.model = GenerativeModel('gemini-2.5-flash')
+        else:
+            logger.warning("Google Generative AI is not available. Continuity decisions will be limited.")
+            self.model = None
+        
+        # Initialize JSON fixer
+        self.json_fixer = create_json_fixer(api_key)
 
         # Agent personality and expertise
         self.agent_profile = {
@@ -129,6 +142,10 @@ Respond in JSON format:
 """
 
             # Get AI analysis
+            if not self.model:
+                logger.warning("⚠️ AI model not available, using fallback decision")
+                return self._make_fallback_decision(topic, category, platform, duration)
+
             response = self.model.generate_content(analysis_prompt)
 
             # Check if response is valid
@@ -136,46 +153,21 @@ Respond in JSON format:
                 logger.warning("⚠️ Empty response from VisualFlow API")
                 return self._make_fallback_decision(topic, category, platform, duration)
 
-            # Parse response
-            import json
-            import re
-            try:
-                # Extract JSON from response
-                response_text = response.text.strip()
-                
-                # Check if response is empty or invalid
-                if not response_text:
-                    logger.warning("⚠️ Empty response text from VisualFlow API")
-                    return self._make_fallback_decision(topic, category, platform, duration)
-                
-                # Remove control characters that cause JSON parsing issues
-                response_text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response_text)
-                
-                # Remove markdown formatting
-                if response_text.startswith('```json'):
-                    response_text = response_text[7:-3]
-                elif response_text.startswith('```'):
-                    response_text = response_text[3:-3]
-
-                # Additional JSON cleaning
-                response_text = response_text.strip()
-                response_text = response_text.replace('\\n', '\n')
-                response_text = response_text.replace('\\"', '"')
-                
-                # Try to extract JSON from response with better regex
-                json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response_text, re.DOTALL)
-                if json_match:
-                    json_text = json_match.group()
-                    
-                    # Additional cleaning for common JSON issues
-                    json_text = re.sub(r',\s*}', '}', json_text)  # Remove trailing commas
-                    json_text = re.sub(r',\s*]', ']', json_text)  # Remove trailing commas in arrays
-                    
-                    decision_data = json.loads(json_text)
-                else:
-                    logger.warning("⚠️ No valid JSON found in VisualFlow response")
-                    return self._make_fallback_decision(topic, category, platform, duration)
-
+            # Use centralized JSON fixer to handle parsing
+            expected_structure = {
+                "use_frame_continuity": bool,
+                "confidence": float,
+                "primary_reason": str,
+                "alternative_approach": str,
+                "engagement_impact": str,
+                "decision_factors": list,
+                "platform_optimization": str,
+                "visual_style_recommendation": str
+            }
+            
+            decision_data = self.json_fixer.fix_json(response.text, expected_structure)
+            
+            if decision_data:
                 # Add metadata
                 decision_data.update({
                     'agent_name': 'VisualFlow',
@@ -206,13 +198,9 @@ Respond in JSON format:
                 )
 
                 return decision_data
-
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse VisualFlow response: {e}")
-                # Fallback decision based on heuristics
-                return self._make_fallback_decision(
-                    topic, category, platform, duration
-                )
+            else:
+                logger.warning("⚠️ JSON fixer could not parse VisualFlow response")
+                return self._make_fallback_decision(topic, category, platform, duration)
 
         except Exception as e:
             logger.error(f"VisualFlow analysis failed: {e}")

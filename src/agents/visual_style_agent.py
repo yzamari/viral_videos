@@ -142,14 +142,30 @@ Return JSON:
             color_palette = 'natural'
             engagement_prediction = 'medium'
 
-        # Topic-based adjustments
-        if any(word in topic_lower for word in ['education', 'tutorial', 'how to', 'learn']):
+        # Topic-based adjustments with priority for serious content
+        serious_keywords = ['veteran', 'ptsd', 'military', 'health', 'mental', 'trauma', 'medical', 'war', 
+                           'soldier', 'depression', 'anxiety', 'therapy', 'serious', 'important', 'awareness']
+        educational_keywords = ['education', 'tutorial', 'how to', 'learn', 'fact', 'knowledge', 'science']
+        humor_keywords = ['funny', 'comedy', 'humor', 'meme', 'joke', 'laugh']
+        
+        if any(word in topic_lower for word in serious_keywords):
             primary_style = 'realistic'
             color_palette = 'natural'
-        elif any(word in topic_lower for word in ['funny', 'comedy', 'humor', 'meme']):
-            primary_style = 'cartoon'
-            color_palette = 'vibrant'
-            engagement_prediction = 'high'
+            engagement_prediction = 'high'  # Serious content can still be engaging
+            logger.info(f"🎭 Detected serious topic, using realistic style for: {topic}")
+        elif any(word in topic_lower for word in educational_keywords):
+            primary_style = 'realistic'
+            color_palette = 'natural'
+        elif any(word in topic_lower for word in humor_keywords):
+            # Only use cartoon for clearly humorous topics that aren't serious
+            if not any(word in topic_lower for word in serious_keywords):
+                primary_style = 'cartoon'
+                color_palette = 'vibrant'
+                engagement_prediction = 'high'
+            else:
+                primary_style = 'realistic'
+                color_palette = 'natural'
+                engagement_prediction = 'high'
 
         return {
             'primary_style': primary_style,

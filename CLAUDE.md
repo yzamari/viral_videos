@@ -1,0 +1,1 @@
+- Always find the root cause for issues and make sure there are not linter errors

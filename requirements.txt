@@ -31,7 +31,7 @@ numpy==1.26.4
 opencv-python==4.8.1.78
 gtts==2.5.0  # Google Text-to-Speech fallback
 imageio==2.33.0  # Video I/O support
-imageio-ffmpeg==0.4.9  # FFmpeg wrapper for video processing
+imageio-ffmpeg==0.6.0  # FFmpeg wrapper for video processing (updated to fix pkg_resources deprecation)
 
 # Web Scraping
 requests==2.31.0

@@ -9,12 +9,15 @@ from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
 
 try:
-    import google.generativeai as genai
+    from google.generativeai.generative_models import GenerativeModel
+    genai_available = True
 except ImportError:
-    genai = None
+    GenerativeModel = None
+    genai_available = False
 
 from ..utils.logging_config import get_logger
 from ..models.video_models import Language, Platform, VideoCategory
+from ..utils.json_fixer import create_json_fixer
 
 logger = get_logger(__name__)
 
@@ -41,11 +44,14 @@ class VoiceDirectorAgent:
 
     def __init__(self, api_key: str):
         self.api_key = api_key
-        if genai:
-            genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
+        if genai_available and GenerativeModel:
+            self.model = GenerativeModel('gemini-2.5-flash')
         else:
             logger.warning("Google Generative AI is not available. Voice selection will be limited.")
+            self.model = None
+        
+        # Initialize JSON fixer
+        self.json_fixer = create_json_fixer(api_key)
 
         # Voice mapping for different languages and personalities
         self.voice_database = {
@@ -372,72 +378,35 @@ class VoiceDirectorAgent:
             Return ONLY the JSON response.
             """
 
-            if not genai:
+            if not self.model:
                 raise ImportError("Google Generative AI is not available. Cannot generate voice analysis.")
 
             response = self.model.generate_content(analysis_prompt)
 
-            # Parse AI response with robust JSON handling
-            import json
-            import re
+            # Use centralized JSON fixer to handle parsing
+            expected_structure = {
+                "strategy": str,
+                "primary_personality": str,
+                "primary_gender": str,
+                "use_multiple_voices": bool,
+                "voice_changes_per_clip": bool,
+                "reasoning": str,
+                "clip_voice_plan": list
+            }
+            
+            analysis = self.json_fixer.fix_json(response.text, expected_structure)
+            
+            if analysis:
+                logger.info(f"🎭 AI Voice Strategy: {analysis.get('strategy', 'unknown')}")
+                logger.info(f"🎤 Primary Personality: {analysis.get('primary_personality', 'unknown')}")
+                logger.info(f"👥 Multiple Voices: {analysis.get('use_multiple_voices', False)}")
+                logger.info(f"🧠 AI Reasoning: {analysis.get('reasoning', 'No reasoning provided')[:100]}...")
 
-            try:
-                # Clean response text and remove control characters
-                response_text = response.text.strip()
-                
-                # Remove control characters that cause JSON parsing issues
-                response_text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response_text)
-                
-                # Remove markdown formatting
-                if response_text.startswith('```json'):
-                    response_text = response_text[7:-3]
-                elif response_text.startswith('```'):
-                    response_text = response_text[3:-3]
-                
-                # Additional JSON cleaning
-                response_text = response_text.strip()
-                response_text = response_text.replace('\\n', '\n')
-                response_text = response_text.replace('\\"', '"')
-                
-                # Fix template variables that might cause issues
-                response_text = response_text.replace('{platform.value if hasattr(platform, \'value\') else str(platform)}', platform.value if hasattr(platform, 'value') else str(platform))
-                response_text = response_text.replace('{duration_seconds}', str(duration_seconds))
-                response_text = response_text.replace('{language.value if hasattr(language, \'value\') else str(language)}', language.value if hasattr(language, 'value') else str(language))
-                
-                # Try to extract JSON from response with better regex
-                json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response_text, re.DOTALL)
-                if json_match:
-                    json_text = json_match.group()
-                    
-                    # Additional cleaning for common JSON issues
-                    json_text = re.sub(r',\s*}', '}', json_text)  # Remove trailing commas
-                    json_text = re.sub(r',\s*]', ']', json_text)  # Remove trailing commas in arrays
-                    
-                    # Fix any remaining template variables
-                    json_text = json_text.replace('{platform.value if hasattr(platform, \'value\') else str(platform)}', platform.value if hasattr(platform, 'value') else str(platform))
-                    json_text = json_text.replace('{duration_seconds}', str(duration_seconds))
-                    json_text = json_text.replace('{language.value if hasattr(language, \'value\') else str(language)}', language.value if hasattr(language, 'value') else str(language))
-                    
-                    analysis = json.loads(json_text)
-
-                    logger.info(f"🎭 AI Voice Strategy: {analysis.get('strategy', 'unknown')}")
-                    logger.info(f"🎤 Primary Personality: {analysis.get('primary_personality', 'unknown')}")
-                    logger.info(f"👥 Multiple Voices: {analysis.get('use_multiple_voices', False)}")
-                    logger.info(f"🧠 AI Reasoning: {analysis.get('reasoning', 'No reasoning provided')[:100]}...")
-
-                    # Convert to voice selections
-                    voice_config = self._convert_analysis_to_voices(analysis, language, num_clips)
-                else:
-                    logger.error("❌ No valid JSON found in AI response")
-                    logger.error(f"Raw response: {response_text[:500]}...")
-                    raise ValueError("No valid JSON found in response")
-                    
-            except (json.JSONDecodeError, ValueError) as e:
-                logger.error(f"❌ AI voice analysis failed: {e}")
-                logger.error(f"Raw response: {response.text[:500]}...")
+                # Convert to voice selections
+                voice_config = self._convert_analysis_to_voices(analysis, language, num_clips)
+            else:
+                logger.error("❌ JSON fixer could not parse AI response")
                 logger.info("🔄 Creating fallback voice configuration")
-                
-                # Create fallback configuration with proper parameters
                 voice_config = self._create_fallback_voice_config(topic, language, num_clips)
 
         except Exception as e:
