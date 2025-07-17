@@ -26,6 +26,7 @@ from ..generators.enhanced_script_processor import EnhancedScriptProcessor
 from ..agents.voice_director_agent import VoiceDirectorAgent
 from ..agents.overlay_positioning_agent import OverlayPositioningAgent
 from ..agents.visual_style_agent import VisualStyleAgent
+from ..generators.hashtag_generator import HashtagGenerator
 from ..utils.session_context import SessionContext, create_session_context
 
 logger = get_logger(__name__)
@@ -458,6 +459,7 @@ class VideoGenerator:
         # Initialize other clients
         self.image_client = GeminiImageClient(api_key, self.output_dir)
         self.tts_client = EnhancedMultilingualTTS(api_key)
+        self.hashtag_generator = HashtagGenerator(api_key)
         
         # Check available VEO models
         available_models = self.veo_factory.get_available_models()
@@ -1272,6 +1274,9 @@ class VideoGenerator:
             saved_path = session_context.save_final_video(final_video_path)
             logger.info(f"✅ Final video with subtitles created: {saved_path}")
             
+            # Step 7: Generate trending hashtags for the video
+            self._generate_and_save_hashtags(config, session_context, script_result)
+            
             # Clean up temp files
             for temp_file in [temp_video_path, video_with_subtitles, video_with_overlays, oriented_video_path, final_video_path]:
                 try:
@@ -1327,36 +1332,42 @@ class VideoGenerator:
             positioning_decision = self._get_positioning_decision(config, {'primary_style': 'dynamic'})
             is_dynamic = positioning_decision.get('positioning_strategy') == 'dynamic'
             
-            # Add hook text overlay with DYNAMIC positioning
+            # Add hook text overlay with DYNAMIC positioning and AI-driven styling
             if config.hook:
-                # Create short, multi-line hook text (4-5 words per line)
-                hook_text = self._create_short_multi_line_text(str(config.hook), max_words_per_line=4)
+                # Get AI-driven overlay styling
+                hook_style = self._get_ai_overlay_style(str(config.hook), "hook", config.target_platform, video_width, video_height)
+                
+                # Create smart multi-line hook text
+                hook_text = self._create_short_multi_line_text(str(config.hook), max_words_per_line=hook_style.get('words_per_line', 4))
                 
                 if is_dynamic:
-                    # DYNAMIC: Moving hook overlay with animation
+                    # DYNAMIC: Moving hook overlay with AI-styled animation
                     overlay_filters.append(
-                        f"drawtext=text='{hook_text}':fontcolor=0xFFD700:fontsize=32:font='Arial Black':box=1:boxcolor=0x000000@0.7:boxborderw=6:x='if(lt(t,1.5),(w-text_w)/2,if(lt(t,3),(w-text_w)/2-20*sin(2*PI*t),w-text_w-20))':y='60+10*sin(4*PI*t)':enable='between(t,0,3)'"
+                        f"drawtext=text='{hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x='if(lt(t,1.5),(w-text_w)/2,if(lt(t,3),(w-text_w)/2-20*sin(2*PI*t),w-text_w-20))':y='60+10*sin(4*PI*t)':enable='between(t,0,3)'"
                     )
                 else:
-                    # STATIC: Original behavior
+                    # STATIC: AI-styled static positioning
                     overlay_filters.append(
-                        f"drawtext=text='{hook_text}':fontcolor=0xFFD700:fontsize=28:font='Arial Black':box=1:boxcolor=0x000000@0.6:boxborderw=5:x=(w-text_w)/2:y=60:enable='between(t,0,3)'"
+                        f"drawtext=text='{hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x=(w-text_w)/2:y=60:enable='between(t,0,3)'"
                     )
             
-            # Add call-to-action overlay with DYNAMIC positioning
+            # Add call-to-action overlay with DYNAMIC positioning and AI-driven styling
             if config.call_to_action:
-                # Create short, multi-line CTA text (4-5 words per line)
-                cta_text = self._create_short_multi_line_text(str(config.call_to_action), max_words_per_line=4)
+                # Get AI-driven overlay styling for CTA
+                cta_style = self._get_ai_overlay_style(str(config.call_to_action), "cta", config.target_platform, video_width, video_height)
+                
+                # Create smart multi-line CTA text
+                cta_text = self._create_short_multi_line_text(str(config.call_to_action), max_words_per_line=cta_style.get('words_per_line', 4))
                 
                 if is_dynamic:
-                    # DYNAMIC: Sliding CTA with bounce effect
+                    # DYNAMIC: Sliding CTA with AI-styled bounce effect
                     overlay_filters.append(
-                        f"drawtext=text='{cta_text}':fontcolor=0x00FF00:fontsize=24:font='Arial Bold':box=1:boxcolor=0x000000@0.8:boxborderw=4:x='if(lt(t,{video_duration-3}),w+text_w,w-text_w-30-15*sin(8*PI*(t-{video_duration-3})))':y='120+5*cos(6*PI*t)':enable='between(t,{video_duration-3},{video_duration})'"
+                        f"drawtext=text='{cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x='if(lt(t,{video_duration-3}),w+text_w,w-text_w-30-15*sin(8*PI*(t-{video_duration-3})))':y='120+5*cos(6*PI*t)':enable='between(t,{video_duration-3},{video_duration})'"
                     )
                 else:
-                    # STATIC: Original behavior
+                    # STATIC: AI-styled static positioning
                     overlay_filters.append(
-                        f"drawtext=text='{cta_text}':fontcolor=0x00FF00:fontsize=20:font='Arial Bold':box=1:boxcolor=0x000000@0.7:boxborderw=3:x=w-text_w-30:y=120:enable='between(t,{video_duration-3},{video_duration})'"
+                        f"drawtext=text='{cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x=w-text_w-30:y=120:enable='between(t,{video_duration-3},{video_duration})'"
                     )
             
             # Apply overlays if any
@@ -2551,7 +2562,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
         return safe_prompt
 
     def _create_short_multi_line_text(self, text: str, max_words_per_line: int = 4) -> str:
-        """Create short, multi-line text for overlays (4-5 words per line)"""
+        """Create smart multi-line text for overlays with overflow prevention"""
         try:
             # Clean the text
             cleaned_text = text.replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
@@ -2559,18 +2570,25 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Split into words
             words = cleaned_text.split()
             
-            # Limit total words to prevent overly long overlays
-            max_total_words = 12  # Maximum 3 lines of 4 words each
-            if len(words) > max_total_words:
-                words = words[:max_total_words]
+            # Smart text wrapping with dynamic limits
+            max_lines = 4  # Allow up to 4 lines for better readability
+            optimal_words_per_line = max_words_per_line
             
-            # Create lines with max_words_per_line words each
+            # If text is too long, try to fit it in more lines with fewer words per line
+            if len(words) > max_lines * optimal_words_per_line:
+                # Calculate optimal distribution
+                total_words = min(len(words), max_lines * 6)  # Max 24 words total
+                optimal_words_per_line = max(3, total_words // max_lines)
+                words = words[:total_words]
+                logger.info(f"📝 Adjusting layout: {total_words} words in {max_lines} lines ({optimal_words_per_line} words/line)")
+            
+            # Create lines with smart word distribution
             lines = []
             current_line = []
             
             for word in words:
                 current_line.append(word)
-                if len(current_line) >= max_words_per_line:
+                if len(current_line) >= optimal_words_per_line:
                     lines.append(' '.join(current_line))
                     current_line = []
             
@@ -2581,7 +2599,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Join lines with newline character for FFmpeg
             multi_line_text = '\\N'.join(lines)
             
-            logger.info(f"📝 Created multi-line overlay: {len(lines)} lines, {len(words)} words")
+            logger.info(f"📝 Created smart multi-line overlay: {len(lines)} lines, {len(words)} words")
             return multi_line_text
             
         except Exception as e:
@@ -2618,6 +2636,185 @@ This is a placeholder file. In a full implementation, this would be a complete M
         except Exception as e:
             logger.warning(f"⚠️ Failed to format subtitle text: {e}")
             return text
+
+    def _get_ai_overlay_style(self, text: str, overlay_type: str, platform: Any, video_width: int, video_height: int) -> Dict[str, Any]:
+        """Get AI-driven overlay styling decisions based on text content and platform"""
+        try:
+            # Get AI styling from overlay positioning agent
+            if hasattr(self, 'overlay_positioning_agent') and self.overlay_positioning_agent:
+                # Request AI styling decision
+                style_prompt = f"""
+                Create optimal overlay styling for: "{text}"
+                Type: {overlay_type}
+                Platform: {platform}
+                Video dimensions: {video_width}x{video_height}
+                
+                Consider:
+                - Text length and readability
+                - Platform-specific preferences
+                - Video dimensions for optimal sizing
+                - Accessibility and contrast
+                
+                Return JSON with:
+                {{
+                    "font_family": "Arial-Bold|Impact|Helvetica-Bold",
+                    "font_size": 24-48,
+                    "color": "0xFFFFFF",
+                    "background_color": "0x000000",
+                    "background_opacity": 0.7,
+                    "stroke_width": 2,
+                    "words_per_line": 3-6
+                }}
+                """
+                
+                try:
+                    import google.generativeai as genai
+                    model = genai.GenerativeModel('gemini-2.5-flash')
+                    response = model.generate_content(style_prompt)
+                    
+                    import json
+                    import re
+                    json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+                    if json_match:
+                        ai_style = json.loads(json_match.group())
+                        logger.info(f"🎨 AI-styled overlay: {overlay_type} - {ai_style.get('font_family', 'Arial-Bold')} {ai_style.get('font_size', 32)}px")
+                        return ai_style
+                except Exception as e:
+                    logger.warning(f"⚠️ AI styling failed: {e}")
+            
+            # Fallback to smart default styling
+            return self._get_smart_default_style(text, overlay_type, platform, video_width, video_height)
+            
+        except Exception as e:
+            logger.error(f"❌ Overlay styling failed: {e}")
+            return self._get_smart_default_style(text, overlay_type, platform, video_width, video_height)
+
+    def _get_smart_default_style(self, text: str, overlay_type: str, platform: Any, video_width: int, video_height: int) -> Dict[str, Any]:
+        """Get smart default styling based on text characteristics and platform"""
+        try:
+            # Calculate text characteristics
+            text_length = len(text)
+            word_count = len(text.split())
+            
+            # Platform-specific base styles
+            platform_str = str(platform).lower()
+            
+            if 'tiktok' in platform_str:
+                base_style = {
+                    "font_family": "Arial-Bold",
+                    "font_size": max(32, min(48, int(video_width * 0.035))),  # Responsive sizing
+                    "color": "0xFFFFFF",
+                    "background_color": "0xFF6B6B",
+                    "background_opacity": 0.8,
+                    "stroke_width": 3,
+                    "words_per_line": 4
+                }
+            elif 'instagram' in platform_str:
+                base_style = {
+                    "font_family": "Helvetica-Bold",
+                    "font_size": max(28, min(40, int(video_width * 0.03))),
+                    "color": "0xFFFFFF",
+                    "background_color": "0x4ECDC4",
+                    "background_opacity": 0.7,
+                    "stroke_width": 2,
+                    "words_per_line": 5
+                }
+            elif 'youtube' in platform_str:
+                base_style = {
+                    "font_family": "Arial-Bold",
+                    "font_size": max(24, min(36, int(video_width * 0.025))),
+                    "color": "0xFFFFFF",
+                    "background_color": "0x000000",
+                    "background_opacity": 0.6,
+                    "stroke_width": 2,
+                    "words_per_line": 6
+                }
+            else:
+                base_style = {
+                    "font_family": "Arial-Bold",
+                    "font_size": max(28, min(42, int(video_width * 0.03))),
+                    "color": "0xFFFFFF",
+                    "background_color": "0x000000",
+                    "background_opacity": 0.7,
+                    "stroke_width": 2,
+                    "words_per_line": 4
+                }
+            
+            # Adjust for overlay type
+            if overlay_type == "hook":
+                base_style["color"] = "0xFFD700"  # Gold for hooks
+                base_style["font_size"] = int(base_style["font_size"] * 1.2)  # Larger for hooks
+            elif overlay_type == "cta":
+                base_style["color"] = "0x00FF00"  # Green for CTAs
+                base_style["background_color"] = "0x000000"
+                base_style["background_opacity"] = 0.8
+            
+            # Adjust for text length
+            if text_length > 50:
+                base_style["font_size"] = int(base_style["font_size"] * 0.9)  # Smaller for long text
+                base_style["words_per_line"] = max(3, base_style["words_per_line"] - 1)
+            elif text_length < 20:
+                base_style["font_size"] = int(base_style["font_size"] * 1.1)  # Larger for short text
+                base_style["words_per_line"] = min(6, base_style["words_per_line"] + 1)
+            
+            logger.info(f"🎨 Smart default style: {overlay_type} - {base_style['font_family']} {base_style['font_size']}px")
+            return base_style
+            
+        except Exception as e:
+            logger.error(f"❌ Smart default styling failed: {e}")
+            return {
+                "font_family": "Arial-Bold",
+                "font_size": 32,
+                "color": "0xFFFFFF",
+                "background_color": "0x000000",
+                "background_opacity": 0.7,
+                "stroke_width": 2,
+                "words_per_line": 4
+            }
+
+    def _generate_and_save_hashtags(self, config: GeneratedVideoConfig, session_context: SessionContext, script_result: Dict[str, Any]):
+        """Generate trending hashtags and save them to the session"""
+        try:
+            logger.info("🏷️ Generating trending hashtags for video")
+            
+            # Extract platform and category strings
+            platform_str = str(config.target_platform).lower().replace('platform.', '')
+            category_str = str(config.category).lower().replace('videocategory.', '')
+            
+            # Get script content
+            script_content = script_result.get('final_script', config.topic)
+            
+            # Generate hashtags
+            hashtag_data = self.hashtag_generator.generate_trending_hashtags(
+                topic=config.topic,
+                platform=platform_str,
+                category=category_str,
+                script_content=script_content,
+                num_hashtags=30
+            )
+            
+            # Save hashtags to session
+            self.hashtag_generator.save_hashtags_to_session(hashtag_data, session_context)
+            
+            logger.info(f"✅ Generated {len(hashtag_data.get('hashtags', []))} trending hashtags")
+            
+        except Exception as e:
+            logger.error(f"❌ Hashtag generation failed: {e}")
+            # Create minimal fallback hashtags
+            try:
+                fallback_hashtags = {
+                    'hashtags': [
+                        {'tag': f'#{config.topic.split()[0].lower()}', 'category': 'primary', 'estimated_reach': 'medium'},
+                        {'tag': f'#{platform_str}', 'category': 'platform', 'estimated_reach': 'high'},
+                        {'tag': '#viral', 'category': 'engagement', 'estimated_reach': 'high'},
+                        {'tag': '#trending', 'category': 'engagement', 'estimated_reach': 'high'}
+                    ],
+                    'strategy': {'platform_optimization': platform_str, 'total_hashtags': 4}
+                }
+                self.hashtag_generator.save_hashtags_to_session(fallback_hashtags, session_context)
+                logger.info("✅ Saved fallback hashtags")
+            except Exception as fallback_error:
+                logger.error(f"❌ Even fallback hashtags failed: {fallback_error}")
 
     def _trim_video_to_duration(self, video_path: str, target_duration: float, session_context: SessionContext) -> Optional[str]:
         """Trim video to the specified duration using FFmpeg"""
