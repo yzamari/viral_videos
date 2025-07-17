@@ -489,13 +489,20 @@ class VideoGenerator:
         
         from ..utils.session_manager import session_manager
         
-        # Create session for this generation
-        session_id = session_manager.create_session(
-            topic=config.topic,
-            platform=config.target_platform.value,
-            duration=config.duration_seconds,
-            category=config.category.value
-        )
+        # Create session for this generation OR use existing session from config
+        if hasattr(config, 'session_id') and config.session_id:
+            logger.info(f"🔄 Using existing session: {config.session_id}")
+            session_id = config.session_id
+            # Activate existing session instead of creating new one
+            session_manager.current_session = session_id
+        else:
+            logger.info("🆕 Creating new session")
+            session_id = session_manager.create_session(
+                topic=config.topic,
+                platform=config.target_platform.value,
+                duration=config.duration_seconds,
+                category=config.category.value
+            )
         
         # Create session context for this generation
         session_context = create_session_context(session_id)
@@ -586,7 +593,26 @@ class VideoGenerator:
                         style_decision, positioning_decision, last_voice_config
                     )
                 except Exception as e:
-                    logger.warning(f"⚠️ AI discussion generation failed: {e}")
+                    logger.error(f"❌ AI discussion generation failed: {e}")
+                    import traceback
+                    logger.error(f"❌ Full traceback: {traceback.format_exc()}")
+                    # Create fallback discussion files
+                    try:
+                        fallback_discussion = {
+                            "session_id": config.session_id,
+                            "topic": config.topic,
+                            "error": str(e),
+                            "status": "failed",
+                            "fallback": True
+                        }
+                        discussion_path = session_context.get_output_path("discussions", "ai_agent_discussion.json")
+                        os.makedirs(os.path.dirname(discussion_path), exist_ok=True)
+                        with open(discussion_path, 'w') as f:
+                            import json
+                            json.dump(fallback_discussion, f, indent=2)
+                        logger.info(f"💾 Fallback discussion saved: {discussion_path}")
+                    except Exception as fallback_error:
+                        logger.error(f"❌ Failed to save fallback discussion: {fallback_error}")
             
             logger.info(f"✅ Video generation completed in {generation_time:.1f}s")
             logger.info(f"📁 Output: {final_video_path}")
@@ -858,8 +884,15 @@ class VideoGenerator:
             num_clips = len(script_segments)
             logger.info(f"🎬 Using script segments: {num_clips} clips matching {num_clips} segments")
         
-        avg_duration = config.duration_seconds / num_clips
-        logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips ({avg_duration:.1f}s each)")
+        # Use actual script segment durations instead of average
+        if script_segments:
+            clip_durations = [segment.get('duration', config.duration_seconds / num_clips) for segment in script_segments]
+            logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips with segment-based durations")
+        else:
+            avg_duration = config.duration_seconds / num_clips
+            clip_durations = [avg_duration] * num_clips
+            logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips ({avg_duration:.1f}s each)")
+        
         last_frame_image = None
         
         # Get the best available VEO client using factory
@@ -1204,8 +1237,12 @@ class VideoGenerator:
                 session_context
             )
             
-            # Step 5: Add 1.5 second black screen fade out
-            final_video_path = self._add_fade_out_ending(oriented_video_path, session_context)
+            # Step 5: Add 1.5 second black screen fade out (OPTIONAL - only if duration allows)
+            if config.duration_seconds >= 15:  # Only add fade-out for longer videos
+                final_video_path = self._add_fade_out_ending(oriented_video_path, session_context)
+            else:
+                logger.info(f"🎬 Skipping fade-out for short video ({config.duration_seconds}s)")
+                final_video_path = oriented_video_path
             
             # Step 6: Save to session
             saved_path = session_context.save_final_video(final_video_path)
