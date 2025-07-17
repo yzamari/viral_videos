@@ -29,21 +29,40 @@ class SessionContext:
         if not self.session_manager.current_session:
             logger.warning(f"No active session found for {session_id}")
         
-        # Set session directory
-        self.session_dir = self._get_session_dir()
+        # Set session directory with proper error handling
+        try:
+            self.session_dir = self._get_session_dir()
+            if not self.session_dir:
+                raise ValueError("Session directory is None or empty")
+            logger.info(f"✅ Session context initialized for {session_id} at {self.session_dir}")
+        except Exception as e:
+            logger.error(f"Failed to initialize session directory: {e}")
+            # Set a fallback directory
+            self.session_dir = os.path.join("outputs", session_id)
+            os.makedirs(self.session_dir, exist_ok=True)
+            logger.info(f"Using fallback session directory: {self.session_dir}")
 
     def _get_session_dir(self) -> str:
-        """Get the session directory path"""
+        """Get the session directory path with proper error handling"""
         try:
-            if self.session_manager.current_session == self.session_id:
-                return self.session_manager.get_session_path()
-            else:
-                # For non-active sessions, construct path manually
+            if self.session_manager and hasattr(self.session_manager, 'current_session') and self.session_manager.current_session == self.session_id:
+                session_path = self.session_manager.get_session_path()
+                if session_path:
+                    return session_path
+            
+            # For non-active sessions or when session_manager is not available, construct path manually
+            if hasattr(self.session_manager, 'base_output_dir'):
                 return os.path.join(self.session_manager.base_output_dir, self.session_id)
+            else:
+                # Final fallback to outputs directory
+                return os.path.join("outputs", self.session_id)
+                
         except Exception as e:
             logger.error(f"Failed to get session directory: {e}")
             # Fallback to outputs directory
-            return os.path.join(self.session_manager.base_output_dir, self.session_id)
+            fallback_dir = os.path.join("outputs", self.session_id)
+            logger.info(f"Using fallback session directory: {fallback_dir}")
+            return fallback_dir
 
     def get_output_path(self, subdir: str, filename: str = "") -> str:
         """

@@ -7,7 +7,7 @@ import json
 import re
 import logging
 from typing import Dict, Any, Optional, Union
-from google.generativeai import GenerativeModel
+from google.generativeai.generative_models import GenerativeModel
 
 logger = logging.getLogger(__name__)
 
@@ -265,24 +265,29 @@ Return ONLY the fixed JSON, no explanations or markdown formatting.
     
     def _validate_structure_recursive(self, data: Any, expected: Any) -> bool:
         """Recursively validate JSON structure"""
-        if isinstance(expected, dict):
-            if not isinstance(data, dict):
-                return False
-            for key, expected_type in expected.items():
-                if key not in data:
+        try:
+            if isinstance(expected, dict):
+                if not isinstance(data, dict):
                     return False
-                if not self._validate_structure_recursive(data[key], expected_type):
+                for key, expected_type in expected.items():
+                    if key not in data:
+                        return False
+                    if not self._validate_structure_recursive(data[key], expected_type):
+                        return False
+            elif isinstance(expected, list):
+                if not isinstance(data, list):
                     return False
-        elif isinstance(expected, list):
-            if not isinstance(data, list):
-                return False
-            if data and not self._validate_structure_recursive(data[0], expected[0]):
-                return False
-        elif isinstance(expected, type):
-            if not isinstance(data, expected):
-                return False
-        
-        return True
+                if data and not self._validate_structure_recursive(data[0], expected[0]):
+                    return False
+            elif isinstance(expected, type):
+                # Handle type objects properly - check if data is instance of the type
+                if not isinstance(data, expected):
+                    return False
+            
+            return True
+        except Exception as e:
+            logger.error(f"JSON structure validation error: {e}")
+            return False
 
 
 def create_json_fixer(api_key: str) -> JSONFixer:

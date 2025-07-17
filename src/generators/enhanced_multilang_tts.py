@@ -89,6 +89,9 @@ class EnhancedMultilingualTTS:
 
         logger.info(f"🎤 Generating intelligent voice audio for {language.value}")
 
+        # CRITICAL FIX: Set target duration for speed adjustment
+        self._target_duration = duration_seconds
+
         try:
             # Get AI voice selection strategy
             voice_strategy = self.voice_director.analyze_content_and_select_voices(
@@ -121,11 +124,18 @@ class EnhancedMultilingualTTS:
                 if clip_index < len(voice_config["clip_voices"]):
                     clip_voices = [voice_config["clip_voices"][clip_index]]
                 else:
-                    logger.warning(f"⚠️ Clip index {clip_index} out of range, using fallback")
+                    logger.warning(f"⚠️ Clip index {clip_index} out of range (max: {len(voice_config['clip_voices'])-1}), using fallback")
+                    logger.info("🔄 Using basic fallback audio generation")
                     return [self._generate_fallback_audio(script, language)]
             else:
                 # Generate for all clips
                 clip_voices = voice_config["clip_voices"]
+                
+            # Ensure we have at least one voice configuration
+            if not clip_voices:
+                logger.warning("⚠️ No voice configurations available, using fallback")
+                logger.info("🔄 Using basic fallback audio generation")
+                return [self._generate_fallback_audio(script, language)]
 
             for i, clip_voice in enumerate(clip_voices):
                 try:
@@ -224,13 +234,30 @@ class EnhancedMultilingualTTS:
         voice_name: str,
         speed: float,
         pitch: float) -> Optional[str]:
-        """Generate audio using Google Cloud TTS"""
+        """Generate audio using Google Cloud TTS with duration control"""
 
         try:
             language_code = self.language_codes.get(language, "en-US")
 
             # Enhance text for better speech
             enhanced_script = self._enhance_text_for_language(script, language)
+
+            # CRITICAL FIX: Calculate optimal speed to match target duration
+            # Estimate base duration and adjust speed accordingly
+            estimated_words = len(enhanced_script.split())
+            base_speed = speed  # Start with requested speed
+            
+            # Adjust speed to match target duration if provided
+            if hasattr(self, '_target_duration') and self._target_duration:
+                # Estimate base duration (roughly 2.5 words per second at normal speed)
+                estimated_base_duration = estimated_words / 2.5
+                if estimated_base_duration > 0:
+                    # Calculate required speed to match target duration
+                    required_speed = estimated_base_duration / self._target_duration
+                    # Clamp speed between 0.25 and 4.0 (Google Cloud limits)
+                    adjusted_speed = max(0.25, min(4.0, required_speed))
+                    base_speed = adjusted_speed
+                    logger.info(f"🎵 Adjusted speed from {speed} to {adjusted_speed:.2f} to match target duration")
 
             # Determine if voice supports SSML
             if "Journey" in voice_name:
@@ -240,7 +267,7 @@ class EnhancedMultilingualTTS:
                 # Configure audio for Journey voices
                 audio_config = texttospeech.AudioConfig(
                     audio_encoding=texttospeech.AudioEncoding.MP3,
-                    speaking_rate=speed,
+                    speaking_rate=base_speed,
                     sample_rate_hertz=48000,
                     effects_profile_id=["headphone-class-device"]
                 )
@@ -253,7 +280,7 @@ class EnhancedMultilingualTTS:
                     # Studio voices don't support pitch attributes
                     ssml_text = f"""
                     <speak>
-                        <prosody rate="{speed}">
+                        <prosody rate="{base_speed}">
                             {enhanced_script}
                         </prosody>
                     </speak>
@@ -262,7 +289,7 @@ class EnhancedMultilingualTTS:
                     # Neural2/Wavenet/Standard voices support pitch
                     ssml_text = f"""
                     <speak>
-                        <prosody rate="{speed}" pitch="{pitch}st">
+                        <prosody rate="{base_speed}" pitch="{pitch}st">
                             {enhanced_script}
                         </prosody>
                     </speak>
@@ -419,8 +446,19 @@ class EnhancedMultilingualTTS:
 
                     # Validate the generated audio
                     if os.path.exists(audio_path) and os.path.getsize(audio_path) > 1000:
-                        logger.info(f"✅ Fallback audio generated: {audio_path}")
-                        return audio_path
+                        # Additional validation: Check audio duration
+                        if hasattr(self, '_target_duration'):
+                            audio_duration = self._get_audio_duration(audio_path)
+                            if audio_duration and audio_duration > 0:
+                                logger.info(f"✅ Fallback audio generated: {audio_path} (duration: {audio_duration:.2f}s)")
+                                return audio_path
+                            else:
+                                logger.warning(f"⚠️ Generated audio has invalid duration on attempt {attempt + 1}")
+                                if os.path.exists(audio_path):
+                                    os.remove(audio_path)
+                        else:
+                            logger.info(f"✅ Fallback audio generated: {audio_path}")
+                            return audio_path
                     else:
                         logger.warning(f"⚠️ Generated audio too small on attempt {attempt + 1}")
                         if os.path.exists(audio_path):
@@ -467,6 +505,30 @@ class EnhancedMultilingualTTS:
         except Exception as e:
             logger.error(f"❌ Silent audio creation failed: {e}")
             raise Exception("All audio generation methods failed")
+
+    def _get_audio_duration(self, audio_path: str) -> Optional[float]:
+        """Get audio duration using ffprobe"""
+        try:
+            import subprocess
+            import json
+            
+            cmd = [
+                'ffprobe', '-v', 'quiet', '-show_format', '-show_streams',
+                '-of', 'json', audio_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                probe_data = json.loads(result.stdout)
+                if 'format' in probe_data and 'duration' in probe_data['format']:
+                    return float(probe_data['format']['duration'])
+            
+            return None
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to get audio duration: {e}")
+            return None
 
     def get_voice_strategy_summary(self,
                                  topic: str,

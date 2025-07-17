@@ -432,6 +432,21 @@ class VoiceDirectorAgent:
             # Create plan based on strategy
             clip_plan = self._create_clip_voice_plan(analysis, num_clips)
 
+        # Ensure we have enough clips - if not, extend the plan
+        while len(clip_plan) < num_clips:
+            # Use the last clip info for additional clips
+            last_clip = clip_plan[-1] if clip_plan else {
+                "personality": analysis["primary_personality"],
+                "gender": analysis["primary_gender"],
+                "emotion": "neutral"
+            }
+            clip_plan.append({
+                "clip_index": len(clip_plan),
+                "personality": last_clip["personality"],
+                "gender": last_clip["gender"],
+                "emotion": last_clip.get("emotion", "neutral")
+            })
+
         # Convert each clip plan to actual voice selection
         for i in range(num_clips):
             if i < len(clip_plan):

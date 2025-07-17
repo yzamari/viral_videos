@@ -96,67 +96,58 @@ class MultiAgentDiscussionSystem:
         session_managed = False
         if self.session_manager:
             try:
-                # Check if session is already active
-                if self.session_manager.current_session:
+                # Check if session is already active and matches our session_id
+                if (self.session_manager.current_session and 
+                    self.session_manager.current_session == self.session_id):
+                    # Perfect! Use the session manager
                     self.discussions_dir = self.session_manager.get_session_path("discussions")
                     session_managed = True
-                    logger.info(f"🎭 Using active session manager for discussions")
+                    logger.info(f"✅ Session-managed discussions: {self.session_id}")
                 else:
-                    # Session manager exists but no active session - discussions will use fallback
-                    logger.info(f"🎭 Session manager available but no active session - using fallback directory creation")
+                    # Different session active or no active session
+                    # Try to activate our session in the session manager
+                    try:
+                        # Check if our session exists
+                        session_info = self.session_manager.get_session_info(self.session_id)
+                        # Activate our session
+                        self.session_manager.current_session = self.session_id
+                        self.discussions_dir = self.session_manager.get_session_path("discussions")
+                        session_managed = True
+                        logger.info(f"✅ Activated session-managed discussions: {self.session_id}")
+                    except ValueError:
+                        # Our session doesn't exist in session manager, use manual path
+                        logger.info(f"🎭 Session not in manager, using manual path: {self.session_id}")
+                        self.discussions_dir = os.path.join("outputs", self.session_id, "discussions")
+                        os.makedirs(self.discussions_dir, exist_ok=True)
             except Exception as e:
                 logger.warning(f"⚠️ Could not use session manager: {e}")
-
-        # Get discussions directory from session manager or fallback
-        if not session_managed:
-            # Fallback to manual path creation if session manager not available
-            session_dir_name = session_id if session_id.startswith('session_') else f"session_{session_id}"
-            
-            # Look for existing session directory in outputs
-            outputs_dir = "outputs"
-            session_pattern = os.path.join(outputs_dir, f"session_*{session_id.split('_')[-1] if '_' in session_id else session_id}*")
-            
-            import glob
-            existing_sessions = glob.glob(session_pattern)
-            if existing_sessions:
-                # Use the most recent existing session directory
-                existing_sessions.sort(key=os.path.getmtime, reverse=True)
-                session_dir = existing_sessions[0]
-                self.discussions_dir = os.path.join(session_dir, "discussions")
-                logger.info(f"🎭 Using existing session directory for discussions: {session_dir}")
-            else:
-                # Create new session directory
-                self.discussions_dir = os.path.join(outputs_dir, session_dir_name, "discussions")
-                logger.info(f"🎭 Creating new session directory for discussions: {session_dir_name}")
-            
+                # Fallback to manual path creation
+                self.discussions_dir = os.path.join("outputs", self.session_id, "discussions")
+                os.makedirs(self.discussions_dir, exist_ok=True)
+        else:
+            # No session manager available, use manual path
+            self.discussions_dir = os.path.join("outputs", self.session_id, "discussions")
             os.makedirs(self.discussions_dir, exist_ok=True)
-        
-        # Session management
-        self.session_managed = session_managed
 
-        # Initialize monitoring
-        self.monitoring_service = MonitoringService(session_id)
-
-        # Initialize visualizer
-        if enable_visualization:
-            if self.session_managed:
-                session_dir = self.session_manager.get_session_path()
-            else:
-                # Use the same logic as discussions directory
-                session_dir = os.path.dirname(self.discussions_dir)  # Get parent of discussions dir
-
-            self.visualizer = DiscussionVisualizer(session_dir)
-            logger.info(f"🎭 Discussion visualizer initialized with session dir: {session_dir}")
+        # Initialize discussion visualizer with correct session directory
+        if self.enable_visualization:
+            self.visualizer = DiscussionVisualizer(
+                session_dir=os.path.join("outputs", self.session_id)
+            )
+            logger.info(f"🎭 Discussion visualizer initialized with session dir: outputs/{self.session_id}")
         else:
             self.visualizer = None
 
-        # Agent personalities and expertise
+        # Initialize monitoring service
+        self.monitoring_service = MonitoringService(self.session_id)
+
+        # Initialize agent personalities
         self.agent_personalities = self._initialize_agent_personalities()
 
-        logger.info("🎭 Multi-agent discussion system initialized")
-        logger.info(f"   Session: {session_id}")
+        logger.info(f"🎭 Multi-agent discussion system initialized")
+        logger.info(f"   Session: {self.session_id}")
         logger.info(f"   Agents available: {len(self.agent_personalities)}")
-        logger.info(f"   Session-managed discussions: {'✅' if hasattr(self.session_manager, 'current_session') and self.session_manager.current_session else '❌'}")
+        logger.info(f"   Session-managed discussions: {'✅' if session_managed else '❌'}")
 
     def _initialize_agent_personalities(self) -> Dict[AgentRole, Dict[str, Any]]:
         """Initialize agent personalities and expertise"""

@@ -489,7 +489,7 @@ class VideoGenerator:
         
         from ..utils.session_manager import session_manager
         
-        # Create session for this generation OR use existing session from config
+        # Use existing session from config OR create new session
         if hasattr(config, 'session_id') and config.session_id:
             logger.info(f"🔄 Using existing session: {config.session_id}")
             session_id = config.session_id
@@ -511,7 +511,7 @@ class VideoGenerator:
         logger.info(f"   Duration: {config.duration_seconds}s")
         logger.info(f"   Platform: {config.target_platform.value}")
         logger.info(f"   Session: {session_id}")
-        logger.info(f"   Session Directory: {session_context.get_output_path('')}")
+        logger.info(f"   Session Directory: {session_context.session_dir}/")
         
         session_manager.log_generation_step("video_generation_started", "in_progress", {
             "topic": config.topic,
@@ -649,7 +649,7 @@ class VideoGenerator:
             generation_time = time.time() - start_time
             logger.error(f"❌ Video generation failed after {generation_time:.1f}s: {e}")
             
-            # Return error result
+            # Return error result instead of raising exception
             result = VideoGenerationResult(
                 file_path="",
                 file_size_mb=0.0,
@@ -661,8 +661,14 @@ class VideoGenerator:
                 error_message=str(e)
             )
             
-            # For backward compatibility, raise exception
-            raise Exception(f"Video generation failed: {e}")
+            # Log the error to session
+            session_manager.log_error(
+                "video_generation_failed",
+                str(e),
+                {"generation_time": generation_time, "config": str(config)}
+            )
+            
+            return result
     
     def generate_video_config(self, analyses: List[Any], platform: Platform, 
                             category: VideoCategory, topic: Optional[str] = None,
@@ -1037,7 +1043,20 @@ class VideoGenerator:
         try:
             from ..models.video_models import Language
             
-            # Get AI voice selection strategy first
+            # Get script segments from script_result
+            script_segments = script_result.get('segments', [])
+            if not script_segments:
+                logger.warning("⚠️ No script segments found, using full script as single segment")
+                script_segments = [{
+                    'text': script_result.get('final_script', config.topic),
+                    'duration': config.duration_seconds
+                }]
+            
+            # CRITICAL FIX: Generate voice configuration for the actual number of segments
+            num_segments = len(script_segments)
+            logger.info(f"🎤 Generating voice configuration for {num_segments} segments")
+            
+            # Get AI voice selection strategy for the correct number of segments
             voice_strategy = self.voice_director.analyze_content_and_select_voices(
                 topic=config.topic,
                 script=script_result.get('final_script', config.topic),
@@ -1045,7 +1064,7 @@ class VideoGenerator:
                 platform=config.target_platform,
                 category=config.category,
                 duration_seconds=config.duration_seconds,
-                num_clips=4
+                num_clips=num_segments  # Use actual number of segments, not fixed number
             )
             
             # Store voice_config for AI discussions
@@ -1064,15 +1083,6 @@ class VideoGenerator:
                     "reasoning": "Fallback voice configuration - voice_strategy was None"
                 }
             
-            # Get script segments from script_result
-            script_segments = script_result.get('segments', [])
-            if not script_segments:
-                logger.warning("⚠️ No script segments found, using full script as single segment")
-                script_segments = [{
-                    'text': script_result.get('final_script', config.topic),
-                    'duration': config.duration_seconds
-                }]
-            
             # Generate audio files for each segment
             temp_audio_files = []
             for i, segment in enumerate(script_segments):
@@ -1081,6 +1091,11 @@ class VideoGenerator:
                 
                 logger.info(f"🎵 Generating audio for segment {i+1}/{len(script_segments)}: '{segment_text[:50]}...' (duration: {segment_duration:.1f}s)")
                 
+                # CRITICAL FIX: Ensure segment duration doesn't exceed target
+                if segment_duration > config.duration_seconds / len(script_segments):
+                    segment_duration = config.duration_seconds / len(script_segments)
+                    logger.info(f"🎵 Adjusted segment {i+1} duration to {segment_duration:.1f}s to fit target")
+                
                 # Generate audio for this specific segment
                 segment_audio_files = self.tts_client.generate_intelligent_voice_audio(
                     script=segment_text,
@@ -1088,9 +1103,9 @@ class VideoGenerator:
                     topic=config.topic,
                     platform=config.target_platform,
                     category=config.category,
-                    duration_seconds=segment_duration,
-                    num_clips=1,  # One audio file per segment
-                    clip_index=i
+                    duration_seconds=int(segment_duration),  # Convert to int
+                    num_clips=num_segments,  # Use actual number of segments
+                    clip_index=i  # This should now be within range
                 )
                 
                 if segment_audio_files and len(segment_audio_files) > 0:
@@ -1223,6 +1238,15 @@ class VideoGenerator:
             if not temp_video_path or not os.path.exists(temp_video_path):
                 logger.error("❌ Failed to create base video")
                 return ""
+            
+            # CRITICAL FIX: Enforce target duration by trimming the video
+            logger.info(f"⏱️ Enforcing target duration: {config.duration_seconds}s")
+            trimmed_video_path = self._trim_video_to_duration(temp_video_path, config.duration_seconds, session_context)
+            if trimmed_video_path:
+                temp_video_path = trimmed_video_path
+                logger.info(f"✅ Video trimmed to {config.duration_seconds}s")
+            else:
+                logger.warning("⚠️ Failed to trim video, using original")
             
             # Step 2: Add subtitle overlays
             video_with_subtitles = self._add_subtitle_overlays(temp_video_path, config, session_context)
@@ -1438,8 +1462,25 @@ class VideoGenerator:
                         align='center'
                     )
                     
-                    # Position and time the text clip
+                    # Create semi-transparent background for the text
+                    from moviepy.editor import ColorClip
+                    
+                    # Get text clip dimensions
+                    text_width, text_height = text_clip.size
+                    
+                    # Create a semi-transparent black background
+                    background = ColorClip(
+                        size=(text_width + 20, text_height + 10),  # Add padding around text
+                        color=(0, 0, 0),  # Black background
+                        duration=end_time - start_time
+                    ).set_opacity(0.6)  # Semi-transparent
+                    
+                    # Position background and text
+                    background = background.set_position(('center', y_pos - 5)).set_start(start_time)
                     text_clip = text_clip.set_position(('center', y_pos)).set_start(start_time).set_duration(end_time - start_time)
+                    
+                    # Add both background and text to clips
+                    text_clips.append(background)
                     text_clips.append(text_clip)
                     
                     logger.info(f"📝 Added subtitle: '{text[:30]}...' at {start_time:.1f}-{end_time:.1f}s")
@@ -1589,8 +1630,11 @@ class VideoGenerator:
                 elif current_time + duration > video_duration:
                     duration = remaining_time * 0.8  # Leave some buffer
                 
+                # Format text for MoviePy subtitle display with proper line breaks
+                formatted_text = self._format_subtitle_text(sentence.strip())
+                
                 segments.append({
-                    'text': sentence.strip(),
+                    'text': formatted_text,
                     'start': current_time,
                     'end': current_time + duration,
                     'word_count': words,
@@ -2544,6 +2588,67 @@ This is a placeholder file. In a full implementation, this would be a complete M
             logger.warning(f"⚠️ Failed to create multi-line text: {e}")
             # Fallback to simple truncation
             return text[:50].replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
+
+    def _format_subtitle_text(self, text: str, max_words_per_line: int = 6) -> str:
+        """Format text for MoviePy subtitle display with proper line breaks"""
+        try:
+            # Split text into words
+            words = text.split()
+            
+            if len(words) <= max_words_per_line:
+                return text
+            
+            # Create lines with max_words_per_line words each
+            lines = []
+            current_line = []
+            
+            for word in words:
+                current_line.append(word)
+                if len(current_line) >= max_words_per_line:
+                    lines.append(' '.join(current_line))
+                    current_line = []
+            
+            # Add remaining words to the last line
+            if current_line:
+                lines.append(' '.join(current_line))
+            
+            # Join lines with newline character for MoviePy
+            return '\n'.join(lines)
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to format subtitle text: {e}")
+            return text
+
+    def _trim_video_to_duration(self, video_path: str, target_duration: float, session_context: SessionContext) -> Optional[str]:
+        """Trim video to the specified duration using FFmpeg"""
+        try:
+            import subprocess
+            
+            # Create temporary output path
+            temp_output_path = session_context.get_output_path("temp_files", "trimmed_video.mp4")
+            os.makedirs(os.path.dirname(temp_output_path), exist_ok=True)
+            
+            # Use ffmpeg to trim the video
+            cmd = [
+                'ffmpeg', '-y',
+                '-i', video_path,
+                '-t', str(target_duration),
+                '-c', 'copy',
+                temp_output_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0 and os.path.exists(temp_output_path):
+                logger.info(f"✅ Video trimmed to {target_duration}s")
+                return temp_output_path
+            else:
+                logger.error(f"❌ Failed to trim video: {result.stderr}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Error trimming video: {e}")
+            return None
 
 
 

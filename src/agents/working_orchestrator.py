@@ -124,6 +124,79 @@ class WorkingOrchestrator:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             self.session_id = f"session_{timestamp}"
         
+        # CRITICAL FIX: Activate session in session manager
+        from ..utils.session_manager import session_manager
+        if session_manager:
+            # If session_id was provided, we need to activate it in session manager
+            if session_id:
+                # Check if session exists, if not create it
+                try:
+                    session_info = session_manager.get_session_info(session_id)
+                    logger.info(f"🔄 Activating existing session: {session_id}")
+                    # Properly activate the session with all required data
+                    session_manager.current_session = session_id
+                    # Reconstruct session data from the session info
+                    session_manager.session_data = {
+                        "session_id": session_id,
+                        "session_dir": session_info.get("session_dir", os.path.join("outputs", session_id)),
+                        "subdirs": {
+                            "logs": os.path.join("outputs", session_id, "logs"),
+                            "scripts": os.path.join("outputs", session_id, "scripts"),
+                            "audio": os.path.join("outputs", session_id, "audio"),
+                            "video_clips": os.path.join("outputs", session_id, "video_clips"),
+                            "images": os.path.join("outputs", session_id, "images"),
+                            "ai_agents": os.path.join("outputs", session_id, "ai_agents"),
+                            "discussions": os.path.join("outputs", session_id, "discussions"),
+                            "final_output": os.path.join("outputs", session_id, "final_output"),
+                            "metadata": os.path.join("outputs", session_id, "metadata"),
+                            "comprehensive_logs": os.path.join("outputs", session_id, "comprehensive_logs"),
+                            "temp_files": os.path.join("outputs", session_id, "temp_files"),
+                            "fallback_content": os.path.join("outputs", session_id, "fallback_content"),
+                            "debug_info": os.path.join("outputs", session_id, "debug_info"),
+                            "performance_metrics": os.path.join("outputs", session_id, "performance_metrics"),
+                            "user_configs": os.path.join("outputs", session_id, "user_configs"),
+                            "error_logs": os.path.join("outputs", session_id, "error_logs"),
+                            "success_metrics": os.path.join("outputs", session_id, "success_metrics"),
+                            "decisions": os.path.join("outputs", session_id, "decisions"),
+                            "subtitles": os.path.join("outputs", session_id, "subtitles"),
+                            "overlays": os.path.join("outputs", session_id, "overlays")
+                        },
+                        "ai_decisions": session_info.get("ai_decisions", {}),
+                        "generation_log": session_info.get("generation_steps", []),
+                        "errors": session_info.get("errors", []),
+                        "warnings": session_info.get("warnings", []),
+                        "tracked_files": {},
+                        "file_counts": {subdir: 0 for subdir in [
+                            "logs", "scripts", "audio", "video_clips", "images", "ai_agents", 
+                            "discussions", "final_output", "metadata", "comprehensive_logs",
+                            "temp_files", "fallback_content", "debug_info", "performance_metrics",
+                            "user_configs", "error_logs", "success_metrics", "decisions", 
+                            "subtitles", "overlays"
+                        ]},
+                        "total_files_created": session_info.get("total_files", 0),
+                        "comprehensive_logger": None
+                    }
+                except ValueError:
+                    # Session doesn't exist, create it
+                    logger.info(f"🆕 Creating new session in session manager: {session_id}")
+                    session_manager.create_session(
+                        topic=mission,
+                        platform=platform.value,
+                        duration=duration,
+                        category=category.value
+                    )
+            else:
+                # Create new session in session manager
+                logger.info(f"🆕 Creating new session in session manager: {self.session_id}")
+                session_manager.create_session(
+                    topic=mission,
+                    platform=platform.value,
+                    duration=duration,
+                    category=category.value
+                )
+        else:
+            logger.warning("⚠️ Session manager not available")
+        
         # Initialize AI clients
         self.multilang_generator = IntegratedMultilingualGenerator(api_key, "outputs")
 
@@ -661,30 +734,39 @@ class WorkingOrchestrator:
         """Generate enhanced video with all AI decisions"""
         logger.info("🎬 Generating enhanced video with AI decisions...")
 
-        # Create video generator with VEO3 disabled
-        video_generator = VideoGenerator(
-            api_key=self.api_key,
-            use_real_veo2=config.get('force_generation') != 'force_image_gen',
-            use_vertex_ai=True,
-            prefer_veo3=False  # CRITICAL: Disable VEO3 as requested
-        )
+        try:
+            # Create video generator with VEO3 disabled
+            video_generator = VideoGenerator(
+                api_key=self.api_key,
+                use_real_veo2=config.get('force_generation') != 'force_image_gen',
+                use_vertex_ai=True,
+                prefer_veo3=False  # CRITICAL: Disable VEO3 as requested
+            )
 
-        # Create enhanced video config
-        video_config = self._create_enhanced_video_config(
-            script_data,
-            decisions,
-            config)
+            # Create enhanced video config
+            video_config = self._create_enhanced_video_config(
+                script_data,
+                decisions,
+                config)
 
-        # Generate video with AI-enhanced config
-        video_result = video_generator.generate_video(video_config)
+            # Generate video with AI-enhanced config
+            video_result = video_generator.generate_video(video_config)
 
-        # Ensure we return a string path
-        if isinstance(video_result, str):
-            return video_result
-        elif hasattr(video_result, 'file_path'):
-            return video_result.file_path
-        else:
-            return str(video_result)
+            # Handle different return types properly
+            if isinstance(video_result, str):
+                logger.info(f"✅ Video generation completed: {video_result}")
+                return video_result
+            elif hasattr(video_result, 'file_path'):
+                logger.info(f"✅ Video generation completed: {video_result.file_path}")
+                return video_result.file_path
+            else:
+                logger.warning(f"⚠️ Unexpected video result type: {type(video_result)}")
+                return str(video_result)
+                
+        except Exception as e:
+            logger.error(f"❌ enhanced video generation failed: {e}")
+            # Re-raise the exception to be handled by the calling method
+            raise
 
     def _create_enhanced_video_config(self, script_data: Dict[str, Any],
                                       decisions: Dict[str, Any], config: Dict[str, Any]) -> GeneratedVideoConfig:
@@ -706,7 +788,7 @@ class WorkingOrchestrator:
             category=self.category,
             duration_seconds=self.duration,
             topic=self.mission,
-            session_id=self.session_id,
+            session_id=self.session_id,  # CRITICAL: Pass the session ID from orchestrator
             style=self.style,
             tone=self.tone,
             target_audience=self.target_audience,
@@ -729,9 +811,7 @@ class WorkingOrchestrator:
             ai_decide_orientation=config.get('ai_decide_orientation', True)
         )
         
-        # Platform and category info are already available via enhanced_config.target_platform and enhanced_config.category
-        # No need to assign additional attributes
-        
+        logger.info(f"✅ Enhanced video config created with session_id: {self.session_id}")
         return enhanced_config
     
     def _extract_hook_from_script(self, script_data: Dict[str, Any]) -> str:
