@@ -2,6 +2,7 @@
 python-dotenv==1.0.0
 pydantic==2.5.2
 pydantic-settings==2.1.0
+click==8.1.8  # CLI framework
 
 # FastAPI Backend
 fastapi==0.108.0
@@ -34,7 +35,7 @@ imageio==2.33.0  # Video I/O support
 imageio-ffmpeg==0.6.0  # FFmpeg wrapper for video processing (updated to fix pkg_resources deprecation)
 
 # Web Scraping
-requests==2.31.0
+requests==2.32.4
 beautifulsoup4==4.12.2
 selenium==4.16.0
 webdriver-manager==4.0.1
@@ -48,6 +49,13 @@ scikit-learn==1.3.2
 
 # API & Scheduling
 celery==5.3.4
+
+# Social Media Integration
+keyring==25.6.0  # Secure credential storage
+cryptography==45.0.5  # Encryption for sensitive data
+instagrapi==2.0.0  # Instagram API (alternative implementation)
+pycryptodomex==3.18.0  # Required by instagrapi
+# instagram-private-api==1.6.0  # Alternative Instagram API
 redis==5.0.1
 schedule==1.2.0
 
@@ -63,11 +71,10 @@ pytest-xdist==3.5.0  # Parallel test execution
 tqdm==4.66.1
 colorlog==6.8.0
 tenacity==8.2.3  # For retry logic
-click==8.1.7  # CLI framework 
 
 # Additional dependencies for enhanced functionality
 pathlib2>=2.3.0  # Path handling compatibility
-json5>=0.9.0  # Enhanced JSON parsing
+json5>=0.9.0  # Enhanced JSON parsing for AI responses
 
 # Web UI Dependencies (React frontend + FastAPI backend)
 plotly==5.17.0  # Interactive charts and graphs

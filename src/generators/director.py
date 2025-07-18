@@ -84,7 +84,7 @@ class Director:
             main_content = self._structure_content(
                 topic, duration, patterns, current_context
             )
-            cta = self._create_cta(platform, category)
+            cta = self._create_cta(platform, category, topic)
 
             # Assemble complete script
             script = self._assemble_script(
@@ -135,31 +135,63 @@ class Director:
 
     def _create_hook(self, topic: str, style: str, platform: Platform,
                    patterns: Dict[str, Any], news_context: str) -> Dict[str, Any]:
-        """Create engaging hook based on topic analysis"""
+        """Create engaging hook that accomplishes the mission"""
         try:
-            # Use AI to generate topic-specific hook
-            prompt = f"""
-            Create an engaging opening hook for a {platform.value} video about: "{topic}"
-
-            CRITICAL: The hook MUST be about "{topic}" and nothing else.
+            # Determine if this is a mission (action-oriented) or topic (informational)
+            is_mission = any(action_word in topic.lower() for action_word in [
+                'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
+                'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
+                'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
+            ])
             
-            Style: {style}
-            Success patterns: {patterns.get('hooks', [])}
+            if is_mission:
+                # Mission-focused prompt: create content that accomplishes the objective
+                prompt = f"""
+                Create an engaging opening hook for a {platform.value} video with the MISSION: "{topic}"
 
-            {news_context}
+                CRITICAL: This is a MISSION to accomplish, not just a topic to discuss. Your hook must START the process of accomplishing: "{topic}"
+                
+                Style: {style}
+                Success patterns: {patterns.get('hooks', [])}
 
-            Requirements:
-            1. Start with an attention-grabbing question or statement about "{topic}"
-            2. Be specific to the actual topic: "{topic}"
-            3. Create curiosity about "{topic}" without revealing everything
-            4. Use emotional triggers appropriate for "{topic}"
-            5. Keep it under 15 words for quick consumption
-            6. NEVER use generic phrases like "This is amazing"
-            7. Make it topic-specific and authentic to "{topic}"
-            8. DO NOT discuss unrelated topics like houseplants, remote work, etc.
+                {news_context}
 
-            Return ONLY the hook text about "{topic}", no explanations.
-            """
+                Mission-Accomplishment Requirements:
+                1. The hook must DIRECTLY begin working toward the mission: "{topic}"
+                2. Use persuasive/action language that moves the audience toward the goal
+                3. Don't just talk ABOUT the mission - start DOING the mission
+                4. Create an emotional or logical entry point that serves the mission objective
+                5. Keep it under 15 words but make every word count toward the mission
+                6. Begin the persuasion/teaching/demonstration immediately
+                7. Hook them while simultaneously starting to accomplish the mission
+
+                Example approach: If mission is "convince X that Y is bad" - start by showing consequence/impact, not by saying "let's talk about convincing"
+
+                Return ONLY the hook text that begins accomplishing the mission, no explanations.
+                """
+            else:
+                # Topic-focused prompt for informational content
+                prompt = f"""
+                Create an engaging opening hook for a {platform.value} video about: "{topic}"
+
+                CRITICAL: The hook MUST be about "{topic}" and nothing else.
+                
+                Style: {style}
+                Success patterns: {patterns.get('hooks', [])}
+
+                {news_context}
+
+                Requirements:
+                1. Start with an attention-grabbing question or statement about "{topic}"
+                2. Be specific to the actual topic: "{topic}"
+                3. Create curiosity about "{topic}" without revealing everything
+                4. Use emotional triggers appropriate for "{topic}"
+                5. Keep it under 15 words for quick consumption
+                6. NEVER use generic phrases like "This is amazing"
+                7. Make it topic-specific and authentic to "{topic}"
+
+                Return ONLY the hook text about "{topic}", no explanations.
+                """
 
             response = self.model.generate_content(prompt)
             hook_text = response.text.strip()
@@ -205,41 +237,84 @@ class Director:
 
     def _structure_content(self, topic: str, duration: int,
                          patterns: Dict, news_context: str) -> List[Dict[str, Any]]:
-        """Structure main content based on duration and patterns"""
+        """Structure main content to accomplish the mission within the duration"""
         try:
             # Calculate content segments
             num_segments = self._calculate_segments(duration)
 
-            prompt = f"""
-            Create {num_segments} content segments for a {duration}-second video about: "{topic}"
+            # Determine if this is a mission (action-oriented) or topic (informational)
+            is_mission = any(action_word in topic.lower() for action_word in [
+                'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
+                'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
+                'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
+            ])
 
-            CRITICAL: ALL segments MUST be about "{topic}" and nothing else.
+            if is_mission:
+                # Mission-focused prompt: create content that accomplishes the objective
+                prompt = f"""
+                Create {num_segments} content segments for a {duration}-second video to ACCOMPLISH THE MISSION: "{topic}"
 
-            Successful content patterns:
-            - Themes: {patterns.get('themes', [])}
-            - Pacing: Fast cuts every 3-5 seconds
-            - Engagement triggers: {patterns.get('success_factors', [])}
+                CRITICAL: This is NOT about discussing the topic - this is about ACCOMPLISHING the mission "{topic}" within {duration} seconds.
 
-            {news_context}
+                Mission Strategy:
+                - Duration: {duration} seconds total - make EVERY second count toward the mission
+                - Segments: {num_segments} strategic segments that build toward mission completion
+                - Pacing: {patterns.get('pacing', 'fast')} to maximize persuasive impact
+                - Success patterns: {patterns.get('success_factors', [])}
 
-            Each segment should:
-            1. Deliver value or entertainment about "{topic}"
-            2. Build on previous segment about "{topic}"
-            3. Maintain viewer attention with "{topic}" content
-            4. Include ONLY spoken dialogue content about "{topic}"
-            5. DO NOT discuss unrelated topics like houseplants, remote work, etc.
+                {news_context}
 
-            CRITICAL: Return ONLY spoken words about "{topic}". NO visual descriptions, camera directions, or
-                    stage instructions.
+                Mission-Accomplishment Requirements:
+                1. Each segment must DIRECTLY advance the mission "{topic}"
+                2. Use proven persuasion techniques: evidence, emotion, logic, consequences
+                3. Build a strategic argument/case that accomplishes the mission
+                4. Each segment should move the audience closer to the desired outcome
+                5. Include ONLY spoken dialogue that serves the mission objective
+                6. No meta-discussion - dive straight into accomplishing the mission
+                7. Make the content compelling and actionable within the time limit
 
-            Return JSON array:
-            [
-                {{
-                    "text": "ONLY words to be spoken aloud about {topic}",
-                    "duration": seconds
-                }}
-            ]
-            """
+                Strategic Approach Examples:
+                - If mission is "convince X that Y is bad": Show consequences, provide evidence, emotional impact
+                - If mission is "teach X how to Y": Provide clear steps, benefits, actionable guidance
+                - If mission is "prove X": Present evidence, data, logical arguments
+
+                Return JSON array with strategic mission-accomplishing content:
+                [
+                    {{
+                        "text": "ONLY words to be spoken that advance the mission: {topic}",
+                        "duration": seconds,
+                        "mission_purpose": "How this segment advances the mission"
+                    }}
+                ]
+                """
+            else:
+                # Topic-focused prompt for informational content
+                prompt = f"""
+                Create {num_segments} content segments for a {duration}-second video about: "{topic}"
+
+                CRITICAL: ALL segments MUST be about "{topic}" and nothing else.
+
+                Successful content patterns:
+                - Themes: {patterns.get('themes', [])}
+                - Pacing: Fast cuts every 3-5 seconds
+                - Engagement triggers: {patterns.get('success_factors', [])}
+
+                {news_context}
+
+                Each segment should:
+                1. Deliver value or entertainment about "{topic}"
+                2. Build on previous segment about "{topic}"
+                3. Maintain viewer attention with "{topic}" content
+                4. Include ONLY spoken dialogue content about "{topic}"
+
+                Return JSON array:
+                [
+                    {{
+                        "text": "ONLY words to be spoken aloud about {topic}",
+                        "duration": seconds
+                    }}
+                ]
+                """
 
             response = self.model.generate_content(prompt)
             segments = self._extract_json(response.text)
@@ -271,33 +346,68 @@ class Director:
     def _create_cta(
         self,
         platform: Platform,
-        category: VideoCategory) -> Dict[str, str]:
-        """Create platform-optimized call-to-action"""
-        cta_templates = {
-            Platform.YOUTUBE: {
-                "text": "Subscribe for more {category} content!",
-                "visual": "Subscribe button animation",
-                "action": "subscribe"
-            },
-            Platform.TIKTOK: {
-                "text": "Follow for part 2! 👀",
-                "visual": "Follow button highlight",
-                "action": "follow"
-            },
-            Platform.INSTAGRAM: {
-                "text": "Save this for later! ❤️",
-                "visual": "Heart animation",
-                "action": "save"
-            },
-            Platform.FACEBOOK: {
-                "text": "Share if you found this helpful!",
-                "visual": "Share button",
-                "action": "share"
+        category: VideoCategory,
+        topic: str = None) -> Dict[str, str]:
+        """Create platform-optimized call-to-action that reinforces the mission"""
+        
+        # Determine if this is a mission (action-oriented) or topic (informational)
+        is_mission = topic and any(action_word in topic.lower() for action_word in [
+            'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
+            'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
+            'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
+        ])
+        
+        if is_mission:
+            # Mission-focused CTAs that reinforce the mission objective
+            mission_cta_templates = {
+                Platform.YOUTUBE: {
+                    "text": "Share this message - every voice matters!",
+                    "visual": "Share button animation",
+                    "action": "share"
+                },
+                Platform.TIKTOK: {
+                    "text": "Spread the word! 🗣️",
+                    "visual": "Share button highlight", 
+                    "action": "share"
+                },
+                Platform.INSTAGRAM: {
+                    "text": "Share this important message! 📢",
+                    "visual": "Share animation",
+                    "action": "share"
+                },
+                Platform.FACEBOOK: {
+                    "text": "Share if you believe this matters!",
+                    "visual": "Share button",
+                    "action": "share"
+                }
             }
-        }
-
-        cta = cta_templates.get(platform, cta_templates[Platform.YOUTUBE])
-        cta['text'] = cta['text'].format(category=category.value.lower())
+            cta = mission_cta_templates.get(platform, mission_cta_templates[Platform.YOUTUBE])
+        else:
+            # Standard content CTAs
+            cta_templates = {
+                Platform.YOUTUBE: {
+                    "text": "Subscribe for more {category} content!",
+                    "visual": "Subscribe button animation",
+                    "action": "subscribe"
+                },
+                Platform.TIKTOK: {
+                    "text": "Follow for part 2! 👀",
+                    "visual": "Follow button highlight",
+                    "action": "follow"
+                },
+                Platform.INSTAGRAM: {
+                    "text": "Save this for later! ❤️",
+                    "visual": "Heart animation",
+                    "action": "save"
+                },
+                Platform.FACEBOOK: {
+                    "text": "Share if you found this helpful!",
+                    "visual": "Share button",
+                    "action": "share"
+                }
+            }
+            cta = cta_templates.get(platform, cta_templates[Platform.YOUTUBE])
+            cta['text'] = cta['text'].format(category=category.value.lower())
 
         return cta
 

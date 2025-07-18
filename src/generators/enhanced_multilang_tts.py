@@ -84,7 +84,8 @@ class EnhancedMultilingualTTS:
                                        category: Any,
                                        duration_seconds: int,
                                        num_clips: int,
-                                       clip_index: Optional[int] = None) -> List[str]:
+                                       clip_index: Optional[int] = None,
+                                       cheap_mode: bool = False) -> List[str]:
         """Generate audio with AI-selected voices for optimal content delivery"""
 
         logger.info(f"🎤 Generating intelligent voice audio for {language.value}")
@@ -93,6 +94,11 @@ class EnhancedMultilingualTTS:
         self._target_duration = duration_seconds
 
         try:
+            # In cheap mode, skip expensive AI voice selection
+            if cheap_mode:
+                logger.info("💰 Cheap mode: Using basic gTTS for audio generation")
+                return [self._generate_enhanced_gtts_audio(script, language, "neutral")]
+            
             # Get AI voice selection strategy
             voice_strategy = self.voice_director.analyze_content_and_select_voices(
                 topic=topic,
@@ -253,11 +259,22 @@ class EnhancedMultilingualTTS:
                 estimated_base_duration = estimated_words / 2.5
                 if estimated_base_duration > 0:
                     # Calculate required speed to match target duration
+                    # If we need to fit more content in less time, speed up (>1.0)
+                    # If we need to fit less content in more time, slow down (<1.0)
                     required_speed = estimated_base_duration / self._target_duration
-                    # Clamp speed between 0.25 and 4.0 (Google Cloud limits)
-                    adjusted_speed = max(0.25, min(4.0, required_speed))
+                    
+                    # But we want to avoid speaking too fast - cap at reasonable speed
+                    # For better user experience, limit max speed to 1.5x normal
+                    max_allowed_speed = 1.5
+                    min_allowed_speed = 0.7  # Don't go too slow either
+                    
+                    adjusted_speed = max(min_allowed_speed, min(max_allowed_speed, required_speed))
                     base_speed = adjusted_speed
-                    logger.info(f"🎵 Adjusted speed from {speed} to {adjusted_speed:.2f} to match target duration")
+                    logger.info(f"🎵 Adjusted speed from {speed} to {adjusted_speed:.2f} to match target duration ({self._target_duration}s)")
+                    
+                    # If we would need to speak too fast, warn about content length
+                    if required_speed > max_allowed_speed:
+                        logger.warning(f"⚠️ Content requires {required_speed:.2f}x speed, capped at {max_allowed_speed}x. Consider shortening script.")
 
             # Determine if voice supports SSML
             if "Journey" in voice_name:

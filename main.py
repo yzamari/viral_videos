@@ -17,6 +17,7 @@ from src.generators.veo_client_factory import VeoClientFactory
 from src.utils.auto_auth_handler import AutoAuthHandler
 from src.utils.gcloud_auth_tester import test_gcloud_authentication
 from src.utils.logging_config import get_logger
+from src.social.cli_integration import add_social_commands, auto_post_if_enabled
 
 logger = get_logger(__name__)
 
@@ -101,6 +102,9 @@ def test_auth():
 @click.option('--tone', help='Content tone (e.g., "engaging", "professional", "humorous")')
 @click.option('--visual-style', help='Visual style (e.g., "dynamic", "minimalist", "professional")')
 @click.option('--mode', type=click.Choice(['simple', 'enhanced', 'advanced', 'professional']), default='enhanced', help='Orchestrator mode (simple=3 agents, enhanced=7 agents, advanced=15 agents, professional=19 agents)')
+@click.option('--auto-post', is_flag=True, help='Automatically post to configured social media platforms')
+@click.option('--cheap/--no-cheap', default=True, help='Enable basic cheap mode (default: enabled)')
+@click.option('--cheap-mode', type=click.Choice(['full', 'audio', 'video']), default='full', help='Cheap mode level: full=text+gTTS, audio=gTTS only, video=fallback only (default: full)')
 def generate(**kwargs):
     """🎬 Generate viral video with optimized AI system"""
     try:
@@ -116,7 +120,7 @@ def generate(**kwargs):
         from src.workflows.generate_viral_video import main as generate_main
         
         # Convert click options to the format expected by the workflow
-        generate_main(
+        session_path = generate_main(
             mission=kwargs['mission'],
             category=kwargs.get('category', 'Comedy'),
             platform=kwargs.get('platform', 'tiktok'),
@@ -132,8 +136,15 @@ def generate(**kwargs):
             style=kwargs.get('style'),
             tone=kwargs.get('tone'),
             visual_style=kwargs.get('visual_style'),
-            mode=kwargs.get('mode', 'enhanced')
+            mode=kwargs.get('mode', 'enhanced'),
+            cheap_mode=kwargs.get('cheap', True),
+            cheap_mode_level=kwargs.get('cheap_mode', 'full')
         )
+        
+        # Auto-post if requested
+        if kwargs.get('auto_post', False) and session_path:
+            logger.info("📱 Auto-posting to social media...")
+            auto_post_if_enabled(session_path)
     
     except KeyboardInterrupt:
         print("\n🛑 Generation cancelled by user")
@@ -143,6 +154,9 @@ def generate(**kwargs):
         traceback.print_exc()
         sys.exit(1)
     
+
+# Add social media commands
+add_social_commands(cli)
 
 if __name__ == '__main__':
     cli() 

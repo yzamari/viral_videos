@@ -30,7 +30,7 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
          session_id: Optional[str] = None, frame_continuity: str = "auto",
          target_audience: Optional[str] = None, style: Optional[str] = None,
          tone: Optional[str] = None, visual_style: Optional[str] = None,
-         mode: str = "enhanced", **kwargs):
+         mode: str = "enhanced", cheap_mode: bool = True, cheap_mode_level: str = "full", **kwargs):
     """
     Main video generation workflow
 
@@ -61,6 +61,13 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
     logger.info(f"🎭 Mode: {mode} ({_get_agent_count(mode)} agents with discussions)")
     logger.info(f"🎬 Frame Continuity: {_get_frame_continuity_emoji(frame_continuity)} {frame_continuity.title()}")
     logger.info(f"🤖 AI System: 🎯 {discussions.title()} ({_get_agent_count(mode)} agents with discussions, best viral content)")
+    
+    # Cost-saving mode information
+    if cheap_mode:
+        logger.info("💰 CHEAP MODE: Enabled (saves costs - no VEO, basic TTS, minimal AI)")
+        logger.info("💡 Use --no-cheap to disable and use premium features")
+    else:
+        logger.info("💎 PREMIUM MODE: Using VEO video generation and premium voices")
 
     try:
         # Create config dictionary for orchestrator
@@ -74,7 +81,8 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
             "target_audience": target_audience or "general audience",
             "visual_style": visual_style,  # Don't override user's visual style choice
             "use_subtitle_overlays": True,
-            "frame_continuity": frame_continuity == "on" or (frame_continuity == "auto")
+            "frame_continuity": frame_continuity == "on" or (frame_continuity == "auto"),
+            "cheap_mode": cheap_mode
         }
 
         # Map CLI category to VideoCategory enum
@@ -90,6 +98,16 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
         if not api_key:
             raise RuntimeError('GOOGLE_API_KEY environment variable is not set. Please set it before running video generation.')
 
+        # Apply cost-saving optimizations in cheap mode
+        if cheap_mode:
+            # Force fallback mode to avoid VEO costs
+            fallback_only = True
+            # Use simpler discussion mode to save API calls
+            discussions = "off" if discussions == "enhanced" else discussions
+            # Use simple mode with fewer agents
+            mode = "simple"
+            logger.info("💰 Applied cheap mode optimizations: fallback_only=True, discussions=off, mode=simple")
+        
         # Initialize working orchestrator
         orchestrator = WorkingOrchestrator(
             api_key=api_key,
@@ -102,7 +120,9 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
             target_audience=target_audience or "general audience",
             visual_style=visual_style or "dynamic",  # Use user's visual style choice or default
             mode=OrchestratorMode(mode.lower()) if mode else OrchestratorMode.ENHANCED,
-            session_id=session_id  # Pass session_id to ensure consistent session management
+            session_id=session_id,  # Pass session_id to ensure consistent session management
+            cheap_mode=cheap_mode,  # Pass cheap_mode to orchestrator
+            cheap_mode_level=cheap_mode_level  # Pass granular cheap mode level
         )
 
         # Generate video

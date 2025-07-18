@@ -168,6 +168,20 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 if json_match:
                     response_text = json_match.group()
                 
+                # Fix common JSON syntax issues
+                # Remove trailing commas before closing brackets/braces
+                response_text = re.sub(r',\s*}', '}', response_text)
+                response_text = re.sub(r',\s*]', ']', response_text)
+                
+                # Try to fix incomplete JSON by adding closing braces if missing
+                brace_count = response_text.count('{') - response_text.count('}')
+                if brace_count > 0:
+                    response_text += '}' * brace_count
+                
+                bracket_count = response_text.count('[') - response_text.count(']')
+                if bracket_count > 0:
+                    response_text += ']' * bracket_count
+                
                 result = json.loads(response_text)
                 
                 # Validate duration matching if target was specified
@@ -196,8 +210,25 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse AI response: {e}")
-                logger.error(f"Raw response: {response_text[:500]}...")
-                return self._create_fallback_result(script_content, language, target_duration)
+                logger.error(f"Raw response: {response_text[:1000]}...")
+                logger.error(f"Error at position: {e.pos}")
+                logger.error(f"Error context: {response_text[max(0, e.pos-50):e.pos+50]}")
+                
+                # Try alternative JSON parsing approaches
+                try:
+                    # Try to use json5 for more lenient parsing
+                    import json5
+                    result = json5.loads(response_text)
+                    logger.info("✅ Successfully parsed with json5")
+                except (ImportError, Exception) as json5_error:
+                    logger.error(f"json5 parsing also failed: {json5_error}")
+                    # Fall back to manual parsing for key fields
+                    result = self._manual_parse_response(response_text, script_content, language, target_duration)
+                    if result:
+                        logger.info("✅ Successfully parsed manually")
+                    else:
+                        logger.error("Manual parsing failed, using fallback")
+                        return self._create_fallback_result(script_content, language, target_duration)
                 
         except Exception as e:
             logger.error(f"Script processing failed: {e}")
@@ -267,6 +298,65 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
             logger.error(f"Script reprocessing failed: {e}")
             return self._create_fallback_result(script_content, language, target_duration)
     
+    def _manual_parse_response(self, response_text: str, script_content: str, language, target_duration: float = None) -> Dict[str, Any]:
+        """Manually parse response when JSON parsing fails"""
+        try:
+            # Handle both string and enum inputs for language
+            if isinstance(language, str):
+                language_value = language
+            else:
+                language_value = language.value if hasattr(language, 'value') else str(language)
+            
+            # Try to extract key fields using regex
+            import re
+            
+            # Extract optimized_script
+            script_match = re.search(r'"optimized_script":\s*"([^"]*)"', response_text)
+            if script_match:
+                optimized_script = script_match.group(1)
+            else:
+                # Try multiline pattern
+                script_match = re.search(r'"optimized_script":\s*"([^"]*(?:\\.[^"]*)*)"', response_text, re.DOTALL)
+                if script_match:
+                    optimized_script = script_match.group(1).replace('\\"', '"')
+                else:
+                    optimized_script = script_content
+            
+            # Calculate basic metrics
+            words = optimized_script.split()
+            word_count = len(words)
+            estimated_duration = word_count / 3.0
+            
+            # If target duration specified, trim to fit
+            if target_duration and estimated_duration > target_duration:
+                target_words = int(target_duration * 3)
+                optimized_script = ' '.join(words[:target_words])
+                word_count = target_words
+                estimated_duration = target_duration
+            
+            return {
+                "optimized_script": optimized_script,
+                "final_script": optimized_script,
+                "segments": [{
+                    "text": optimized_script,
+                    "duration": estimated_duration,
+                    "word_count": word_count,
+                    "voice_suggestion": "storyteller"
+                }],
+                "total_estimated_duration": estimated_duration,
+                "total_word_count": word_count,
+                "optimization_notes": "Manual parsing applied due to JSON error",
+                "duration_match": "manual",
+                "tts_optimizations": ["Manual parsing recovery"],
+                "language": language_value,
+                "processing_timestamp": datetime.now().isoformat(),
+                "target_duration": target_duration
+            }
+            
+        except Exception as e:
+            logger.error(f"Manual parsing failed: {e}")
+            return None
+
     def _create_fallback_result(self, script_content: str, language, target_duration: float = None) -> Dict[str, Any]:
         """Create fallback result when AI processing fails"""
         

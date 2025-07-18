@@ -63,7 +63,8 @@ class SessionManager:
             "success_metrics",         # Success tracking metrics
             "decisions",               # AI decision logs
             "subtitles",               # Subtitle files (SRT, VTT)
-            "overlays"                 # Text overlays and hooks
+            "overlays",                # Text overlays and hooks
+            "hashtags"                 # Generated hashtags
         ]
 
         for subdir in subdirs:

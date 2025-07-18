@@ -161,6 +161,8 @@ class GeneratedVideoConfig:
     fallback_only: bool = False
     use_image_fallback: bool = True
     images_per_second: int = 2
+    cheap_mode: bool = False  # Enable cost-saving mode
+    cheap_mode_level: str = "full"  # Granular cheap mode: full, audio, video
 
     def __post_init__(self):
         if self.main_content is None:

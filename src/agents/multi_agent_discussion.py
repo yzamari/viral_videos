@@ -547,17 +547,78 @@ class MultiAgentDiscussionSystem:
                 serializable_context[key] = str(value)
 
         # Extract the mission/topic from context for emphasis
-        mission = serializable_context.get('mission', 'Unknown Mission')
+        mission_or_topic = serializable_context.get('topic', serializable_context.get('mission', 'Unknown'))
         platform = serializable_context.get('platform', 'Unknown Platform')
         duration = serializable_context.get('duration', 'Unknown Duration')
+        
+        # Determine if this is a mission (action-oriented) or topic (informational)
+        is_mission = any(action_word in str(mission_or_topic).lower() for action_word in [
+            'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
+            'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
+            'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
+        ])
 
-        return f"""
+        if is_mission:
+            # Mission-focused prompt
+            return f"""
 You are {agent_info['name']}, an AI agent with the following characteristics:
 PERSONALITY: {agent_info['personality']}
 EXPERTISE: {', '.join(agent_info['expertise'])}
 DECISION STYLE: {agent_info['decision_style']}
 
-🎯 VIDEO MISSION: "{mission}"
+🎯 MISSION TO ACCOMPLISH: "{mission_or_topic}"
+📱 PLATFORM: {platform}
+⏱️ DURATION: {duration} seconds
+
+DISCUSSION TOPIC: {topic.title}
+DESCRIPTION: {topic.description}
+
+FULL CONTEXT: {json.dumps(serializable_context, indent=2)}
+
+REQUIRED DECISIONS: {', '.join(topic.required_decisions)}
+
+DISCUSSION ROUND: {round_num}
+
+PREVIOUS DISCUSSION:
+{discussion_context}
+
+🚨 MISSION-CRITICAL INSTRUCTIONS:
+- This is a MISSION to accomplish: "{mission_or_topic}"
+- Your goal is to determine HOW to accomplish this mission within {duration} seconds
+- Think strategically about persuasion, evidence, emotional impact, and effectiveness
+- Focus on ACCOMPLISHING the mission, not just discussing it
+- Consider what content will actually achieve the desired outcome
+- Every second of the video must advance the mission objective
+- Do NOT create generic content - create mission-accomplishing content
+
+Your task is to contribute expertise on how to strategically ACCOMPLISH the mission "{mission_or_topic}" through video content.
+
+Please respond in the following JSON format:
+{{
+    "message": "Your strategic approach to accomplish '{mission_or_topic}' (2-3 sentences)",
+    "reasoning": "Why this approach will effectively accomplish '{mission_or_topic}' (1-2 sentences)",
+    "suggestions": ["Specific tactical suggestion to accomplish '{mission_or_topic}'", "Another mission-accomplishing tactic"],
+    "concerns": ["Risk or challenge in accomplishing '{mission_or_topic}' if any"],
+    "vote": "agree/disagree/neutral"
+}}
+
+Focus specifically on:
+1. How to strategically accomplish "{mission_or_topic}" using {platform} in {duration}s
+2. Persuasion/teaching techniques that will achieve the mission objective
+3. Content that will effectively change minds/behaviors toward the mission goal
+4. Evidence, emotions, or logical arguments needed to accomplish "{mission_or_topic}"
+
+Be strategic and mission-focused about ACCOMPLISHING: "{mission_or_topic}"
+"""
+        else:
+            # Topic-focused prompt (original behavior)
+            return f"""
+You are {agent_info['name']}, an AI agent with the following characteristics:
+PERSONALITY: {agent_info['personality']}
+EXPERTISE: {', '.join(agent_info['expertise'])}
+DECISION STYLE: {agent_info['decision_style']}
+
+🎯 VIDEO TOPIC: "{mission_or_topic}"
 📱 PLATFORM: {platform}
 ⏱️ DURATION: {duration} seconds
 
@@ -574,30 +635,30 @@ PREVIOUS DISCUSSION:
 {discussion_context}
 
 🚨 CRITICAL INSTRUCTIONS:
-- You MUST discuss the specific mission: "{mission}"
+- You MUST discuss the specific topic: "{mission_or_topic}"
 - Focus on how to create the best video for this exact topic
 - Consider the platform ({platform}) and duration ({duration}s) requirements
-- Provide specific, actionable advice for THIS mission only
-- Do NOT discuss generic topics or unrelated business scenarios
+- Provide specific, actionable advice for THIS topic only
+- Do NOT discuss generic topics or unrelated scenarios
 
-Your task is to contribute to this discussion by providing your expert perspective on how to create the best possible video for the mission "{mission}".
+Your task is to contribute to this discussion by providing your expert perspective on how to create the best possible video for the topic "{mission_or_topic}".
 
 Please respond in the following JSON format:
 {{
-    "message": "Your main contribution about creating a video for '{mission}' (2-3 sentences)",
-    "reasoning": "Your reasoning for this approach to '{mission}' (1-2 sentences)",
-    "suggestions": ["Specific suggestion for '{mission}' video", "Another '{mission}' suggestion"],
-    "concerns": ["Concern about '{mission}' video if any"],
+    "message": "Your main contribution about creating a video for '{mission_or_topic}' (2-3 sentences)",
+    "reasoning": "Your reasoning for this approach to '{mission_or_topic}' (1-2 sentences)",
+    "suggestions": ["Specific suggestion for '{mission_or_topic}' video", "Another '{mission_or_topic}' suggestion"],
+    "concerns": ["Concern about '{mission_or_topic}' video if any"],
     "vote": "agree/disagree/neutral"
 }}
 
 Focus specifically on:
-1. How to make "{mission}" engaging for {platform}
-2. Best practices for {duration}-second videos about "{mission}"
-3. Viral potential of "{mission}" content
-4. Technical considerations for "{mission}" video production
+1. How to make "{mission_or_topic}" engaging for {platform}
+2. Best practices for {duration}-second videos about "{mission_or_topic}"
+3. Viral potential of "{mission_or_topic}" content
+4. Technical considerations for "{mission_or_topic}" video production
 
-Be concise but insightful about THIS SPECIFIC MISSION: "{mission}"
+Be concise but insightful about THIS SPECIFIC TOPIC: "{mission_or_topic}"
 """
 
     def _parse_agent_response(self, response_text: str,
@@ -889,21 +950,45 @@ class VideoGenerationTopics:
     def script_optimization(context: Dict[str, Any]) -> DiscussionTopic:
         # Get the actual user topic from context
         user_topic = context.get('topic', 'Unknown Topic')
+        
+        # Determine if this is a mission (action-oriented) or topic (informational)
+        is_mission = any(action_word in user_topic.lower() for action_word in [
+            'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
+            'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
+            'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
+        ])
 
-        return DiscussionTopic(
-            topic_id="script_optimization",
-            title=f"Script Content and Structure Optimization for '{user_topic}'",
-            description=(f"Determine the optimal script structure, content, and style for '{user_topic}' "
-                         "with maximum viral potential"),
-            context=context,
-            required_decisions=[
-                "script_length_and_pacing",
-                "hook_strategy",
-                "content_structure",
-                "call_to_action_placement",
-                "viral_elements_integration"],
-            max_rounds=8,
-            min_consensus=0.6)
+        if is_mission:
+            return DiscussionTopic(
+                topic_id="mission_accomplishment",
+                title=f"Mission Accomplishment Strategy: '{user_topic}'",
+                description=(f"Determine the optimal strategic approach to ACCOMPLISH the mission: '{user_topic}' "
+                           f"within {context.get('duration', 'unknown')} seconds with maximum effectiveness"),
+                context=context,
+                required_decisions=[
+                    "mission_accomplishment_strategy",
+                    "persuasion_technique_selection",
+                    "evidence_and_argument_structure", 
+                    "emotional_vs_logical_approach",
+                    "target_audience_adaptation",
+                    "call_to_action_for_mission_reinforcement"],
+                max_rounds=8,
+                min_consensus=0.6)
+        else:
+            return DiscussionTopic(
+                topic_id="script_optimization",
+                title=f"Script Content and Structure Optimization for '{user_topic}'",
+                description=(f"Determine the optimal script structure, content, and style for '{user_topic}' "
+                            "with maximum viral potential"),
+                context=context,
+                required_decisions=[
+                    "script_length_and_pacing",
+                    "hook_strategy",
+                    "content_structure",
+                    "call_to_action_placement",
+                    "viral_elements_integration"],
+                max_rounds=8,
+                min_consensus=0.6)
 
     @staticmethod
     def visual_strategy(context: Dict[str, Any]) -> DiscussionTopic:

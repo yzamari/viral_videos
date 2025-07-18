@@ -515,6 +515,32 @@ class VideoGenerator:
         logger.info(f"   Session: {session_id}")
         logger.info(f"   Session Directory: {session_context.session_dir}/")
         
+        # Check for cheap mode and handle granular levels
+        cheap_mode = getattr(config, 'cheap_mode', False)
+        cheap_mode_level = getattr(config, 'cheap_mode_level', 'full')
+        
+        if cheap_mode or cheap_mode_level != 'full':
+            logger.info(f"💰 Cheap mode enabled (level: {cheap_mode_level})")
+            
+            if cheap_mode_level == 'full' or cheap_mode:
+                # Full cheap mode: text video + gTTS audio
+                logger.info("💰 Using full cheap mode - text-based video")
+                return self._generate_cheap_video(config, session_context)
+            
+            elif cheap_mode_level == 'audio':
+                # Audio cheap mode: normal video + gTTS audio
+                logger.info("💰 Using audio cheap mode - normal video with gTTS audio")
+                # Set config to use cheap audio but normal video
+                config.cheap_mode = False  # Don't use text video
+                # The audio generation will check cheap_mode_level separately
+                
+            elif cheap_mode_level == 'video':
+                # Video cheap mode: fallback video + normal audio
+                logger.info("💰 Using video cheap mode - fallback video with normal audio")
+                config.fallback_only = True  # Force fallback video
+                config.use_real_veo2 = False  # Don't use VEO
+                # Audio will be normal (not cheap)
+        
         session_manager.log_generation_step("video_generation_started", "in_progress", {
             "topic": config.topic,
             "platform": config.target_platform.value,
@@ -1107,7 +1133,8 @@ class VideoGenerator:
                     category=config.category,
                     duration_seconds=int(segment_duration),  # Convert to int
                     num_clips=num_segments,  # Use actual number of segments
-                    clip_index=i  # This should now be within range
+                    clip_index=i,  # This should now be within range
+                    cheap_mode=getattr(config, 'cheap_mode', False) or getattr(config, 'cheap_mode_level', 'full') in ['audio', 'full']  # Use cheap audio for audio/full modes
                 )
                 
                 if segment_audio_files and len(segment_audio_files) > 0:
@@ -2055,18 +2082,84 @@ This is a placeholder file. In a full implementation, this would be a complete M
         """Ensure perfect duration synchronization between video and audio"""
         logger.info(f"⏱️ Ensuring perfect duration sync for {target_duration}s")
         
-        # This is a placeholder for the duration sync logic
-        # In a full implementation, this would:
-        # 1. Analyze actual clip and audio durations
-        # 2. Trim or extend clips to match target duration
-        # 3. Ensure audio matches video length exactly
+        adjustments_made = []
         
-        return {
-            'video_duration': target_duration,
-            'audio_duration': target_duration,
-            'sync_accuracy': 1.0,
-            'adjustments_made': []
-        }
+        try:
+            # 1. Analyze actual clip and audio durations
+            clip_durations = []
+            for clip in clips:
+                if os.path.exists(clip):
+                    try:
+                        with VideoFileClip(clip) as video_clip:
+                            clip_durations.append(video_clip.duration)
+                    except Exception as e:
+                        logger.warning(f"⚠️ Could not get duration for {clip}: {e}")
+                        clip_durations.append(target_duration / len(clips))
+                else:
+                    clip_durations.append(target_duration / len(clips))
+            
+            audio_durations = []
+            for audio_file in audio_files:
+                if os.path.exists(audio_file):
+                    try:
+                        with AudioFileClip(audio_file) as audio_clip:
+                            audio_durations.append(audio_clip.duration)
+                    except Exception as e:
+                        logger.warning(f"⚠️ Could not get duration for {audio_file}: {e}")
+                        audio_durations.append(target_duration / len(audio_files))
+                else:
+                    audio_durations.append(target_duration / len(audio_files))
+            
+            total_clip_duration = sum(clip_durations)
+            total_audio_duration = sum(audio_durations)
+            
+            logger.info(f"🎥 Video clips total: {total_clip_duration:.2f}s")
+            logger.info(f"🎵 Audio total: {total_audio_duration:.2f}s")
+            logger.info(f"🎯 Target: {target_duration:.2f}s")
+            
+            # 2. Calculate sync accuracy
+            if total_clip_duration > 0:
+                video_audio_diff = abs(total_clip_duration - total_audio_duration)
+                target_diff = abs(total_clip_duration - target_duration)
+                sync_accuracy = max(0.0, 1.0 - (video_audio_diff / target_duration))
+                
+                # 3. Check if adjustment is needed
+                if video_audio_diff > 0.5:  # More than 0.5 second difference
+                    logger.warning(f"⚠️ Audio/video duration mismatch: {video_audio_diff:.2f}s")
+                    adjustments_made.append(f"Audio/video duration mismatch: {video_audio_diff:.2f}s")
+                    
+                    # Recommend shorter content if audio is too long
+                    if total_audio_duration > target_duration * 1.1:
+                        logger.warning(f"⚠️ Audio too long ({total_audio_duration:.2f}s), consider shortening script")
+                        adjustments_made.append("Audio too long - consider shortening script")
+                
+                if target_diff > 0.5:
+                    logger.warning(f"⚠️ Total duration differs from target: {target_diff:.2f}s")
+                    adjustments_made.append(f"Duration differs from target: {target_diff:.2f}s")
+                    
+            else:
+                sync_accuracy = 0.0
+                adjustments_made.append("Could not calculate video durations")
+            
+            return {
+                'video_duration': total_clip_duration,
+                'audio_duration': total_audio_duration,
+                'target_duration': target_duration,
+                'sync_accuracy': sync_accuracy,
+                'adjustments_made': adjustments_made,
+                'clip_durations': clip_durations,
+                'audio_durations': audio_durations
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Duration sync analysis failed: {e}")
+            return {
+                'video_duration': target_duration,
+                'audio_duration': target_duration,
+                'target_duration': target_duration,
+                'sync_accuracy': 0.0,
+                'adjustments_made': [f"Duration sync failed: {e}"]
+            }
 
     def _save_prompts_to_session(self, session_context: SessionContext, prompts_data: Dict[str, Any]):
         """Save all prompts used in generation to session for debugging"""
@@ -2570,17 +2663,17 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Split into words
             words = cleaned_text.split()
             
-            # Smart text wrapping with dynamic limits
-            max_lines = 4  # Allow up to 4 lines for better readability
+            # Smart text wrapping with dynamic limits - OPTIMIZED for better readability
+            max_lines = 3  # Reduced to 3 lines for better visibility
             optimal_words_per_line = max_words_per_line
             
-            # If text is too long, try to fit it in more lines with fewer words per line
+            # Prioritize shorter, punchier text for better engagement
             if len(words) > max_lines * optimal_words_per_line:
-                # Calculate optimal distribution
-                total_words = min(len(words), max_lines * 6)  # Max 24 words total
-                optimal_words_per_line = max(3, total_words // max_lines)
+                # Calculate optimal distribution with much stricter limits
+                total_words = min(len(words), max_lines * 4)  # Max 12 words total (much shorter)
+                optimal_words_per_line = max(2, total_words // max_lines)  # Min 2 words per line
                 words = words[:total_words]
-                logger.info(f"📝 Adjusting layout: {total_words} words in {max_lines} lines ({optimal_words_per_line} words/line)")
+                logger.info(f"📝 Optimized short overlay: {total_words} words in {max_lines} lines ({optimal_words_per_line} words/line)")
             
             # Create lines with smart word distribution
             lines = []
@@ -2649,8 +2742,14 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 Platform: {platform}
                 Video dimensions: {video_width}x{video_height}
                 
+                CRITICAL REQUIREMENTS:
+                - Use LARGE font size (minimum 36px, prefer 40-48px)
+                - Keep text SHORT and PUNCHY for better readability
+                - Use BOLD fonts for maximum impact
+                - Ensure high contrast for mobile viewing
+                
                 Consider:
-                - Text length and readability
+                - Text length and readability (shorter is better)
                 - Platform-specific preferences
                 - Video dimensions for optimal sizing
                 - Accessibility and contrast
@@ -2658,12 +2757,12 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 Return JSON with:
                 {{
                     "font_family": "Arial-Bold|Impact|Helvetica-Bold",
-                    "font_size": 24-48,
+                    "font_size": 36-48,
                     "color": "0xFFFFFF",
                     "background_color": "0x000000",
-                    "background_opacity": 0.7,
-                    "stroke_width": 2,
-                    "words_per_line": 3-6
+                    "background_opacity": 0.8,
+                    "stroke_width": 3,
+                    "words_per_line": 3-4
                 }}
                 """
                 
@@ -2702,42 +2801,42 @@ This is a placeholder file. In a full implementation, this would be a complete M
             if 'tiktok' in platform_str:
                 base_style = {
                     "font_family": "Arial-Bold",
-                    "font_size": max(32, min(48, int(video_width * 0.035))),  # Responsive sizing
+                    "font_size": max(42, min(54, int(video_width * 0.04))),  # Larger font for TikTok
                     "color": "0xFFFFFF",
                     "background_color": "0xFF6B6B",
                     "background_opacity": 0.8,
                     "stroke_width": 3,
-                    "words_per_line": 4
+                    "words_per_line": 3
                 }
             elif 'instagram' in platform_str:
                 base_style = {
                     "font_family": "Helvetica-Bold",
-                    "font_size": max(28, min(40, int(video_width * 0.03))),
+                    "font_size": max(38, min(48, int(video_width * 0.035))),  # Larger font for Instagram
                     "color": "0xFFFFFF",
                     "background_color": "0x4ECDC4",
-                    "background_opacity": 0.7,
-                    "stroke_width": 2,
-                    "words_per_line": 5
+                    "background_opacity": 0.8,
+                    "stroke_width": 3,
+                    "words_per_line": 3
                 }
             elif 'youtube' in platform_str:
                 base_style = {
                     "font_family": "Arial-Bold",
-                    "font_size": max(24, min(36, int(video_width * 0.025))),
+                    "font_size": max(36, min(44, int(video_width * 0.03))),  # Larger font for YouTube
                     "color": "0xFFFFFF",
                     "background_color": "0x000000",
-                    "background_opacity": 0.6,
-                    "stroke_width": 2,
-                    "words_per_line": 6
+                    "background_opacity": 0.8,
+                    "stroke_width": 3,
+                    "words_per_line": 4
                 }
             else:
                 base_style = {
                     "font_family": "Arial-Bold",
-                    "font_size": max(28, min(42, int(video_width * 0.03))),
+                    "font_size": max(38, min(48, int(video_width * 0.035))),  # Larger default font
                     "color": "0xFFFFFF",
                     "background_color": "0x000000",
-                    "background_opacity": 0.7,
-                    "stroke_width": 2,
-                    "words_per_line": 4
+                    "background_opacity": 0.8,
+                    "stroke_width": 3,
+                    "words_per_line": 3
                 }
             
             # Adjust for overlay type
@@ -2845,6 +2944,136 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 
         except Exception as e:
             logger.error(f"❌ Error trimming video: {e}")
+            return None
+    
+    def _generate_cheap_video(self, config: GeneratedVideoConfig, session_context: SessionContext) -> str:
+        """Generate a cheap text-based video showing prompts instead of actual video generation"""
+        logger.info("💰 Starting cheap mode video generation")
+        
+        try:
+            # Generate basic audio using cheap TTS
+            logger.info("💰 Generating basic audio with gTTS")
+            tts = EnhancedMultilingualTTS(self.api_key)
+            
+            # Create simple script from config
+            script_text = f"{config.hook} {' '.join(config.main_content)} {config.call_to_action}"
+            
+            # Generate cheap audio
+            from ..models.video_models import Language
+            language_enum = Language.ENGLISH_US  # Default to English US
+            
+            audio_files = tts.generate_intelligent_voice_audio(
+                script=script_text,
+                language=language_enum,
+                topic=config.topic,
+                platform=config.target_platform,
+                category=config.category,
+                duration_seconds=config.duration_seconds,
+                num_clips=1,
+                cheap_mode=True
+            )
+            
+            if not audio_files:
+                logger.error("❌ Failed to generate cheap audio")
+                return None
+            
+            # Create text-based video showing the prompts
+            video_path = self._create_text_video(config, audio_files[0], session_context)
+            
+            if video_path:
+                # Add 1.5s fadeout to cheap mode video as well
+                logger.info("🎬 Adding fadeout to cheap mode video")
+                final_video_path = self._add_fade_out_ending(video_path, session_context)
+                
+                if final_video_path:
+                    logger.info(f"✅ Cheap mode video with fadeout generated: {final_video_path}")
+                    return final_video_path
+                else:
+                    logger.warning("⚠️ Fadeout failed, returning original video")
+                    return video_path
+            else:
+                logger.error("❌ Failed to create cheap text video")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Cheap mode video generation failed: {e}")
+            return None
+    
+    def _create_text_video(self, config: GeneratedVideoConfig, audio_file: str, session_context: SessionContext) -> str:
+        """Create a simple text-based video showing prompts"""
+        try:
+            from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip, AudioFileClip, ColorClip
+            
+            # Get audio duration
+            audio_clip = AudioFileClip(audio_file)
+            duration = audio_clip.duration
+            
+            # Create background
+            background = ColorClip(size=(1080, 1920), color=(0, 0, 0), duration=duration)
+            
+            # Create text showing what would be generated
+            prompts_text = f"""CHEAP MODE - DEVELOPMENT TESTING
+            
+Topic: {config.topic}
+Platform: {config.target_platform.value}
+Duration: {config.duration_seconds}s
+Category: {config.category.value}
+
+HOOK: {config.hook}
+
+CONTENT:
+{chr(10).join(config.main_content)}
+
+CTA: {config.call_to_action}
+
+💰 This saves costs by showing prompts
+instead of generating actual video content.
+Use --no-cheap for full video generation."""
+            
+            # Create text clip
+            text_clip = TextClip(
+                prompts_text,
+                fontsize=32,
+                color='white',
+                font='Arial',
+                size=(1000, 1800),
+                method='caption'
+            ).set_duration(duration).set_position('center')
+            
+            # Create title
+            title_clip = TextClip(
+                "CHEAP MODE - DEVELOPMENT TESTING",
+                fontsize=48,
+                color='yellow',
+                font='Arial-Bold'
+            ).set_duration(duration).set_position(('center', 100))
+            
+            # Composite video
+            video = CompositeVideoClip([background, text_clip, title_clip])
+            video = video.set_audio(audio_clip)
+            
+            # Save video
+            output_path = session_context.get_output_path("final_output", f"final_video_{session_context.session_id}.mp4")
+            
+            logger.info(f"💰 Rendering cheap mode video: {output_path}")
+            video.write_videofile(
+                output_path,
+                fps=24,
+                codec='libx264',
+                audio_codec='aac',
+                verbose=False,
+                logger=None
+            )
+            
+            # Close clips
+            audio_clip.close()
+            video.close()
+            
+            logger.info(f"✅ Cheap mode text video created: {output_path}")
+            return output_path
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to create text video: {e}")
             return None
 
 

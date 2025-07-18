@@ -86,7 +86,9 @@ class WorkingOrchestrator:
                  visual_style: str = "dynamic",
                  mode: OrchestratorMode = OrchestratorMode.ENHANCED,
                  session_id: Optional[str] = None,
-                 language: Language = Language.ENGLISH_US):
+                 language: Language = Language.ENGLISH_US,
+                 cheap_mode: bool = True,
+                 cheap_mode_level: str = "full"):
         """
         Initialize Working Orchestrator
 
@@ -103,6 +105,8 @@ class WorkingOrchestrator:
             mode: Orchestrator mode (simple to professional)
             session_id: Optional session ID
             language: Target language for content
+            cheap_mode: Enable cost-saving mode (default: True)
+            cheap_mode_level: Granular cheap mode (full, audio, video)
         """
         self.api_key = api_key
         self.mission = mission
@@ -115,6 +119,8 @@ class WorkingOrchestrator:
         self.visual_style = visual_style
         self.mode = mode
         self.language = language
+        self.cheap_mode = cheap_mode
+        self.cheap_mode_level = cheap_mode_level
         
         # Generate session ID if not provided
         if session_id:
@@ -323,8 +329,10 @@ class WorkingOrchestrator:
                 self._analyze_trending_content(config)
 
             # Phase 3: AI Agent Discussions (mode-dependent)
-            if self.mode != OrchestratorMode.SIMPLE:
+            if self.mode != OrchestratorMode.SIMPLE and not self.cheap_mode:
                 self._conduct_agent_discussions(config)
+            elif self.cheap_mode:
+                logger.info("💰 Skipping AI agent discussions in cheap mode")
             
             # Phase 4: Script Generation with AI Enhancement
             script_data = self._generate_enhanced_script(config)
@@ -336,7 +344,9 @@ class WorkingOrchestrator:
                 frame_continuity_decision)
 
             # Phase 6: Video Generation with All Features (continuity-aware)
-            if self.mode == OrchestratorMode.MULTILINGUAL and config.get('languages'):
+            if self.cheap_mode:
+                video_path = self._generate_cheap_video(script_data, decisions, config)
+            elif self.mode == OrchestratorMode.MULTILINGUAL and config.get('languages'):
                 video_path = self._generate_multilingual_video(script_data, decisions, config)
             else:
                 video_path = self._generate_enhanced_video(script_data, decisions, config)
@@ -869,6 +879,95 @@ class WorkingOrchestrator:
             return 15  # Enhanced agents with advanced features
         else:  # PROFESSIONAL
             return 19  # All agents with professional features
+
+    def _generate_cheap_video(self, script_data: Dict[str, Any], decisions: Dict[str, Any], config: Dict[str, Any]) -> str:
+        """Generate video in cheap mode with granular level control"""
+        logger.info(f"💰 Starting cheap mode video generation (level: {self.cheap_mode_level})")
+        
+        try:
+            # Create a simple text-based video configuration
+            from ..utils.session_context import create_session_context
+            session_context = create_session_context(self.session_id)
+            
+            # Configure based on cheap mode level
+            if self.cheap_mode_level == "full":
+                # Full cheap mode: text video + gTTS audio
+                logger.info("💰 FULL cheap mode: Text video + gTTS audio")
+                use_real_veo2 = False
+                fallback_only = True
+                cheap_mode = True
+                
+            elif self.cheap_mode_level == "audio":
+                # Audio cheap mode: normal video + gTTS audio
+                logger.info("💰 AUDIO cheap mode: Normal video + gTTS audio")
+                use_real_veo2 = True
+                fallback_only = False
+                cheap_mode = False  # Normal video generation
+                
+            elif self.cheap_mode_level == "video":
+                # Video cheap mode: fallback video + normal audio
+                logger.info("💰 VIDEO cheap mode: Fallback video + normal audio")
+                use_real_veo2 = False
+                fallback_only = True
+                cheap_mode = False  # Normal audio
+                
+            else:
+                # Default to full cheap mode
+                logger.warning(f"⚠️ Unknown cheap mode level '{self.cheap_mode_level}', using 'full'")
+                use_real_veo2 = False
+                fallback_only = True
+                cheap_mode = True
+            
+            # Generate the video with configured settings
+            video_generator = VideoGenerator(
+                api_key=self.api_key,
+                use_real_veo2=use_real_veo2,
+                use_vertex_ai=False   # Always disable Vertex AI in cheap modes
+            )
+            
+            # Create config based on cheap mode level
+            cheap_config = GeneratedVideoConfig(
+                topic=self.mission,
+                duration_seconds=self.duration,
+                target_platform=self.platform,
+                category=self.category,
+                session_id=self.session_id,
+                style=self.style,
+                tone=self.tone,
+                target_audience=self.target_audience,
+                hook=self._extract_hook_from_script(script_data),
+                main_content=self._extract_content_from_script(script_data),
+                call_to_action=self._extract_cta_from_script(script_data),
+                visual_style="minimal" if cheap_mode else self.visual_style,
+                color_scheme=["#000000", "#FFFFFF"] if cheap_mode else None,
+                text_overlays=[],
+                transitions=["none"] if cheap_mode else None,
+                background_music_style="none" if cheap_mode else None,
+                voiceover_style="simple",
+                sound_effects=[],
+                inspired_by_videos=[],
+                predicted_viral_score=0.5,
+                frame_continuity=False,  # No frame continuity in cheap modes
+                image_only_mode=False,
+                use_real_veo2=use_real_veo2,
+                fallback_only=fallback_only,
+                cheap_mode=cheap_mode,  # Controls text video vs normal video
+                cheap_mode_level=self.cheap_mode_level  # Pass granular level to video generator
+            )
+            
+            logger.info(f"💰 Generating video with {self.cheap_mode_level} cheap mode")
+            video_path = video_generator.generate_video(cheap_config)
+            
+            if video_path:
+                logger.info(f"✅ Cheap mode video generated: {video_path}")
+                return video_path
+            else:
+                logger.error("❌ Cheap mode video generation failed")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Cheap mode video generation failed: {e}")
+            return None
 
     def get_progress(self) -> Dict[str, Any]:
         """Get current progress for real-time UI"""
