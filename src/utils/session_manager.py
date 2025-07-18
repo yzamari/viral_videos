@@ -132,6 +132,13 @@ class SessionManager:
             raise ValueError("No active session")
 
         if subdir:
+            if subdir not in self.session_data["subdirs"]:
+                # Create the subdirectory if it doesn't exist
+                session_dir = self.session_data["session_dir"]
+                subdir_path = os.path.join(session_dir, subdir)
+                os.makedirs(subdir_path, exist_ok=True)
+                self.session_data["subdirs"][subdir] = subdir_path
+                logger.info(f"📁 Created missing subdirectory: {subdir}")
             return self.session_data["subdirs"][subdir]
         return self.session_data["session_dir"]
 

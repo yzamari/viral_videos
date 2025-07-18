@@ -275,7 +275,7 @@ class VoiceDirectorAgent:
 
         try:
             # Create comprehensive AI prompt for voice analysis
-            analysis_prompt = """
+            analysis_prompt = f"""
             You are an expert Voice Director for viral video content. Analyze this content and
                     decide the optimal voice strategy.
 
@@ -289,10 +289,15 @@ class VoiceDirectorAgent:
             Number of clips: {num_clips}
 
             VOICE STRATEGY OPTIONS:
-            1. Single Voice: One consistent voice throughout
-            2. Multiple Voices: Different voices for different parts/clips
-            3. Dialogue Style: Multiple voices in conversation
-            4. Narrator + Character: Main narrator with character voices
+            1. Single Voice: One consistent voice throughout (PREFERRED - most professional)
+            2. Multiple Speakers: ONLY when content has distinct speakers/characters in dialogue
+            
+            CRITICAL RULES:
+            - PREFER SINGLE VOICE by default - multiple voices often sound jarring
+            - ONLY use multiple voices when content has clear distinct speakers (dialogue, interviews, conversations)
+            - NEVER EVER switch voice in the middle of a sentence
+            - Voice changes can ONLY happen at natural break points (end of sentences, paragraphs, or speaker changes)
+            - If multiple voices are used, each speaker must maintain their voice throughout their entire speech
 
             PERSONALITY OPTIONS:
             - narrator: Professional, authoritative
@@ -311,19 +316,16 @@ class VoiceDirectorAgent:
             - auto: AI decides best fit
 
             ANALYSIS REQUIREMENTS:
-            1. Determine if single voice or multiple voices would be more engaging
-            2. Select personality type(s) that match the content tone
-            3. Choose gender approach that fits the target audience
-            4. Consider platform-specific preferences (
-                TikTok loves variety,
-                YouTube prefers consistency)
-            5. Factor in language and cultural preferences
-            6. EMOTION ANALYSIS: Analyze content emotion and
-                    assign appropriate emotions per clip
+            1. DEFAULT TO SINGLE VOICE - only use multiple if content has distinct speakers
+            2. Analyze if content contains dialogue, interviews, or conversations between different people
+            3. Select personality type that matches the content tone and target audience
+            4. Choose gender approach that fits the content context
+            5. Consider platform-specific preferences while maintaining single voice preference
+            6. EMOTION ANALYSIS: Analyze content emotion and assign appropriate emotions
             7. PITCH & SPEED: Consider target audience age and content energy level
-            8. CONTEXT AWARENESS: Factor in business type, target demographics, and
-                    call-to-action
-            9. ENGAGEMENT OPTIMIZATION: Choose voice parameters that maximize audience engagement
+            8. CONTEXT AWARENESS: Factor in business type, target demographics, and call-to-action
+            9. SENTENCE BOUNDARY ANALYSIS: Ensure voice changes ONLY at sentence/speaker boundaries
+            10. ENGAGEMENT OPTIMIZATION: Single consistent voice is more professional and engaging
 
             EMOTION OPTIONS:
             - excited: High energy, enthusiastic (pitch +2.0, speed 1.1)
@@ -339,12 +341,14 @@ class VoiceDirectorAgent:
 
             OUTPUT FORMAT (JSON):
             {{
-                "strategy": "single|multiple|dialogue|narrator_character",
+                "strategy": "single|multiple_speakers",
+                "has_distinct_speakers": true/false,
+                "speaker_count": 1,
                 "primary_personality": "personality_type",
                 "primary_gender": "male|female|auto",
                 "use_multiple_voices": true/false,
                 "voice_changes_per_clip": true/false,
-                "reasoning": "detailed explanation of choices including why specific emotions/pitch/speed were chosen",
+                "reasoning": "detailed explanation including speaker analysis and why single/multiple voice was chosen",
                 "clip_voice_plan": [
                     {{
                         "clip_index": 0,
@@ -354,17 +358,19 @@ class VoiceDirectorAgent:
                         "pitch_adjustment": 0.0,
                         "speed_adjustment": 1.0,
                         "energy_level": "medium",
-                        "content_focus": "introduction"
+                        "content_focus": "introduction",
+                        "speaker_id": "main"
                     }},
                     {{
                         "clip_index": 1,
-                        "personality": "enthusiast",
+                        "personality": "narrator",
                         "gender": "female",
-                        "emotion": "excited",
-                        "pitch_adjustment": 2.0,
-                        "speed_adjustment": 1.1,
-                        "energy_level": "high",
-                        "content_focus": "main_hook"
+                        "emotion": "conversational",
+                        "pitch_adjustment": 0.0,
+                        "speed_adjustment": 1.0,
+                        "energy_level": "medium",
+                        "content_focus": "main_content",
+                        "speaker_id": "main"
                     }}
                 ],
                 "confidence_score": 0.85,
@@ -372,6 +378,11 @@ class VoiceDirectorAgent:
                         voice preferences"
             }}
 
+            IMPORTANT: Unless the content clearly contains dialogue, interviews, or multiple distinct speakers,
+            you MUST use a single voice throughout. Set "strategy": "single", "use_multiple_voices": false,
+            "has_distinct_speakers": false, "speaker_count": 1, and use the same personality/gender
+            for ALL clips with only emotion variations.
+            
             Make strategic decisions that will maximize engagement for {platform.value if hasattr(
                 platform,
                 'value') else str(platform)} in {language.value if hasattr(language,
@@ -387,6 +398,8 @@ class VoiceDirectorAgent:
             # Use centralized JSON fixer to handle parsing
             expected_structure = {
                 "strategy": str,
+                "has_distinct_speakers": bool,
+                "speaker_count": int,
                 "primary_personality": str,
                 "primary_gender": str,
                 "use_multiple_voices": bool,
@@ -399,6 +412,8 @@ class VoiceDirectorAgent:
             
             if analysis:
                 logger.info(f"🎭 AI Voice Strategy: {analysis.get('strategy', 'unknown')}")
+                logger.info(f"🗣️ Distinct Speakers: {analysis.get('has_distinct_speakers', False)}")
+                logger.info(f"👥 Speaker Count: {analysis.get('speaker_count', 1)}")
                 logger.info(f"🎤 Primary Personality: {analysis.get('primary_personality', 'unknown')}")
                 logger.info(f"👥 Multiple Voices: {analysis.get('use_multiple_voices', False)}")
                 logger.info(f"🧠 AI Reasoning: {analysis.get('reasoning', 'No reasoning provided')[:100]}...")
@@ -449,6 +464,16 @@ class VoiceDirectorAgent:
             })
 
         # Convert each clip plan to actual voice selection
+        # For single voice strategy, select voice once and reuse
+        single_voice_name = None
+        if analysis["strategy"] == "single":
+            single_voice_name = self._select_voice_for_clip(
+                language,
+                analysis["primary_personality"],
+                analysis["primary_gender"],
+                "neutral"
+            )
+        
         for i in range(num_clips):
             if i < len(clip_plan):
                 clip_info = clip_plan[i]
@@ -460,13 +485,16 @@ class VoiceDirectorAgent:
                     "emotion": "neutral"
                 }
 
-            # Select actual voice
-            voice_name = self._select_voice_for_clip(
-                language,
-                clip_info["personality"],
-                clip_info["gender"],
-                clip_info.get("emotion", "neutral")
-            )
+            # Select actual voice - use single voice if strategy is single
+            if single_voice_name:
+                voice_name = single_voice_name
+            else:
+                voice_name = self._select_voice_for_clip(
+                    language,
+                    clip_info["personality"],
+                    clip_info["gender"],
+                    clip_info.get("emotion", "neutral")
+                )
 
             # Use AI-provided adjustments if available, otherwise use
             # emotion-based defaults
@@ -516,28 +544,35 @@ class VoiceDirectorAgent:
 
         clip_plan = []
 
-        if strategy == "single":
-            # Same voice for all clips
-            for i in range(num_clips):
-                clip_plan.append({
-                    "clip_index": i,
-                    "personality": primary_personality,
-                    "gender": primary_gender,
-                    "emotion": "neutral"
-                })
-
-        elif strategy == "multiple":
-            # Different voices/emotions for variety
-            personalities = [primary_personality, "enthusiast", "storyteller"]
-            emotions = ["neutral", "excited", "dramatic"]
-
-            for i in range(num_clips):
-                clip_plan.append({
-                    "clip_index": i,
-                    "personality": personalities[i % len(personalities)],
-                    "gender": primary_gender,
-                    "emotion": emotions[i % len(emotions)]
-                })
+        if strategy == "single" or strategy == "multiple_speakers":
+            # For single strategy: Same voice for all clips
+            # For multiple_speakers: Only use different voices if truly distinct speakers
+            has_distinct_speakers = analysis.get("has_distinct_speakers", False)
+            speaker_count = analysis.get("speaker_count", 1)
+            
+            if strategy == "multiple_speakers" and has_distinct_speakers and speaker_count > 1:
+                # Only use multiple voices for actual different speakers
+                for i in range(num_clips):
+                    speaker_id = i % speaker_count  # Distribute clips among speakers
+                    # Alternate gender for different speakers
+                    gender = "male" if speaker_id % 2 == 0 else "female" if primary_gender == "mixed" else primary_gender
+                    clip_plan.append({
+                        "clip_index": i,
+                        "personality": primary_personality,
+                        "gender": gender,
+                        "emotion": "conversational",
+                        "speaker_id": f"speaker_{speaker_id}"
+                    })
+            else:
+                # Default to single voice (even if strategy was multiple_speakers but no distinct speakers)
+                for i in range(num_clips):
+                    clip_plan.append({
+                        "clip_index": i,
+                        "personality": primary_personality,
+                        "gender": primary_gender,
+                        "emotion": "neutral",
+                        "speaker_id": "main"
+                    })
 
         elif strategy == "dialogue":
             # Alternating voices for dialogue effect
@@ -575,6 +610,17 @@ class VoiceDirectorAgent:
                         "gender": "auto",
                         "emotion": "excited"
                     })
+        else:
+            # Fallback to single voice for any unrecognized strategy
+            logger.warning(f"⚠️ Unknown strategy '{strategy}', defaulting to single voice")
+            for i in range(num_clips):
+                clip_plan.append({
+                    "clip_index": i,
+                    "personality": primary_personality,
+                    "gender": primary_gender,
+                    "emotion": "neutral",
+                    "speaker_id": "main"
+                })
 
         return clip_plan
 
