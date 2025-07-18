@@ -7,7 +7,7 @@ import click
 import os
 from typing import Optional
 from ..social.social_config import SocialConfigManager
-from ..social.instagram_autoposter import InstagramAutoPoster, InstagramCredentials, PostContent, PostingOptions
+from ..social.instagram_autoposter import InstagramAutoPoster, InstagramCredentials, PostContent, PostingOptions, create_instagram_autoposter_from_env
 from ..utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -301,14 +301,15 @@ def auto_post_if_enabled(session_path: str) -> bool:
         for platform in preferences.platforms:
             logger.info(f"📱 Auto-posting to {platform}...")
             
-            credentials = config_manager.load_credentials(platform)
-            if not credentials:
-                logger.warning(f"⚠️ No credentials for {platform}, skipping")
-                continue
-            
             if platform.lower() == 'instagram':
-                success = post_to_instagram(
-                    session_dir, credentials, preferences,
+                # Use the new factory function to load credentials from .env
+                autoposter = create_instagram_autoposter_from_env()
+                if not autoposter:
+                    logger.warning(f"⚠️ No Instagram credentials found in .env file, skipping")
+                    continue
+                
+                success = post_to_instagram_auto(
+                    session_dir, autoposter, preferences,
                     None, False, None, None, None
                 )
                 
@@ -317,6 +318,24 @@ def auto_post_if_enabled(session_path: str) -> bool:
                     logger.info(f"✅ Auto-posted to {platform}")
                 else:
                     logger.error(f"❌ Failed to auto-post to {platform}")
+            else:
+                # Handle other platforms with existing method
+                credentials = config_manager.load_credentials(platform)
+                if not credentials:
+                    logger.warning(f"⚠️ No credentials for {platform}, skipping")
+                    continue
+                
+                if platform.lower() == 'instagram':
+                    success = post_to_instagram(
+                        session_dir, credentials, preferences,
+                        None, False, None, None, None
+                    )
+                    
+                    if success:
+                        success_count += 1
+                        logger.info(f"✅ Auto-posted to {platform}")
+                    else:
+                        logger.error(f"❌ Failed to auto-post to {platform}")
         
         if success_count == total_platforms:
             logger.info("✅ All auto-posts completed successfully")
@@ -330,4 +349,101 @@ def auto_post_if_enabled(session_path: str) -> bool:
             
     except Exception as e:
         logger.error(f"❌ Auto-posting failed: {e}")
+        return False
+
+def post_to_instagram_auto(session_path: str, autoposter: InstagramAutoPoster, preferences, 
+                          custom_caption: Optional[str], no_hashtags: bool,
+                          schedule: Optional[str], location: Optional[str], 
+                          mentions: Optional[str]) -> bool:
+    """Post video to Instagram using autoposter instance"""
+    try:
+        # Find video file
+        video_path = None
+        import glob
+        
+        logger.info(f"🔍 Looking for video in session: {session_path}")
+        
+        for ext in ['mp4', 'mov', 'avi']:
+            pattern = os.path.join(session_path, 'final_output', f'final_video_*.{ext}')
+            logger.debug(f"🔍 Trying pattern: {pattern}")
+            matches = glob.glob(pattern)
+            logger.debug(f"🔍 Matches: {matches}")
+            if matches:
+                video_path = matches[0]
+                logger.info(f"✅ Found video: {video_path}")
+                break
+        
+        if not video_path:
+            logger.error(f"❌ No video file found in session: {session_path}")
+            return False
+        
+        # Load script for caption
+        caption = custom_caption
+        if not caption:
+            script_file = os.path.join(session_path, 'scripts', 'processed_script.txt')
+            if os.path.exists(script_file):
+                with open(script_file, 'r') as f:
+                    script_content = f.read().strip()
+                
+                # Apply caption template
+                caption = preferences.default_caption_template.format(script=script_content)
+        
+        # Load hashtags
+        hashtags = []
+        if not no_hashtags and preferences.always_use_hashtags:
+            hashtag_file = os.path.join(session_path, 'hashtags', 'hashtags_text.txt')
+            if os.path.exists(hashtag_file):
+                with open(hashtag_file, 'r') as f:
+                    content = f.read()
+                    import re
+                    hashtags = re.findall(r'#\w+', content)
+                    hashtags = hashtags[:preferences.max_hashtags]
+        
+        # Process mentions
+        mention_list = preferences.mention_accounts.copy() if preferences.mention_accounts else []
+        if mentions:
+            mention_list.extend([m.strip() for m in mentions.split(',')])
+        
+        # Create post content
+        post_content = PostContent(
+            video_path=video_path,
+            caption=caption or "",
+            hashtags=hashtags,
+            location=location or preferences.default_location,
+            mentions=mention_list,
+            is_reel=True
+        )
+        
+        # Create posting options
+        posting_options = PostingOptions()
+        
+        if schedule:
+            from datetime import datetime
+            try:
+                schedule_time = datetime.strptime(schedule, '%Y-%m-%d %H:%M')
+                posting_options.post_immediately = False
+                posting_options.schedule_time = schedule_time
+            except ValueError:
+                logger.error("❌ Invalid schedule format. Use YYYY-MM-DD HH:MM")
+                return False
+        
+        # Validate video
+        if not autoposter.validate_video_format(video_path):
+            logger.error("❌ Video format validation failed")
+            return False
+        
+        # Authenticate and post
+        logger.info("🔐 Authenticating with Instagram...")
+        if not autoposter.authenticate():
+            logger.error("❌ Instagram authentication failed")
+            return False
+        
+        logger.info("📱 Posting video to Instagram...")
+        success = autoposter.post_video(post_content, posting_options)
+        
+        autoposter.disconnect()
+        return success
+        
+    except Exception as e:
+        logger.error(f"❌ Instagram posting failed: {e}")
         return False

@@ -93,7 +93,7 @@ class SessionContext:
                     return os.path.join(session_dir, filename)
                 return session_dir
         except Exception as e:
-            logger.error(f"Failed to get session path: {e}")
+            logger.error(f"Failed to get session path: '{subdir}' - {e}")
             # Fallback to outputs directory
             fallback_dir = os.path.join(
                 self.session_manager.base_output_dir,

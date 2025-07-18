@@ -355,18 +355,11 @@ class VideoGenerator:
         logger.info("🎬 Starting continuous VEO2 video generation")
         
         try:
-            # Create VEO client
-            from src.generators.veo_client_factory import VeoClientFactory
-            factory = VeoClientFactory(
-                project_id=self.vertex_project_id,
-                location=self.vertex_location,
-                gcs_bucket=self.vertex_gcs_bucket,
-                output_dir=session_context.session_dir,
-                prefer_veo2=True,
-                disable_veo3=True
+            # Create VEO client using the factory
+            veo_client = self.veo_factory.get_veo_client(
+                model=VeoModel.VEO2,
+                output_dir=session_context.get_output_path("video_clips")
             )
-            
-            veo_client = factory.get_veo_client()
             
             # Generate continuous video prompts
             continuous_prompts = []
@@ -385,29 +378,34 @@ class VideoGenerator:
             # Generate all video segments
             video_clips = []
             for i, prompt in enumerate(continuous_prompts):
-                logger.info(f"🎬 Generating continuous VEO2 clip {i+1}/{len(continuous_prompts)}")
-                
-                clip_path = veo_client.generate_video(
-                    prompt=prompt,
-                    duration=int(script_segments[i].get('duration', 5)),
-                    clip_id=f"continuous_clip_{i+1}",
-                    aspect_ratio=self._get_platform_aspect_ratio(config.target_platform.value)
-                )
-                
-                if clip_path and os.path.exists(clip_path):
-                    video_clips.append(clip_path)
-                    logger.info(f"✅ Generated continuous clip {i+1}: {clip_path}")
-                else:
-                    logger.error(f"❌ Failed to generate continuous clip {i+1}")
+                try:
+                    clip_path = veo_client.generate_video(
+                        prompt=prompt,
+                        duration=script_segments[i].get('duration', 5),
+                        clip_id=f"continuous_clip_{i+1}",
+                        aspect_ratio=self._get_platform_aspect_ratio(config.target_platform.value)
+                    )
+                    
+                    if clip_path and os.path.exists(clip_path):
+                        video_clips.append(clip_path)
+                        logger.info(f"✅ Generated continuous clip {i+1}/{len(continuous_prompts)}")
+                    else:
+                        logger.warning(f"⚠️ Failed to generate continuous clip {i+1}")
+                        
+                except Exception as e:
+                    logger.error(f"❌ Error generating continuous clip {i+1}: {e}")
+                    continue
             
-            logger.info(f"✅ Generated {len(video_clips)} continuous VEO2 clips")
-            return video_clips
-            
+            if video_clips:
+                logger.info(f"✅ Generated {len(video_clips)} continuous video clips")
+                return video_clips
+            else:
+                logger.warning("⚠️ No continuous video clips generated")
+                return []
+                
         except Exception as e:
-            logger.error(f"❌ Continuous VEO2 generation failed: {e}")
-            # Fallback to standard generation if continuous fails
-            logger.warning("🔄 Falling back to standard video generation")
-            return self._generate_standard_video_clips(config, script_result, style_decision, session_context)
+            logger.error(f"❌ Continuous VEO2 video generation failed: {e}")
+            return []
 
     """Main video generator that orchestrates all AI agents and generation components"""
     
@@ -832,7 +830,7 @@ class VideoGenerator:
             session_manager.save_script(result['tts_ready_script'], "tts_ready")
         
         # Save full processing result
-        session_manager.save_script(result, "processing_result")
+        session_manager.save_script(str(result), "processing_result")
         
         logger.info(f"✅ Script processed: {result.get('total_word_count', 0)} words")
         
@@ -940,17 +938,19 @@ class VideoGenerator:
                                       script_result: Dict[str, Any],
                                       style_decision: Dict[str, Any],
                                       session_context: SessionContext) -> List[str]:
-        """Generate video clips using standard individual clip generation"""
+        """Generate standard video clips using VEO-2"""
         logger.info("🎬 Generating standard video clips")
         
         clips = []
-        # Get script segments to determine number of clips
-        # CRITICAL: Use core decisions for clip count if available
+        
+        # Initialize script_segments at the beginning to avoid scope issues
+        script_segments = script_result.get('segments', [])
+        
+        # Determine number of clips and durations
         if hasattr(config, 'num_clips') and config.num_clips is not None:
             num_clips = config.num_clips
             logger.info(f"🎯 Using core decisions: {num_clips} clips from centralized decision framework")
         else:
-            script_segments = script_result.get('segments', [])
             if not script_segments:
                 # Fallback to duration-based calculation
                 num_clips = max(3, int(config.duration_seconds / 5))
@@ -966,7 +966,6 @@ class VideoGenerator:
             logger.info(f"⏱️ Total from core decisions: {sum(clip_durations):.1f}s (Target: {config.duration_seconds}s)")
         else:
             # Use actual script segment durations instead of average
-            script_segments = script_result.get('segments', [])
             if script_segments:
                 clip_durations = [segment.get('duration', config.duration_seconds / num_clips) for segment in script_segments]
                 logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips with segment-based durations")
@@ -976,7 +975,7 @@ class VideoGenerator:
                 avg_duration = config.duration_seconds / num_clips
                 clip_durations = [avg_duration] * num_clips
                 logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips ({avg_duration:.1f}s each)")
-            logger.info(f"⏱️ All Clips Duration: {[f'{avg_duration:.1f}s'] * num_clips}")
+                logger.info(f"⏱️ All Clips Duration: {[f'{avg_duration:.1f}s'] * num_clips}")
         
         last_frame_image = None
         
@@ -985,7 +984,7 @@ class VideoGenerator:
         if self.use_real_veo2:
             veo_client = self.veo_factory.get_best_available_client(
                 output_dir=session_context.get_output_path("video_clips"),
-                prefer_veo3=self.prefer_veo3 and not use_frame_continuity  # Use VEO-2 for frame continuity
+                prefer_veo3=self.prefer_veo3  # Use VEO-2 for frame continuity
             )
             
             if veo_client:
@@ -1333,19 +1332,16 @@ class VideoGenerator:
                                            positioning_decision: Dict[str, Any], config: GeneratedVideoConfig,
                                            session_context: SessionContext) -> str:
         """Compose final video with subtitles and overlays"""
-        logger.info("🎬 Composing final video with subtitles and overlays")
-        
         try:
-            # Step 1: Create video without subtitles first
-            temp_video_path = os.path.join(session_context.session_dir, "temp_files", "base_video.mp4")
-            os.makedirs(os.path.dirname(temp_video_path), exist_ok=True)
+            logger.info("🎬 Composing final video with subtitles and overlays")
             
-            # Use frame continuity if enabled
-            if getattr(config, 'frame_continuity', False):
-                logger.info("🎬 Using frame continuity composition")
-                temp_video_path = self._compose_with_frame_continuity(clips, audio_files, temp_video_path, session_context)
-            else:
-                temp_video_path = self._compose_with_standard_cuts(clips, audio_files, temp_video_path, session_context)
+            # CRITICAL FIX: Handle case where no video clips are available
+            if not clips:
+                logger.warning("⚠️ No video clips available, creating fallback video")
+                return self._create_fallback_video_from_audio(audio_files, config, session_context)
+            
+            # Step 1: Create base video from clips
+            temp_video_path = self._create_base_video_from_clips(clips, audio_files, session_context)
             
             if not temp_video_path or not os.path.exists(temp_video_path):
                 logger.error("❌ Failed to create base video")
@@ -1364,7 +1360,7 @@ class VideoGenerator:
             video_with_subtitles = self._add_subtitle_overlays(temp_video_path, config, session_context)
             
             # Step 3: Add text overlays and hooks
-            video_with_overlays = self._add_text_overlays(video_with_subtitles, style_decision, positioning_decision, config, session_context)
+            video_with_overlays = self._add_timed_text_overlays(video_with_subtitles, style_decision, positioning_decision, config, session_context)
             
             # Step 4: Apply platform orientation
             oriented_video_path = self._apply_platform_orientation(
@@ -1399,7 +1395,136 @@ class VideoGenerator:
             return saved_path
             
         except Exception as e:
-            logger.error(f"❌ Final video composition failed: {e}")
+            logger.error(f"❌ Video composition failed: {e}")
+            return ""
+    
+    def _create_fallback_video_from_audio(self, audio_files: List[str], config: GeneratedVideoConfig, 
+                                         session_context: SessionContext) -> str:
+        """Create a fallback video using only audio files and static images"""
+        try:
+            logger.info("🎬 Creating fallback video from audio files")
+            
+            # Create output path
+            output_path = session_context.get_output_path("final_video", "fallback_video.mp4")
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            
+            # Concatenate audio files
+            if len(audio_files) > 1:
+                # Create audio concatenation
+                audio_concat_path = session_context.get_output_path("temp_files", "concatenated_audio.mp3")
+                os.makedirs(os.path.dirname(audio_concat_path), exist_ok=True)
+                
+                # Build FFmpeg command to concatenate audio
+                input_parts = []
+                for audio in audio_files:
+                    input_parts.extend(['-i', audio])
+                
+                # Create filter for audio concatenation
+                audio_inputs = "".join([f"[{i}:a]" for i in range(len(audio_files))])
+                filter_complex = f"{audio_inputs}concat=n={len(audio_files)}:v=0:a=1[outa]"
+                
+                cmd = [
+                    'ffmpeg', '-y'
+                ] + input_parts + [
+                    '-filter_complex', filter_complex,
+                    '-map', '[outa]',
+                    '-c:a', 'aac',
+                    audio_concat_path
+                ]
+                
+                import subprocess
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                
+                if result.returncode == 0 and os.path.exists(audio_concat_path):
+                    audio_file = audio_concat_path
+                else:
+                    logger.warning("⚠️ Audio concatenation failed, using first audio file")
+                    audio_file = audio_files[0] if audio_files else None
+            else:
+                audio_file = audio_files[0] if audio_files else None
+            
+            if not audio_file or not os.path.exists(audio_file):
+                logger.error("❌ No audio file available for fallback video")
+                return ""
+            
+            # Create a simple static video with the audio
+            # Use a solid color background with text overlay
+            import subprocess
+            
+            # Get audio duration
+            probe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', audio_file]
+            probe_result = subprocess.run(probe_cmd, capture_output=True, text=True)
+            
+            if probe_result.returncode != 0:
+                logger.warning("⚠️ Could not get audio duration, using default")
+                duration = config.duration_seconds
+            else:
+                import json
+                probe_data = json.loads(probe_result.stdout)
+                audio_stream = next((s for s in probe_data.get('streams', []) if s.get('codec_type') == 'audio'), None)
+                duration = float(audio_stream.get('duration', config.duration_seconds)) if audio_stream else config.duration_seconds
+            
+            # Create video with solid color background and text
+            cmd = [
+                'ffmpeg', '-y',
+                '-f', 'lavfi',
+                '-i', f'color=c=black:size=1080x1920:duration={duration}',
+                '-i', audio_file,
+                '-c:v', 'libx264',
+                '-c:a', 'aac',
+                '-shortest',
+                '-pix_fmt', 'yuv420p',
+                output_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0 and os.path.exists(output_path):
+                logger.info(f"✅ Created fallback video: {output_path}")
+                return output_path
+            else:
+                logger.error(f"❌ Failed to create fallback video: {result.stderr}")
+                return ""
+                
+        except Exception as e:
+            logger.error(f"❌ Fallback video creation failed: {e}")
+            return ""
+    
+    def _create_base_video_from_clips(self, clips: List[str], audio_files: List[str], 
+                                     session_context: SessionContext) -> str:
+        """Create base video from clips and audio files"""
+        try:
+            logger.info("🎬 Creating base video from clips")
+            
+            # Create output path
+            output_path = session_context.get_output_path("temp_files", "base_video.mp4")
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            
+            # Check if we have video clips
+            if not clips:
+                logger.warning("⚠️ No video clips available")
+                return ""
+            
+            # Check if we have audio files
+            if not audio_files:
+                logger.warning("⚠️ No audio files available")
+                return ""
+            
+            # Use frame continuity if available, otherwise use standard composition
+            if len(clips) > 1:
+                # Try frame continuity first
+                try:
+                    result = self._compose_with_frame_continuity(clips, audio_files, output_path, session_context)
+                    if result and os.path.exists(result):
+                        return result
+                except Exception as e:
+                    logger.warning(f"⚠️ Frame continuity failed: {e}")
+            
+            # Fallback to standard composition
+            return self._compose_with_standard_cuts(clips, audio_files, output_path, session_context)
+            
+        except Exception as e:
+            logger.error(f"❌ Base video creation failed: {e}")
             return ""
     
     def _add_text_overlays(self, video_path: str, style_decision: Dict[str, Any], 
@@ -1703,8 +1828,22 @@ class VideoGenerator:
                 actual_script = f"{hook} {' '.join(main_content)} {cta}"
                 logger.warning("⚠️ Using fallback config content for subtitles")
             
+            # Check if we have audio segments first to match the subtitle count
+            audio_segment_count = 0
+            if session_context:
+                audio_dir = session_context.get_output_path("audio")
+                if os.path.exists(audio_dir):
+                    audio_files = [f for f in os.listdir(audio_dir) if f.endswith('.mp3') or f.endswith('.wav')]
+                    audio_segment_count = len(audio_files)
+            
             # Parse the actual script into meaningful segments
-            segments = self._parse_script_into_segments(actual_script, video_duration)
+            if audio_segment_count > 0:
+                # Split script to match audio segment count
+                segments = self._split_script_to_audio_segments(actual_script, audio_segment_count, video_duration)
+                logger.info(f"📝 Split script into {len(segments)} segments to match {audio_segment_count} audio files")
+            else:
+                # Use natural sentence-based segmentation
+                segments = self._parse_script_into_segments(actual_script, video_duration)
             
             # Analyze audio files for better synchronization if available
             if session_context:
@@ -1718,6 +1857,48 @@ class VideoGenerator:
             
         except Exception as e:
             logger.error(f"❌ Failed to create subtitle segments: {e}")
+            return []
+    
+    def _split_script_to_audio_segments(self, script: str, audio_count: int, video_duration: float) -> List[Dict[str, Any]]:
+        """Split script into exact number of segments to match audio files"""
+        try:
+            # Split script into words
+            words = script.split()
+            total_words = len(words)
+            
+            if total_words == 0:
+                return []
+            
+            segments = []
+            words_per_segment = max(1, total_words // audio_count)
+            
+            for i in range(audio_count):
+                start_idx = i * words_per_segment
+                
+                # For the last segment, take all remaining words
+                if i == audio_count - 1:
+                    end_idx = total_words
+                else:
+                    end_idx = (i + 1) * words_per_segment
+                
+                segment_words = words[start_idx:end_idx]
+                segment_text = ' '.join(segment_words)
+                
+                # Estimate duration (will be corrected by audio synchronization)
+                estimated_duration = video_duration / audio_count
+                
+                segments.append({
+                    'text': segment_text,
+                    'start': i * estimated_duration,
+                    'end': (i + 1) * estimated_duration,
+                    'word_count': len(segment_words),
+                    'estimated_duration': estimated_duration
+                })
+            
+            return segments
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to split script to audio segments: {e}")
             return []
     
     def _parse_script_into_segments(self, script: str, video_duration: float) -> List[Dict[str, Any]]:
@@ -2068,6 +2249,16 @@ class VideoGenerator:
         try:
             import subprocess
             
+            # CRITICAL FIX: Handle case where no clips are available
+            if not clips:
+                logger.warning("⚠️ No video clips available for composition")
+                return ""
+            
+            # CRITICAL FIX: Handle case where no audio files are available
+            if not audio_files:
+                logger.warning("⚠️ No audio files available for composition")
+                return ""
+            
             # Create simple concatenation
             input_parts = []
             
@@ -2079,27 +2270,51 @@ class VideoGenerator:
             for audio in audio_files:
                 input_parts.extend(['-i', audio])
             
+            # CRITICAL FIX: Ensure we have valid inputs
+            if len(clips) == 0 or len(audio_files) == 0:
+                logger.error("❌ No valid inputs for composition")
+                return ""
+            
             # Create filter for standard concatenation
             video_inputs = "".join([f"[{i}:v]" for i in range(len(clips))])
             audio_inputs = "".join([f"[{len(clips)+i}:a]" for i in range(len(audio_files))])
             
-            filter_complex = f"{video_inputs}concat=n={len(clips)}:v=1:a=0[outv];{audio_inputs}concat=n={len(audio_files)}:v=0:a=1[outa]"
+            # CRITICAL FIX: Ensure filter complex is valid
+            if len(clips) > 0 and len(audio_files) > 0:
+                filter_complex = f"{video_inputs}concat=n={len(clips)}:v=1:a=0[outv];{audio_inputs}concat=n={len(audio_files)}:v=0:a=1[outa]"
+            elif len(clips) > 0:
+                # Only video, no audio
+                filter_complex = f"{video_inputs}concat=n={len(clips)}:v=1:a=0[outv]"
+            elif len(audio_files) > 0:
+                # Only audio, no video
+                filter_complex = f"{audio_inputs}concat=n={len(audio_files)}:v=0:a=1[outa]"
+            else:
+                logger.error("❌ No valid inputs for composition")
+                return ""
             
             # Build ffmpeg command
             cmd = [
                 'ffmpeg', '-y'
             ] + input_parts + [
-                '-filter_complex', filter_complex,
-                '-map', '[outv]',
-                '-map', '[outa]',
+                '-filter_complex', filter_complex
+            ]
+            
+            # Add output mappings based on what we have
+            if len(clips) > 0:
+                cmd.extend(['-map', '[outv]'])
+            if len(audio_files) > 0:
+                cmd.extend(['-map', '[outa]'])
+            
+            cmd.extend([
                 '-c:v', 'libx264',
                 '-c:a', 'aac',
                 '-preset', 'medium',
                 '-crf', '23',
                 output_path
-            ]
+            ])
             
             logger.info("🎬 Running standard composition...")
+            logger.info(f"🎬 Command: {' '.join(cmd)}")
             result = subprocess.run(cmd, capture_output=True, text=True)
             
             if result.returncode == 0:
@@ -2107,12 +2322,198 @@ class VideoGenerator:
                 return output_path
             else:
                 logger.error(f"❌ Standard composition failed: {result.stderr}")
-                return ""
+                logger.error(f"❌ FFmpeg stdout: {result.stdout}")
+                
+                # CRITICAL FIX: Try fallback composition with simpler approach
+                return self._create_simple_fallback_composition(clips, audio_files, output_path, session_context)
                 
         except Exception as e:
             logger.error(f"❌ Standard composition error: {e}")
             return ""
     
+    def _create_simple_fallback_composition(self, clips: List[str], audio_files: List[str], 
+                                           output_path: str, session_context: SessionContext) -> str:
+        """Create a simple fallback composition when standard composition fails"""
+        try:
+            logger.info("🎬 Creating simple fallback composition")
+            
+            # If we have audio but no video, create a simple video with audio
+            if not clips and audio_files:
+                return self._create_audio_only_video(audio_files, output_path, session_context)
+            
+            # If we have video but no audio, create video without audio
+            if clips and not audio_files:
+                return self._create_video_only_composition(clips, output_path, session_context)
+            
+            # If we have both, try a very simple concatenation
+            if clips and audio_files:
+                return self._create_simple_video_audio_composition(clips, audio_files, output_path, session_context)
+            
+            logger.error("❌ No valid inputs for fallback composition")
+            return ""
+            
+        except Exception as e:
+            logger.error(f"❌ Fallback composition failed: {e}")
+            return ""
+    
+    def _create_audio_only_video(self, audio_files: List[str], output_path: str, 
+                                session_context: SessionContext) -> str:
+        """Create a video with only audio (static image)"""
+        try:
+            logger.info("🎬 Creating audio-only video")
+            
+            # Concatenate audio files first
+            audio_concat_path = session_context.get_output_path("temp_files", "audio_concat.mp3")
+            os.makedirs(os.path.dirname(audio_concat_path), exist_ok=True)
+            
+            if len(audio_files) > 1:
+                # Concatenate multiple audio files
+                input_parts = []
+                for audio in audio_files:
+                    input_parts.extend(['-i', audio])
+                
+                audio_inputs = "".join([f"[{i}:a]" for i in range(len(audio_files))])
+                filter_complex = f"{audio_inputs}concat=n={len(audio_files)}:v=0:a=1[outa]"
+                
+                cmd = [
+                    'ffmpeg', '-y'
+                ] + input_parts + [
+                    '-filter_complex', filter_complex,
+                    '-map', '[outa]',
+                    '-c:a', 'aac',
+                    audio_concat_path
+                ]
+                
+                import subprocess
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                
+                if result.returncode != 0:
+                    logger.warning("⚠️ Audio concatenation failed, using first audio file")
+                    audio_file = audio_files[0]
+                else:
+                    audio_file = audio_concat_path
+            else:
+                audio_file = audio_files[0]
+            
+            # Get audio duration
+            import subprocess
+            probe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', audio_file]
+            probe_result = subprocess.run(probe_cmd, capture_output=True, text=True)
+            
+            if probe_result.returncode != 0:
+                logger.warning("⚠️ Could not get audio duration, using default")
+                duration = 15.0
+            else:
+                import json
+                probe_data = json.loads(probe_result.stdout)
+                audio_stream = next((s for s in probe_data.get('streams', []) if s.get('codec_type') == 'audio'), None)
+                duration = float(audio_stream.get('duration', 15.0)) if audio_stream else 15.0
+            
+            # Create video with solid color background
+            cmd = [
+                'ffmpeg', '-y',
+                '-f', 'lavfi',
+                '-i', f'color=c=black:size=1080x1920:duration={duration}',
+                '-i', audio_file,
+                '-c:v', 'libx264',
+                '-c:a', 'aac',
+                '-shortest',
+                '-pix_fmt', 'yuv420p',
+                output_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0 and os.path.exists(output_path):
+                logger.info(f"✅ Created audio-only video: {output_path}")
+                return output_path
+            else:
+                logger.error(f"❌ Failed to create audio-only video: {result.stderr}")
+                return ""
+                
+        except Exception as e:
+            logger.error(f"❌ Audio-only video creation failed: {e}")
+            return ""
+    
+    def _create_video_only_composition(self, clips: List[str], output_path: str, 
+                                      session_context: SessionContext) -> str:
+        """Create video composition without audio"""
+        try:
+            logger.info("🎬 Creating video-only composition")
+            
+            if len(clips) == 1:
+                # Single clip, just copy it
+                import shutil
+                shutil.copy2(clips[0], output_path)
+                return output_path
+            
+            # Multiple clips, concatenate without audio
+            input_parts = []
+            for clip in clips:
+                input_parts.extend(['-i', clip])
+            
+            video_inputs = "".join([f"[{i}:v]" for i in range(len(clips))])
+            filter_complex = f"{video_inputs}concat=n={len(clips)}:v=1:a=0[outv]"
+            
+            cmd = [
+                'ffmpeg', '-y'
+            ] + input_parts + [
+                '-filter_complex', filter_complex,
+                '-map', '[outv]',
+                '-c:v', 'libx264',
+                '-preset', 'medium',
+                '-crf', '23',
+                output_path
+            ]
+            
+            import subprocess
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0 and os.path.exists(output_path):
+                logger.info(f"✅ Created video-only composition: {output_path}")
+                return output_path
+            else:
+                logger.error(f"❌ Failed to create video-only composition: {result.stderr}")
+                return ""
+                
+        except Exception as e:
+            logger.error(f"❌ Video-only composition failed: {e}")
+            return ""
+    
+    def _create_simple_video_audio_composition(self, clips: List[str], audio_files: List[str], 
+                                              output_path: str, session_context: SessionContext) -> str:
+        """Create a simple video-audio composition"""
+        try:
+            logger.info("🎬 Creating simple video-audio composition")
+            
+            # Use the first clip and first audio file for simplicity
+            video_file = clips[0]
+            audio_file = audio_files[0]
+            
+            cmd = [
+                'ffmpeg', '-y',
+                '-i', video_file,
+                '-i', audio_file,
+                '-c:v', 'copy',
+                '-c:a', 'aac',
+                '-shortest',
+                output_path
+            ]
+            
+            import subprocess
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0 and os.path.exists(output_path):
+                logger.info(f"✅ Created simple video-audio composition: {output_path}")
+                return output_path
+            else:
+                logger.error(f"❌ Failed to create simple video-audio composition: {result.stderr}")
+                return ""
+                
+        except Exception as e:
+            logger.error(f"❌ Simple video-audio composition failed: {e}")
+            return ""
+
     def _create_video_placeholder(self, config: GeneratedVideoConfig, 
                                 clips: List[str], audio_files: List[str]) -> str:
         """Create comprehensive video placeholder content"""
@@ -2749,6 +3150,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
     def _create_short_multi_line_text(self, text: str, max_words_per_line: int = 4) -> str:
         """Create smart multi-line text for overlays with overflow prevention"""
         try:
+            # Ensure max_words_per_line is an integer
+            max_words_per_line = int(max_words_per_line) if max_words_per_line else 4
+            
             # Clean the text - enhanced for FFmpeg compatibility
             cleaned_text = text.replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '').replace('\\', '').replace('/', '').replace('(', '').replace(')', '').replace('[', '').replace(']', '').replace('{', '').replace('}', '')
             
@@ -2761,11 +3165,11 @@ This is a placeholder file. In a full implementation, this would be a complete M
             
             # Prioritize shorter, punchier text for better engagement
             if len(words) > max_lines * optimal_words_per_line:
-                # Calculate optimal distribution with much stricter limits
-                total_words = min(len(words), max_lines * 4)  # Max 12 words total (much shorter)
+                # Calculate optimal distribution with more reasonable limits
+                total_words = min(len(words), max_lines * 6)  # Max 18 words total (increased from 12)
                 optimal_words_per_line = max(2, total_words // max_lines)  # Min 2 words per line
                 words = words[:total_words]
-                logger.info(f"📝 Optimized short overlay: {total_words} words in {max_lines} lines ({optimal_words_per_line} words/line)")
+                logger.info(f"📝 Optimized overlay: {total_words} words in {max_lines} lines ({optimal_words_per_line} words/line)")
             
             # Create lines with smart word distribution
             lines = []
@@ -2782,7 +3186,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 lines.append(' '.join(current_line))
             
             # Join lines with newline character for FFmpeg
-            multi_line_text = '\\N'.join(lines)
+            multi_line_text = r'\N'.join(lines)
             
             logger.info(f"📝 Created smart multi-line overlay: {len(lines)} lines, {len(words)} words")
             return multi_line_text
@@ -2825,8 +3229,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
     def _get_ai_overlay_style(self, text: str, overlay_type: str, platform: Any, video_width: int, video_height: int) -> Dict[str, Any]:
         """Get AI-driven overlay styling decisions based on text content and platform"""
         try:
-            # Get AI styling from overlay positioning agent
-            if hasattr(self, 'overlay_positioning_agent') and self.overlay_positioning_agent:
+            # Get AI styling from positioning agent
+            if hasattr(self, 'positioning_agent') and self.positioning_agent:
                 # Request AI styling decision
                 style_prompt = f"""
                 Create optimal overlay styling for: "{text}"
@@ -3190,6 +3594,211 @@ Use --no-cheap for full video generation."""
         except Exception as e:
             logger.error(f"❌ Failed to create text video: {e}")
             return None
+
+    def _create_timed_line_overlays(self, text: str, max_words_per_line: int = 4, 
+                                   line_duration: float = 2.0, total_duration: float = 10.0) -> List[Dict[str, Any]]:
+        """Create timed line-by-line overlays for better readability"""
+        try:
+            # Clean the text for FFmpeg compatibility
+            cleaned_text = text.replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '').replace('\\', '').replace('/', '').replace('(', '').replace(')', '').replace('[', '').replace(']', '').replace('{', '').replace('}', '')
+            
+            # Split into words
+            words = cleaned_text.split()
+            
+            # Create lines with smart word distribution
+            lines = []
+            current_line = []
+            
+            for word in words:
+                current_line.append(word)
+                if len(current_line) >= max_words_per_line:
+                    lines.append(' '.join(current_line))
+                    current_line = []
+            
+            # Add remaining words to the last line
+            if current_line:
+                lines.append(' '.join(current_line))
+            
+            # Calculate timing for each line
+            total_lines = len(lines)
+            if total_lines == 0:
+                return []
+            
+            # Distribute time evenly across lines, with some overlap
+            line_duration = min(line_duration, total_duration / total_lines)
+            fade_duration = 0.3  # Fade in/out duration
+            
+            overlays = []
+            for i, line in enumerate(lines):
+                start_time = i * (line_duration * 0.8)  # 20% overlap between lines
+                end_time = start_time + line_duration
+                
+                # Ensure we don't exceed total duration
+                if start_time >= total_duration:
+                    break
+                
+                end_time = min(end_time, total_duration)
+                
+                overlays.append({
+                    'text': line,
+                    'start_time': start_time,
+                    'end_time': end_time,
+                    'fade_duration': fade_duration,
+                    'line_number': i + 1,
+                    'total_lines': total_lines
+                })
+            
+            logger.info(f"📝 Created {len(overlays)} timed line overlays: {total_lines} lines, {line_duration:.1f}s per line")
+            return overlays
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to create timed line overlays: {e}")
+            return []
+
+    def _add_timed_text_overlays(self, video_path: str, style_decision: Dict[str, Any], 
+                                positioning_decision: Dict[str, Any], config: GeneratedVideoConfig,
+                                session_context: SessionContext) -> str:
+        """Add text overlays with proper line-by-line timing"""
+        try:
+            import subprocess
+            import json
+            
+            logger.info("📝 Adding timed text overlays with line-by-line display")
+            
+            # Get video duration and dimensions
+            probe_cmd = [
+                'ffprobe', '-v', 'quiet', '-print_format', 'json', 
+                '-show_format', '-show_streams', video_path
+            ]
+            probe_result = subprocess.run(probe_cmd, capture_output=True, text=True)
+            probe_data = json.loads(probe_result.stdout)
+            
+            video_duration = float(probe_data['format']['duration'])
+            video_stream = next((s for s in probe_data['streams'] if s['codec_type'] == 'video'), None)
+            if video_stream:
+                video_width = int(video_stream['width'])
+                video_height = int(video_stream['height'])
+            else:
+                video_width, video_height = 720, 1280
+            
+            # Create output path
+            overlay_path = session_context.get_output_path("temp_files", f"timed_overlays_{os.path.basename(video_path)}")
+            os.makedirs(os.path.dirname(overlay_path), exist_ok=True)
+            
+            # Get positioning decision
+            is_dynamic = positioning_decision.get('primary_style', 'static') == 'dynamic'
+            
+            # Create timed overlays for hook and CTA
+            overlay_filters = []
+            
+            # Add hook text overlay with line-by-line timing
+            if config.hook:
+                hook_style = self._get_ai_overlay_style(str(config.hook), "hook", config.target_platform, video_width, video_height)
+                hook_overlays = self._create_timed_line_overlays(
+                    str(config.hook), 
+                    max_words_per_line=hook_style.get('words_per_line', 4),
+                    line_duration=2.0,
+                    total_duration=min(6.0, video_duration)
+                )
+                
+                for i, overlay in enumerate(hook_overlays):
+                    y_offset = 60 + (i * 40)  # Stack lines vertically
+                    filter_expr = (
+                        f"drawtext=text='{overlay['text']}':"
+                        f"fontcolor={hook_style['color']}:"
+                        f"fontsize={hook_style['font_size']}:"
+                        f"font='{hook_style['font_family']}':"
+                        f"box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:"
+                        f"boxborderw={hook_style['stroke_width']}:"
+                        f"x=(w-text_w)/2:y={y_offset}:"
+                        f"enable='between(t,{overlay['start_time']},{overlay['end_time']})'"
+                    )
+                    overlay_filters.append(filter_expr)
+            
+            # Add call-to-action overlay with line-by-line timing
+            if config.call_to_action:
+                cta_style = self._get_ai_overlay_style(str(config.call_to_action), "cta", config.target_platform, video_width, video_height)
+                cta_overlays = self._create_timed_line_overlays(
+                    str(config.call_to_action),
+                    max_words_per_line=cta_style.get('words_per_line', 4),
+                    line_duration=2.0,
+                    total_duration=min(6.0, video_duration)
+                )
+                
+                # Position CTA at the end of the video
+                cta_start_time = max(0, video_duration - 6.0)
+                
+                for i, overlay in enumerate(cta_overlays):
+                    y_offset = video_height - 120 - (i * 40)  # Position from bottom
+                    adjusted_start = cta_start_time + overlay['start_time']
+                    adjusted_end = cta_start_time + overlay['end_time']
+                    
+                    filter_expr = (
+                        f"drawtext=text='{overlay['text']}':"
+                        f"fontcolor={cta_style['color']}:"
+                        f"fontsize={cta_style['font_size']}:"
+                        f"font='{cta_style['font_family']}':"
+                        f"box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:"
+                        f"boxborderw={cta_style['stroke_width']}:"
+                        f"x=(w-text_w)/2:y={y_offset}:"
+                        f"enable='between(t,{adjusted_start},{adjusted_end})'"
+                    )
+                    overlay_filters.append(filter_expr)
+            
+            # Apply overlays if any
+            if overlay_filters:
+                filter_complex = ','.join(overlay_filters)
+                
+                cmd = [
+                    'ffmpeg', '-i', video_path,
+                    '-vf', filter_complex,
+                    '-c:a', 'copy',
+                    '-y', overlay_path
+                ]
+                
+                logger.info(f"🎬 Applying timed overlays with FFmpeg command: {' '.join(cmd)}")
+                logger.info(f"🎨 Filter complex: {filter_complex}")
+                
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                
+                if result.returncode == 0 and os.path.exists(overlay_path):
+                    logger.info(f"✅ Timed text overlays added: {len(overlay_filters)} overlays")
+                    
+                    # Save overlay metadata
+                    overlay_metadata = {
+                        'overlays_applied': len(overlay_filters),
+                        'hook_text': config.hook,
+                        'cta_text': config.call_to_action,
+                        'style_decision': style_decision,
+                        'positioning_decision': positioning_decision,
+                        'ffmpeg_command': ' '.join(cmd),
+                        'filter_complex': filter_complex,
+                        'timing_info': {
+                            'line_duration': 2.0,
+                            'total_duration': video_duration,
+                            'overlay_count': len(overlay_filters)
+                        }
+                    }
+                    
+                    metadata_path = session_context.get_output_path("overlays", "timed_overlay_metadata.json")
+                    os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
+                    
+                    with open(metadata_path, 'w') as f:
+                        json.dump(overlay_metadata, f, indent=2)
+                    
+                    return overlay_path
+                else:
+                    logger.error(f"❌ Timed overlay application failed with return code {result.returncode}")
+                    logger.error(f"❌ FFmpeg stderr: {result.stderr}")
+                    logger.error(f"❌ FFmpeg stdout: {result.stdout}")
+                    return video_path
+            else:
+                logger.info("📝 No timed text overlays to add")
+                return video_path
+                
+        except Exception as e:
+            logger.error(f"❌ Timed text overlay failed: {e}")
+            return video_path
 
 
 

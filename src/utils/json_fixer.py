@@ -233,9 +233,20 @@ Common issues to fix:
 """
         
         if expected_structure:
-            prompt += f"""
+            try:
+                # Try to serialize the expected structure, handling type objects
+                expected_json = json.dumps(expected_structure, indent=2, default=str)
+                prompt += f"""
 Expected structure (for reference):
-{json.dumps(expected_structure, indent=2)}
+{expected_json}
+
+Please ensure the fixed JSON follows a similar structure.
+"""
+            except (TypeError, ValueError) as e:
+                logger.warning(f"⚠️ Could not serialize expected structure: {e}")
+                # Add basic structure info without serialization
+                prompt += f"""
+Expected structure keys (for reference): {list(expected_structure.keys()) if isinstance(expected_structure, dict) else 'Invalid structure'}
 
 Please ensure the fixed JSON follows a similar structure.
 """
