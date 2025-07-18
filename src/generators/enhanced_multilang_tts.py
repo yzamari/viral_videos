@@ -378,8 +378,8 @@ class EnhancedMultilingualTTS:
                 if gtts_config['lang'] == 'en':
                     gtts_config['tld'] = 'com.au'  # Australian for authority
 
-            # Generate with gTTS - use slow=True for better articulation
-            tts = gTTS(text=enhanced_script, lang=gtts_config['lang'], tld=gtts_config['tld'], slow=True)
+            # Generate with gTTS - use slow=False for natural speech speed
+            tts = gTTS(text=enhanced_script, lang=gtts_config['lang'], tld=gtts_config['tld'], slow=False)
 
             audio_path = os.path.join(
                 tempfile.gettempdir(),

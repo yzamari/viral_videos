@@ -109,7 +109,7 @@ class BaseVeoClient(ABC):
         pass
 
     @abstractmethod
-    def generate_video(self, prompt: str, duration: float = 5.0,
+    def generate_video(self, prompt: str, duration: float,
                       clip_id: str = "clip", image_path: Optional[str] = None) -> str:
         """
         Generate video using VEO model

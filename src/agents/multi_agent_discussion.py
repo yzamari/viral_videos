@@ -23,6 +23,7 @@ from ..utils.logging_config import get_logger
 logger = get_logger(__name__)
 class AgentRole(Enum):
     """Available agent roles for discussions"""
+    # Core Creative Team (7 agents)
     TREND_ANALYST = "trend_analyst"
     SCRIPT_WRITER = "script_writer"
     DIRECTOR = "director"
@@ -30,6 +31,23 @@ class AgentRole(Enum):
     SOUNDMAN = "soundman"
     EDITOR = "editor"
     ORCHESTRATOR = "orchestrator"
+    
+    # Professional Team Extensions (12+ additional agents)
+    MARKETING_STRATEGIST = "marketing_strategist"
+    SOCIAL_MEDIA_EXPERT = "social_media_expert"
+    BRAND_SPECIALIST = "brand_specialist"
+    ENGAGEMENT_OPTIMIZER = "engagement_optimizer"
+    ANALYTICS_EXPERT = "analytics_expert"
+    CONTENT_STRATEGIST = "content_strategist"
+    VISUAL_DESIGNER = "visual_designer"
+    MOTION_GRAPHICS = "motion_graphics"
+    COLOR_SPECIALIST = "color_specialist"
+    TYPOGRAPHY_EXPERT = "typography_expert"
+    PLATFORM_OPTIMIZER = "platform_optimizer"
+    AUDIENCE_RESEARCHER = "audience_researcher"
+    VIRAL_SPECIALIST = "viral_specialist"
+    COPYWRITER = "copywriter"
+    THUMBNAIL_DESIGNER = "thumbnail_designer"
 
 @dataclass
 class AgentMessage:
@@ -207,6 +225,97 @@ class MultiAgentDiscussionSystem:
                 "expertise": ["workflow coordination", "agent synchronization",
                               "resource management", "timeline optimization"],
                 "decision_style": "Holistic with coordination priority"
+            },
+            # Professional Team Extensions
+            AgentRole.MARKETING_STRATEGIST: {
+                "name": "MarketMind",
+                "personality": "Strategic, ROI-focused, brand-aware marketing expert",
+                "expertise": ["marketing strategy", "brand positioning", "audience targeting", "campaign optimization"],
+                "decision_style": "Strategic with brand consistency focus"
+            },
+            AgentRole.SOCIAL_MEDIA_EXPERT: {
+                "name": "SocialSavvy",
+                "personality": "Platform-native, trend-aware, engagement-focused specialist",
+                "expertise": ["platform algorithms", "social trends", "community management", "viral mechanics"],
+                "decision_style": "Platform-optimized with viral potential priority"
+            },
+            AgentRole.BRAND_SPECIALIST: {
+                "name": "BrandGuard",
+                "personality": "Consistent, quality-focused, brand identity protector",
+                "expertise": ["brand guidelines", "visual consistency", "tone of voice", "brand values"],
+                "decision_style": "Brand-consistent with quality assurance"
+            },
+            AgentRole.ENGAGEMENT_OPTIMIZER: {
+                "name": "EngagePro",
+                "personality": "Metrics-driven, interaction-focused, conversion-oriented",
+                "expertise": ["engagement rates", "call-to-actions", "user behavior", "retention strategies"],
+                "decision_style": "Engagement-maximizing with data support"
+            },
+            AgentRole.ANALYTICS_EXPERT: {
+                "name": "DataDive",
+                "personality": "Analytical, performance-focused, insights-driven researcher",
+                "expertise": ["performance analytics", "A/B testing", "data interpretation", "KPI optimization"],
+                "decision_style": "Data-driven with performance focus"
+            },
+            AgentRole.CONTENT_STRATEGIST: {
+                "name": "ContentCraft",
+                "personality": "Strategic, audience-focused, content planning specialist",
+                "expertise": ["content planning", "editorial calendars", "content pillars", "audience journeys"],
+                "decision_style": "Strategic with long-term content focus"
+            },
+            AgentRole.VISUAL_DESIGNER: {
+                "name": "VisualVibe",
+                "personality": "Aesthetic-focused, design-thinking, visual harmony expert",
+                "expertise": ["visual design", "composition", "aesthetic appeal", "design trends"],
+                "decision_style": "Design-centric with aesthetic priority"
+            },
+            AgentRole.MOTION_GRAPHICS: {
+                "name": "MotionMaster",
+                "personality": "Dynamic, animation-focused, movement specialist",
+                "expertise": ["motion graphics", "animation", "visual effects", "dynamic elements"],
+                "decision_style": "Motion-enhanced with dynamic impact"
+            },
+            AgentRole.COLOR_SPECIALIST: {
+                "name": "ColorCraft",
+                "personality": "Psychology-aware, emotion-focused, color theory expert",
+                "expertise": ["color psychology", "brand colors", "emotional impact", "visual accessibility"],
+                "decision_style": "Color-optimized with psychological impact"
+            },
+            AgentRole.TYPOGRAPHY_EXPERT: {
+                "name": "TypeTech",
+                "personality": "Readability-focused, font-specialized, text optimization expert",
+                "expertise": ["typography", "font selection", "readability", "text hierarchy"],
+                "decision_style": "Typography-optimized with readability focus"
+            },
+            AgentRole.PLATFORM_OPTIMIZER: {
+                "name": "PlatformPro",
+                "personality": "Platform-specific, algorithm-aware, optimization specialist",
+                "expertise": ["platform algorithms", "format optimization", "best practices", "platform features"],
+                "decision_style": "Platform-native with algorithm optimization"
+            },
+            AgentRole.AUDIENCE_RESEARCHER: {
+                "name": "AudienceAce",
+                "personality": "User-focused, behavior-analyzing, demographic specialist",
+                "expertise": ["audience research", "user personas", "behavior patterns", "demographic insights"],
+                "decision_style": "Audience-centric with user behavior focus"
+            },
+            AgentRole.VIRAL_SPECIALIST: {
+                "name": "ViralVault",
+                "personality": "Trend-obsessed, virality-focused, shareability expert",
+                "expertise": ["viral mechanics", "shareability factors", "trend analysis", "viral triggers"],
+                "decision_style": "Virality-maximizing with trend awareness"
+            },
+            AgentRole.COPYWRITER: {
+                "name": "CopyCoach",
+                "personality": "Persuasive, message-focused, conversion-oriented writer",
+                "expertise": ["copywriting", "persuasive text", "CTAs", "message clarity"],
+                "decision_style": "Message-optimized with persuasion focus"
+            },
+            AgentRole.THUMBNAIL_DESIGNER: {
+                "name": "ThumbTech",
+                "personality": "Click-focused, visual-impact, first-impression specialist",
+                "expertise": ["thumbnail design", "click-through rates", "visual impact", "preview optimization"],
+                "decision_style": "Click-optimized with visual impact priority"
             }
         }
 

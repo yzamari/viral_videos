@@ -231,7 +231,8 @@ class VoiceDirectorAgent:
             "🎭 Voice Director Agent initialized with AI-powered voice selection")
 
     def get_voice_config(self, content: str, platform: Platform, num_clips: int, 
-                        style: str = "professional", tone: str = "engaging") -> Dict[str, Any]:
+                        style: str = "professional", tone: str = "engaging", 
+                        duration_seconds: int = 10) -> Dict[str, Any]:
         """Get voice configuration for the given content"""
         try:
             # Use the existing analyze_content_and_select_voices method
@@ -241,7 +242,7 @@ class VoiceDirectorAgent:
                 language=Language.ENGLISH_US,
                 platform=platform,
                 category=VideoCategory.COMEDY,  # Default category
-                duration_seconds=15,  # Default duration
+                duration_seconds=duration_seconds,  # Use actual duration
                 num_clips=num_clips
             )
             

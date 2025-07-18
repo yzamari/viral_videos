@@ -70,7 +70,7 @@ class VertexAIVeo2Client(BaseVeoClient):
         """Get the VEO-2 model name"""
         return self.veo2_model
 
-    def generate_video(self, prompt: str, duration: float = 5.0,
+    def generate_video(self, prompt: str, duration: float,
                       clip_id: str = "clip", image_path: Optional[str] = None, aspect_ratio: str = "9:16") -> str:
         """
         Generate video using Vertex AI VEO-2
@@ -91,6 +91,9 @@ class VertexAIVeo2Client(BaseVeoClient):
             return self._create_fallback_clip(prompt, duration, clip_id)
 
         logger.info(f"🎬 Starting VEO-2 generation for clip: {clip_id}")
+        logger.info(f"⏱️ VEO-2 Duration Requested: {duration}s")
+        logger.info(f"📝 VEO-2 Prompt: {prompt[:100]}...")
+        logger.info(f"📐 VEO-2 Aspect Ratio: {aspect_ratio}")
 
         try:
             # Enhance prompt with Gemini

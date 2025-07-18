@@ -2,6 +2,7 @@
 Enhanced Working AI Agent Orchestrator
 Comprehensive mission-driven system with ALL features and proper OOP design """
 
+import os
 import time
 from typing import Dict, Any, Optional
 from datetime import datetime
@@ -88,7 +89,8 @@ class WorkingOrchestrator:
                  session_id: Optional[str] = None,
                  language: Language = Language.ENGLISH_US,
                  cheap_mode: bool = True,
-                 cheap_mode_level: str = "full"):
+                 cheap_mode_level: str = "full",
+                 core_decisions = None):
         """
         Initialize Working Orchestrator
 
@@ -121,6 +123,13 @@ class WorkingOrchestrator:
         self.language = language
         self.cheap_mode = cheap_mode
         self.cheap_mode_level = cheap_mode_level
+        
+        # CRITICAL: Store core decisions for system-wide use
+        self.core_decisions = core_decisions
+        if core_decisions:
+            logger.info(f"✅ Core decisions received: {core_decisions.num_clips} clips, {core_decisions.clip_durations}")
+        else:
+            logger.warning("⚠️ No core decisions provided - using legacy parameters")
         
         # Generate session ID if not provided
         if session_id:
@@ -536,10 +545,103 @@ class WorkingOrchestrator:
         logger.info(f"✅ Completed {len(self.discussion_results)} enhanced discussions")
 
     def _conduct_advanced_discussions(self, config: Dict[str, Any]):
-        """Advanced discussions for professional modes"""
-        # Enhanced discussions would be implemented here
-        # For now, use enhanced discussions as base
+        """Advanced discussions for professional modes with 19+ agents"""
+        logger.info("🎯 Starting professional mode discussions with 19+ agents")
+        
+        if not self.discussion_system:
+            logger.warning("Discussion system not available, falling back to enhanced mode")
+            self._conduct_enhanced_discussions(config)
+            return
+        
+        # Professional discussions build on enhanced base
         self._conduct_enhanced_discussions(config)
+        
+        # Discussion 4: Marketing & Brand Strategy (4 agents)
+        marketing_topic = DiscussionTopic(
+            topic_id="marketing_strategy", 
+            title="Marketing Strategy & Brand Alignment",
+            description=f"Comprehensive marketing strategy for {self.platform.value} content optimization",
+            context={
+                'mission': self.mission,
+                'platform': self.platform.value,
+                'target_audience': self.target_audience,
+                'brand_requirements': config.get('brand_requirements', {}),
+                'campaign_goals': config.get('campaign_goals', ['engagement', 'reach'])
+            },
+            required_decisions=["marketing_strategy", "brand_alignment", "audience_targeting"]
+        )
+        
+        marketing_result = self.discussion_system.start_discussion(
+            marketing_topic,
+            [AgentRole.MARKETING_STRATEGIST, AgentRole.BRAND_SPECIALIST, AgentRole.SOCIAL_MEDIA_EXPERT, AgentRole.AUDIENCE_RESEARCHER]
+        )
+        self.discussion_results['marketing_strategy'] = marketing_result
+        
+        # Discussion 5: Visual Design & Typography (4 agents)
+        design_topic = DiscussionTopic(
+            topic_id="design_strategy",
+            title="Visual Design & Typography Optimization", 
+            description="Comprehensive visual design strategy for maximum impact",
+            context={
+                'mission': self.mission,
+                'platform': self.platform.value,
+                'visual_style': self.visual_style,
+                'duration': self.duration,
+                'brand_colors': config.get('brand_colors', [])
+            },
+            required_decisions=["visual_design", "typography", "color_scheme", "motion_graphics"]
+        )
+        
+        design_result = self.discussion_system.start_discussion(
+            design_topic,
+            [AgentRole.VISUAL_DESIGNER, AgentRole.TYPOGRAPHY_EXPERT, AgentRole.COLOR_SPECIALIST, AgentRole.MOTION_GRAPHICS]
+        )
+        self.discussion_results['design_strategy'] = design_result
+        
+        # Discussion 6: Engagement & Virality Strategy (4 agents)
+        engagement_topic = DiscussionTopic(
+            topic_id="engagement_strategy",
+            title="Engagement Optimization & Virality Mechanics",
+            description="Advanced engagement and viral potential optimization",
+            context={
+                'mission': self.mission,
+                'platform': self.platform.value,
+                'target_metrics': config.get('target_metrics', {}),
+                'viral_triggers': self.trending_insights.get('viral_triggers', [])
+            },
+            required_decisions=["engagement_hooks", "viral_elements", "cta_strategy", "shareability"]
+        )
+        
+        engagement_result = self.discussion_system.start_discussion(
+            engagement_topic,
+            [AgentRole.ENGAGEMENT_OPTIMIZER, AgentRole.VIRAL_SPECIALIST, AgentRole.ANALYTICS_EXPERT, AgentRole.CONTENT_STRATEGIST]
+        )
+        self.discussion_results['engagement_strategy'] = engagement_result
+        
+        # Discussion 7: Platform Optimization & Copy Strategy (4 agents)
+        platform_topic = DiscussionTopic(
+            topic_id="platform_optimization",
+            title="Platform-Specific Optimization & Copywriting",
+            description="Platform algorithm optimization and persuasive copywriting",
+            context={
+                'mission': self.mission,
+                'platform': self.platform.value,
+                'algorithm_factors': config.get('algorithm_factors', {}),
+                'conversion_goals': config.get('conversion_goals', [])
+            },
+            required_decisions=["platform_optimization", "copy_strategy", "thumbnail_design", "algorithm_alignment"]
+        )
+        
+        platform_result = self.discussion_system.start_discussion(
+            platform_topic,
+            [AgentRole.PLATFORM_OPTIMIZER, AgentRole.COPYWRITER, AgentRole.THUMBNAIL_DESIGNER, AgentRole.TREND_ANALYST]
+        )
+        self.discussion_results['platform_optimization'] = platform_result
+        
+        total_discussions = len(self.discussion_results)
+        total_agents = sum(len(discussion.get('participants', [])) for discussion in self.discussion_results.values())
+        
+        logger.info(f"✅ Professional discussions completed: {total_discussions} discussions with {total_agents}+ agent interactions")
         logger.info("✅ Advanced discussions completed")
 
     def _conduct_multilingual_discussions(self, config: Dict[str, Any]):
@@ -787,21 +889,62 @@ class WorkingOrchestrator:
         main_content = self._extract_content_from_script(script_data)
         cta = self._extract_cta_from_script(script_data)
 
-        # Apply AI decisions with safe defaults
-        frame_continuity = decisions.get('continuity', {}).get('use_frame_continuity', False)
-        voice_style = decisions.get('voice', {}).get('voice_style', 'energetic')
-        visual_style = decisions.get('visual', {}).get('style', self.visual_style)
+        # CRITICAL: Use core decisions if available, otherwise fallback to local decisions
+        if self.core_decisions:
+            logger.info(f"🎯 Using core decisions: {self.core_decisions.num_clips} clips, {self.core_decisions.clip_durations}")
+            duration_seconds = self.core_decisions.duration_seconds
+            platform = self.core_decisions.platform
+            category = self.core_decisions.category
+            mission = self.core_decisions.mission
+            style = self.core_decisions.style
+            tone = self.core_decisions.tone
+            target_audience = self.core_decisions.target_audience
+            visual_style = self.core_decisions.visual_style
+            frame_continuity = self.core_decisions.frame_continuity
+            background_music_style = self.core_decisions.background_music_style
+            # Extract core decisions for video generation
+            num_clips = self.core_decisions.num_clips
+            clip_durations = self.core_decisions.clip_durations
+            # CRITICAL: Prioritize AI-generated hook and CTA over default values
+            if hook == "Amazing content ahead!" and self.core_decisions.hook != "Amazing content ahead!":
+                # Use AI-generated hook from script if core decisions has default
+                pass  # Keep the extracted hook
+            elif self.core_decisions.hook != "Amazing content ahead!":
+                hook = self.core_decisions.hook
+            
+            if cta == "Subscribe for more!" and self.core_decisions.call_to_action != "Subscribe for more!":
+                # Use AI-generated CTA from script if core decisions has default
+                pass  # Keep the extracted CTA
+            elif self.core_decisions.call_to_action != "Subscribe for more!":
+                cta = self.core_decisions.call_to_action
+        else:
+            logger.warning("⚠️ No core decisions available, using legacy orchestrator parameters")
+            # Apply AI decisions with safe defaults
+            frame_continuity = decisions.get('continuity', {}).get('use_frame_continuity', False)
+            voice_style = decisions.get('voice', {}).get('voice_style', 'energetic')
+            visual_style = decisions.get('visual', {}).get('style', self.visual_style)
+            duration_seconds = self.duration
+            platform = self.platform
+            category = self.category
+            mission = self.mission
+            style = self.style
+            tone = self.tone
+            target_audience = self.target_audience
+            background_music_style = config.get('background_music_style', "upbeat")
+            # Default clip settings
+            num_clips = None
+            clip_durations = None
 
         # Enhanced configuration with platform and category for AI timing
         enhanced_config = GeneratedVideoConfig(
-            target_platform=self.platform,
-            category=self.category,
-            duration_seconds=self.duration,
-            topic=self.mission,
+            target_platform=platform,
+            category=category,
+            duration_seconds=duration_seconds,
+            topic=mission,
             session_id=self.session_id,  # CRITICAL: Pass the session ID from orchestrator
-            style=self.style,
-            tone=self.tone,
-            target_audience=self.target_audience,
+            style=style,
+            tone=tone,
+            target_audience=target_audience,
             hook=hook,
             main_content=main_content,
             call_to_action=cta,
@@ -809,8 +952,8 @@ class WorkingOrchestrator:
             color_scheme=config.get('color_scheme', ["#FF6B6B", "#4ECDC4", "#FFFFFF"]),
             text_overlays=config.get('text_overlays', []),
             transitions=config.get('transitions', ["fade", "slide"]),
-            background_music_style=config.get('background_music_style', "upbeat"),
-            voiceover_style=voice_style,
+            background_music_style=background_music_style,
+            voiceover_style=decisions.get('voice', {}).get('voice_style', 'energetic'),
             sound_effects=config.get('sound_effects', []),
             inspired_by_videos=config.get('inspired_by_videos', []),
             predicted_viral_score=config.get('predicted_viral_score', 0.85),
@@ -818,7 +961,10 @@ class WorkingOrchestrator:
             image_only_mode=config.get('force_generation') == 'force_image_gen',
             use_real_veo2=config.get('force_generation') != 'force_image_gen',
             video_orientation=config.get('orientation', 'auto'),
-            ai_decide_orientation=config.get('ai_decide_orientation', True)
+            ai_decide_orientation=config.get('ai_decide_orientation', True),
+            # CRITICAL: Pass core decisions clip information
+            num_clips=num_clips,
+            clip_durations=clip_durations
         )
         
         logger.info(f"✅ Enhanced video config created with session_id: {self.session_id}")
@@ -878,7 +1024,7 @@ class WorkingOrchestrator:
         elif self.mode == OrchestratorMode.ADVANCED:
             return 15  # Enhanced agents with advanced features
         else:  # PROFESSIONAL
-            return 19  # All agents with professional features
+            return 22  # All agents with professional features (7 core + 15 specialized)
 
     def _generate_cheap_video(self, script_data: Dict[str, Any], decisions: Dict[str, Any], config: Dict[str, Any]) -> str:
         """Generate video in cheap mode with granular level control"""

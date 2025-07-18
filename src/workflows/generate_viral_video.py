@@ -108,21 +108,63 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
             mode = "simple"
             logger.info("💰 Applied cheap mode optimizations: fallback_only=True, discussions=off, mode=simple")
         
-        # Initialize working orchestrator
+        # STEP 1: CENTRALIZED DECISION MAKING
+        from ..core.decision_framework import DecisionFramework
+        from ..utils.session_context import create_session_context
+        
+        # Create or get session context
+        if session_id:
+            session_context = create_session_context(session_id)
+        else:
+            from ..utils.session_manager import session_manager
+            session_id = session_manager.create_session(
+                topic=mission,
+                platform=platform,
+                duration=duration,
+                category=category
+            )
+            session_context = create_session_context(session_id)
+        
+        # Initialize decision framework with API key for Mission Planning Agent
+        api_key = os.getenv("GOOGLE_AI_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+        decision_framework = DecisionFramework(session_context, api_key)
+        
+        # Make all decisions upfront
+        cli_args = {
+            'mission': mission,
+            'platform': platform,
+            'category': category,
+            'duration': duration,
+            'style': style,
+            'tone': tone,
+            'target_audience': target_audience,
+            'visual_style': visual_style,
+            'mode': mode,
+            'cheap_mode': cheap_mode,
+            'cheap_mode_level': cheap_mode_level
+        }
+        
+        # CRITICAL: Make all decisions before any generation
+        core_decisions = decision_framework.make_all_decisions(cli_args, ai_agents_available=True)
+        
+        logger.info("✅ All decisions made upfront - propagating to system")
+        
+        # Initialize working orchestrator with decisions
         orchestrator = WorkingOrchestrator(
             api_key=api_key,
-            mission=mission,
-            platform=Platform(platform.lower()),
-            category=VideoCategory(category_mapping.get(category, category)),
-            duration=duration,
-            style=style or "viral",  # Use user's style choice or default
-            tone=tone or "engaging",    # Use user's tone choice or default
-            target_audience=target_audience or "general audience",
-            visual_style=visual_style or "dynamic",  # Use user's visual style choice or default
-            mode=OrchestratorMode(mode.lower()) if mode else OrchestratorMode.ENHANCED,
-            session_id=session_id,  # Pass session_id to ensure consistent session management
-            cheap_mode=cheap_mode,  # Pass cheap_mode to orchestrator
-            cheap_mode_level=cheap_mode_level  # Pass granular cheap mode level
+            mission=core_decisions.mission,
+            platform=core_decisions.platform,
+            category=core_decisions.category,
+            duration=core_decisions.duration_seconds,
+            style=core_decisions.style,
+            tone=core_decisions.tone,
+            target_audience=core_decisions.target_audience,
+            visual_style=core_decisions.visual_style,
+            mode=OrchestratorMode(core_decisions.mode.lower()) if core_decisions.mode else OrchestratorMode.ENHANCED,
+            session_id=session_id,
+            cheap_mode=core_decisions.cheap_mode,
+            cheap_mode_level=core_decisions.cheap_mode_level,
+            core_decisions=core_decisions  # Pass all decisions to orchestrator
         )
 
         # Generate video

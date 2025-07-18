@@ -1,326 +1,323 @@
-# 🎬 ViralAI - Enterprise AI Video Generator
+# ViralAI - AI-Powered Video Generation System
 
-[![Version](https://img.shields.io/badge/version-v2.4--RC1-blue.svg)](RELEASE_NOTES_v2.4-RC1.md)
-[![Tests](https://img.shields.io/badge/tests-216%20passed-brightgreen.svg)](#testing)
-[![Success Rate](https://img.shields.io/badge/success%20rate-100%25-success.svg)](#testing)
-[![Architecture](https://img.shields.io/badge/architecture-clean-success.svg)](#architecture)
-[![Languages](https://img.shields.io/badge/languages-37%20supported-orange.svg)](#multilingual-support)
-[![Platforms](https://img.shields.io/badge/platforms-6%20integrated-purple.svg)](#platform-support)
-[![Production](https://img.shields.io/badge/status-production%20ready-brightgreen.svg)](#production-readiness)
+🚀 **Advanced AI video generation system with 22 specialized agents, centralized decision-making, and comprehensive social media integration.**
 
-**The most advanced AI-powered video generation system with multi-agent intelligence, supporting 37 languages and 6 major social media platforms.**
+## Quick Start
 
-## 🚀 v2.4-RC1 Highlights
+### Prerequisites
+- Python 3.8+
+- Google Cloud Project with Vertex AI enabled
+- Google AI API key
 
-✅ **100% Test Coverage** - 216 unit tests, zero failures  
-✅ **Production Ready** - Fully validated and deployment-ready  
-✅ **Enterprise Architecture** - Clean architecture with SOLID principles  
-✅ **Multi-Agent AI** - 8 specialized agents working in harmony  
-✅ **37 Languages** - Global content generation capability  
-✅ **6 Platforms** - YouTube, TikTok, Instagram, Twitter, Facebook, LinkedIn  
-✅ **VEO-2/VEO-3** - Latest Google video generation models  
-✅ **Frame Continuity** - Seamless clip transitions  
-✅ **Content Intelligence** - Viral pattern optimization  
-✅ **Zero Linter Errors** - Pristine code quality
-
-## �� Core Features
-
-### 🤖 Multi-Agent AI System
-- **Director Agent** - Script writing and content optimization
-- **Voice Director** - Emotion-aware voice selection (37 languages)
-- **Continuity Decision Agent** - Frame-to-frame consistency
-- **Visual Style Agent** - Platform-specific visual optimization
-- **Trend Analyst** - Real-time viral content detection
-- **Script Writer** - Intelligent content structuring
-- **Editor Agent** - Post-production optimization
-- **Soundman Agent** - Audio synchronization and mixing
-
-### 🎬 Video Generation
-- **VEO-2 & VEO-3** - Google's latest video generation models
-- **Multi-format** - 9:16, 16:9, 1:1 aspect ratios
-- **Frame Continuity** - Seamless transitions between clips
-- **Audio Integration** - Synchronized voice and background music
-- **Intelligent Subtitles** - Audio-synchronized timing with multiple segments
-- **Dynamic Overlays** - Animated TikTok-optimized positioning with sine wave effects
-- **Quality Control** - Automated content policy validation
-
-### 🌍 Multilingual Support
-- **37 Languages** - Complete global coverage
-- **RTL Languages** - Hebrew, Arabic, Persian with proper validation
-- **Voice Synthesis** - Native pronunciation for each language
-- **Cultural Context** - Region-specific content adaptation
-- **Script Optimization** - Language-specific viral patterns
-
-### 📱 Platform Integration
-- **YouTube** - Long-form and Shorts optimization
-- **TikTok** - Viral trend integration
-- **Instagram** - Reels and Stories formatting
-- **Twitter** - Video tweet optimization
-- **Facebook** - Feed and Stories content
-- **LinkedIn** - Professional content styling
-
-## 🏗️ Architecture
-
-### Clean Architecture Implementation
-```
-├── 🎯 Domain Layer (Core Business Logic)
-│   ├── Entities (VideoEntity, SessionEntity, AgentEntity)
-│   └── Use Cases (Video Generation, Session Management, Agent Orchestration)
-├── 🔧 Application Layer (Orchestration)
-│   ├── AI Agents (Director, Voice Director, Continuity, etc.)
-│   └── Services (Video Generation, Script Processing, Audio)
-├── 🌐 Infrastructure Layer (External Services)
-│   ├── Repositories (File-based, Database-ready)
-│   ├── Google AI Studio Integration
-│   ├── Vertex AI Integration
-│   └── Cloud Services (TTS, Storage)
-└── 🖥️ Presentation Layer (User Interface)
-    ├── CLI Interface
-    ├── Web UI (Modern React + FastAPI)
-    └── API Endpoints (RESTful)
-```
-
-### SOLID Principles Compliance
-- ✅ **Single Responsibility** - Each agent has one clear purpose
-- ✅ **Open/Closed** - Extensible without modification
-- ✅ **Liskov Substitution** - Proper inheritance hierarchies
-- ✅ **Interface Segregation** - Focused, minimal interfaces
-- ✅ **Dependency Inversion** - Abstractions over concretions
-
-## 🧪 Testing
-
-### Comprehensive Test Suite
+### Installation
 ```bash
-# Run all tests
-python run_unit_tests.py
-
-# Quick verification
-python verify_tests.py
-
-# Test Results (v2.4-RC1)
-# 216 passed, 0 failed ✅ (100% success rate)
-```
-
-### Test Coverage
-- **Core Entities** - 100% business logic coverage (33 tests)
-- **AI Agents** - Complete agent functionality testing (30 tests)
-- **Video Generation** - Full pipeline validation (13 tests)
-- **Use Cases** - Business logic verification (18 tests)
-- **Resilience Patterns** - Circuit breakers and retry mechanisms (29 tests)
-- **Orchestrators** - Multi-agent coordination validation (8 tests)
-- **Script Processing** - TTS optimization testing (9 tests)
-- **Constructor Validation** - Parameter checking (54 tests)
-- **Integration** - End-to-end workflow testing (22 tests)
-
-### Production Readiness
-- ✅ **216/216 tests passing** - 100% success rate
-- ✅ **Zero linter errors** - Clean code compliance
-- ✅ **Comprehensive coverage** - All critical paths tested
-- ✅ **Performance validated** - Tests complete in ~2.5 minutes
-- ✅ **Error handling** - Robust failure scenarios covered
-- ✅ **Mock validation** - Proper service interface testing
-
-## 🚀 Quick Start
-
-### 1. Installation
-```bash
-# Clone repository
-git clone https://github.com/your-org/viralAi.git
+git clone <repository-url>
 cd viralAi
-
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# .venv\Scripts\activate     # Windows
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Configuration
+### Authentication Setup
 ```bash
-# Copy environment template
-cp config.env.example config.env
-
-# Edit configuration
-nano config.env
+# The system will automatically configure authentication
+python main.py generate --mission "Test video" --platform instagram --duration 10
 ```
 
-Required settings:
-```env
-GOOGLE_API_KEY=your_google_ai_studio_key
-VERTEX_PROJECT_ID=your_vertex_project_id
-VERTEX_LOCATION=us-central1
-VERTEX_GCS_BUCKET=your_gcs_bucket
-```
-
-### 3. Quick Test
+### Basic Usage
 ```bash
-# Run system test
-python -c "
-from src.generators.video_generator import VideoGenerator
-from src.models.video_models import Platform
-
-# Initialize generator
-generator = VideoGenerator('your_api_key')
-print('✅ ViralAI initialized successfully!')
-print(f'✅ Supported platforms: {[p.value for p in Platform]}')
-"
-```
-
-### 4. Run the Web Application
-
-**🎨 Launch Full Stack App (Recommended)**
-```bash
-# Install Node.js dependencies and start both frontend + backend
-./run_app.sh
-
-# Or for development mode with hot reload
-./run_app.sh --dev
-```
-
-**🖥️ CLI Usage (Alternative)**
-```bash
-# Generate video via command line
+# Generate a professional video with 22 AI agents
 python main.py generate \
-  --mission "Create engaging AI content about space exploration" \
-  --platform youtube \
+  --mission "Teach kids about recycling" \
+  --platform instagram \
+  --duration 15 \
+  --mode professional
+
+# Generate with specific style and tone
+python main.py generate \
+  --mission "Promote healthy eating habits" \
+  --platform tiktok \
   --duration 30 \
-  --category Educational \
-  --mode enhanced
+  --style viral \
+  --tone engaging \
+  --visual-style dynamic
+
+# Cost-effective testing mode
+python main.py generate \
+  --mission "Test content creation" \
+  --platform youtube \
+  --duration 20 \
+  --cheap full
 ```
 
-**🌐 Web Interface**
-- **Production App**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-- **Development Frontend**: http://localhost:5173 (with --dev flag)
+## Key Features
 
-**🎬 Features Available in Web UI**
-- Real-time video generation progress
-- AI agent discussion monitoring
-- Script editing with live preview
-- Overlay and subtitle management
-- Video download and sharing
-- Session management and history
+### 🎯 **Centralized Decision Framework**
+- All decisions made upfront before generation
+- No conflicting parameters between components
+- Complete traceability of decision sources
+- Consistent results across all components
 
-## 📊 Performance Metrics
+### 🤖 **22 AI Agents System**
+- **Professional Mode**: 22 specialized agents
+- **Enhanced Mode**: 7 core agents  
+- **Simple Mode**: Minimal AI for fast generation
+- Consensus-based collaboration
+- Platform-specific optimizations
 
-### System Reliability
-- **Test Success Rate:** 100% (88/88 tests passing)
-- **Error Recovery:** < 5 seconds average
-- **Content Policy Compliance:** 100%
-- **Multi-language Accuracy:** 37 languages verified
+### 🎬 **Advanced Video Generation**
+- **VEO-2**: Google's latest video generation model
+- **VEO-3**: Premium model with native audio
+- **Fallback**: FFmpeg-based generation for testing
+- Frame continuity for seamless transitions
+- Precise duration control
 
-### Generation Performance
-- **Video Generation:** 5-8 minutes for 30-second clips
-- **Agent Response Time:** < 30 seconds average
-- **Frame Continuity:** Verified seamless transitions
-- **Audio Synchronization:** Tested and validated
+### 🎵 **Intelligent Audio**
+- AI-powered voice selection
+- Enhanced multilingual TTS
+- Voice strategy optimization
+- Perfect audio-video synchronization
 
-## 🛡️ Resilience Features
+### 📱 **Social Media Integration**
+- Auto-posting to Instagram, TikTok, YouTube
+- AI-generated trending hashtags
+- Platform-specific optimization
+- Engagement tracking
 
-### Error Handling
-- **Circuit Breaker Pattern** - Automatic failure detection and recovery
-- **Retry Mechanisms** - Exponential backoff with configurable strategies
-- **Graceful Degradation** - Fallback options for service failures
-- **Comprehensive Logging** - Detailed operation tracking
+### 💰 **Cost Management**
+- **Cheap Mode**: Cost-effective testing
+- **Granular Levels**: Full/Audio/Video cheap modes
+- **Fallback Systems**: Automatic cost reduction
+- **Quota Management**: Smart resource usage
 
-### Monitoring
-- **Performance Metrics** - Real-time system monitoring
-- **Resource Usage** - Memory and CPU optimization
-- **Session Tracking** - Complete lifecycle management
-- **Health Checks** - Automated system validation
+## System Architecture
 
-## 📚 Documentation
+### Decision-First Architecture
+```
+CLI Input → Decision Framework → Core Decisions → All Components
+```
 
-### User Guides
-- [📖 Setup Guide](docs/SETUP_GUIDE.md) - Complete installation instructions
-- [🎯 Usage Guide](docs/USAGE_GUIDE.md) - Feature tutorials and examples
-- [🏗️ Platform Guide](docs/PLATFORM_GUIDE.md) - Architecture deep-dive
-- [🔧 Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
+### AI Agent Discussions
+```
+22 Agents → 7 Discussion Topics → Consensus → Strategy Implementation
+```
 
-### Developer Resources
-- [🧪 Testing Guide](tests/README.md) - Test suite documentation
-- [🏛️ Architecture Docs](docs/FEATURES_VERIFICATION.md) - System design
-- [🔄 Release Notes](RELEASE_NOTES_v2.4-RC1.md) - Latest changes
-- [📋 Feature Matrix](docs/FEATURES_VERIFICATION.md) - Capability overview
+### Generation Pipeline
+```
+Decisions → Discussions → Scripts → Video/Audio → Assembly → Social Media
+```
 
-## 🎯 Use Cases
+## Command Line Options
 
-### Content Creators
-- **Viral Video Generation** - AI-optimized content for maximum engagement
-- **Multi-platform Publishing** - Automated formatting for each platform
-- **Trend Integration** - Real-time viral pattern incorporation
-- **Global Reach** - 37-language content generation
+### Required Parameters
+- `--mission` - Video mission/topic (e.g., "Teach about climate change")
+- `--platform` - Target platform (instagram, tiktok, youtube, twitter, linkedin)
 
-### Businesses
-- **Marketing Campaigns** - Professional video content at scale
-- **Product Demos** - Automated demonstration videos
-- **Training Content** - Educational video generation
-- **Social Media** - Consistent brand messaging across platforms
+### Optional Parameters
+- `--duration` - Video duration in seconds (default: 20)
+- `--mode` - Generation mode (simple/enhanced/professional, default: enhanced)
+- `--style` - Content style (viral/educational/professional, default: viral)
+- `--tone` - Content tone (engaging/professional/humorous, default: engaging)
+- `--visual-style` - Visual style (dynamic/minimalist/cinematic, default: dynamic)
+- `--category` - Content category (Comedy/Educational/Entertainment/News/Tech)
+- `--target-audience` - Target audience description
+- `--cheap` - Cheap mode level (full/audio/video/off, default: off)
+- `--no-cheap` - Disable cheap mode
+- `--frame-continuity` - Enable frame continuity (on/off/auto, default: auto)
 
-### Agencies
-- **Client Campaigns** - Rapid video production for multiple clients
-- **A/B Testing** - Multiple video variants for optimization
-- **Scalable Production** - High-volume content generation
-- **Quality Assurance** - Automated content policy compliance
+## Generation Modes
 
-## 🔮 Roadmap
+### Simple Mode
+- Basic generation with minimal AI
+- Fastest generation time
+- Lowest cost
+- Good for testing
 
-### v2.5 (Next Release)
-- **Async Architecture** - Full async/await implementation
-- **Advanced Analytics** - Enhanced performance metrics
-- **API Layer** - RESTful service endpoints
-- **Docker Support** - Containerized deployment
+### Enhanced Mode (Default)
+- 7 AI agents with discussions
+- Balanced performance and quality
+- Moderate cost
+- Recommended for most use cases
 
-### v3.0 (Future)
-- **Real-time Generation** - Live video streaming
-- **Advanced AI Models** - Integration with latest models
-- **Collaborative Features** - Team-based content creation
-- **Enterprise SSO** - Advanced authentication
+### Professional Mode
+- 22 AI agents with comprehensive discussions
+- Highest quality and optimization
+- Premium cost
+- Best for production content
 
-## 🤝 Contributing
+## Platform Support
 
-We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
+### Instagram
+- 9:16 aspect ratio
+- 15-90 second duration
+- Auto-posting with hashtags
+- Stories and Reels optimization
 
-### Development Setup
+### TikTok
+- 9:16 aspect ratio
+- 15-60 second duration
+- Trend-based optimization
+- Hashtag strategy
+
+### YouTube
+- 16:9 aspect ratio
+- 15-300 second duration
+- SEO optimization
+- Thumbnail generation
+
+### Twitter
+- 16:9 aspect ratio
+- 15-140 second duration
+- Character-limited captions
+- Engagement optimization
+
+### LinkedIn
+- 16:9 aspect ratio
+- 15-300 second duration
+- Professional tone adaptation
+- Business-focused content
+
+## Session Management
+
+Every generation creates a session with complete tracking:
+
+```
+outputs/session_YYYYMMDD_HHMMSS/
+├── decisions/           # All decisions made
+├── discussions/         # AI agent discussions
+├── scripts/            # Script versions
+├── audio/              # Audio files
+├── video_clips/        # Generated clips
+├── final_output/       # Final video
+├── hashtags/           # Generated hashtags
+├── logs/               # Comprehensive logs
+└── metadata/           # Session metadata
+```
+
+## Configuration
+
+### Environment Variables
 ```bash
-# Install development dependencies
-pip install -r requirements-dev.txt
-
-# Run tests
-python -m pytest tests/ -v
-
-# Run linting
-flake8 src/ tests/
-
-# Format code
-black src/ tests/
+export GOOGLE_AI_API_KEY="your-gemini-api-key"
+export GOOGLE_CLOUD_PROJECT="your-gcp-project"
 ```
 
-## 📄 License
+### Configuration Files
+- `config.json` - User preferences
+- `CLAUDE.md` - System instructions
+- Platform-specific settings
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Cost Optimization
 
-## 🙏 Acknowledgments
+### Cheap Mode Options
+```bash
+# Full cheap mode - text video + gTTS audio
+python main.py generate --mission "Test" --cheap full
 
-- **Google AI** - For the powerful Gemini and VEO models
-- **Vertex AI** - For enterprise-grade infrastructure
-- **Open Source Community** - For the amazing tools and libraries
+# Audio cheap mode - normal video + gTTS audio  
+python main.py generate --mission "Test" --cheap audio
+
+# Video cheap mode - fallback video + normal audio
+python main.py generate --mission "Test" --cheap video
+```
+
+### Resource Management
+- Automatic fallback on quota exceeded
+- Smart retry logic
+- Cost tracking and reporting
+- Batch processing optimization
+
+## Monitoring & Debugging
+
+### Comprehensive Logging
+- Decision traceability
+- AI agent discussions
+- Generation pipeline tracking
+- Performance metrics
+
+### Session Analysis
+- Complete audit trail
+- Error debugging
+- Performance analysis
+- Cost tracking
+
+## Security & Privacy
+
+### Authentication
+- Google Cloud IAM integration
+- Secure API key management
+- Auto-authentication setup
+
+### Data Protection
+- No sensitive data in logs
+- Secure credential storage
+- Session-based file organization
+
+## Troubleshooting
+
+### Common Issues
+1. **Authentication Problems**: Run any command - system auto-fixes
+2. **Quota Exceeded**: Use `--cheap full` for testing
+3. **Duration Conflicts**: All resolved with centralized decisions
+4. **VEO Unavailable**: Automatic fallback to alternative generation
+
+### Getting Help
+- Check `logs/` directory for detailed error information
+- Review session files for debugging
+- Use `--cheap full` for cost-effective testing
+
+## Advanced Usage
+
+### Custom Workflows
+```bash
+# Educational content with specific targeting
+python main.py generate \
+  --mission "Explain photosynthesis to middle school students" \
+  --platform youtube \
+  --duration 60 \
+  --style educational \
+  --tone engaging \
+  --target-audience "middle school students"
+
+# Marketing content with brand focus
+python main.py generate \
+  --mission "Promote our new sustainable products" \
+  --platform instagram \
+  --duration 30 \
+  --style professional \
+  --tone engaging \
+  --visual-style cinematic
+```
+
+### Batch Processing
+```bash
+# Generate multiple videos with different parameters
+for platform in instagram tiktok youtube; do
+  python main.py generate \
+    --mission "Daily motivation tip" \
+    --platform $platform \
+    --duration 15 \
+    --mode professional
+done
+```
+
+## Architecture Documents
+
+- 📖 **[SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md)** - Complete technical architecture
+- 🔄 **[CURRENT_FLOW.md](CURRENT_FLOW.md)** - Detailed system flow and operation
+- 🔧 **[docs/](docs/)** - Additional documentation and guides
+
+## Contributing
+
+This is a production system with comprehensive AI integration. For modifications:
+
+1. Review the centralized decision framework
+2. Understand the AI agent system
+3. Follow the session management patterns
+4. Test with `--cheap full` mode first
+
+## License
+
+[License information]
 
 ---
 
-**Built with ❤️ by the ViralAI Team**
-
-*Empowering creators with AI-driven video generation*
-
-## 📞 Support
-
-- **Documentation:** [docs/](docs/)
-- **Issues:** [GitHub Issues](https://github.com/your-org/viralAi/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/your-org/viralAi/discussions)
-- **Email:** support@viralai.com
-
----
-
-**Ready for Production Testing** 🚀
+**ViralAI** - *Where AI meets viral content creation* 🚀

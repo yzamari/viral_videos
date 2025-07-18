@@ -124,7 +124,7 @@ def generate(**kwargs):
             mission=kwargs['mission'],
             category=kwargs.get('category', 'Comedy'),
             platform=kwargs.get('platform', 'tiktok'),
-            duration=kwargs.get('duration', 40),
+            duration=kwargs.get('duration', 20),
             image_only=kwargs.get('image_only', False),
             fallback_only=kwargs.get('fallback_only', False),
             force=kwargs.get('force', False),

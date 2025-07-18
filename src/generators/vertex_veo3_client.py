@@ -63,7 +63,7 @@ class VertexAIVeo3Client(BaseVeoClient):
         """Get the model name"""
         return self.veo3_model
 
-    def generate_video(self, prompt: str, duration: float = 8.0,
+    def generate_video(self, prompt: str, duration: float,
                       clip_id: str = "clip", image_path: Optional[str] = None,
                       enable_audio: bool = True, aspect_ratio: str = "9:16") -> str:
         """
@@ -97,6 +97,7 @@ class VertexAIVeo3Client(BaseVeoClient):
                 return self._create_fallback_clip(prompt, duration, clip_id)
 
         logger.info(f"🎬 Starting VEO-3 generation for clip: {clip_id}")
+        logger.info(f"⏱️ VEO-3 Duration Requested: {duration}s")
 
         try:
             # Enhance prompt for VEO-3 with audio and cinematic instructions

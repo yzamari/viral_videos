@@ -148,6 +148,10 @@ class GeneratedVideoConfig:
     # NEW: Video orientation settings
     video_orientation: VideoOrientation = VideoOrientation.AUTO
     ai_decide_orientation: bool = True  # Let AI agents decide orientation
+    
+    # NEW: Core decision integration
+    num_clips: Optional[int] = None
+    clip_durations: Optional[List[float]] = None
 
     # Advanced settings
     frame_continuity: bool = False

@@ -232,7 +232,9 @@ class IntegratedMultilingualGenerator:
 
         try:
             # Calculate number of clips based on duration
-            num_clips = max(3, config.duration_seconds // 8)
+            # Use conservative estimate: ~3-4 seconds per clip for better quality
+            num_clips = max(2, min(5, config.duration_seconds // 3))
+            logger.info(f"⏱️ Multilang Voice: Duration {config.duration_seconds}s → {num_clips} clips")
 
             result = self.voice_director.analyze_content_and_select_voices(
                 topic=config.topic,
@@ -371,14 +373,17 @@ class IntegratedMultilingualGenerator:
 
         # This is a placeholder - in the full integration, this would call
         # the existing video generation system
-        num_clips = max(3, config.duration_seconds // 8)
+        num_clips = max(2, min(5, config.duration_seconds // 3))
+        clip_duration = config.duration_seconds / num_clips
+        
+        logger.info(f"⏱️ Multilang Clips: Duration {config.duration_seconds}s → {num_clips} clips @ {clip_duration:.1f}s each")
 
         shared_clips = []
         for i in range(num_clips):
             shared_clips.append({
                 "clip_id": f"shared_clip_{i}",
                 "clip_path": f"placeholder_clip_{i}.mp4",
-                "duration": 8,
+                "duration": clip_duration,
                 "scene_index": i,
                 "prompt": f"Scene {i + 1} of {config.topic}",
                 "success": True

@@ -405,7 +405,9 @@ class VideoGenerator:
             
         except Exception as e:
             logger.error(f"❌ Continuous VEO2 generation failed: {e}")
-            return []
+            # Fallback to standard generation if continuous fails
+            logger.warning("🔄 Falling back to standard video generation")
+            return self._generate_standard_video_clips(config, script_result, style_decision, session_context)
 
     """Main video generator that orchestrates all AI agents and generation components"""
     
@@ -867,6 +869,22 @@ class VideoGenerator:
     
     def _get_visual_style_decision(self, config: GeneratedVideoConfig) -> Dict[str, Any]:
         """Get AI decision for visual style"""
+        
+        # Check if user has explicitly set a visual style
+        if hasattr(config, 'visual_style') and config.visual_style and config.visual_style.lower() in [
+            'realistic', 'cartoon', 'disney', 'anime', 'comic', 'minimalist', 
+            'retro', 'cyberpunk', 'watercolor', 'clay', 'dynamic'
+        ]:
+            logger.info(f"🎨 Using user-specified visual style: {config.visual_style}")
+            # Return user's preference with high confidence
+            return {
+                'primary_style': config.visual_style.lower(),
+                'color_palette': 'natural' if config.visual_style.lower() == 'realistic' else 'vibrant',
+                'reasoning': f'User explicitly requested {config.visual_style} style',
+                'engagement_prediction': 'high'
+            }
+        
+        # Otherwise, let AI decide based on content
         logger.info("🎨 Getting AI visual style decision")
         
         style_decision = self.style_agent.analyze_optimal_style(
@@ -903,29 +921,62 @@ class VideoGenerator:
         """Generate video clips using VEO factory or fallback for debugging"""
         logger.info("🎬 Generating video clips with VEO factory")
         
-        # Use frame continuity if enabled
+        # Check if continuous generation is enabled
+        use_continuous_generation = getattr(config, 'continuous_generation', False)
         use_frame_continuity = getattr(config, 'frame_continuity_enabled', False)
+        
+        logger.info(f"🎬 Continuous generation: {'✅ ENABLED' if use_continuous_generation else '❌ DISABLED'}")
         logger.info(f"🎬 Frame continuity: {'✅ ENABLED' if use_frame_continuity else '❌ DISABLED'}")
+        
+        # If continuous generation is enabled, use the dedicated continuous mode
+        if use_continuous_generation:
+            logger.info("🎬 Using continuous VEO2 generation mode")
+            script_segments = script_result.get('segments', [])
+            return self._generate_continuous_veo2_video(config, session_context, script_segments)
+        
+        return self._generate_standard_video_clips(config, script_result, style_decision, session_context)
+    
+    def _generate_standard_video_clips(self, config: GeneratedVideoConfig, 
+                                      script_result: Dict[str, Any],
+                                      style_decision: Dict[str, Any],
+                                      session_context: SessionContext) -> List[str]:
+        """Generate video clips using standard individual clip generation"""
+        logger.info("🎬 Generating standard video clips")
         
         clips = []
         # Get script segments to determine number of clips
-        script_segments = script_result.get('segments', [])
-        if not script_segments:
-            # Fallback to duration-based calculation
-            num_clips = max(3, int(config.duration_seconds / 5))
-            logger.warning(f"⚠️ No script segments found, using duration-based clips: {num_clips}")
+        # CRITICAL: Use core decisions for clip count if available
+        if hasattr(config, 'num_clips') and config.num_clips is not None:
+            num_clips = config.num_clips
+            logger.info(f"🎯 Using core decisions: {num_clips} clips from centralized decision framework")
         else:
-            num_clips = len(script_segments)
-            logger.info(f"🎬 Using script segments: {num_clips} clips matching {num_clips} segments")
+            script_segments = script_result.get('segments', [])
+            if not script_segments:
+                # Fallback to duration-based calculation
+                num_clips = max(3, int(config.duration_seconds / 5))
+                logger.warning(f"⚠️ No script segments found, using duration-based clips: {num_clips}")
+            else:
+                num_clips = len(script_segments)
+                logger.info(f"🎬 Using script segments: {num_clips} clips matching {num_clips} segments")
         
-        # Use actual script segment durations instead of average
-        if script_segments:
-            clip_durations = [segment.get('duration', config.duration_seconds / num_clips) for segment in script_segments]
-            logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips with segment-based durations")
+        # CRITICAL: Use core decisions for clip durations if available
+        if hasattr(config, 'clip_durations') and config.clip_durations is not None:
+            clip_durations = config.clip_durations
+            logger.info(f"🎯 Using core decisions clip durations: {[f'{d:.1f}s' for d in clip_durations]}")
+            logger.info(f"⏱️ Total from core decisions: {sum(clip_durations):.1f}s (Target: {config.duration_seconds}s)")
         else:
-            avg_duration = config.duration_seconds / num_clips
-            clip_durations = [avg_duration] * num_clips
-            logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips ({avg_duration:.1f}s each)")
+            # Use actual script segment durations instead of average
+            script_segments = script_result.get('segments', [])
+            if script_segments:
+                clip_durations = [segment.get('duration', config.duration_seconds / num_clips) for segment in script_segments]
+                logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips with segment-based durations")
+                logger.info(f"⏱️ Individual Clip Durations: {[f'{d:.1f}s' for d in clip_durations]}")
+                logger.info(f"⏱️ Total Clip Duration Sum: {sum(clip_durations):.1f}s (Target: {config.duration_seconds}s)")
+            else:
+                avg_duration = config.duration_seconds / num_clips
+                clip_durations = [avg_duration] * num_clips
+                logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips ({avg_duration:.1f}s each)")
+            logger.info(f"⏱️ All Clips Duration: {[f'{avg_duration:.1f}s'] * num_clips}")
         
         last_frame_image = None
         
@@ -951,9 +1002,11 @@ class VideoGenerator:
                     clip_duration = segment.get('duration', config.duration_seconds / num_clips)
                     # Create more specific prompt based on segment content
                     prompt = f"{config.topic}, {segment_text[:50]}, {style_decision.get('primary_style', 'dynamic')} style, scene {i+1}"
+                    logger.info(f"⏱️ Clip {i+1} Duration: {clip_duration:.1f}s (from segment)")
                 else:
                     # Fallback for when segments don't match
                     clip_duration = config.duration_seconds / num_clips
+                    logger.info(f"⏱️ Clip {i+1} Duration: {clip_duration:.1f}s (fallback average)")
                     prompt = f"{config.topic}, {style_decision.get('primary_style', 'dynamic')} style, scene {i+1}"
                 
                 # Enhance prompt with style
@@ -1080,9 +1133,13 @@ class VideoGenerator:
                     'duration': config.duration_seconds
                 }]
             
-            # CRITICAL FIX: Generate voice configuration for the actual number of segments
-            num_segments = len(script_segments)
-            logger.info(f"🎤 Generating voice configuration for {num_segments} segments")
+            # CRITICAL FIX: Use core decisions for number of clips if available
+            if hasattr(config, 'num_clips') and config.num_clips is not None:
+                num_segments = config.num_clips
+                logger.info(f"🎯 Using core decisions for audio generation: {num_segments} clips")
+            else:
+                num_segments = len(script_segments)
+                logger.info(f"🎤 Generating voice configuration for {num_segments} script segments")
             
             # Get AI voice selection strategy for the correct number of segments
             voice_strategy = self.voice_director.analyze_content_and_select_voices(
@@ -1092,7 +1149,7 @@ class VideoGenerator:
                 platform=config.target_platform,
                 category=config.category,
                 duration_seconds=config.duration_seconds,
-                num_clips=num_segments  # Use actual number of segments, not fixed number
+                num_clips=num_segments  # Use core decisions or script segments
             )
             
             # Store voice_config for AI discussions
@@ -1111,18 +1168,44 @@ class VideoGenerator:
                     "reasoning": "Fallback voice configuration - voice_strategy was None"
                 }
             
-            # Generate audio files for each segment
+            # Generate audio files for each segment - use core decisions when available
             temp_audio_files = []
-            for i, segment in enumerate(script_segments):
+            
+            # If we have core decisions, create segments based on them
+            if hasattr(config, 'num_clips') and config.num_clips is not None and hasattr(config, 'clip_durations') and config.clip_durations is not None:
+                # Use core decisions to create segments
+                logger.info(f"🎯 Creating audio segments from core decisions: {config.num_clips} clips")
+                full_script = script_result.get('final_script', config.topic)
+                
+                # Split script into the required number of segments
+                segments_to_generate = []
+                words = full_script.split()
+                total_words = len(words)
+                
+                for i in range(config.num_clips):
+                    # Calculate word range for this segment
+                    start_word = int(i * total_words / config.num_clips)
+                    end_word = int((i + 1) * total_words / config.num_clips)
+                    segment_text = ' '.join(words[start_word:end_word])
+                    segment_duration = config.clip_durations[i]
+                    
+                    segments_to_generate.append({
+                        'text': segment_text,
+                        'duration': segment_duration
+                    })
+                    
+                logger.info(f"🎯 Generated {len(segments_to_generate)} audio segments from core decisions")
+            else:
+                # Use script segments as fallback
+                segments_to_generate = script_segments
+                logger.info(f"🎤 Using {len(segments_to_generate)} script segments for audio generation")
+            
+            # Generate audio for each segment
+            for i, segment in enumerate(segments_to_generate):
                 segment_text = segment.get('text', '')
                 segment_duration = segment.get('duration', 5.0)
                 
-                logger.info(f"🎵 Generating audio for segment {i+1}/{len(script_segments)}: '{segment_text[:50]}...' (duration: {segment_duration:.1f}s)")
-                
-                # CRITICAL FIX: Ensure segment duration doesn't exceed target
-                if segment_duration > config.duration_seconds / len(script_segments):
-                    segment_duration = config.duration_seconds / len(script_segments)
-                    logger.info(f"🎵 Adjusted segment {i+1} duration to {segment_duration:.1f}s to fit target")
+                logger.info(f"🎵 Generating audio for segment {i+1}/{len(segments_to_generate)}: '{segment_text[:50]}...' (duration: {segment_duration:.1f}s)")
                 
                 # Generate audio for this specific segment
                 segment_audio_files = self.tts_client.generate_intelligent_voice_audio(
@@ -1134,7 +1217,7 @@ class VideoGenerator:
                     duration_seconds=int(segment_duration),  # Convert to int
                     num_clips=num_segments,  # Use actual number of segments
                     clip_index=i,  # This should now be within range
-                    cheap_mode=getattr(config, 'cheap_mode', False) or getattr(config, 'cheap_mode_level', 'full') in ['audio', 'full']  # Use cheap audio for audio/full modes
+                    cheap_mode=getattr(config, 'cheap_mode', False) or (getattr(config, 'cheap_mode', False) and getattr(config, 'cheap_mode_level', 'full') in ['audio', 'full'])  # Use cheap audio only when cheap_mode is enabled
                 )
                 
                 if segment_audio_files and len(segment_audio_files) > 0:
@@ -1290,11 +1373,12 @@ class VideoGenerator:
                 session_context
             )
             
-            # Step 5: Add 1.5 second black screen fade out (OPTIONAL - only if duration allows)
-            if config.duration_seconds >= 15:  # Only add fade-out for longer videos
+            # Step 5: Add final fadeout ending (for all videos)
+            # Note: Basic fadeout already applied during trimming, this adds additional black screen if needed
+            if config.duration_seconds >= 10:  # Add black screen fadeout for videos 10s+
                 final_video_path = self._add_fade_out_ending(oriented_video_path, session_context)
             else:
-                logger.info(f"🎬 Skipping fade-out for short video ({config.duration_seconds}s)")
+                logger.info(f"🎬 Skipping additional black screen fadeout for short video ({config.duration_seconds}s)")
                 final_video_path = oriented_video_path
             
             # Step 6: Save to session
@@ -1408,6 +1492,9 @@ class VideoGenerator:
                     '-y', overlay_path
                 ]
                 
+                logger.info(f"🎬 Applying overlays with FFmpeg command: {' '.join(cmd)}")
+                logger.info(f"🎨 Filter complex: {filter_complex}")
+                
                 result = subprocess.run(cmd, capture_output=True, text=True)
                 
                 if result.returncode == 0 and os.path.exists(overlay_path):
@@ -1419,7 +1506,9 @@ class VideoGenerator:
                         'hook_text': config.hook,
                         'cta_text': config.call_to_action,
                         'style_decision': style_decision,
-                        'positioning_decision': positioning_decision
+                        'positioning_decision': positioning_decision,
+                        'ffmpeg_command': ' '.join(cmd),
+                        'filter_complex': filter_complex
                     }
                     
                     metadata_path = session_context.get_output_path("overlays", "overlay_metadata.json")
@@ -1430,7 +1519,10 @@ class VideoGenerator:
                     
                     return overlay_path
                 else:
-                    logger.warning(f"⚠️ Overlay application failed: {result.stderr}")
+                    logger.error(f"❌ Overlay application failed with return code {result.returncode}")
+                    logger.error(f"❌ FFmpeg stderr: {result.stderr}")
+                    logger.error(f"❌ FFmpeg stdout: {result.stdout}")
+                    logger.error(f"❌ Command that failed: {' '.join(cmd)}")
                     return video_path
             else:
                 logger.info("📝 No text overlays to add")
@@ -2657,8 +2749,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
     def _create_short_multi_line_text(self, text: str, max_words_per_line: int = 4) -> str:
         """Create smart multi-line text for overlays with overflow prevention"""
         try:
-            # Clean the text
-            cleaned_text = text.replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
+            # Clean the text - enhanced for FFmpeg compatibility
+            cleaned_text = text.replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '').replace('\\', '').replace('/', '').replace('(', '').replace(')', '').replace('[', '').replace(']', '').replace('{', '').replace('}', '')
             
             # Split into words
             words = cleaned_text.split()
@@ -2916,7 +3008,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 logger.error(f"❌ Even fallback hashtags failed: {fallback_error}")
 
     def _trim_video_to_duration(self, video_path: str, target_duration: float, session_context: SessionContext) -> Optional[str]:
-        """Trim video to the specified duration using FFmpeg"""
+        """Trim video to the specified duration with smooth audio/video fadeout"""
         try:
             import subprocess
             
@@ -2924,23 +3016,46 @@ This is a placeholder file. In a full implementation, this would be a complete M
             temp_output_path = session_context.get_output_path("temp_files", "trimmed_video.mp4")
             os.makedirs(os.path.dirname(temp_output_path), exist_ok=True)
             
-            # Use ffmpeg to trim the video
+            # Calculate fade duration (1.5s or 10% of video, whichever is smaller)
+            fade_duration = min(1.5, target_duration * 0.1)
+            fade_start = target_duration - fade_duration
+            
+            logger.info(f"⏱️ Trimming to {target_duration}s with {fade_duration}s fadeout starting at {fade_start}s")
+            
+            # Use ffmpeg to trim with audio and video fadeout
             cmd = [
                 'ffmpeg', '-y',
                 '-i', video_path,
                 '-t', str(target_duration),
-                '-c', 'copy',
+                '-af', f'afade=t=out:st={fade_start}:d={fade_duration}',  # Audio fadeout
+                '-vf', f'fade=t=out:st={fade_start}:d={fade_duration}',   # Video fadeout
+                '-c:v', 'libx264', '-c:a', 'aac',  # Re-encode for smooth fade
                 temp_output_path
             ]
             
             result = subprocess.run(cmd, capture_output=True, text=True)
             
             if result.returncode == 0 and os.path.exists(temp_output_path):
-                logger.info(f"✅ Video trimmed to {target_duration}s")
+                logger.info(f"✅ Video trimmed to {target_duration}s with smooth fadeout")
                 return temp_output_path
             else:
-                logger.error(f"❌ Failed to trim video: {result.stderr}")
-                return None
+                logger.error(f"❌ Failed to trim video with fadeout: {result.stderr}")
+                # Fallback to basic trim without fadeout
+                logger.info("🔄 Attempting basic trim without fadeout...")
+                fallback_cmd = [
+                    'ffmpeg', '-y',
+                    '-i', video_path,
+                    '-t', str(target_duration),
+                    '-c', 'copy',
+                    temp_output_path
+                ]
+                fallback_result = subprocess.run(fallback_cmd, capture_output=True, text=True)
+                if fallback_result.returncode == 0 and os.path.exists(temp_output_path):
+                    logger.info(f"✅ Video trimmed to {target_duration}s (basic trim)")
+                    return temp_output_path
+                else:
+                    logger.error(f"❌ Even basic trim failed: {fallback_result.stderr}")
+                    return None
                 
         except Exception as e:
             logger.error(f"❌ Error trimming video: {e}")
