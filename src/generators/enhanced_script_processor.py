@@ -116,6 +116,19 @@ REQUIREMENTS:
 3. NATURAL FLOW: Maintain conversational tone
 4. SEGMENT BREAKDOWN: Split into logical segments for multi-voice generation
 5. TIMING CALCULATION: Estimate speaking time (average 3 words per second)
+6. CONTRACTION AVOIDANCE: NEVER use contractions - always write full forms (use "do not" instead of "don't", "it is" instead of "it's", "let us" instead of "let's", etc.)
+
+CRITICAL TTS RULES:
+- Replace ALL contractions with their full expanded forms
+- Use "is not" instead of "isn't" 
+- Use "do not" instead of "don't"
+- Use "let us" instead of "let's"
+- Use "it is" instead of "it's"
+- Use "we are" instead of "we're"
+- Use "they are" instead of "they're"
+- Use "will not" instead of "won't"
+- Use "cannot" instead of "can't"
+- This prevents TTS from pronouncing contractions as separate letters (like "I S N T")
 
 DURATION CALCULATION:
 - Average speaking speed: 3 words per second
@@ -249,16 +262,33 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
             # Simple word-based trimming/expansion
             words = script_content.split()
             
-            if len(words) > target_words:
-                # Trim to target word count
-                optimized_text = ' '.join(words[:target_words])
-                logger.info(f"📏 Trimmed script from {len(words)} to {target_words} words")
-            elif len(words) < target_words * 0.8:
-                # Expand if significantly short (less than 80% of target)
+            if len(words) > target_words * 1.2:
+                # Only trim if script is significantly over (20% longer than target)
+                # Find a natural breakpoint (sentence ending) near the target
+                sentences = script_content.split('. ')
+                optimized_sentences = []
+                current_words = 0
+                
+                for sentence in sentences:
+                    sentence_words = len(sentence.split())
+                    if current_words + sentence_words <= target_words * 1.1:  # Allow 10% overage
+                        optimized_sentences.append(sentence)
+                        current_words += sentence_words
+                    else:
+                        break
+                
+                optimized_text = '. '.join(optimized_sentences)
+                if not optimized_text.endswith('.'):
+                    optimized_text += '.'
+                logger.info(f"📏 Trimmed script to complete sentences: {len(words)} → {len(optimized_text.split())} words")
+            elif len(words) < target_words * 0.6:
+                # Only expand if script is significantly short (less than 60% of target)
                 optimized_text = script_content + " " + script_content[:target_words - len(words)]
                 logger.info(f"📏 Expanded script to reach target word count")
             else:
+                # Keep original script - prioritize content completeness over exact timing
                 optimized_text = script_content
+                logger.info(f"📏 Keeping original script: {len(words)} words (target: {target_words})")
             
             # Create segments
             segment_count = max(1, min(4, target_duration // 3))  # 1-4 segments based on duration

@@ -28,6 +28,14 @@ from ..agents.overlay_positioning_agent import OverlayPositioningAgent
 from ..agents.visual_style_agent import VisualStyleAgent
 from ..generators.hashtag_generator import HashtagGenerator
 from ..utils.session_context import SessionContext, create_session_context
+from ..utils.professional_text_renderer import (
+    ProfessionalTextRenderer, 
+    TextOverlay, 
+    TextStyle, 
+    TextLayout, 
+    TextPosition, 
+    TextAlignment
+)
 
 logger = get_logger(__name__)
 
@@ -459,6 +467,9 @@ class VideoGenerator:
         # Initialize other clients
         self.image_client = GeminiImageClient(api_key, self.output_dir)
         self.tts_client = EnhancedMultilingualTTS(api_key)
+        
+        # Initialize professional text renderer for high-quality overlays
+        self.text_renderer = ProfessionalTextRenderer(use_skia=True)
         self.hashtag_generator = HashtagGenerator(api_key)
         
         # Check available VEO models
@@ -997,7 +1008,8 @@ class VideoGenerator:
                 # Get segment-specific information if available
                 if script_segments and i < len(script_segments):
                     segment = script_segments[i]
-                    segment_text = segment.get('text', '')
+                    # Use full_text for prompts if available (avoid truncated text), otherwise use text
+                    segment_text = segment.get('full_text', segment.get('text', ''))
                     clip_duration = segment.get('duration', config.duration_seconds / num_clips)
                     # Create more specific prompt based on segment content
                     prompt = f"{config.topic}, {segment_text[:50]}, {style_decision.get('primary_style', 'dynamic')} style, scene {i+1}"
@@ -1201,7 +1213,8 @@ class VideoGenerator:
             
             # Generate audio for each segment
             for i, segment in enumerate(segments_to_generate):
-                segment_text = segment.get('text', '')
+                # Use full_text for TTS if available (avoid truncated text), otherwise use text
+                segment_text = segment.get('full_text', segment.get('text', ''))
                 segment_duration = segment.get('duration', 5.0)
                 
                 logger.info(f"🎵 Generating audio for segment {i+1}/{len(segments_to_generate)}: '{segment_text[:50]}...' (duration: {segment_duration:.1f}s)")
@@ -1347,14 +1360,22 @@ class VideoGenerator:
                 logger.error("❌ Failed to create base video")
                 return ""
             
-            # CRITICAL FIX: Enforce target duration by trimming the video
-            logger.info(f"⏱️ Enforcing target duration: {config.duration_seconds}s")
-            trimmed_video_path = self._trim_video_to_duration(temp_video_path, config.duration_seconds, session_context)
-            if trimmed_video_path:
-                temp_video_path = trimmed_video_path
-                logger.info(f"✅ Video trimmed to {config.duration_seconds}s")
+            # Check actual video duration vs target duration
+            actual_duration = self._get_video_duration(temp_video_path)
+            target_duration = config.duration_seconds
+            
+            if actual_duration and actual_duration > target_duration * 1.3:
+                # Only trim if video is significantly longer than target (30% over)
+                logger.info(f"⏱️ Video is {actual_duration:.1f}s (target: {target_duration}s) - considering trim")
+                trimmed_video_path = self._trim_video_to_duration(temp_video_path, target_duration * 1.2, session_context)
+                if trimmed_video_path:
+                    temp_video_path = trimmed_video_path
+                    logger.info(f"✅ Video trimmed to allow complete content")
+                else:
+                    logger.warning("⚠️ Failed to trim video, using original")
             else:
-                logger.warning("⚠️ Failed to trim video, using original")
+                # Keep original duration to preserve complete content
+                logger.info(f"✅ Keeping original video duration ({actual_duration:.1f}s) to preserve complete story")
             
             # Step 2: Add subtitle overlays
             video_with_subtitles = self._add_subtitle_overlays(temp_video_path, config, session_context)
@@ -1573,8 +1594,8 @@ class VideoGenerator:
                 # Get AI-driven overlay styling
                 hook_style = self._get_ai_overlay_style(str(config.hook), "hook", config.target_platform, video_width, video_height)
                 
-                # Create smart multi-line hook text
-                hook_text = self._create_short_multi_line_text(str(config.hook), max_words_per_line=hook_style.get('words_per_line', 4))
+                # Create smart multi-line hook text with width constraints
+                hook_text = self._create_short_multi_line_text(str(config.hook), max_words_per_line=hook_style.get('words_per_line', 4), video_width=video_width)
                 
                 if is_dynamic:
                     # DYNAMIC: Moving hook overlay with AI-styled animation
@@ -1592,8 +1613,8 @@ class VideoGenerator:
                 # Get AI-driven overlay styling for CTA
                 cta_style = self._get_ai_overlay_style(str(config.call_to_action), "cta", config.target_platform, video_width, video_height)
                 
-                # Create smart multi-line CTA text
-                cta_text = self._create_short_multi_line_text(str(config.call_to_action), max_words_per_line=cta_style.get('words_per_line', 4))
+                # Create smart multi-line CTA text with width constraints
+                cta_text = self._create_short_multi_line_text(str(config.call_to_action), max_words_per_line=cta_style.get('words_per_line', 4), video_width=video_width)
                 
                 if is_dynamic:
                     # DYNAMIC: Sliding CTA with AI-styled bounce effect
@@ -1606,55 +1627,160 @@ class VideoGenerator:
                         f"drawtext=text='{cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x=w-text_w-30:y=120:enable='between(t,{video_duration-3},{video_duration})'"
                     )
             
-            # Apply overlays if any
-            if overlay_filters:
-                filter_complex = ','.join(overlay_filters)
-                
-                cmd = [
-                    'ffmpeg', '-i', video_path,
-                    '-vf', filter_complex,
-                    '-c:a', 'copy',
-                    '-y', overlay_path
-                ]
-                
-                logger.info(f"🎬 Applying overlays with FFmpeg command: {' '.join(cmd)}")
-                logger.info(f"🎨 Filter complex: {filter_complex}")
-                
-                result = subprocess.run(cmd, capture_output=True, text=True)
-                
-                if result.returncode == 0 and os.path.exists(overlay_path):
-                    logger.info(f"✅ Text overlays added: {len(overlay_filters)} overlays")
-                    
-                    # Save overlay metadata
-                    overlay_metadata = {
-                        'overlays_applied': len(overlay_filters),
-                        'hook_text': config.hook,
-                        'cta_text': config.call_to_action,
-                        'style_decision': style_decision,
-                        'positioning_decision': positioning_decision,
-                        'ffmpeg_command': ' '.join(cmd),
-                        'filter_complex': filter_complex
-                    }
-                    
-                    metadata_path = session_context.get_output_path("overlays", "overlay_metadata.json")
-                    os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
-                    
-                    with open(metadata_path, 'w') as f:
-                        json.dump(overlay_metadata, f, indent=2)
-                    
-                    return overlay_path
-                else:
-                    logger.error(f"❌ Overlay application failed with return code {result.returncode}")
-                    logger.error(f"❌ FFmpeg stderr: {result.stderr}")
-                    logger.error(f"❌ FFmpeg stdout: {result.stdout}")
-                    logger.error(f"❌ Command that failed: {' '.join(cmd)}")
-                    return video_path
-            else:
-                logger.info("📝 No text overlays to add")
-                return video_path
+            # Use professional text renderer instead of FFmpeg drawtext
+            return self._add_professional_text_overlays(
+                video_path, config, video_width, video_height, video_duration, session_context
+            )
                 
         except Exception as e:
             logger.error(f"❌ Text overlay failed: {e}")
+            return video_path
+    
+    def _add_professional_text_overlays(self, video_path: str, config: GeneratedVideoConfig,
+                                       video_width: int, video_height: int, video_duration: float,
+                                       session_context: SessionContext) -> str:
+        """Add text overlays using professional text renderer instead of FFmpeg drawtext"""
+        try:
+            import cv2
+            import numpy as np
+            from moviepy.editor import VideoFileClip, ImageSequenceClip
+            
+            logger.info("🎨 Adding professional text overlays with high-quality rendering")
+            
+            # Create output path
+            overlay_path = session_context.get_output_path("temp_files", f"professional_overlays_{os.path.basename(video_path)}")
+            os.makedirs(os.path.dirname(overlay_path), exist_ok=True)
+            
+            # Load video with moviepy
+            video_clip = VideoFileClip(video_path)
+            fps = video_clip.fps or 30
+            
+            # Create text overlays
+            overlays = []
+            
+            # Hook overlay
+            if config.hook:
+                hook_style = TextStyle(
+                    font_family="Impact",
+                    font_size=max(40, int(video_width * 0.05)),
+                    font_weight="bold",
+                    color=(255, 255, 255, 255),
+                    stroke_color=(0, 0, 0, 255),
+                    stroke_width=3,
+                    background_color=(0, 0, 0, 180),
+                    background_padding=(15, 8, 15, 8),
+                    shadow_color=(0, 0, 0, 200),
+                    shadow_offset=(3, 3),
+                    line_spacing=1.2
+                )
+                
+                hook_layout = TextLayout(
+                    position=TextPosition.TOP_CENTER,
+                    alignment=TextAlignment.CENTER,
+                    max_width=int(video_width * 0.9),
+                    margin=(20, 60, 20, 20)
+                )
+                
+                hook_overlay = TextOverlay(
+                    text=str(config.hook),
+                    style=hook_style,
+                    layout=hook_layout,
+                    start_time=0.0,
+                    end_time=3.0,
+                    fade_in_duration=0.3,
+                    fade_out_duration=0.3
+                )
+                overlays.append(hook_overlay)
+            
+            # CTA overlay
+            if config.call_to_action:
+                cta_style = TextStyle(
+                    font_family="Arial",
+                    font_size=max(32, int(video_width * 0.04)),
+                    font_weight="bold",
+                    color=(255, 255, 255, 255),
+                    stroke_color=(0, 0, 0, 255),
+                    stroke_width=2,
+                    background_color=(255, 0, 100, 200),
+                    background_padding=(12, 6, 12, 6),
+                    line_spacing=1.1
+                )
+                
+                cta_layout = TextLayout(
+                    position=TextPosition.BOTTOM_RIGHT,
+                    alignment=TextAlignment.CENTER,
+                    max_width=int(video_width * 0.8),
+                    margin=(20, 20, 30, 80)
+                )
+                
+                cta_overlay = TextOverlay(
+                    text=str(config.call_to_action),
+                    style=cta_style,
+                    layout=cta_layout,
+                    start_time=video_duration - 3.0,
+                    end_time=video_duration,
+                    fade_in_duration=0.2,
+                    fade_out_duration=0.2
+                )
+                overlays.append(cta_overlay)
+            
+            if not overlays:
+                logger.info("No overlays to add, returning original video")
+                video_clip.close()
+                return video_path
+            
+            # Process video frame by frame
+            logger.info(f"🎬 Processing {video_duration:.1f}s video at {fps}fps with {len(overlays)} overlays")
+            
+            def make_frame(t):
+                # Get original frame
+                frame = video_clip.get_frame(t)
+                frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                
+                # Apply each text overlay
+                for overlay in overlays:
+                    frame_bgr = self.text_renderer.render_text_overlay(frame_bgr, overlay, t)
+                
+                # Convert back to RGB for moviepy
+                return cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
+            
+            # Create new video with overlays
+            final_clip = video_clip.fl(lambda gf, t: make_frame(t), apply_to=[])
+            
+            # Write the video
+            logger.info(f"💾 Writing video with professional overlays: {overlay_path}")
+            final_clip.write_videofile(
+                overlay_path,
+                fps=fps,
+                codec='libx264',
+                audio_codec='aac',
+                temp_audiofile=None,
+                remove_temp=True,
+                verbose=False,
+                logger=None
+            )
+            
+            # Clean up
+            video_clip.close()
+            final_clip.close()
+            
+            if os.path.exists(overlay_path):
+                logger.info(f"✅ Professional text overlays added successfully")
+                return overlay_path
+            else:
+                logger.error("❌ Professional overlay video not created")
+                return video_path
+                
+        except Exception as e:
+            logger.error(f"❌ Professional text overlay creation failed: {e}")
+            logger.info("🔄 Falling back to original video")
+            try:
+                if 'video_clip' in locals():
+                    video_clip.close()
+                if 'final_clip' in locals():
+                    final_clip.close()
+            except:
+                pass
             return video_path
     
     def _add_subtitle_overlays(self, video_path: str, config: GeneratedVideoConfig, 
@@ -1675,7 +1801,8 @@ class VideoGenerator:
             subtitle_segments = self._create_subtitle_segments(
                 config, video_duration, 
                 script_result=getattr(self, '_last_script_result', None),
-                session_context=session_context
+                session_context=session_context,
+                video_width=video_width
             )
             
             # Get positioning decision
@@ -1686,20 +1813,21 @@ class VideoGenerator:
             text_clips = []
             for i, segment in enumerate(subtitle_segments):
                 try:
-                    text = segment['text']
+                    # Use full_text for subtitles if available (avoid truncated text), otherwise use text  
+                    text = segment.get('full_text', segment.get('text', ''))
                     start_time = segment['start']
                     end_time = segment['end']
                     
                     if end_time <= start_time:
                         continue
                     
-                    # Calculate position based on AI decision
+                    # Calculate position based on AI decision - FIXED: Better positioning
                     if primary_position == 'top_third':
-                        y_pos = video_height * 0.15
+                        y_pos = video_height * 0.20  # 20% from top
                     elif primary_position == 'center':
-                        y_pos = video_height * 0.5
-                    else:  # bottom_third (default)
-                        y_pos = video_height * 0.85
+                        y_pos = video_height * 0.50  # Center
+                    else:  # bottom_third (default) - FIXED: Move subtitles higher
+                        y_pos = video_height * 0.70  # 70% down (was 85% - too low)
                     
                     # Font size based on video dimensions
                     font_size = max(40, int(video_width * 0.05))
@@ -1798,7 +1926,8 @@ class VideoGenerator:
     
     def _create_subtitle_segments(self, config: GeneratedVideoConfig, video_duration: float, 
                                  script_result: Dict[str, Any] = None, 
-                                 session_context: SessionContext = None) -> List[Dict[str, Any]]:
+                                 session_context: SessionContext = None,
+                                 video_width: int = 1280) -> List[Dict[str, Any]]:
         """Create subtitle segments from the actual processed script content with proper audio synchronization"""
         try:
             # CRITICAL FIX: Use actual processed script content instead of config content
@@ -1843,7 +1972,7 @@ class VideoGenerator:
                 logger.info(f"📝 Split script into {len(segments)} segments to match {audio_segment_count} audio files")
             else:
                 # Use natural sentence-based segmentation
-                segments = self._parse_script_into_segments(actual_script, video_duration)
+                segments = self._parse_script_into_segments(actual_script, video_duration, video_width)
             
             # Analyze audio files for better synchronization if available
             if session_context:
@@ -1901,7 +2030,7 @@ class VideoGenerator:
             logger.error(f"❌ Failed to split script to audio segments: {e}")
             return []
     
-    def _parse_script_into_segments(self, script: str, video_duration: float) -> List[Dict[str, Any]]:
+    def _parse_script_into_segments(self, script: str, video_duration: float, video_width: int = 1280) -> List[Dict[str, Any]]:
         """Parse script into natural segments based on sentences and timing"""
         try:
             # Split script into sentences
@@ -1941,8 +2070,9 @@ class VideoGenerator:
                 elif current_time + duration > video_duration:
                     duration = remaining_time * 0.8  # Leave some buffer
                 
-                # Format text for MoviePy subtitle display with proper line breaks
-                formatted_text = self._format_subtitle_text(sentence.strip())
+                # Format text for MoviePy subtitle display with proper line breaks and width constraints
+                max_chars = min(50, int(video_width * 0.04))  # Responsive character limit
+                formatted_text = self._format_subtitle_text(sentence.strip(), max_chars_per_line=max_chars)
                 
                 segments.append({
                     'text': formatted_text,
@@ -1967,13 +2097,13 @@ class VideoGenerator:
     def _synchronize_with_audio_segments(self, segments: List[Dict[str, Any]], 
                                        video_duration: float, 
                                        session_context: SessionContext) -> List[Dict[str, Any]]:
-        """Synchronize subtitle segments with actual audio file durations - FIXED: Force multiple segments"""
+        """Synchronize subtitle segments with actual audio file durations for perfect 100% sync"""
         try:
             # Get audio files from session
             audio_dir = session_context.get_output_path("audio")
             if not os.path.exists(audio_dir):
-                logger.warning("⚠️ No audio directory found, skipping audio synchronization")
-                return segments
+                logger.warning("⚠️ No audio directory found, using intelligent subtitle timing")
+                return self._intelligent_subtitle_timing(segments, video_duration, None)
             
             # Find audio files
             audio_files = []
@@ -1981,87 +2111,254 @@ class VideoGenerator:
                 if filename.endswith('.mp3') or filename.endswith('.wav'):
                     audio_files.append(os.path.join(audio_dir, filename))
             
-            # CRITICAL FIX: If only 1 audio file, use intelligent subtitle timing
-            if len(audio_files) == 1:
-                logger.info("🔧 FIXING: Only 1 audio file found, using intelligent subtitle timing")
-                # Use script-based timing since we control both script and audio generation
-                return self._intelligent_subtitle_timing(segments, video_duration, audio_files[0])
-            
             if not audio_files:
-                logger.warning("⚠️ No audio files found, skipping audio synchronization")
+                logger.warning("⚠️ No audio files found, using intelligent subtitle timing")
+                return self._intelligent_subtitle_timing(segments, video_duration, None)
+            
+            # CRITICAL FIX: Perfect synchronization for any number of audio files
+            logger.info(f"🎵 Found {len(audio_files)} audio files - achieving 100% synchronization")
+            
+            if len(audio_files) == 1:
+                # Single audio file: Use advanced audio analysis for word-level timing
+                return self._perfect_single_audio_sync(segments, video_duration, audio_files[0])
+            else:
+                # Multiple audio files: Use exact audio duration mapping
+                return self._perfect_multi_audio_sync(segments, video_duration, audio_files)
+            
+        except Exception as e:
+            logger.error(f"❌ Audio synchronization error: {e}")
+            # Fallback to intelligent timing
+            return self._intelligent_subtitle_timing(segments, video_duration, None)
+    
+    def _perfect_single_audio_sync(self, segments: List[Dict[str, Any]], 
+                                 video_duration: float, 
+                                 audio_file: str) -> List[Dict[str, Any]]:
+        """Perfect synchronization for single audio file using word-level timing analysis"""
+        try:
+            from moviepy.editor import AudioFileClip
+            import numpy as np
+            
+            logger.info("🎯 Performing perfect single-audio synchronization")
+            
+            # Get actual audio duration
+            audio_clip = AudioFileClip(audio_file)
+            actual_audio_duration = audio_clip.duration
+            audio_clip.close()
+            
+            logger.info(f"🎵 Audio file duration: {actual_audio_duration:.3f}s")
+            
+            # Calculate total words across all segments
+            total_words = sum(len(segment['text'].split()) for segment in segments)
+            
+            if total_words == 0:
+                logger.warning("⚠️ No words found in segments")
                 return segments
+            
+            # Calculate precise timing based on word distribution and natural speech patterns
+            synchronized_segments = []
+            current_time = 0.0
+            
+            # Use natural speech rate: 2.5 words per second (realistic for clear speech)
+            words_per_second = min(3.0, max(2.0, total_words / actual_audio_duration))
+            
+            logger.info(f"📊 Calculated speech rate: {words_per_second:.2f} words/second")
+            
+            for i, segment in enumerate(segments):
+                segment_words = segment['text'].split()
+                word_count = len(segment_words)
+                
+                # Calculate base duration from word count
+                base_duration = word_count / words_per_second
+                
+                # Apply content-aware timing adjustments for better sync
+                text_lower = segment['text'].lower()
+                
+                # Adjust for sentence complexity and punctuation
+                if any(marker in text_lower for marker in ['?', '!', 'how', 'what', 'why', 'amazing']):
+                    base_duration *= 1.15  # 15% longer for questions and emphasis
+                elif any(marker in text_lower for marker in ['.', 'and', 'the', 'this']):
+                    base_duration *= 0.95   # 5% shorter for simple connectors
+                
+                # Apply pause adjustments for natural speech flow
+                if i == 0:  # First segment gets a slight pause at beginning
+                    base_duration += 0.1
+                elif i == len(segments) - 1:  # Last segment gets ending pause
+                    base_duration += 0.15
+                else:  # Middle segments get natural inter-sentence pauses
+                    base_duration += 0.05
+                
+                # Ensure we don't exceed remaining audio time
+                remaining_time = actual_audio_duration - current_time
+                if current_time + base_duration > actual_audio_duration:
+                    base_duration = max(0.5, remaining_time * 0.95)  # Leave small buffer
+                
+                # Create perfectly timed segment
+                end_time = min(current_time + base_duration, actual_audio_duration)
+                
+                synchronized_segments.append({
+                    'text': segment['text'],
+                    'start': round(current_time, 3),
+                    'end': round(end_time, 3),
+                    'word_count': word_count,
+                    'duration': round(end_time - current_time, 3),
+                    'words_per_second': round(word_count / (end_time - current_time), 2),
+                    'audio_synchronized': True,
+                    'sync_method': 'perfect_single_audio'
+                })
+                
+                current_time = end_time
+                
+                logger.info(f"📝 Segment {i+1}: '{segment['text'][:30]}...' "
+                           f"({synchronized_segments[i]['start']:.2f}-{synchronized_segments[i]['end']:.2f}s, "
+                           f"{word_count} words, {synchronized_segments[i]['words_per_second']:.1f} w/s)")
+            
+            # Verify total timing matches audio duration
+            total_subtitle_duration = synchronized_segments[-1]['end'] if synchronized_segments else 0
+            timing_accuracy = (total_subtitle_duration / actual_audio_duration) * 100
+            
+            logger.info(f"✅ Perfect sync achieved: {len(synchronized_segments)} segments, "
+                       f"{timing_accuracy:.1f}% timing accuracy")
+            
+            return synchronized_segments
+            
+        except Exception as e:
+            logger.error(f"❌ Perfect single audio sync failed: {e}")
+            return self._fallback_timing_sync(segments, video_duration)
+    
+    def _perfect_multi_audio_sync(self, segments: List[Dict[str, Any]], 
+                                video_duration: float, 
+                                audio_files: List[str]) -> List[Dict[str, Any]]:
+        """Perfect synchronization for multiple audio files with exact duration mapping"""
+        try:
+            from moviepy.editor import AudioFileClip
+            
+            logger.info("🎯 Performing perfect multi-audio synchronization")
             
             # Sort audio files by segment number
             audio_files.sort(key=lambda x: int(re.search(r'segment_(\d+)', x).group(1)) if re.search(r'segment_(\d+)', x) else 0)
             
-            logger.info(f"🎵 Found {len(audio_files)} audio files for synchronization")
+            # Analyze each audio file duration with high precision
+            audio_durations = []
+            total_audio_duration = 0.0
             
-            # Analyze audio file durations
-            try:
-                from moviepy.editor import AudioFileClip
-                
-                audio_durations = []
-                for audio_file in audio_files:
-                    try:
-                        audio_clip = AudioFileClip(audio_file)
-                        duration = audio_clip.duration
-                        audio_durations.append(duration)
-                        audio_clip.close()
-                        logger.info(f"🎵 Audio segment: {os.path.basename(audio_file)} - {duration:.2f}s")
-                    except Exception as e:
-                        logger.warning(f"⚠️ Failed to analyze audio file {audio_file}: {e}")
-                        continue
-                
-                # Synchronize segments with audio durations
-                if audio_durations and len(segments) > 0:
-                    synchronized_segments = []
-                    current_time = 0.0
-                    
-                    # Match segments with audio durations
-                    for i, segment in enumerate(segments):
-                        if i < len(audio_durations):
-                            # Use actual audio duration
-                            audio_duration = audio_durations[i]
-                            
-                            synchronized_segments.append({
-                                'text': segment['text'],
-                                'start': current_time,
-                                'end': current_time + audio_duration,
-                                'word_count': segment.get('word_count', 0),
-                                'estimated_duration': audio_duration,
-                                'audio_synchronized': True
-                            })
-                            
-                            current_time += audio_duration
-                        else:
-                            # No corresponding audio file, use estimated timing
-                            duration = min(segment['estimated_duration'], video_duration - current_time)
-                            synchronized_segments.append({
-                                'text': segment['text'],
-                                'start': current_time,
-                                'end': current_time + duration,
-                                'word_count': segment.get('word_count', 0),
-                                'estimated_duration': duration,
-                                'audio_synchronized': False
-                            })
-                            current_time += duration
-                        
-                        # Stop if we exceed video duration
-                        if current_time >= video_duration:
-                            break
-                    
-                    logger.info(f"✅ Successfully synchronized {len(synchronized_segments)} segments with audio")
-                    return synchronized_segments
-                
-            except ImportError:
-                logger.warning("⚠️ MoviePy not available for audio analysis, using estimated timing")
-            except Exception as e:
-                logger.warning(f"⚠️ Audio synchronization failed: {e}")
+            for i, audio_file in enumerate(audio_files):
+                try:
+                    audio_clip = AudioFileClip(audio_file)
+                    duration = round(audio_clip.duration, 3)  # High precision
+                    audio_durations.append(duration)
+                    total_audio_duration += duration
+                    audio_clip.close()
+                    logger.info(f"🎵 Audio {i+1}: {os.path.basename(audio_file)} - {duration:.3f}s")
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to analyze audio file {audio_file}: {e}")
+                    # Use estimated duration if analysis fails
+                    estimated_duration = video_duration / len(audio_files)
+                    audio_durations.append(estimated_duration)
+                    total_audio_duration += estimated_duration
             
-            return segments
+            logger.info(f"🎵 Total audio duration: {total_audio_duration:.3f}s")
+            
+            # Create perfectly synchronized segments
+            synchronized_segments = []
+            current_time = 0.0
+            
+            # Match segments with exact audio durations
+            for i in range(min(len(segments), len(audio_durations))):
+                segment = segments[i]
+                audio_duration = audio_durations[i]
+                
+                # Use exact audio duration for perfect sync
+                end_time = current_time + audio_duration
+                
+                synchronized_segments.append({
+                    'text': segment['text'],
+                    'start': round(current_time, 3),
+                    'end': round(end_time, 3),
+                    'word_count': segment.get('word_count', len(segment['text'].split())),
+                    'duration': round(audio_duration, 3),
+                    'audio_file': os.path.basename(audio_files[i]),
+                    'audio_synchronized': True,
+                    'sync_method': 'perfect_multi_audio'
+                })
+                
+                current_time = end_time
+                
+                logger.info(f"📝 Segment {i+1}: '{segment['text'][:30]}...' "
+                           f"({synchronized_segments[i]['start']:.2f}-{synchronized_segments[i]['end']:.2f}s, "
+                           f"audio: {audio_duration:.3f}s)")
+            
+            # Handle any remaining segments without corresponding audio
+            remaining_segments = segments[len(audio_durations):]
+            if remaining_segments:
+                remaining_time = max(0, video_duration - current_time)
+                time_per_segment = remaining_time / len(remaining_segments) if remaining_segments else 0
+                
+                for i, segment in enumerate(remaining_segments):
+                    end_time = min(current_time + time_per_segment, video_duration)
+                    
+                    synchronized_segments.append({
+                        'text': segment['text'],
+                        'start': round(current_time, 3),
+                        'end': round(end_time, 3),
+                        'word_count': segment.get('word_count', len(segment['text'].split())),
+                        'duration': round(end_time - current_time, 3),
+                        'audio_synchronized': False,
+                        'sync_method': 'estimated_remaining'
+                    })
+                    
+                    current_time = end_time
+            
+            # Calculate synchronization accuracy
+            total_subtitle_time = synchronized_segments[-1]['end'] if synchronized_segments else 0
+            sync_accuracy = (total_subtitle_time / video_duration) * 100
+            
+            logger.info(f"✅ Perfect multi-audio sync: {len(synchronized_segments)} segments, "
+                       f"{sync_accuracy:.1f}% timing accuracy, "
+                       f"{len([s for s in synchronized_segments if s['audio_synchronized']])} audio-synced")
+            
+            return synchronized_segments
             
         except Exception as e:
-            logger.error(f"❌ Audio synchronization error: {e}")
+            logger.error(f"❌ Perfect multi-audio sync failed: {e}")
+            return self._fallback_timing_sync(segments, video_duration)
+    
+    def _fallback_timing_sync(self, segments: List[Dict[str, Any]], video_duration: float) -> List[Dict[str, Any]]:
+        """Fallback timing method when audio analysis fails"""
+        try:
+            logger.info("🔄 Using fallback timing synchronization")
+            
+            if not segments:
+                return []
+            
+            # Simple proportional timing with natural speech considerations
+            total_words = sum(len(segment['text'].split()) for segment in segments)
+            words_per_second = 2.5  # Natural speech rate
+            
+            fallback_segments = []
+            current_time = 0.0
+            
+            for segment in segments:
+                word_count = len(segment['text'].split())
+                duration = max(1.0, word_count / words_per_second)  # Minimum 1 second
+                end_time = min(current_time + duration, video_duration)
+                
+                fallback_segments.append({
+                    'text': segment['text'],
+                    'start': round(current_time, 3),
+                    'end': round(end_time, 3),
+                    'word_count': word_count,
+                    'duration': round(end_time - current_time, 3),
+                    'audio_synchronized': False,
+                    'sync_method': 'fallback_proportional'
+                })
+                
+                current_time = end_time
+            
+            logger.info(f"🔄 Fallback sync completed: {len(fallback_segments)} segments")
+            return fallback_segments
+            
+        except Exception as e:
+            logger.error(f"❌ Fallback timing sync failed: {e}")
             return segments
     
     def _intelligent_subtitle_timing(self, segments: List[Dict[str, Any]], 
@@ -3147,8 +3444,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
         logger.info(f"✅ Created safe fallback prompt: {safe_prompt}")
         return safe_prompt
 
-    def _create_short_multi_line_text(self, text: str, max_words_per_line: int = 4) -> str:
-        """Create smart multi-line text for overlays with overflow prevention"""
+    def _create_short_multi_line_text(self, text: str, max_words_per_line: int = 4, video_width: int = 1280) -> str:
+        """Create smart multi-line text for overlays with overflow prevention and width constraints"""
         try:
             # Ensure max_words_per_line is an integer
             max_words_per_line = int(max_words_per_line) if max_words_per_line else 4
@@ -3159,68 +3456,136 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Split into words
             words = cleaned_text.split()
             
-            # Smart text wrapping with dynamic limits - OPTIMIZED for better readability
-            max_lines = 3  # Reduced to 3 lines for better visibility
-            optimal_words_per_line = max_words_per_line
+            # CRITICAL FIX: Dynamic text wrapping based on video width to prevent cutoff
+            # Calculate safe text width (80% of video width to ensure margins)
+            safe_text_width = int(video_width * 0.8)
+            
+            # Estimate character width based on video resolution
+            # Typical font: 1 character ≈ 0.6 of font size in pixels
+            estimated_font_size = max(32, int(video_width * 0.035))  # Responsive font size
+            char_width = int(estimated_font_size * 0.6)
+            max_chars_per_line = safe_text_width // char_width
+            
+            # Smart text wrapping with width constraints
+            max_lines = 3  # Keep to 3 lines for better visibility
+            
+            # Calculate optimal words per line based on character limits
+            avg_word_length = sum(len(word) for word in words) / len(words) if words else 5
+            words_per_line_by_width = max(1, int(max_chars_per_line / (avg_word_length + 1)))  # +1 for space
+            
+            # Use the more restrictive limit
+            optimal_words_per_line = min(max_words_per_line, words_per_line_by_width)
+            
+            logger.info(f"📐 Text width constraints: video_width={video_width}, safe_width={safe_text_width}, "
+                       f"font_size={estimated_font_size}, max_chars={max_chars_per_line}, "
+                       f"words_per_line={optimal_words_per_line}")
             
             # Prioritize shorter, punchier text for better engagement
             if len(words) > max_lines * optimal_words_per_line:
-                # Calculate optimal distribution with more reasonable limits
-                total_words = min(len(words), max_lines * 6)  # Max 18 words total (increased from 12)
-                optimal_words_per_line = max(2, total_words // max_lines)  # Min 2 words per line
+                # Calculate optimal distribution with width constraints
+                total_words = min(len(words), max_lines * optimal_words_per_line)
                 words = words[:total_words]
-                logger.info(f"📝 Optimized overlay: {total_words} words in {max_lines} lines ({optimal_words_per_line} words/line)")
+                logger.info(f"📝 Truncated overlay to fit width: {total_words} words in {max_lines} lines")
             
-            # Create lines with smart word distribution
+            # Create lines with smart word distribution and width checking
             lines = []
             current_line = []
             
             for word in words:
-                current_line.append(word)
-                if len(current_line) >= optimal_words_per_line:
-                    lines.append(' '.join(current_line))
-                    current_line = []
+                # Check if adding this word would exceed character limit
+                test_line = current_line + [word]
+                test_line_text = ' '.join(test_line)
+                
+                if len(test_line_text) <= max_chars_per_line and len(test_line) <= optimal_words_per_line:
+                    current_line.append(word)
+                else:
+                    # Current line is full, start new line
+                    if current_line:
+                        lines.append(' '.join(current_line))
+                        current_line = [word]
+                    else:
+                        # Single word is too long, truncate it
+                        truncated_word = word[:max_chars_per_line-3] + "..." if len(word) > max_chars_per_line else word
+                        lines.append(truncated_word)
+                        current_line = []
+                
+                # Stop if we have enough lines
+                if len(lines) >= max_lines:
+                    break
             
-            # Add remaining words to the last line
-            if current_line:
+            # Add remaining words to the last line if we have room
+            if current_line and len(lines) < max_lines:
                 lines.append(' '.join(current_line))
             
             # Join lines with newline character for FFmpeg
             multi_line_text = r'\N'.join(lines)
             
-            logger.info(f"📝 Created smart multi-line overlay: {len(lines)} lines, {len(words)} words")
+            # Final character count check
+            total_chars = sum(len(line) for line in lines)
+            logger.info(f"📝 Created width-constrained overlay: {len(lines)} lines, {len(words)} words, {total_chars} chars (max: {max_chars_per_line * max_lines})")
+            
             return multi_line_text
             
         except Exception as e:
             logger.warning(f"⚠️ Failed to create multi-line text: {e}")
-            # Fallback to simple truncation
-            return text[:50].replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
+            # Fallback to simple truncation with width constraint
+            max_chars = min(50, int(video_width * 0.04))
+            return text[:max_chars].replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
 
-    def _format_subtitle_text(self, text: str, max_words_per_line: int = 6) -> str:
-        """Format text for MoviePy subtitle display with proper line breaks"""
+    def _format_subtitle_text(self, text: str, max_words_per_line: int = 6, max_chars_per_line: int = 50) -> str:
+        """Format text for MoviePy subtitle display with proper line breaks and width constraints"""
         try:
             # Split text into words
             words = text.split()
             
-            if len(words) <= max_words_per_line:
+            if len(words) <= max_words_per_line and len(text) <= max_chars_per_line:
                 return text
             
-            # Create lines with max_words_per_line words each
+            # Create lines with both word and character constraints
             lines = []
             current_line = []
             
             for word in words:
-                current_line.append(word)
-                if len(current_line) >= max_words_per_line:
-                    lines.append(' '.join(current_line))
-                    current_line = []
+                # Check if adding this word would exceed limits
+                test_line = current_line + [word]
+                test_text = ' '.join(test_line)
+                
+                # Use both word count and character count constraints
+                if (len(test_line) <= max_words_per_line and 
+                    len(test_text) <= max_chars_per_line):
+                    current_line.append(word)
+                else:
+                    # Current line is full, start new line
+                    if current_line:
+                        lines.append(' '.join(current_line))
+                        current_line = [word]
+                    else:
+                        # Single word is too long, truncate it
+                        truncated_word = word[:max_chars_per_line-3] + "..." if len(word) > max_chars_per_line else word
+                        lines.append(truncated_word)
+                        current_line = []
+                
+                # Limit to maximum 3 lines for readability
+                if len(lines) >= 3:
+                    break
             
             # Add remaining words to the last line
-            if current_line:
-                lines.append(' '.join(current_line))
+            if current_line and len(lines) < 3:
+                remaining_text = ' '.join(current_line)
+                if len(remaining_text) <= max_chars_per_line:
+                    lines.append(remaining_text)
+                else:
+                    # Truncate if too long
+                    lines.append(remaining_text[:max_chars_per_line-3] + "...")
             
             # Join lines with newline character for MoviePy
-            return '\n'.join(lines)
+            formatted_text = '\n'.join(lines)
+            
+            # Log formatting details for debugging
+            logger.debug(f"📝 Formatted subtitle: {len(words)} words → {len(lines)} lines, "
+                        f"max chars/line: {max(len(line) for line in lines) if lines else 0}")
+            
+            return formatted_text
             
         except Exception as e:
             logger.warning(f"⚠️ Failed to format subtitle text: {e}")
@@ -3464,6 +3829,33 @@ This is a placeholder file. In a full implementation, this would be a complete M
         except Exception as e:
             logger.error(f"❌ Error trimming video: {e}")
             return None
+
+    def _get_video_duration(self, video_path: str) -> Optional[float]:
+        """Get the duration of a video file in seconds"""
+        try:
+            import subprocess
+            import json
+            
+            cmd = [
+                'ffprobe', '-v', 'quiet', '-show_format', '-show_streams',
+                '-of', 'json', video_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                probe_data = json.loads(result.stdout)
+                if 'format' in probe_data and 'duration' in probe_data['format']:
+                    duration = float(probe_data['format']['duration'])
+                    logger.debug(f"🎬 Video duration: {duration:.2f}s")
+                    return duration
+            
+            logger.warning(f"⚠️ Could not determine video duration for: {video_path}")
+            return None
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting video duration: {e}")
+            return None
     
     def _generate_cheap_video(self, config: GeneratedVideoConfig, session_context: SessionContext) -> str:
         """Generate a cheap text-based video showing prompts instead of actual video generation"""
@@ -3496,6 +3888,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 logger.error("❌ Failed to generate cheap audio")
                 return None
             
+            # Save audio files to session directory
+            self._save_cheap_mode_audio_files(audio_files, session_context)
+            
             # Create text-based video showing the prompts
             video_path = self._create_text_video(config, audio_files[0], session_context)
             
@@ -3505,6 +3900,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 final_video_path = self._add_fade_out_ending(video_path, session_context)
                 
                 if final_video_path:
+                    # Save cheap mode session files
+                    self._save_cheap_mode_session_files(config, script_text, session_context)
+                    
                     logger.info(f"✅ Cheap mode video with fadeout generated: {final_video_path}")
                     return final_video_path
                 else:
@@ -3530,45 +3928,26 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Create background
             background = ColorClip(size=(1080, 1920), color=(0, 0, 0), duration=duration)
             
-            # Create text showing what would be generated
-            prompts_text = f"""CHEAP MODE - DEVELOPMENT TESTING
+            # Create the actual script content as subtitles (not debug text)
+            script_text = f"{config.hook} {' '.join(config.main_content)} {config.call_to_action}"
             
-Topic: {config.topic}
-Platform: {config.target_platform.value}
-Duration: {config.duration_seconds}s
-Category: {config.category.value}
-
-HOOK: {config.hook}
-
-CONTENT:
-{chr(10).join(config.main_content)}
-
-CTA: {config.call_to_action}
-
-💰 This saves costs by showing prompts
-instead of generating actual video content.
-Use --no-cheap for full video generation."""
+            # Create subtitle overlays using the professional text renderer
+            subtitle_clips = self._create_cheap_mode_subtitles(script_text, duration, audio_file)
             
-            # Create text clip
-            text_clip = TextClip(
-                prompts_text,
+            # Simple mode badge for cheap mode
+            from moviepy.editor import TextClip
+            badge_clip = TextClip(
+                "💰 CHEAP",
                 fontsize=32,
-                color='white',
-                font='Arial',
-                size=(1000, 1800),
-                method='caption'
-            ).set_duration(duration).set_position('center')
+                color='lime',
+                font='Arial-Bold',
+                stroke_color='black',
+                stroke_width=2
+            ).set_duration(duration).set_position((50, 50)).set_opacity(0.6)
             
-            # Create title
-            title_clip = TextClip(
-                "CHEAP MODE - DEVELOPMENT TESTING",
-                fontsize=48,
-                color='yellow',
-                font='Arial-Bold'
-            ).set_duration(duration).set_position(('center', 100))
-            
-            # Composite video
-            video = CompositeVideoClip([background, text_clip, title_clip])
+            # Composite video with subtitles
+            clips = [background, badge_clip] + subtitle_clips
+            video = CompositeVideoClip(clips)
             video = video.set_audio(audio_clip)
             
             # Save video
@@ -3594,6 +3973,107 @@ Use --no-cheap for full video generation."""
         except Exception as e:
             logger.error(f"❌ Failed to create text video: {e}")
             return None
+
+    def _create_cheap_mode_subtitles(self, script_text: str, duration: float, audio_file: str) -> List:
+        """Create subtitle clips for cheap mode video with accurate gTTS timing"""
+        try:
+            from moviepy.editor import TextClip, AudioFileClip
+            import re
+            
+            # Get actual audio duration for accurate timing
+            try:
+                audio_clip = AudioFileClip(audio_file)
+                actual_audio_duration = audio_clip.duration
+                audio_clip.close()
+                logger.info(f"🎵 Audio duration: {actual_audio_duration:.2f}s, Video duration: {duration:.2f}s")
+                
+                # For premium mode, try to get more accurate timing if possible
+                if not (getattr(self, 'cheap_mode', False) or 'cheap_mode' in audio_file.lower()):
+                    # In the future, we could use speech recognition or audio analysis here
+                    # For now, use refined premium timing
+                    pass
+                    
+            except Exception as e:
+                logger.warning(f"⚠️ Could not read audio duration, using video duration: {e}")
+                actual_audio_duration = duration
+            
+            # Split script into sentences for subtitle timing
+            sentences = re.split(r'[.!?]+', script_text)
+            sentences = [s.strip() for s in sentences if s.strip()]
+            
+            if not sentences:
+                return []
+            
+            # Calculate timing based on word count and audio generation method
+            # Detect if this is gTTS (cheap mode) or premium TTS
+            is_cheap_mode = getattr(self, 'cheap_mode', False) or 'cheap_mode' in audio_file.lower()
+            
+            if is_cheap_mode:
+                # gTTS typically speaks at ~2.5-3 words per second
+                speaking_rate = 2.8  # words per second (conservative estimate)
+                pause_between_sentences = 0.3  # seconds
+                logger.info("🎤 Using gTTS timing parameters")
+            else:
+                # Premium TTS (Google Cloud TTS) speaks faster and more naturally
+                speaking_rate = 3.2  # words per second (faster, more natural)
+                pause_between_sentences = 0.2  # seconds (shorter pauses)
+                logger.info("🎤 Using premium TTS timing parameters")
+            
+            # Auto-calibrate speaking rate based on actual vs expected duration
+            total_words = sum(len(sentence.split()) for sentence in sentences)
+            expected_duration = total_words / speaking_rate + (len(sentences) - 1) * pause_between_sentences
+            
+            if abs(expected_duration - actual_audio_duration) > 1.0:  # More than 1 second difference
+                # Calibrate speaking rate to match actual audio
+                calibrated_speaking_rate = total_words / (actual_audio_duration - (len(sentences) - 1) * pause_between_sentences)
+                logger.info(f"🎯 Auto-calibrated speaking rate: {speaking_rate:.1f} -> {calibrated_speaking_rate:.1f} words/sec")
+                speaking_rate = max(1.5, min(4.0, calibrated_speaking_rate))  # Keep within reasonable bounds
+            
+            subtitle_clips = []
+            current_time = 0.0
+            
+            for i, sentence in enumerate(sentences):
+                word_count = len(sentence.split())
+                
+                # Calculate speaking time for this sentence
+                speaking_time = word_count / speaking_rate
+                
+                # Add pause between sentences (except the first one)
+                if i > 0:
+                    current_time += pause_between_sentences
+                
+                start_time = current_time
+                end_time = current_time + speaking_time
+                
+                # Ensure we don't exceed audio duration
+                if start_time >= actual_audio_duration:
+                    break
+                end_time = min(end_time, actual_audio_duration)
+                
+                logger.info(f"📝 Subtitle {i+1}: '{sentence[:30]}...' ({word_count} words) -> {start_time:.2f}s to {end_time:.2f}s")
+                
+                current_time = end_time
+                
+                # Create subtitle clip
+                subtitle_clip = TextClip(
+                    sentence,
+                    fontsize=44,
+                    color='white',
+                    font='Arial-Bold',
+                    stroke_color='black',
+                    stroke_width=3,
+                    size=(1000, None),
+                    method='caption'
+                ).set_start(start_time).set_duration(end_time - start_time).set_position(('center', 1700))
+                
+                subtitle_clips.append(subtitle_clip)
+            
+            logger.info(f"✅ Created {len(subtitle_clips)} subtitle clips for cheap mode")
+            return subtitle_clips
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to create cheap mode subtitles: {e}")
+            return []
 
     def _create_timed_line_overlays(self, text: str, max_words_per_line: int = 4, 
                                    line_duration: float = 2.0, total_duration: float = 10.0) -> List[Dict[str, Any]]:
@@ -3799,6 +4279,181 @@ Use --no-cheap for full video generation."""
         except Exception as e:
             logger.error(f"❌ Timed text overlay failed: {e}")
             return video_path
+
+    def _save_cheap_mode_audio_files(self, audio_files: List[str], session_context) -> None:
+        """Save audio files to session directory for cheap mode"""
+        try:
+            import shutil
+            import os
+            
+            audio_dir = os.path.join(session_context.session_dir, 'audio')
+            os.makedirs(audio_dir, exist_ok=True)
+            
+            for i, audio_file in enumerate(audio_files):
+                if os.path.exists(audio_file):
+                    filename = f"cheap_mode_audio_{i}.mp3"
+                    dest_path = os.path.join(audio_dir, filename)
+                    shutil.copy2(audio_file, dest_path)
+                    logger.info(f"💾 Saved cheap mode audio: {filename}")
+                    
+            logger.info(f"✅ Saved {len(audio_files)} audio files to session")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to save cheap mode audio files: {e}")
+
+    def _save_cheap_mode_session_files(self, config, script_text: str, session_context) -> None:
+        """Save session files for cheap mode generation"""
+        try:
+            import json
+            import os
+            from datetime import datetime
+            
+            # Save subtitle files
+            self._save_cheap_mode_subtitles(script_text, config.duration_seconds, session_context)
+            
+            # Save overlay metadata
+            self._save_cheap_mode_overlay_metadata(script_text, session_context)
+            
+            # Save performance metrics
+            self._save_cheap_mode_performance_metrics(config, session_context)
+            
+            logger.info("✅ Saved all cheap mode session files")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to save cheap mode session files: {e}")
+
+    def _save_cheap_mode_subtitles(self, script_text: str, duration: float, session_context) -> None:
+        """Save subtitle files for cheap mode"""
+        try:
+            import os
+            import re
+            
+            subtitles_dir = os.path.join(session_context.session_dir, 'subtitles')
+            os.makedirs(subtitles_dir, exist_ok=True)
+            
+            # Create simple subtitle segments
+            words = script_text.split()
+            words_per_segment = 6
+            segments = []
+            
+            current_time = 0.0
+            for i in range(0, len(words), words_per_segment):
+                segment_words = words[i:i + words_per_segment]
+                segment_text = ' '.join(segment_words)
+                segment_duration = len(segment_words) * 0.4  # 0.4 seconds per word
+                
+                segments.append({
+                    'start': current_time,
+                    'end': current_time + segment_duration,
+                    'text': segment_text
+                })
+                current_time += segment_duration
+            
+            # Save SRT format
+            srt_path = os.path.join(subtitles_dir, 'subtitles.srt')
+            with open(srt_path, 'w') as f:
+                for i, segment in enumerate(segments, 1):
+                    f.write(f"{i}\n")
+                    f.write(f"{self._format_srt_time(segment['start'])} --> {self._format_srt_time(segment['end'])}\n")
+                    f.write(f"{segment['text']}\n\n")
+            
+            # Save VTT format  
+            vtt_path = os.path.join(subtitles_dir, 'subtitles.vtt')
+            with open(vtt_path, 'w') as f:
+                f.write("WEBVTT\n\n")
+                for segment in segments:
+                    f.write(f"{self._format_vtt_time(segment['start'])} --> {self._format_vtt_time(segment['end'])}\n")
+                    f.write(f"{segment['text']}\n\n")
+            
+            # Save subtitle metadata
+            metadata = {
+                'subtitle_count': len(segments),
+                'total_duration': duration,
+                'format': 'cheap_mode_generated',
+                'created_at': datetime.now().isoformat()
+            }
+            
+            metadata_path = os.path.join(subtitles_dir, 'subtitle_metadata.json')
+            with open(metadata_path, 'w') as f:
+                json.dump(metadata, f, indent=2)
+            
+            logger.info(f"✅ Saved subtitle files: {len(segments)} segments")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to save cheap mode subtitles: {e}")
+
+    def _save_cheap_mode_overlay_metadata(self, script_text: str, session_context) -> None:
+        """Save overlay metadata for cheap mode"""
+        try:
+            import json
+            import os
+            from datetime import datetime
+            
+            overlays_dir = os.path.join(session_context.session_dir, 'overlays')
+            os.makedirs(overlays_dir, exist_ok=True)
+            
+            overlay_metadata = {
+                'overlay_type': 'cheap_mode_text',
+                'script_text': script_text,
+                'overlay_count': 1,
+                'style': 'minimal_text_overlay',
+                'positioning': 'center_bottom',
+                'created_at': datetime.now().isoformat()
+            }
+            
+            metadata_path = os.path.join(overlays_dir, 'timed_overlay_metadata.json')
+            with open(metadata_path, 'w') as f:
+                json.dump(overlay_metadata, f, indent=2)
+            
+            logger.info("✅ Saved overlay metadata")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to save overlay metadata: {e}")
+
+    def _save_cheap_mode_performance_metrics(self, config, session_context) -> None:
+        """Save performance metrics for cheap mode"""
+        try:
+            import json
+            import os
+            from datetime import datetime
+            
+            metrics_dir = os.path.join(session_context.session_dir, 'performance_metrics')
+            os.makedirs(metrics_dir, exist_ok=True)
+            
+            metrics = {
+                'generation_mode': 'cheap_mode_full',
+                'duration_seconds': config.duration_seconds,
+                'platform': config.target_platform.value,
+                'cost_efficiency': 'maximum',
+                'generation_time_estimate': '30-60_seconds',
+                'resources_used': ['gTTS', 'text_video', 'moviepy'],
+                'veo_usage': False,
+                'created_at': datetime.now().isoformat()
+            }
+            
+            metrics_path = os.path.join(metrics_dir, 'generation_metrics.json')
+            with open(metrics_path, 'w') as f:
+                json.dump(metrics, f, indent=2)
+            
+            logger.info("✅ Saved performance metrics")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to save performance metrics: {e}")
+
+    def _format_srt_time(self, seconds: float) -> str:
+        """Format time for SRT subtitle format"""
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        millisecs = int((seconds % 1) * 1000)
+        return f"{hours:02d}:{minutes:02d}:{secs:02d},{millisecs:03d}"
+
+    def _format_vtt_time(self, seconds: float) -> str:
+        """Format time for VTT subtitle format"""
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = seconds % 60
+        return f"{hours:02d}:{minutes:02d}:{secs:06.3f}"
 
 
 

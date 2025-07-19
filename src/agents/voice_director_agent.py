@@ -293,11 +293,14 @@ class VoiceDirectorAgent:
             2. Multiple Speakers: ONLY when content has distinct speakers/characters in dialogue
             
             CRITICAL RULES:
-            - PREFER SINGLE VOICE by default - multiple voices often sound jarring
-            - ONLY use multiple voices when content has clear distinct speakers (dialogue, interviews, conversations)
-            - NEVER EVER switch voice in the middle of a sentence
-            - Voice changes can ONLY happen at natural break points (end of sentences, paragraphs, or speaker changes)
-            - If multiple voices are used, each speaker must maintain their voice throughout their entire speech
+            - ALWAYS USE SINGLE VOICE for consistency and professionalism
+            - NEVER switch voices mid-sentence, mid-word, or mid-phrase
+            - Multiple voices are ONLY allowed when content has explicit dialogue between different speakers
+            - Voice changes can ONLY happen at complete sentence boundaries (after punctuation: . ! ?)
+            - Each voice segment must contain complete sentences only
+            - If content doesn't have distinct speakers/dialogue, use single voice strategy
+            - Single voice ensures consistent pronunciation and natural flow
+            - Voice switching creates jarring audio experience and should be avoided
 
             PERSONALITY OPTIONS:
             - narrator: Professional, authoritative

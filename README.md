@@ -1,6 +1,50 @@
 # ViralAI - AI-Powered Video Generation System
 
-🚀 **Advanced AI video generation system with 22 specialized agents, centralized decision-making, and comprehensive social media integration.**
+🚀 **Production-ready AI video generation system with 22 specialized agents, centralized decision-making, and comprehensive social media integration.**
+
+[![Version](https://img.shields.io/badge/version-2.5.0--rc2-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v2.5.0-rc2)
+[![Status](https://img.shields.io/badge/status-Production%20Ready-green.svg)](https://github.com/yourusername/viral-video-generator)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+
+## ✨ **What's New in v2.5.0-rc2**
+
+### 🚨 **Critical Bug Fixes**
+- **Fixed**: DiscussionResult object handling causing video generation crashes
+- **Fixed**: Type safety issues in video generation pipeline
+- **Fixed**: Return type annotations and error handling
+- **Enhanced**: System reliability and error recovery
+
+### 🎯 **Perfect Subtitle Synchronization**
+- **Auto-Calibrating Timing**: Adapts to gTTS and premium TTS automatically
+- **Word-Level Precision**: Calculates timing based on actual word count
+- **Real Audio Analysis**: Syncs to actual audio duration, not theoretical
+- **Natural Pauses**: Intelligent pause detection between sentences
+
+### 🕐 **Duration-Aware AI Agents**
+- **Hard Duration Constraints**: AI agents respect exact time limits
+- **Smart Content Scaling**: Automatically adjusts content to fit duration
+- **Word Count Limits**: Uses 2.8-3.2 words/second speaking rate constraints
+- **Script Completion**: Ensures full story within time bounds
+
+### 🎭 **Enhanced Voice System**
+- **Single Voice Preference**: Professional single-voice narration by default
+- **Multi-Speaker Detection**: Intelligent detection for dialogue and interviews
+- **Voice Boundary Protection**: Never switches voice mid-sentence
+- **Context-Aware Selection**: Contextually appropriate voice selection
+
+### 🎨 **100+ Visual Styles**
+- **Photographic**: realistic, cinematic, documentary, portrait, macro
+- **Artistic**: watercolor, oil painting, impressionist, cubist, abstract
+- **Animation**: Disney, Pixar, anime, comic book, claymation
+- **Cultural**: Japanese, Egyptian, Celtic, Persian, African
+- **Technical**: blueprint, wireframe, x-ray, holographic, glitch
+
+### 🔧 **Production-Ready Features**
+- **Robust Session Management**: Auto-recovery and error handling
+- **Instagram Integration**: Real API posting with instagrapi
+- **Multi-Language Support**: 10+ languages with RTL rendering
+- **Professional Quality**: Studio-grade audio and HD video output
 
 ## Quick Start
 
@@ -38,7 +82,23 @@ python main.py generate \
   --duration 30 \
   --style viral \
   --tone engaging \
-  --visual-style dynamic
+  --visual-style cinematic
+
+# Use artistic visual styles
+python main.py generate \
+  --mission "Art tutorial for beginners" \
+  --platform youtube \
+  --duration 45 \
+  --visual-style watercolor \
+  --mode professional
+
+# Cultural-themed content
+python main.py generate \
+  --mission "Traditional Japanese tea ceremony" \
+  --platform instagram \
+  --duration 30 \
+  --visual-style japanese \
+  --tone respectful
 
 # Cost-effective testing mode
 python main.py generate \
@@ -142,6 +202,69 @@ Decisions → Discussions → Scripts → Video/Audio → Assembly → Social Me
 - Highest quality and optimization
 - Premium cost
 - Best for production content
+
+## 🎨 **Visual Styles (100+ Options)**
+
+### Photographic & Realistic
+```bash
+--visual-style realistic        # Photorealistic, high quality
+--visual-style cinematic        # Cinematic lighting, dramatic
+--visual-style documentary      # Authentic, real-world settings
+--visual-style portrait         # Professional portrait photography
+--visual-style macro            # Extreme close-ups, fine details
+--visual-style golden_hour      # Warm sunset lighting
+--visual-style neon            # Neon lighting, urban nightlife
+```
+
+### Animation & Cartoon
+```bash
+--visual-style disney          # Disney animation style
+--visual-style pixar           # Pixar 3D animation
+--visual-style anime           # Japanese animation style
+--visual-style comic_book      # Comic book illustration
+--visual-style claymation      # Clay animation, tactile
+--visual-style stop_motion     # Stop motion animation
+```
+
+### Artistic & Painting
+```bash
+--visual-style watercolor      # Watercolor painting style
+--visual-style oil_painting    # Rich textures, classical art
+--visual-style impressionist   # Light and color, loose brushstrokes
+--visual-style cubist          # Geometric shapes, multiple perspectives
+--visual-style pop_art         # Bold colors, commercial imagery
+--visual-style abstract        # Non-representational, conceptual
+```
+
+### Cultural & Historical
+```bash
+--visual-style japanese        # Traditional Japanese aesthetics
+--visual-style egyptian        # Ancient Egyptian symbols
+--visual-style celtic          # Celtic knots, mystical
+--visual-style persian         # Intricate carpets, miniatures
+--visual-style aztec           # Geometric patterns, ancient civilization
+--visual-style viking          # Norse mythology, runic symbols
+```
+
+### Genre & Thematic
+```bash
+--visual-style cyberpunk       # Futuristic, neon, high-tech
+--visual-style steampunk       # Victorian era, brass and gears
+--visual-style horror          # Dark, scary, unsettling
+--visual-style noir            # High contrast, shadows, mystery
+--visual-style synthwave       # 80s neon, outrun aesthetic
+--visual-style cottagecore     # Rural, cozy, natural
+```
+
+### Technical & Material
+```bash
+--visual-style blueprint       # Technical drawings, architectural
+--visual-style wireframe       # Technical, blueprint-like
+--visual-style holographic     # Rainbow effects, futuristic
+--visual-style glitch          # Digital corruption, cyberpunk
+--visual-style crystal         # Geometric, magical textures
+--visual-style microscopic     # Cellular, scientific detail
+```
 
 ## Platform Support
 

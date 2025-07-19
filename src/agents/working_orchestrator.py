@@ -34,6 +34,7 @@ try:
         AgentRole,
         DiscussionTopic
     )
+    from .fact_checker_agent import InternetFactCheckerAgent
 except ImportError:
     # Fallback for direct execution
     import sys
@@ -63,6 +64,7 @@ except ImportError:
         AgentRole,
         DiscussionTopic
     )
+    from src.agents.fact_checker_agent import InternetFactCheckerAgent
 
 logger = get_logger(__name__)
 
@@ -229,6 +231,7 @@ class WorkingOrchestrator:
         self.director = Director(api_key)
         self.continuity_agent = ContinuityDecisionAgent(api_key)
         self.voice_agent = VoiceDirectorAgent(api_key)
+        self.fact_checker = InternetFactCheckerAgent(api_key, enable_web_search=True)
 
         # Initialize enhanced agents based on mode
         self._initialize_agents_by_mode()
@@ -344,22 +347,63 @@ class WorkingOrchestrator:
                 logger.info("💰 Skipping AI agent discussions in cheap mode")
             
             # Phase 4: Script Generation with AI Enhancement
-            script_data = self._generate_enhanced_script(config)
+            try:
+                script_data = self._generate_enhanced_script(config)
+                logger.info("✅ Script generation completed successfully")
+            except Exception as e:
+                logger.error(f"❌ Script generation failed: {e}")
+                logger.error(f"❌ Script generation error details: {type(e).__name__}: {str(e)}")
+                
+                # Create fallback script for cheap mode to continue generation
+                if self.cheap_mode:
+                    logger.info("💰 Creating fallback script for cheap mode")
+                    script_data = self._create_fallback_script()
+                else:
+                    logger.error("❌ Script generation failed in non-cheap mode, aborting")
+                    raise
 
             # Phase 5: Comprehensive AI Decision Making (with continuity context)
-            decisions = self._make_comprehensive_decisions(
-                script_data,
-                config,
-                frame_continuity_decision)
+            try:
+                decisions = self._make_comprehensive_decisions(
+                    script_data,
+                    config,
+                    frame_continuity_decision)
+                logger.info("✅ Decision making completed successfully")
+            except Exception as e:
+                logger.error(f"❌ Decision making failed: {e}")
+                # Create fallback decisions for cheap mode
+                if self.cheap_mode:
+                    logger.info("💰 Creating fallback decisions for cheap mode")
+                    decisions = self._create_fallback_decisions()
+                else:
+                    raise
 
             # Phase 6: Video Generation with All Features (continuity-aware)
-            if self.cheap_mode:
-                video_path = self._generate_cheap_video(script_data, decisions, config)
-            elif self.mode == OrchestratorMode.MULTILINGUAL and config.get('languages'):
-                video_path = self._generate_multilingual_video(script_data, decisions, config)
-            else:
-                video_path = self._generate_enhanced_video(script_data, decisions, config)
-            logger.info(f"✅ {self.mode.value} video generation completed: {video_path}")
+            try:
+                if self.cheap_mode:
+                    video_path = self._generate_cheap_video(script_data, decisions, config)
+                elif self.mode == OrchestratorMode.MULTILINGUAL and config.get('languages'):
+                    video_path = self._generate_multilingual_video(script_data, decisions, config)
+                else:
+                    video_path = self._generate_enhanced_video(script_data, decisions, config)
+                
+                if video_path:
+                    logger.info(f"✅ {self.mode.value} video generation completed: {video_path}")
+                else:
+                    logger.error(f"❌ {self.mode.value} video generation returned None")
+                    return {
+                        'success': False,
+                        'error': 'Video generation returned None',
+                        'session_id': self.session_id
+                    }
+            except Exception as e:
+                logger.error(f"❌ Video generation failed: {e}")
+                logger.error(f"❌ Video generation error details: {type(e).__name__}: {str(e)}")
+                return {
+                    'success': False,
+                    'error': f'Video generation failed: {str(e)}',
+                    'session_id': self.session_id
+                }
             
             return {
                 'success': True,
@@ -506,7 +550,7 @@ class WorkingOrchestrator:
 
         script_result = self.discussion_system.start_discussion(
             script_topic,
-            [AgentRole.SCRIPT_WRITER, AgentRole.DIRECTOR]
+            [AgentRole.SCRIPT_WRITER, AgentRole.DIRECTOR, AgentRole.FACT_CHECKER]
         )
         self.discussion_results['script_strategy'] = script_result
         
@@ -542,6 +586,28 @@ class WorkingOrchestrator:
             [AgentRole.SOUNDMAN, AgentRole.EDITOR]
         )
         self.discussion_results['audio_strategy'] = audio_result
+        
+        # Discussion 4: Fact Checking & Content Verification
+        fact_check_topic = DiscussionTopic(
+            topic_id="fact_checking", 
+            title="Content Fact Checking & Information Verification", 
+            description="Verify factual accuracy and provide current information for content",
+            context={
+                'mission': self.mission,
+                'category': self.category.value,
+                'platform': self.platform.value,
+                'content_claims': script_result.decision.get('content_claims', []) if hasattr(script_result, 'decision') else [],
+                'trending_insights': self.trending_insights
+            }, 
+            required_decisions=["fact_verification", "source_credibility", "misinformation_prevention"]
+        )
+
+        fact_check_result = self.discussion_system.start_discussion(
+            fact_check_topic,
+            [AgentRole.FACT_CHECKER]
+        )
+        self.discussion_results['fact_checking'] = fact_check_result
+        
         logger.info(f"✅ Completed {len(self.discussion_results)} enhanced discussions")
 
     def _conduct_advanced_discussions(self, config: Dict[str, Any]):
@@ -614,7 +680,7 @@ class WorkingOrchestrator:
         
         engagement_result = self.discussion_system.start_discussion(
             engagement_topic,
-            [AgentRole.ENGAGEMENT_OPTIMIZER, AgentRole.VIRAL_SPECIALIST, AgentRole.ANALYTICS_EXPERT, AgentRole.CONTENT_STRATEGIST]
+            [AgentRole.ENGAGEMENT_OPTIMIZER, AgentRole.VIRAL_SPECIALIST, AgentRole.ANALYTICS_EXPERT, AgentRole.CONTENT_STRATEGIST, AgentRole.FACT_CHECKER]
         )
         self.discussion_results['engagement_strategy'] = engagement_result
         
@@ -639,7 +705,7 @@ class WorkingOrchestrator:
         self.discussion_results['platform_optimization'] = platform_result
         
         total_discussions = len(self.discussion_results)
-        total_agents = sum(len(discussion.get('participants', [])) for discussion in self.discussion_results.values())
+        total_agents = sum(len(discussion.participating_agents) for discussion in self.discussion_results.values())
         
         logger.info(f"✅ Professional discussions completed: {total_discussions} discussions with {total_agents}+ agent interactions")
         logger.info("✅ Advanced discussions completed")
@@ -665,7 +731,7 @@ class WorkingOrchestrator:
 
         multilang_result = self.discussion_system.start_discussion(
             multilang_topic,
-            [AgentRole.SCRIPT_WRITER, AgentRole.SOUNDMAN]
+            [AgentRole.SCRIPT_WRITER, AgentRole.SOUNDMAN, AgentRole.FACT_CHECKER]
         )
         self.discussion_results['multilingual_strategy'] = multilang_result
         logger.info("✅ Multilingual discussions completed")
@@ -710,6 +776,34 @@ class WorkingOrchestrator:
             'data': script_data,
             'enhanced': self.mode != OrchestratorMode.SIMPLE
         }
+        
+        # Add fact checking for enhanced modes
+        if self.mode != OrchestratorMode.SIMPLE and not self.cheap_mode:
+            logger.info("🔍 Performing fact checking on generated script...")
+            try:
+                # Fact check the script content
+                script_content = str(script_data)
+                fact_check_result = self.fact_checker.verify_facts_for_discussion(
+                    content=script_content,
+                    topic=self.mission,
+                    platform=self.platform.value
+                )
+                
+                # Store fact check results
+                self.agent_decisions['fact_checking'] = {
+                    'agent': 'InternetFactCheckerAgent',
+                    'verification_summary': fact_check_result.get('verification_summary', {}),
+                    'recommendations': fact_check_result.get('recommendations', {}),
+                    'confidence_level': fact_check_result.get('confidence_level', 'medium')
+                }
+                
+                # Log fact checking summary
+                verification = fact_check_result.get('verification_summary', {})
+                logger.info(f"✅ Fact checking completed: {verification.get('total_claims_checked', 0)} claims checked, "
+                           f"accuracy: {verification.get('overall_accuracy', 0.5):.2f}")
+                
+            except Exception as e:
+                logger.warning(f"⚠️ Fact checking failed: {e}")
         
         return script_data
     
@@ -1016,17 +1110,17 @@ class WorkingOrchestrator:
     def _count_agents_used(self) -> int:
         """Count the number of agents used based on mode"""
         if self.mode == OrchestratorMode.SIMPLE:
-            return 3  # Director, Continuity, Voice
+            return 4  # Director, Continuity, Voice, Fact Checker
         elif self.mode == OrchestratorMode.ENHANCED:
-            return 7  # Core agents with enhanced features
+            return 8  # Core agents with enhanced features + Fact Checker
         elif self.mode == OrchestratorMode.MULTILINGUAL:
-            return 8  # Core agents + multilingual
+            return 9  # Core agents + multilingual + Fact Checker
         elif self.mode == OrchestratorMode.ADVANCED:
-            return 15  # Enhanced agents with advanced features
+            return 16  # Enhanced agents with advanced features + Fact Checker
         else:  # PROFESSIONAL
-            return 22  # All agents with professional features (7 core + 15 specialized)
+            return 23  # All agents with professional features + Fact Checker
 
-    def _generate_cheap_video(self, script_data: Dict[str, Any], decisions: Dict[str, Any], config: Dict[str, Any]) -> str:
+    def _generate_cheap_video(self, script_data: Dict[str, Any], decisions: Dict[str, Any], config: Dict[str, Any]) -> Optional[str]:
         """Generate video in cheap mode with granular level control"""
         logger.info(f"💰 Starting cheap mode video generation (level: {self.cheap_mode_level})")
         
@@ -1034,6 +1128,12 @@ class WorkingOrchestrator:
             # Create a simple text-based video configuration
             from ..utils.session_context import create_session_context
             session_context = create_session_context(self.session_id)
+            
+            # Save script data to session for cheap mode
+            self._save_script_to_session(script_data, session_context)
+            
+            # Save decisions to session for cheap mode
+            self._save_decisions_to_session(decisions, session_context)
             
             # Configure based on cheap mode level
             if self.cheap_mode_level == "full":
@@ -1088,7 +1188,7 @@ class WorkingOrchestrator:
                 color_scheme=["#000000", "#FFFFFF"] if cheap_mode else None,
                 text_overlays=[],
                 transitions=["none"] if cheap_mode else None,
-                background_music_style="none" if cheap_mode else None,
+                background_music_style="none" if cheap_mode else "upbeat",
                 voiceover_style="simple",
                 sound_effects=[],
                 inspired_by_videos=[],
@@ -1102,7 +1202,15 @@ class WorkingOrchestrator:
             )
             
             logger.info(f"💰 Generating video with {self.cheap_mode_level} cheap mode")
-            video_path = video_generator.generate_video(cheap_config)
+            video_result = video_generator.generate_video(cheap_config)
+            
+            # Handle different return types
+            if isinstance(video_result, str):
+                video_path = video_result
+            elif hasattr(video_result, 'file_path'):
+                video_path = video_result.file_path
+            else:
+                video_path = str(video_result) if video_result else None
             
             if video_path:
                 logger.info(f"✅ Cheap mode video generated: {video_path}")
@@ -1114,6 +1222,157 @@ class WorkingOrchestrator:
         except Exception as e:
             logger.error(f"❌ Cheap mode video generation failed: {e}")
             return None
+
+    def _create_fallback_script(self) -> Dict[str, Any]:
+        """Create a fallback script when Director fails"""
+        logger.info("🔄 Creating fallback script for cheap mode")
+        
+        # Create a simple script based on the mission
+        fallback_script = {
+            'hook': f"Amazing content ahead!",
+            'main_content': f"Here's what you need to know about {self.mission}.",
+            'call_to_action': "Follow for more!",
+            'segments': [
+                {
+                    'type': 'hook',
+                    'text': f"Amazing content ahead!",
+                    'duration': 3
+                },
+                {
+                    'type': 'content',
+                    'text': f"Here's what you need to know about {self.mission}.",
+                    'duration': self.duration - 6
+                },
+                {
+                    'type': 'cta',
+                    'text': "Follow for more!",
+                    'duration': 3
+                }
+            ],
+            'total_duration': self.duration,
+            'fallback': True
+        }
+        
+        logger.info("✅ Fallback script created successfully")
+        return fallback_script
+
+    def _create_fallback_decisions(self) -> Dict[str, Any]:
+        """Create fallback decisions when comprehensive decision making fails"""
+        logger.info("🔄 Creating fallback decisions for cheap mode")
+        
+        fallback_decisions = {
+            'voice_config': {
+                'voice': 'en-US-Neural2-C',
+                'personality': 'storyteller',
+                'single_voice': True
+            },
+            'visual_style': {
+                'style': 'minimal',
+                'colors': ['#000000', '#FFFFFF'],
+                'typography': 'simple'
+            },
+            'audio_config': {
+                'tts_engine': 'gtts',
+                'speed': 1.0,
+                'pitch': 1.0
+            },
+            'composition': {
+                'num_clips': 1,
+                'transitions': ['none'],
+                'overlays': []
+            },
+            'fallback': True
+        }
+        
+        logger.info("✅ Fallback decisions created successfully")
+        return fallback_decisions
+
+    def _save_script_to_session(self, script_data: Dict[str, Any], session_context) -> None:
+        """Save script data to session directories"""
+        try:
+            import json
+            import os
+            
+            # Extract script text for saving
+            script_text = ""
+            if isinstance(script_data, dict):
+                if 'processed' in script_data and 'final_script' in script_data['processed']:
+                    script_text = script_data['processed']['final_script']
+                elif 'segments' in script_data:
+                    # PRIORITY: Use segments first to avoid contaminated full_text
+                    # Use full_text if available (to avoid truncated text), otherwise use text
+                    script_text = " ".join([segment.get('full_text', segment.get('text', '')) for segment in script_data['segments']])
+                elif 'full_text' in script_data:
+                    # Use the complete full_text if available (avoids truncated segments)
+                    script_text = script_data['full_text']
+                elif 'main_content' in script_data:
+                    script_text = f"{script_data.get('hook', '')} {script_data['main_content']} {script_data.get('call_to_action', '')}"
+                else:
+                    script_text = str(script_data)
+            else:
+                script_text = str(script_data)
+            
+            # Save processed script
+            scripts_dir = os.path.join(session_context.session_dir, 'scripts')
+            os.makedirs(scripts_dir, exist_ok=True)
+            
+            with open(os.path.join(scripts_dir, 'processed_script.txt'), 'w') as f:
+                f.write(script_text)
+            
+            # Save full script data as JSON
+            with open(os.path.join(scripts_dir, 'script_data.json'), 'w') as f:
+                json.dump(script_data, f, indent=2, default=str)
+            
+            logger.info("✅ Script saved to session successfully")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to save script to session: {e}")
+
+    def _save_decisions_to_session(self, decisions: Dict[str, Any], session_context) -> None:
+        """Save decisions to session directories"""
+        try:
+            import json
+            import os
+            
+            # Save AI agent decisions
+            decisions_dir = os.path.join(session_context.session_dir, 'decisions')
+            os.makedirs(decisions_dir, exist_ok=True)
+            
+            # Save agent decisions
+            with open(os.path.join(decisions_dir, 'agent_decisions.json'), 'w') as f:
+                json.dump(self.agent_decisions, f, indent=2, default=str)
+            
+            # Save comprehensive decisions
+            with open(os.path.join(decisions_dir, 'comprehensive_decisions.json'), 'w') as f:
+                json.dump(decisions, f, indent=2, default=str)
+            
+            # Create placeholder discussions for cheap mode
+            discussions_dir = os.path.join(session_context.session_dir, 'discussions')
+            os.makedirs(discussions_dir, exist_ok=True)
+            
+            cheap_mode_discussion = {
+                "mode": "cheap_mode",
+                "discussions_skipped": True,
+                "reason": "Cheap mode enabled - skipped AI agent discussions for cost efficiency",
+                "fallback_used": decisions.get('fallback', False)
+            }
+            
+            with open(os.path.join(discussions_dir, 'cheap_mode_summary.json'), 'w') as f:
+                json.dump(cheap_mode_discussion, f, indent=2)
+            
+            # Create basic hashtags for cheap mode
+            hashtags_dir = os.path.join(session_context.session_dir, 'hashtags')
+            os.makedirs(hashtags_dir, exist_ok=True)
+            
+            basic_hashtags = f"#viral #content #{self.platform.value.lower()} #trending #amazing"
+            
+            with open(os.path.join(hashtags_dir, 'hashtags_text.txt'), 'w') as f:
+                f.write(basic_hashtags)
+            
+            logger.info("✅ Decisions and metadata saved to session successfully")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to save decisions to session: {e}")
 
     def get_progress(self) -> Dict[str, Any]:
         """Get current progress for real-time UI"""

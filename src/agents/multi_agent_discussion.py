@@ -48,6 +48,7 @@ class AgentRole(Enum):
     VIRAL_SPECIALIST = "viral_specialist"
     COPYWRITER = "copywriter"
     THUMBNAIL_DESIGNER = "thumbnail_designer"
+    FACT_CHECKER = "fact_checker"  # New Internet-connected fact checker
 
 @dataclass
 class AgentMessage:
@@ -316,6 +317,12 @@ class MultiAgentDiscussionSystem:
                 "personality": "Click-focused, visual-impact, first-impression specialist",
                 "expertise": ["thumbnail design", "click-through rates", "visual impact", "preview optimization"],
                 "decision_style": "Click-optimized with visual impact priority"
+            },
+            AgentRole.FACT_CHECKER: {
+                "name": "FactGuardian",
+                "personality": "Internet-connected, fact-focused, verification-oriented specialist with real-time information access",
+                "expertise": ["fact verification", "current events", "source credibility", "misinformation detection", "real-time news", "expert consensus"],
+                "decision_style": "Evidence-based with source verification and accuracy priority"
             }
         }
 

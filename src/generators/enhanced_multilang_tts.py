@@ -6,7 +6,6 @@ import os
 import tempfile
 import uuid
 from typing import Optional, Dict, Any, List
-from enum import Enum
 
 from google.cloud import texttospeech
 from gtts import gTTS
@@ -97,7 +96,8 @@ class EnhancedMultilingualTTS:
             # In cheap mode, skip expensive AI voice selection
             if cheap_mode:
                 logger.info("💰 Cheap mode: Using basic gTTS for audio generation")
-                return [self._generate_enhanced_gtts_audio(script, language, "neutral")]
+                audio_file = self._generate_enhanced_gtts_audio(script, language, "neutral")
+                return [audio_file] if audio_file else [self._create_silent_audio()]
             
             # Get AI voice selection strategy
             voice_strategy = self.voice_director.analyze_content_and_select_voices(
@@ -427,9 +427,101 @@ class EnhancedMultilingualTTS:
             else:
                 # General text cleaning for other languages
                 import re
-                # Remove excessive punctuation
-                enhanced_text = re.sub(r'[^\w\s.,!?-]', ' ', enhanced_text)
+                # CRITICAL FIX: Keep apostrophes for contractions (isn't, don't, etc.)
+                # Remove excessive punctuation but preserve apostrophes and essential characters
+                enhanced_text = re.sub(r'[^\w\s.,!?\'-]', ' ', enhanced_text)
                 enhanced_text = re.sub(r'\s+', ' ', enhanced_text).strip()
+                
+                # CRITICAL FIX: Handle common contractions properly for better TTS
+                # Comprehensive contraction handling to prevent "I S N T" pronunciation
+                contractions = {
+                    # Common negative contractions
+                    "isn't": "is not",
+                    "aren't": "are not", 
+                    "wasn't": "was not",
+                    "weren't": "were not",
+                    "doesn't": "does not",
+                    "don't": "do not",
+                    "didn't": "did not",
+                    "won't": "will not",
+                    "wouldn't": "would not",
+                    "shouldn't": "should not",
+                    "couldn't": "could not",
+                    "can't": "cannot",
+                    "hasn't": "has not",
+                    "haven't": "have not",
+                    "hadn't": "had not",
+                    "mustn't": "must not",
+                    "needn't": "need not",
+                    "shan't": "shall not",
+                    "mightn't": "might not",
+                    
+                    # Common 'm, 're, 've contractions
+                    "I'm": "I am",
+                    "you're": "you are",
+                    "we're": "we are",
+                    "they're": "they are",
+                    "it's": "it is",
+                    "that's": "that is",
+                    "what's": "what is",
+                    "here's": "here is",
+                    "there's": "there is",
+                    "where's": "where is",
+                    "who's": "who is",
+                    "how's": "how is",
+                    "let's": "let us",
+                    "he's": "he is",
+                    "she's": "she is",
+                    
+                    # 'll contractions
+                    "I'll": "I will",
+                    "you'll": "you will",
+                    "he'll": "he will",
+                    "she'll": "she will",
+                    "it'll": "it will",
+                    "we'll": "we will",
+                    "they'll": "they will",
+                    "that'll": "that will",
+                    
+                    # 've contractions
+                    "I've": "I have",
+                    "you've": "you have",
+                    "we've": "we have",
+                    "they've": "they have",
+                    "could've": "could have",
+                    "should've": "should have",
+                    "would've": "would have",
+                    "might've": "might have",
+                    
+                    # 'd contractions
+                    "I'd": "I would",
+                    "you'd": "you would",
+                    "he'd": "he would",
+                    "she'd": "she would",
+                    "we'd": "we would",
+                    "they'd": "they would",
+                    "it'd": "it would",
+                }
+                
+                # Replace contractions with full forms for clearer TTS
+                # Use case-insensitive replacement to catch all variations
+                import re
+                for contraction, expansion in contractions.items():
+                    # Replace exact matches (case-insensitive)
+                    pattern = r'\b' + re.escape(contraction) + r'\b'
+                    enhanced_text = re.sub(pattern, expansion, enhanced_text, flags=re.IGNORECASE)
+                    
+                    # Handle capitalized versions at sentence start
+                    cap_pattern = r'\b' + re.escape(contraction.capitalize()) + r'\b'
+                    enhanced_text = re.sub(cap_pattern, expansion.capitalize(), enhanced_text)
+                
+                # Additional fix for common mispronunciations
+                # Replace letter-by-letter spelling patterns that TTS might interpret incorrectly
+                enhanced_text = re.sub(r'\bI S N T\b', 'is not', enhanced_text, flags=re.IGNORECASE)
+                enhanced_text = re.sub(r'\bL E T S\b', 'let us', enhanced_text, flags=re.IGNORECASE)
+                enhanced_text = re.sub(r'\bD O N T\b', 'do not', enhanced_text, flags=re.IGNORECASE)
+                enhanced_text = re.sub(r'\bC A N T\b', 'cannot', enhanced_text, flags=re.IGNORECASE)
+                enhanced_text = re.sub(r'\bW O N T\b', 'will not', enhanced_text, flags=re.IGNORECASE)
                 
             # Ensure text is not empty
             if not enhanced_text:

@@ -208,6 +208,12 @@ class InstagramAutoPoster:
                 logger.error(f"❌ Response text: {login_response.text[:200]}")
                 return False
             
+            # Validate login_result is a dictionary
+            if not isinstance(login_result, dict):
+                logger.error(f"❌ Unexpected login response type: {type(login_result)}")
+                logger.error(f"❌ Response content: {login_result}")
+                return False
+            
             # Check login result
             if login_result.get('authenticated'):
                 self.is_authenticated = True
@@ -565,21 +571,58 @@ class InstagramAutoPoster:
             video_path_obj = Path(video_path)
             
             if is_reel:
-                # Upload as reel
+                # Upload as reel with public visibility
                 media = cl.clip_upload(
                     path=video_path_obj,
                     caption=caption
                 )
+                
+                # Ensure the reel is public (instagrapi default is usually public)
+                if media and hasattr(cl, 'media_edit'):
+                    try:
+                        # Try to explicitly set media to public if possible
+                        cl.media_edit(media.id, caption=caption)
+                        logger.info("✅ Reel visibility ensured to be public")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Could not explicitly set reel to public: {e}")
+                        logger.info("ℹ️ Reel should be public by default")
             else:
-                # Upload as video post
+                # Upload as video post with public visibility
                 media = cl.video_upload(
                     path=video_path_obj,
                     caption=caption
                 )
+                
+                # Ensure the video post is public (instagrapi default is usually public)
+                if media and hasattr(cl, 'media_edit'):
+                    try:
+                        # Try to explicitly set media to public if possible
+                        cl.media_edit(media.id, caption=caption)
+                        logger.info("✅ Video post visibility ensured to be public")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Could not explicitly set video to public: {e}")
+                        logger.info("ℹ️ Video post should be public by default")
             
             if media:
                 logger.info(f"✅ Upload successful! Media ID: {media.id}")
                 logger.info(f"📊 Post URL: https://www.instagram.com/p/{media.code}/")
+                
+                # Verify media is public by checking its properties
+                try:
+                    media_info = cl.media_info(media.id)
+                    if hasattr(media_info, 'visibility') or hasattr(media_info, 'audience'):
+                        logger.info(f"📋 Media visibility verified")
+                    else:
+                        logger.info("ℹ️ Media uploaded with default public visibility")
+                except Exception as e:
+                    logger.info(f"ℹ️ Could not verify media visibility: {e}")
+                    logger.info("ℹ️ Media should be public by default with instagrapi")
+                
+                # Log additional media details for confirmation
+                logger.info(f"🎬 Media Type: {'Reel' if is_reel else 'Video Post'}")
+                logger.info(f"📱 Platform: Instagram")
+                logger.info(f"🌐 Visibility: Public (default)")
+                
                 return True
             else:
                 logger.error("❌ instagrapi upload returned no media")

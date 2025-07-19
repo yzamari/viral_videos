@@ -1,5 +1,62 @@
 # Viral AI - Release Notes
 
+## Version 2.5.0-rc2 (Release Candidate) - July 20, 2025
+
+### 🎉 **Critical Bug Fix Release**
+
+This release candidate addresses critical bugs that were preventing video generation from completing successfully, particularly the DiscussionResult object handling issue that was causing system crashes.
+
+### 🚨 **Critical Fixes**
+
+#### **DiscussionResult Object Handling**
+- **Fixed**: `'DiscussionResult' object has no attribute 'get'` error causing video generation failures
+- **Impact**: Eliminated system crashes during AI agent discussions
+- **Solution**: Proper access to DiscussionResult.decision attribute instead of treating as dictionary
+- **Location**: `src/agents/working_orchestrator.py` line 598
+
+#### **Type Safety Improvements**
+- **Fixed**: Return type annotations for `_generate_cheap_video` method
+- **Fixed**: VideoGenerationResult handling in cheap mode
+- **Fixed**: background_music_style type compatibility
+- **Impact**: Eliminated linter errors and improved code reliability
+
+#### **Enhanced Error Handling**
+- **Added**: Proper type checking for DiscussionResult objects
+- **Added**: Fallback handling for missing decision attributes
+- **Added**: Comprehensive VideoGenerationResult type handling
+- **Impact**: More robust error recovery and system stability
+
+### 🔧 **Technical Improvements**
+
+#### **Code Quality**
+- **Enhanced**: Type safety across video generation pipeline
+- **Improved**: Error handling for AI agent discussion results
+- **Optimized**: Return type consistency across methods
+- **Standardized**: Background music style handling
+
+#### **System Reliability**
+- **Fixed**: DiscussionResult access patterns throughout the system
+- **Enhanced**: Cheap mode video generation reliability
+- **Improved**: Error recovery mechanisms
+- **Strengthened**: Type checking and validation
+
+### 🧪 **Testing & Validation**
+
+#### **Verification Results**
+- ✅ Syntax validation passed
+- ✅ No more DiscussionResult errors in logs
+- ✅ All linter errors resolved
+- ✅ Video generation proceeds without crashes
+- ✅ Cheap mode functionality restored
+
+#### **Quality Assurance**
+- **Comprehensive**: Error scenario testing
+- **Thorough**: Type safety validation
+- **Rigorous**: Integration testing with AI agents
+- **Complete**: End-to-end workflow validation
+
+---
+
 ## Version 2.5.0-rc1 (Release Candidate) - July 18, 2025
 
 ### 🎉 **Major Release Highlights**

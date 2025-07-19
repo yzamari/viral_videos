@@ -23,7 +23,7 @@ def test_instagram_posting():
     print("=" * 50)
     
     # Test credentials
-    username = "yzamari@gmail.com"
+    username = "Veo.calculus"
     password = "Nvnnh@123"
     
     # Find a test video
@@ -116,7 +116,7 @@ def test_session_posting():
         return False
     
     try:
-        username = "yzamari@gmail.com"
+        username = "Veo.calculus"
         password = "Nvnnh@123"
         
         credentials = InstagramCredentials(username=username, password=password)

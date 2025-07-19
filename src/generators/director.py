@@ -164,6 +164,7 @@ class Director:
                 5. Keep it under 15 words but make every word count toward the mission
                 6. Begin the persuasion/teaching/demonstration immediately
                 7. Hook them while simultaneously starting to accomplish the mission
+                8. NEVER use contractions (don't, can't, it's, let's) - use full forms (do not, cannot, it is, let us)
 
                 Example approach: If mission is "convince X that Y is bad" - start by showing consequence/impact, not by saying "let's talk about convincing"
 
@@ -189,6 +190,7 @@ class Director:
                 5. Keep it under 15 words for quick consumption
                 6. NEVER use generic phrases like "This is amazing"
                 7. Make it topic-specific and authentic to "{topic}"
+                8. NEVER use contractions (don't, can't, it's, let's) - use full forms (do not, cannot, it is, let us)
 
                 Return ONLY the hook text about "{topic}", no explanations.
                 """
@@ -257,10 +259,12 @@ class Director:
                 CRITICAL: This is NOT about discussing the topic - this is about ACCOMPLISHING the mission "{topic}" within {duration} seconds.
 
                 Mission Strategy:
-                - Duration: {duration} seconds total - make EVERY second count toward the mission
+                - Duration: EXACTLY {duration} seconds (HARD CONSTRAINT - content MUST fit this time limit)
+                - Word limit: Approximately {duration * 3} words total (3 words per second speaking rate)
                 - Segments: {num_segments} strategic segments that build toward mission completion
                 - Pacing: {patterns.get('pacing', 'fast')} to maximize persuasive impact
                 - Success patterns: {patterns.get('success_factors', [])}
+                - CONTENT MUST BE CONCISE - fit the story within the time limit
 
                 {news_context}
 
@@ -272,6 +276,7 @@ class Director:
                 5. Include ONLY spoken dialogue that serves the mission objective
                 6. No meta-discussion - dive straight into accomplishing the mission
                 7. Make the content compelling and actionable within the time limit
+                8. NEVER use contractions (don't, can't, it's, let's) - use full forms (do not, cannot, it is, let us)
 
                 Strategic Approach Examples:
                 - If mission is "convince X that Y is bad": Show consequences, provide evidence, emotional impact
@@ -292,7 +297,12 @@ class Director:
                 prompt = f"""
                 Create {num_segments} content segments for a {duration}-second video about: "{topic}"
 
-                CRITICAL: ALL segments MUST be about "{topic}" and nothing else.
+                CRITICAL: ALL segments MUST be about "{topic}" and fit EXACTLY within {duration} seconds.
+
+                Duration constraints:
+                - Duration: EXACTLY {duration} seconds (HARD CONSTRAINT - content MUST fit this time limit)
+                - Word limit: Approximately {duration * 3} words total (3 words per second speaking rate)
+                - Each segment: ~{duration // num_segments} seconds each
 
                 Successful content patterns:
                 - Themes: {patterns.get('themes', [])}
@@ -306,6 +316,7 @@ class Director:
                 2. Build on previous segment about "{topic}"
                 3. Maintain viewer attention with "{topic}" content
                 4. Include ONLY spoken dialogue content about "{topic}"
+                5. NEVER use contractions (don't, can't, it's, let's) - use full forms (do not, cannot, it is, let us)
 
                 Return JSON array:
                 [
@@ -1058,17 +1069,28 @@ class Director:
         # If no emotional triggers in text and we have available triggers, enhance the hook
         if (available_triggers and
                 not any(trigger in hook_text.lower() for trigger in available_triggers)):
-            # Use the first available emotional trigger
-            hook['text'] = f"{available_triggers[0].capitalize()}: {hook_text}"
+            # Use the first available emotional trigger naturally integrated
+            trigger = available_triggers[0].lower()
+            # Integrate trigger naturally without colon prefix
+            if trigger == "amazing":
+                hook['text'] = f"This {hook_text.lower()} is amazing"
+            elif trigger == "shocking":
+                hook['text'] = f"You won't believe this about {hook_text.lower()}"
+            elif trigger == "incredible":
+                hook['text'] = f"The incredible truth about {hook_text.lower()}"
+            else:
+                # Default: just enhance without adding prefixes that break TTS
+                hook['text'] = hook_text
         elif not available_triggers:
-            # If no triggers available, enhance with intensity
+            # If no triggers available, enhance naturally without colon prefixes
             if not any(
                 word in hook_text.lower() for word in ['how',
                 'why',
                 'what',
                 'when',
                 'where']):
-                hook['text'] = f"Discover: {hook_text}"
+                # Enhance naturally without "Discover:" prefix
+                hook['text'] = f"Here's what you need to know about {hook_text.lower()}"
 
         return hook
 
@@ -1083,10 +1105,13 @@ class Director:
             for segment in segments:
                 if segment.get('duration', 0) > 5:
                     segment['duration'] = 5
-                # Make text more concise
+                # Make text more concise for visual display only
+                # Note: Do not truncate for TTS - keep full text for audio generation
                 text = segment.get('text', '')
                 if len(text) > 100:
-                    segment['text'] = text[:97] + '...'
+                    # Store both full text and display text
+                    segment['full_text'] = text  # Keep full text for TTS
+                    segment['text'] = text[:97] + '...'  # Truncated for display
 
         return segments
 
@@ -1319,8 +1344,9 @@ class Director:
                 if 'text' in segment:
                     text = segment['text']
                     
-                    # Trim if too long
+                    # Trim if too long (for display only, preserve full text for TTS)
                     if len(text) > optimization['max_text_length']:
+                        segment['full_text'] = text  # Keep full text for TTS
                         segment['text'] = text[:optimization['max_text_length']-3] + '...'
                     
                     # Add platform-specific enhancements

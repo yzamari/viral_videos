@@ -28,7 +28,7 @@ def create_env_file():
 # =============================================================================
 
 # Instagram Credentials (for instagrapi - RECOMMENDED)
-INSTAGRAM_USERNAME=yzamari@gmail.com
+INSTAGRAM_USERNAME=Veo.calculus
 INSTAGRAM_PASSWORD=Nvnnh@123
 INSTAGRAM_2FA_CODE=your_2fa_code_if_needed
 
@@ -124,7 +124,7 @@ def show_usage_examples():
     print("\n4. 📁 Post from a session:")
     print("   python -c \"")
     print("   from src.social.instagram_autoposter import create_instagram_post_from_session, InstagramCredentials")
-    print("   credentials = InstagramCredentials(username='yzamari@gmail.com', password='Nvnnh@123')")
+    print("   credentials = InstagramCredentials(username='Veo.calculus', password='Nvnnh@123')")
     print("   create_instagram_post_from_session('outputs/session_YYYYMMDD_HHMMSS', credentials)")
     print("   \"")
 

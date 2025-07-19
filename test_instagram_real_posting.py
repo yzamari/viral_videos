@@ -22,7 +22,7 @@ def test_real_instagram_posting():
     print("=" * 60)
     
     # Test credentials
-    username = "yzamari@gmail.com"
+    username = "Veo.calculus"
     password = "Nvnnh@123"
     
     # Find a test video
