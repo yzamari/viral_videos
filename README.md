@@ -53,6 +53,11 @@
 - Google Cloud Project with Vertex AI enabled
 - Google AI API key
 
+### 🚀 **Latest Release: v2.5.0-rc2**
+- **Critical Bug Fixes**: Fixed DiscussionResult object handling causing system crashes
+- **Enhanced Type Safety**: Improved error recovery and system stability
+- **Production Ready**: All critical issues resolved for production deployment
+
 ### Installation
 ```bash
 git clone <repository-url>
