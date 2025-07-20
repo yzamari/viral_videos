@@ -1185,28 +1185,43 @@ class VideoGenerator:
             
             # If we have core decisions, create segments based on them
             if hasattr(config, 'num_clips') and config.num_clips is not None and hasattr(config, 'clip_durations') and config.clip_durations is not None:
-                # Use core decisions to create segments
+                # Use core decisions to create segments with proper sentence boundaries
                 logger.info(f"🎯 Creating audio segments from core decisions: {config.num_clips} clips")
                 full_script = script_result.get('final_script', config.topic)
                 
-                # Split script into the required number of segments
-                segments_to_generate = []
-                words = full_script.split()
-                total_words = len(words)
+                # CRITICAL FIX: Use sentence-based splitting instead of word-based to preserve sentence integrity
+                segments_to_generate = self._split_script_to_audio_segments(
+                    full_script, 
+                    config.num_clips, 
+                    sum(config.clip_durations)
+                )
                 
-                for i in range(config.num_clips):
-                    # Calculate word range for this segment
-                    start_word = int(i * total_words / config.num_clips)
-                    end_word = int((i + 1) * total_words / config.num_clips)
-                    segment_text = ' '.join(words[start_word:end_word])
-                    segment_duration = config.clip_durations[i]
+                # Update durations from core decisions
+                for i, segment in enumerate(segments_to_generate):
+                    if i < len(config.clip_durations):
+                        segment['duration'] = config.clip_durations[i]
+                
+                # CRITICAL: Validate sentence integrity before proceeding
+                if not self._validate_sentence_integrity(segments_to_generate):
+                    logger.error("❌ Segment validation failed - sentences would be cut in middle!")
+                    logger.info("🔄 Retrying with simpler sentence splitting...")
+                    # Fall back to simple sentence-based approach
+                    sentences = [s.strip() + '.' for s in full_script.split('.') if s.strip()]
+                    if len(sentences) >= config.num_clips:
+                        segments_to_generate = []
+                        sentences_per_segment = len(sentences) // config.num_clips
+                        for i in range(config.num_clips):
+                            start_idx = i * sentences_per_segment
+                            end_idx = start_idx + sentences_per_segment if i < config.num_clips - 1 else len(sentences)
+                            segment_text = ' '.join(sentences[start_idx:end_idx])
+                            segments_to_generate.append({
+                                'text': segment_text,
+                                'duration': config.clip_durations[i] if i < len(config.clip_durations) else 5.0,
+                                'complete_sentences': True
+                            })
+                        logger.info(f"✅ Regenerated {len(segments_to_generate)} segments with validated sentence boundaries")
                     
-                    segments_to_generate.append({
-                        'text': segment_text,
-                        'duration': segment_duration
-                    })
-                    
-                logger.info(f"🎯 Generated {len(segments_to_generate)} audio segments from core decisions")
+                logger.info(f"🎯 Generated {len(segments_to_generate)} audio segments with complete sentences from core decisions")
             else:
                 # Use script segments as fallback
                 segments_to_generate = script_segments
@@ -1990,46 +2005,172 @@ class VideoGenerator:
             return []
     
     def _split_script_to_audio_segments(self, script: str, audio_count: int, video_duration: float) -> List[Dict[str, Any]]:
-        """Split script into exact number of segments to match audio files"""
+        """Split script into exact number of segments to match audio files - NEVER cut sentences in middle"""
         try:
-            # Split script into words
-            words = script.split()
-            total_words = len(words)
+            import re
             
-            if total_words == 0:
-                return []
+            # First, split script into complete sentences
+            sentences = re.split(r'([.!?]+)', script)
+            # Recombine sentences with their punctuation
+            complete_sentences = []
+            for i in range(0, len(sentences) - 1, 2):
+                if i + 1 < len(sentences):
+                    sentence = sentences[i].strip() + sentences[i + 1].strip()
+                    if sentence.strip():
+                        complete_sentences.append(sentence.strip())
+                elif sentences[i].strip():
+                    complete_sentences.append(sentences[i].strip())
             
+            if not complete_sentences:
+                # Fallback: split by periods only
+                complete_sentences = [s.strip() for s in script.split('.') if s.strip()]
+                complete_sentences = [s + '.' for s in complete_sentences[:-1]] + [complete_sentences[-1]] if complete_sentences else [script]
+            
+            logger.info(f"📝 Found {len(complete_sentences)} complete sentences to distribute across {audio_count} segments")
+            
+            # Distribute sentences across segments ensuring no sentence is cut
             segments = []
-            words_per_segment = max(1, total_words // audio_count)
+            sentences_per_segment = max(1, len(complete_sentences) // audio_count)
             
+            sentence_index = 0
             for i in range(audio_count):
-                start_idx = i * words_per_segment
+                segment_sentences = []
                 
-                # For the last segment, take all remaining words
                 if i == audio_count - 1:
-                    end_idx = total_words
+                    # Last segment gets all remaining sentences
+                    segment_sentences = complete_sentences[sentence_index:]
                 else:
-                    end_idx = (i + 1) * words_per_segment
+                    # Take calculated number of sentences
+                    end_index = min(sentence_index + sentences_per_segment, len(complete_sentences))
+                    segment_sentences = complete_sentences[sentence_index:end_index]
+                    sentence_index = end_index
                 
-                segment_words = words[start_idx:end_idx]
-                segment_text = ' '.join(segment_words)
+                # Join sentences for this segment
+                segment_text = ' '.join(segment_sentences)
                 
-                # Estimate duration (will be corrected by audio synchronization)
-                estimated_duration = video_duration / audio_count
-                
-                segments.append({
-                    'text': segment_text,
-                    'start': i * estimated_duration,
-                    'end': (i + 1) * estimated_duration,
-                    'word_count': len(segment_words),
-                    'estimated_duration': estimated_duration
-                })
+                if segment_text.strip():
+                    # Estimate duration based on word count
+                    word_count = len(segment_text.split())
+                    estimated_duration = video_duration / audio_count
+                    
+                    segments.append({
+                        'text': segment_text,
+                        'start': i * estimated_duration,
+                        'end': (i + 1) * estimated_duration,
+                        'word_count': word_count,
+                        'estimated_duration': estimated_duration,
+                        'sentence_count': len(segment_sentences),
+                        'complete_sentences': True  # Flag indicating proper sentence boundaries
+                    })
+                    
+                    logger.info(f"📝 Segment {i+1}: {len(segment_sentences)} sentences, {word_count} words: '{segment_text[:50]}...'")
             
+            # If we have fewer segments than needed, redistribute
+            while len(segments) < audio_count and len(segments) > 0:
+                # Find the segment with the most sentences and split it
+                longest_segment_idx = max(range(len(segments)), key=lambda x: segments[x]['sentence_count'])
+                longest_segment = segments[longest_segment_idx]
+                
+                if longest_segment['sentence_count'] > 1:
+                    # Split this segment
+                    sentences_in_segment = longest_segment['text'].split('. ')
+                    if len(sentences_in_segment) < 2:
+                        sentences_in_segment = longest_segment['text'].split('! ')
+                    if len(sentences_in_segment) < 2:
+                        sentences_in_segment = longest_segment['text'].split('? ')
+                    
+                    if len(sentences_in_segment) >= 2:
+                        mid_point = len(sentences_in_segment) // 2
+                        
+                        first_part = '. '.join(sentences_in_segment[:mid_point])
+                        second_part = '. '.join(sentences_in_segment[mid_point:])
+                        
+                        # Update first segment
+                        segments[longest_segment_idx]['text'] = first_part
+                        segments[longest_segment_idx]['word_count'] = len(first_part.split())
+                        segments[longest_segment_idx]['sentence_count'] = mid_point
+                        
+                        # Create new segment
+                        new_segment = {
+                            'text': second_part,
+                            'word_count': len(second_part.split()),
+                            'sentence_count': len(sentences_in_segment) - mid_point,
+                            'start': longest_segment['end'],
+                            'end': longest_segment['end'] + longest_segment['estimated_duration'],
+                            'estimated_duration': longest_segment['estimated_duration'],
+                            'complete_sentences': True
+                        }
+                        segments.insert(longest_segment_idx + 1, new_segment)
+                        
+                        logger.info(f"📝 Split segment {longest_segment_idx + 1} to ensure proper distribution")
+                    else:
+                        break
+                else:
+                    break
+            
+            # Ensure we have exactly the required number of segments
+            segments = segments[:audio_count]
+            
+            logger.info(f"✅ Created {len(segments)} segments with complete sentence boundaries")
             return segments
             
         except Exception as e:
             logger.error(f"❌ Failed to split script to audio segments: {e}")
-            return []
+            # Fallback to simple sentence-based splitting
+            try:
+                sentences = [s.strip() for s in script.split('.') if s.strip()]
+                if len(sentences) >= audio_count:
+                    segments = []
+                    sentences_per_segment = len(sentences) // audio_count
+                    for i in range(audio_count):
+                        start_idx = i * sentences_per_segment
+                        end_idx = start_idx + sentences_per_segment if i < audio_count - 1 else len(sentences)
+                        segment_text = '. '.join(sentences[start_idx:end_idx]) + '.'
+                        
+                        segments.append({
+                            'text': segment_text,
+                            'start': i * (video_duration / audio_count),
+                            'end': (i + 1) * (video_duration / audio_count),
+                            'word_count': len(segment_text.split()),
+                            'estimated_duration': video_duration / audio_count,
+                            'complete_sentences': True
+                        })
+                    return segments
+                else:
+                    # If not enough sentences, just return single segment
+                    return [{
+                        'text': script,
+                        'start': 0,
+                        'end': video_duration,
+                        'word_count': len(script.split()),
+                        'estimated_duration': video_duration,
+                        'complete_sentences': True
+                    }]
+            except:
+                return []
+    
+    def _validate_sentence_integrity(self, segments: List[Dict[str, Any]]) -> bool:
+        """Validate that no segment cuts off in the middle of a sentence"""
+        try:
+            for i, segment in enumerate(segments):
+                text = segment.get('text', '').strip()
+                
+                # Check if segment starts mid-sentence (lowercase letter after space)
+                if text and text[0].islower() and i > 0:
+                    logger.warning(f"⚠️ Segment {i+1} starts mid-sentence: '{text[:30]}...'")
+                    return False
+                
+                # Check if segment ends mid-sentence (no proper punctuation)
+                if text and not text.endswith(('.', '!', '?')):
+                    logger.warning(f"⚠️ Segment {i+1} ends mid-sentence: '...{text[-30:]}'")
+                    return False
+                    
+            logger.info("✅ All segments have proper sentence boundaries")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to validate sentence integrity: {e}")
+            return False
     
     def _parse_script_into_segments(self, script: str, video_duration: float, video_width: int = 1280) -> List[Dict[str, Any]]:
         """Parse script into natural segments based on sentences and timing"""

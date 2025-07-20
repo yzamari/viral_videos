@@ -108,15 +108,16 @@ ORIGINAL SCRIPT:
 TARGET LANGUAGE: {language_value}
 TARGET DURATION: {target_duration} seconds (if specified)
 
-TASK: Optimize this script for Text-to-Speech generation with perfect duration control.
+TASK: Optimize this script for Text-to-Speech generation with perfect duration control and sentence integrity.
 
 REQUIREMENTS:
 1. DURATION CONTROL: If target duration is specified ({target_duration}s), ensure the script can be spoken in exactly that time
 2. TTS OPTIMIZATION: Use clear, pronounceable words
 3. NATURAL FLOW: Maintain conversational tone
-4. SEGMENT BREAKDOWN: Split into logical segments for multi-voice generation
-5. TIMING CALCULATION: Estimate speaking time (average 3 words per second)
+4. SEGMENT BREAKDOWN: Split into logical segments based on COMPLETE SENTENCES - NEVER break sentences in the middle
+5. TIMING CALCULATION: Estimate speaking time (average 2.5 words per second for natural pace)
 6. CONTRACTION AVOIDANCE: NEVER use contractions - always write full forms (use "do not" instead of "don't", "it is" instead of "it's", "let us" instead of "let's", etc.)
+7. SENTENCE INTEGRITY: Each segment must contain complete sentences with proper punctuation
 
 CRITICAL TTS RULES:
 - Replace ALL contractions with their full expanded forms

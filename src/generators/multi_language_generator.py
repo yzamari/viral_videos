@@ -619,7 +619,7 @@ class MultiLanguageVideoGenerator:
                     elif position == "center":
                         y_pos = video_height * 0.5
                     else:  # bottom
-                        y_pos = video_height * 0.85
+                        y_pos = video_height * 0.75
 
                     # Create text clip
                     text_clip = TextClip(
