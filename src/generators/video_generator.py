@@ -1843,7 +1843,7 @@ class VideoGenerator:
                     elif primary_position == 'center':
                         y_pos = video_height * 0.50  # Center
                     else:  # bottom_third (default) - FIXED: Move subtitles higher
-                        y_pos = video_height * 0.70  # 70% down (was 85% - too low)
+                        y_pos = video_height * 0.60  # 60% down (raised from 70% for better visibility)
                     
                     # Font size based on video dimensions
                     font_size = max(40, int(video_width * 0.05))
@@ -3899,7 +3899,23 @@ This is a placeholder file. In a full implementation, this would be a complete M
                         logger.info(f"   Engagement Score: {ai_style.get('engagement_score', 'N/A')}/10")
                         logger.info(f"   Reasoning: {ai_style.get('style_reasoning', 'No reasoning provided')[:100]}...")
                         
-                        return ai_style
+                        # Map AI style keys to expected format
+                        mapped_style = {
+                            "color": ai_style.get('primary_color', '#FFFFFF'),
+                            "font_family": ai_style.get('font_family', 'Arial-Bold'),
+                            "font_size": ai_style.get('font_size', 48),
+                            "background_color": ai_style.get('background_color', '#000000'),
+                            "stroke_color": ai_style.get('stroke_color', '#000000'),
+                            "background_opacity": ai_style.get('background_opacity', 0.8),
+                            "stroke_width": ai_style.get('stroke_width', 2),
+                            "words_per_line": ai_style.get('words_per_line', 3),
+                            "shadow_enabled": ai_style.get('shadow_enabled', True),
+                            "shadow_color": ai_style.get('shadow_color', '#000000'),
+                            "animation_style": ai_style.get('animation_style', 'none'),
+                            "engagement_score": ai_style.get('engagement_score', 'N/A')
+                        }
+                        
+                        return mapped_style
                 except Exception as e:
                     logger.warning(f"⚠️ AI viral styling failed: {e}")
             
@@ -4051,133 +4067,71 @@ This is a placeholder file. In a full implementation, this would be a complete M
             logger.warning(f"⚠️ Failed to log overlay styling summary: {e}")
 
     def _get_smart_default_style(self, text: str, overlay_type: str, platform: Any, video_width: int, video_height: int) -> Dict[str, Any]:
-        """Get smart default styling based on text characteristics and platform"""
+        """Get smart default styling - fallback when AI styling fails"""
         try:
-            # Calculate text characteristics
-            text_length = len(text)
-            word_count = len(text.split())
-            
-            # Platform-specific base styles
-            platform_str = str(platform).lower()
-            
-            # Enhanced viral styling defaults with psychology-based colors
-            if 'tiktok' in platform_str:
-                base_style = {
-                    "font_family": "Impact",  # Bold, attention-grabbing
-                    "font_size": max(48, min(64, int(video_width * 0.05))),  # Larger font for TikTok
-                    "primary_color": "#FF006E",  # Bright pink for viral energy
-                    "background_color": "#000000",
-                    "stroke_color": "#FFFFFF",
-                    "background_opacity": 0.8,
-                    "stroke_width": 3,
-                    "shadow_enabled": True,
-                    "shadow_color": "#000000",
-                    "animation_style": "bounce",
-                    "words_per_line": 3,
-                    "engagement_score": 8
-                }
-            elif 'instagram' in platform_str:
-                base_style = {
-                    "font_family": "Montserrat-Bold",  # Modern, aesthetic
-                    "font_size": max(42, min(56, int(video_width * 0.04))),
-                    "primary_color": "#8B5CF6",  # Instagram purple
-                    "background_color": "#FFFFFF",
-                    "stroke_color": "#000000",
-                    "background_opacity": 0.9,
-                    "stroke_width": 2,
-                    "shadow_enabled": True,
-                    "shadow_color": "#E5E5E5",
-                    "animation_style": "pulse",
-                    "words_per_line": 3,
-                    "engagement_score": 7
-                }
-            elif 'youtube' in platform_str:
-                base_style = {
-                    "font_family": "Roboto-Bold",  # Clean, readable
-                    "font_size": max(40, min(52, int(video_width * 0.038))),
-                    "primary_color": "#FF0000",  # YouTube red
-                    "background_color": "#000000",
-                    "stroke_color": "#FFFFFF",
-                    "background_opacity": 0.85,
-                    "stroke_width": 2,
-                    "shadow_enabled": True,
-                    "shadow_color": "#333333",
-                    "animation_style": "none",
-                    "words_per_line": 4,
-                    "engagement_score": 6
-                }
-            else:
-                # Default viral styling
-                base_style = {
-                    "font_family": "Anton",  # Strong, impactful
-                    "font_size": max(44, min(58, int(video_width * 0.042))),
-                    "primary_color": "#00D9FF",  # Cyan for attention
-                    "background_color": "#1A1A1A",
-                    "stroke_color": "#FFFFFF",
-                    "background_opacity": 0.85,
-                    "stroke_width": 3,
-                    "shadow_enabled": True,
-                    "shadow_color": "#000000",
-                    "animation_style": "glow",
-                    "words_per_line": 3,
-                    "engagement_score": 7
-                }
-            
-            # Content-aware color psychology adjustments
-            text_lower = text.lower()
-            
-            # Adjust for overlay type with enhanced viral psychology
-            if overlay_type == "hook":
-                base_style["primary_color"] = "#FFD60A"  # Bright yellow for maximum attention
-                base_style["font_size"] = int(base_style["font_size"] * 1.3)  # Much larger for hooks
-                base_style["animation_style"] = "shake"  # Attention-grabbing animation
-                base_style["engagement_score"] = 9
-                logger.info("🎣 HOOK STYLING: High-impact yellow with shake animation")
+            # Try one more time to get AI styling with a simpler prompt
+            if hasattr(self, 'positioning_agent') and self.positioning_agent:
+                simple_prompt = f"""
+                Generate overlay styling for: "{text[:50]}..."
+                Type: {overlay_type}
+                Platform: {platform}
                 
-            elif overlay_type == "cta":
-                base_style["primary_color"] = "#06FFA5"  # Bright green for action
-                base_style["background_color"] = "#FF006E"  # Contrasting background
-                base_style["font_family"] = "Impact"  # Bold for urgency
-                base_style["animation_style"] = "pulse"  # Urgency animation
-                base_style["engagement_score"] = 8
-                logger.info("🎯 CTA STYLING: Action green with pulse animation")
+                Return ONLY valid JSON:
+                {{
+                    "font_family": "font name",
+                    "font_size": number (36-64),
+                    "color": "#HEX",
+                    "background_color": "#HEX",
+                    "stroke_color": "#HEX",
+                    "background_opacity": 0.0-1.0,
+                    "stroke_width": 0-4,
+                    "words_per_line": 2-5
+                }}
+                """
                 
-            elif overlay_type == "question":
-                base_style["primary_color"] = "#8B5CF6"  # Purple for curiosity
-                base_style["animation_style"] = "bounce"  # Engaging animation
-                base_style["engagement_score"] = 7
-                logger.info("❓ QUESTION STYLING: Curiosity purple with bounce")
-                
-            # Content-specific color psychology
-            if any(word in text_lower for word in ['money', 'cash', 'rich', 'wealth', 'profit']):
-                base_style["primary_color"] = "#10B981"  # Green for money
-                logger.info("💰 MONEY CONTENT: Green color psychology")
-                
-            elif any(word in text_lower for word in ['danger', 'warning', 'alert', 'urgent']):
-                base_style["primary_color"] = "#EF4444"  # Red for urgency
-                base_style["animation_style"] = "shake"
-                logger.info("⚠️ URGENT CONTENT: Red with shake animation")
-                
-            elif any(word in text_lower for word in ['fun', 'party', 'celebrate', 'happy']):
-                base_style["primary_color"] = "#F59E0B"  # Orange for fun
-                base_style["animation_style"] = "bounce"
-                logger.info("🎉 FUN CONTENT: Orange with bounce animation")
-                
-            elif any(word in text_lower for word in ['tech', 'ai', 'future', 'innovation']):
-                base_style["primary_color"] = "#06B6D4"  # Cyan for tech
-                base_style["animation_style"] = "glow"
-                logger.info("🤖 TECH CONTENT: Cyan with glow effect")
+                try:
+                    import google.generativeai as genai
+                    model = genai.GenerativeModel('gemini-2.5-flash')
+                    response = model.generate_content(simple_prompt)
+                    
+                    import json
+                    import re
+                    json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+                    if json_match:
+                        style = json.loads(json_match.group())
+                        # Ensure all required keys exist
+                        return {
+                            "font_family": style.get('font_family', 'Arial-Bold'),
+                            "font_size": style.get('font_size', 48),
+                            "color": style.get('color', '#FFFFFF'),
+                            "background_color": style.get('background_color', '#000000'),
+                            "stroke_color": style.get('stroke_color', '#000000'),
+                            "background_opacity": style.get('background_opacity', 0.8),
+                            "stroke_width": style.get('stroke_width', 2),
+                            "words_per_line": style.get('words_per_line', 3),
+                            "shadow_enabled": True,
+                            "shadow_color": "#000000",
+                            "animation_style": "none",
+                            "engagement_score": 5
+                        }
+                except Exception as e:
+                    logger.warning(f"⚠️ Fallback AI styling also failed: {e}")
             
-            # Adjust for text length
-            if text_length > 50:
-                base_style["font_size"] = int(base_style["font_size"] * 0.9)  # Smaller for long text
-                base_style["words_per_line"] = max(3, base_style["words_per_line"] - 1)
-            elif text_length < 20:
-                base_style["font_size"] = int(base_style["font_size"] * 1.1)  # Larger for short text
-                base_style["words_per_line"] = min(6, base_style["words_per_line"] + 1)
-            
-            logger.info(f"🎨 Smart default style: {overlay_type} - {base_style['font_family']} {base_style['font_size']}px")
-            return base_style
+            # Ultimate fallback - very basic style
+            return {
+                "font_family": "Arial-Bold",
+                "font_size": max(40, min(56, int(video_width * 0.04))),
+                "color": "#FFFFFF",
+                "background_color": "#000000",
+                "stroke_color": "#000000",
+                "background_opacity": 0.8,
+                "stroke_width": 2,
+                "words_per_line": 3,
+                "shadow_enabled": True,
+                "shadow_color": "#000000",
+                "animation_style": "none",
+                "engagement_score": 5
+            }
             
         except Exception as e:
             logger.error(f"❌ Smart default styling failed: {e}")

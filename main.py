@@ -144,7 +144,17 @@ def generate(**kwargs):
         # Auto-post if requested
         if kwargs.get('auto_post', False) and session_path:
             logger.info("📱 Auto-posting to social media...")
-            auto_post_if_enabled(session_path)
+            # Get the final video path from session
+            import os
+            final_video_path = os.path.join(session_path, 'final_output', f'final_video_{session_name}.mp4')
+            if os.path.exists(final_video_path):
+                auto_post_if_enabled(
+                    video_path=final_video_path,
+                    mission=kwargs.get('mission', ''),
+                    platform=kwargs.get('platform', 'tiktok')
+                )
+            else:
+                logger.error(f"❌ Final video not found at: {final_video_path}")
     
     except KeyboardInterrupt:
         print("\n🛑 Generation cancelled by user")

@@ -680,6 +680,112 @@ class DecisionFramework:
                 'timestamp': datetime.now().isoformat()
             }
             
+            # Add new enhanced fields if available
+            if hasattr(mission_plan, 'credibility_score') and mission_plan.credibility_score:
+                mission_dict['credibility_score'] = {
+                    'overall_score': mission_plan.credibility_score.overall_score,
+                    'factual_accuracy': mission_plan.credibility_score.factual_accuracy,
+                    'source_quality': mission_plan.credibility_score.source_quality,
+                    'bias_level': mission_plan.credibility_score.bias_level,
+                    'evidence_strength': mission_plan.credibility_score.evidence_strength,
+                    'claims_verified': mission_plan.credibility_score.claims_verified,
+                    'sources_found': mission_plan.credibility_score.sources_found,
+                    'improvement_suggestions': mission_plan.credibility_score.improvement_suggestions,
+                    'issues_detected': mission_plan.credibility_score.issues_detected,
+                    'confidence_level': mission_plan.credibility_score.confidence_level,
+                    'verification_timestamp': mission_plan.credibility_score.verification_timestamp
+                }
+            
+            if hasattr(mission_plan, 'content_quality_analysis') and mission_plan.content_quality_analysis:
+                mission_dict['content_quality_analysis'] = mission_plan.content_quality_analysis
+            
+            if hasattr(mission_plan, 'audience_intelligence') and mission_plan.audience_intelligence:
+                mission_dict['audience_intelligence'] = {
+                    'demographic_profile': {
+                        'primary_age_group': mission_plan.audience_intelligence.demographic_profile.primary_age_group.value,
+                        'age_distribution': mission_plan.audience_intelligence.demographic_profile.age_distribution,
+                        'education_level': mission_plan.audience_intelligence.demographic_profile.education_level.value,
+                        'primary_interests': [interest.value for interest in mission_plan.audience_intelligence.demographic_profile.primary_interests],
+                        'platform_usage_patterns': mission_plan.audience_intelligence.demographic_profile.platform_usage_patterns,
+                        'content_consumption_habits': mission_plan.audience_intelligence.demographic_profile.content_consumption_habits,
+                        'engagement_preferences': mission_plan.audience_intelligence.demographic_profile.engagement_preferences,
+                        'language_preferences': mission_plan.audience_intelligence.demographic_profile.language_preferences,
+                        'cultural_context': mission_plan.audience_intelligence.demographic_profile.cultural_context,
+                        'accessibility_needs': mission_plan.audience_intelligence.demographic_profile.accessibility_needs
+                    },
+                    'psychographic_profile': {
+                        'personality_traits': mission_plan.audience_intelligence.psychographic_profile.personality_traits,
+                        'values_priorities': mission_plan.audience_intelligence.psychographic_profile.values_priorities,
+                        'lifestyle_indicators': mission_plan.audience_intelligence.psychographic_profile.lifestyle_indicators,
+                        'decision_making_style': mission_plan.audience_intelligence.psychographic_profile.decision_making_style,
+                        'information_processing_preference': mission_plan.audience_intelligence.psychographic_profile.information_processing_preference,
+                        'social_influence_susceptibility': mission_plan.audience_intelligence.psychographic_profile.social_influence_susceptibility,
+                        'brand_loyalty_level': mission_plan.audience_intelligence.psychographic_profile.brand_loyalty_level,
+                        'innovation_adoption_rate': mission_plan.audience_intelligence.psychographic_profile.innovation_adoption_rate,
+                        'content_sharing_likelihood': mission_plan.audience_intelligence.psychographic_profile.content_sharing_likelihood,
+                        'engagement_drivers': mission_plan.audience_intelligence.psychographic_profile.engagement_drivers
+                    },
+                    'content_adaptation_strategy': {
+                        'reading_level': mission_plan.audience_intelligence.content_adaptation_strategy.reading_level,
+                        'vocabulary_complexity': mission_plan.audience_intelligence.content_adaptation_strategy.vocabulary_complexity,
+                        'sentence_length_preference': mission_plan.audience_intelligence.content_adaptation_strategy.sentence_length_preference,
+                        'visual_style_recommendations': mission_plan.audience_intelligence.content_adaptation_strategy.visual_style_recommendations,
+                        'color_palette_preferences': mission_plan.audience_intelligence.content_adaptation_strategy.color_palette_preferences,
+                        'font_recommendations': mission_plan.audience_intelligence.content_adaptation_strategy.font_recommendations,
+                        'content_pacing': mission_plan.audience_intelligence.content_adaptation_strategy.content_pacing,
+                        'cultural_sensitivity_notes': mission_plan.audience_intelligence.content_adaptation_strategy.cultural_sensitivity_notes,
+                        'accessibility_optimizations': mission_plan.audience_intelligence.content_adaptation_strategy.accessibility_optimizations,
+                        'platform_specific_adaptations': mission_plan.audience_intelligence.content_adaptation_strategy.platform_specific_adaptations
+                    },
+                    'engagement_prediction': mission_plan.audience_intelligence.engagement_prediction,
+                    'optimization_recommendations': mission_plan.audience_intelligence.optimization_recommendations,
+                    'confidence_score': mission_plan.audience_intelligence.confidence_score,
+                    'analysis_timestamp': mission_plan.audience_intelligence.analysis_timestamp
+                }
+            
+            if hasattr(mission_plan, 'ethical_optimization') and mission_plan.ethical_optimization:
+                mission_dict['ethical_optimization'] = {
+                    'transparency_assessment': {
+                        'level': mission_plan.ethical_optimization.transparency_assessment.level.value,
+                        'intent_clarity': mission_plan.ethical_optimization.transparency_assessment.intent_clarity,
+                        'source_attribution': mission_plan.ethical_optimization.transparency_assessment.source_attribution,
+                        'bias_disclosure': mission_plan.ethical_optimization.transparency_assessment.bias_disclosure,
+                        'method_transparency': mission_plan.ethical_optimization.transparency_assessment.method_transparency,
+                        'ethical_considerations': mission_plan.ethical_optimization.transparency_assessment.ethical_considerations,
+                        'disclosure_recommendations': mission_plan.ethical_optimization.transparency_assessment.disclosure_recommendations,
+                        'transparency_score': mission_plan.ethical_optimization.transparency_assessment.transparency_score,
+                        'assessment_timestamp': mission_plan.ethical_optimization.transparency_assessment.assessment_timestamp
+                    },
+                    'educational_value_metrics': {
+                        'value_category': mission_plan.ethical_optimization.educational_value_metrics.value_category.value,
+                        'learning_objectives': mission_plan.ethical_optimization.educational_value_metrics.learning_objectives,
+                        'knowledge_transfer_potential': mission_plan.ethical_optimization.educational_value_metrics.knowledge_transfer_potential,
+                        'skill_development_opportunities': mission_plan.ethical_optimization.educational_value_metrics.skill_development_opportunities,
+                        'retention_likelihood': mission_plan.ethical_optimization.educational_value_metrics.retention_likelihood,
+                        'practical_applicability': mission_plan.ethical_optimization.educational_value_metrics.practical_applicability,
+                        'cognitive_engagement_level': mission_plan.ethical_optimization.educational_value_metrics.cognitive_engagement_level,
+                        'educational_effectiveness': mission_plan.ethical_optimization.educational_value_metrics.educational_effectiveness,
+                        'measurement_timestamp': mission_plan.ethical_optimization.educational_value_metrics.measurement_timestamp
+                    },
+                    'positive_engagement_profile': {
+                        'engagement_type': mission_plan.ethical_optimization.positive_engagement_profile.engagement_type.value,
+                        'constructive_discussion_potential': mission_plan.ethical_optimization.positive_engagement_profile.constructive_discussion_potential,
+                        'critical_thinking_stimulation': mission_plan.ethical_optimization.positive_engagement_profile.critical_thinking_stimulation,
+                        'collaborative_learning_opportunities': mission_plan.ethical_optimization.positive_engagement_profile.collaborative_learning_opportunities,
+                        'positive_behavior_promotion': mission_plan.ethical_optimization.positive_engagement_profile.positive_behavior_promotion,
+                        'harmful_engagement_risks': mission_plan.ethical_optimization.positive_engagement_profile.harmful_engagement_risks,
+                        'mitigation_strategies': mission_plan.ethical_optimization.positive_engagement_profile.mitigation_strategies,
+                        'overall_positive_impact': mission_plan.ethical_optimization.positive_engagement_profile.overall_positive_impact,
+                        'engagement_timestamp': mission_plan.ethical_optimization.positive_engagement_profile.engagement_timestamp
+                    },
+                    'ethical_compliance_score': mission_plan.ethical_optimization.ethical_compliance_score,
+                    'optimization_recommendations': mission_plan.ethical_optimization.optimization_recommendations,
+                    'ethical_guidelines_followed': mission_plan.ethical_optimization.ethical_guidelines_followed,
+                    'potential_improvements': mission_plan.ethical_optimization.potential_improvements,
+                    'overall_ethical_rating': mission_plan.ethical_optimization.overall_ethical_rating,
+                    'analysis_timestamp': mission_plan.ethical_optimization.analysis_timestamp
+                }
+            
             with open(mission_plan_path, 'w') as f:
                 json.dump(mission_dict, f, indent=2, default=str)
             

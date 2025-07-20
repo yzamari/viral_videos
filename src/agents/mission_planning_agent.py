@@ -13,6 +13,8 @@ import re
 from ..utils.logging_config import get_logger
 from ..models.video_models import Platform, VideoCategory
 from ..frameworks.content_credibility_system import ContentCredibilitySystem, CredibilityScore
+from ..frameworks.audience_intelligence_system import AudienceIntelligenceSystem, AudienceIntelligence
+from ..frameworks.ethical_optimization_system import EthicalOptimizationSystem, EthicalOptimization
 
 logger = get_logger(__name__)
 
@@ -57,6 +59,8 @@ class MissionPlan:
     reasoning: str
     credibility_score: Optional[CredibilityScore] = None
     content_quality_analysis: Optional[Dict[str, Any]] = None
+    audience_intelligence: Optional[AudienceIntelligence] = None
+    ethical_optimization: Optional[EthicalOptimization] = None
 
 
 class MissionPlanningAgent:
@@ -81,15 +85,37 @@ class MissionPlanningAgent:
         # Initialize content credibility system
         self.credibility_system = ContentCredibilitySystem(api_key)
         
-        # Mission keywords for detection
-        self.mission_keywords = [
-            'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
-            'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
-            'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
-        ]
+        # Initialize audience intelligence system
+        self.audience_intelligence = AudienceIntelligenceSystem(api_key)
+        
+        # Initialize ethical optimization system
+        self.ethical_optimization = EthicalOptimizationSystem(api_key)
+        
+        # Mission types and their descriptions for AI classification
+        self.mission_types_descriptions = {
+            MissionType.CONVINCE: "Persuade or convince someone to adopt a viewpoint, belief, or take specific action",
+            MissionType.PERSUADE: "Influence someone's opinion or decision through reasoning or emotional appeal",
+            MissionType.TEACH: "Educate or instruct someone about concepts, skills, or knowledge",
+            MissionType.DEMONSTRATE: "Show or prove something through examples, evidence, or practical display",
+            MissionType.EXPLAIN: "Clarify, describe, or make something understandable",
+            MissionType.HELP: "Assist, support, or provide aid to solve problems or improve situations",
+            MissionType.STOP: "Halt, cease, or prevent something from happening or continuing",
+            MissionType.PREVENT: "Stop something bad from happening or occurring",
+            MissionType.ENCOURAGE: "Motivate, inspire, or support positive action or behavior",
+            MissionType.MOTIVATE: "Inspire enthusiasm, drive, or determination to take action",
+            MissionType.CHANGE: "Transform, modify, or alter current state or behavior",
+            MissionType.TRANSFORM: "Make fundamental changes or complete transformation",
+            MissionType.IMPROVE: "Make something better, enhance, or optimize",
+            MissionType.SOLVE: "Find solutions to problems or challenges",
+            MissionType.FIX: "Repair, correct, or resolve issues",
+            MissionType.ACHIEVE: "Accomplish goals, reach objectives, or attain success",
+            MissionType.INFORM: "Share information, facts, or knowledge without specific action intent"
+        }
         
         logger.info(f"🎯 Enhanced Mission Planning Agent initialized with {model_name}")
         logger.info(f"🔍 Content credibility system enabled")
+        logger.info(f"🧠 Audience intelligence system enabled")
+        logger.info(f"🎯 Ethical optimization system enabled")
     
     def analyze_mission(self, 
                        mission_statement: str,
@@ -137,31 +163,113 @@ class MissionPlanningAgent:
             return self._create_fallback_plan(mission_statement, duration, platform, category)
     
     def _detect_mission_type(self, mission_statement: str) -> tuple[MissionType, bool]:
-        """Detect if statement is strategic mission or informational topic"""
+        """AI-powered mission type detection using Gemini Flash"""
+        try:
+            # First try AI-powered detection
+            if self.model:
+                ai_mission_type, is_strategic = self._ai_mission_detection(mission_statement)
+                if ai_mission_type:
+                    return ai_mission_type, is_strategic
+            
+            # Fallback to heuristic detection
+            return self._heuristic_mission_detection(mission_statement)
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Mission type detection failed: {e}")
+            return MissionType.INFORM, False
+    
+    def _ai_mission_detection(self, mission_statement: str) -> tuple[Optional[MissionType], bool]:
+        """AI-powered mission type detection"""
+        try:
+            # Create mission types list for prompt
+            mission_types_list = []
+            for mission_type, description in self.mission_types_descriptions.items():
+                mission_types_list.append(f"- {mission_type.value}: {description}")
+            
+            mission_prompt = f"""
+            Analyze this statement and determine its mission type and whether it's strategic:
+            
+            Statement: "{mission_statement}"
+            
+            Available mission types:
+            {chr(10).join(mission_types_list)}
+            
+            Classification criteria:
+            - Strategic missions: Have clear intent to influence, change, teach, or achieve specific outcomes
+            - Informational content: Simply shares information without specific action intent
+            
+            Consider:
+            1. Intent: What is the primary purpose?
+            2. Action orientation: Does it seek to change behavior, teach, convince, or help?
+            3. Outcome focus: Is there a specific desired result?
+            
+            Return JSON:
+            {{
+                "mission_type": "convince|persuade|teach|demonstrate|explain|help|stop|prevent|encourage|motivate|change|transform|improve|solve|fix|achieve|inform",
+                "is_strategic_mission": true|false,
+                "confidence": 0.0-1.0,
+                "reasoning": "Brief explanation of classification decision"
+            }}
+            """
+            
+            response = self.model.generate_content(mission_prompt)
+            
+            # Parse response
+            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+            if json_match:
+                result = json.loads(json_match.group())
+                
+                mission_type_str = result.get('mission_type', 'inform')
+                is_strategic = result.get('is_strategic_mission', False)
+                confidence = result.get('confidence', 0.5)
+                reasoning = result.get('reasoning', 'AI classification')
+                
+                # Convert string to MissionType enum
+                for mission_type in MissionType:
+                    if mission_type.value == mission_type_str:
+                        logger.info(f"🎯 AI Mission Detection: {mission_type.value} (strategic: {is_strategic})")
+                        logger.info(f"   Confidence: {confidence:.2f}")
+                        logger.info(f"   Reasoning: {reasoning}")
+                        return mission_type, is_strategic
+            
+        except Exception as e:
+            logger.warning(f"⚠️ AI mission detection failed: {e}")
+        
+        return None, False
+    
+    def _heuristic_mission_detection(self, mission_statement: str) -> tuple[MissionType, bool]:
+        """Fallback heuristic mission detection"""
         statement_lower = mission_statement.lower()
         
-        # Check for mission keywords
-        for keyword in self.mission_keywords:
-            if keyword in statement_lower:
-                # Map keyword to mission type
-                if keyword in ['convince', 'persuade']:
-                    return MissionType.CONVINCE, True
-                elif keyword in ['teach', 'show', 'demonstrate']:
-                    return MissionType.TEACH, True
-                elif keyword in ['prove', 'explain why']:
-                    return MissionType.EXPLAIN, True
-                elif keyword in ['help', 'improve', 'solve', 'fix']:
-                    return MissionType.HELP, True
-                elif keyword in ['stop', 'prevent']:
-                    return MissionType.PREVENT, True
-                elif keyword in ['encourage', 'motivate']:
-                    return MissionType.MOTIVATE, True
-                elif keyword in ['change', 'transform']:
-                    return MissionType.CHANGE, True
-                elif keyword in ['achieve']:
-                    return MissionType.ACHIEVE, True
+        # Action-oriented indicators for strategic missions
+        strategic_indicators = {
+            'convince': MissionType.CONVINCE,
+            'persuade': MissionType.PERSUADE,
+            'teach': MissionType.TEACH,
+            'show': MissionType.DEMONSTRATE,
+            'demonstrate': MissionType.DEMONSTRATE,
+            'explain why': MissionType.EXPLAIN,
+            'help': MissionType.HELP,
+            'stop': MissionType.STOP,
+            'prevent': MissionType.PREVENT,
+            'encourage': MissionType.ENCOURAGE,
+            'motivate': MissionType.MOTIVATE,
+            'change': MissionType.CHANGE,
+            'transform': MissionType.TRANSFORM,
+            'improve': MissionType.IMPROVE,
+            'solve': MissionType.SOLVE,
+            'fix': MissionType.FIX,
+            'achieve': MissionType.ACHIEVE
+        }
+        
+        # Check for strategic indicators
+        for indicator, mission_type in strategic_indicators.items():
+            if indicator in statement_lower:
+                logger.info(f"🎯 Heuristic Mission Detection: {mission_type.value} (strategic: True)")
+                return mission_type, True
         
         # Default to informational
+        logger.info(f"🎯 Mission Detection: inform (strategic: False)")
         return MissionType.INFORM, False
     
     def _create_strategic_mission_plan(self,
@@ -254,6 +362,23 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                     platform=platform.value if platform else "general"
                 )
                 
+                # Perform audience intelligence analysis
+                logger.info("🧠 Performing audience intelligence analysis...")
+                audience_analysis = self.audience_intelligence.analyze_audience(
+                    topic=mission_statement,
+                    platform=platform.value if platform else "general",
+                    target_audience=target_audience
+                )
+                
+                # Perform ethical optimization analysis
+                logger.info("🎯 Performing ethical optimization analysis...")
+                ethical_analysis = self.ethical_optimization.optimize_for_ethics(
+                    content=mission_statement,
+                    topic=mission_statement,
+                    platform=platform.value if platform else "general",
+                    mission_type=mission_type.value
+                )
+                
                 # Create content quality analysis
                 content_quality_analysis = {
                     "credibility_assessment": self.credibility_system.get_credibility_assessment(credibility_score),
@@ -275,6 +400,8 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                     clip_strategy=ai_plan.get('clip_strategy', {}),
                     credibility_score=credibility_score,
                     content_quality_analysis=content_quality_analysis,
+                    audience_intelligence=audience_analysis,
+                    ethical_optimization=ethical_analysis,
                     persuasion_tactics=ai_plan.get('persuasion_tactics', []),
                     timing_strategy=ai_plan.get('timing_strategy', {}),
                     platform_optimization=ai_plan.get('platform_optimization', {}),
@@ -289,6 +416,15 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                 logger.info(f"   Recommended Clips: {plan.clip_strategy.get('recommended_clips', 'Not specified')}")
                 logger.info(f"   Confidence Score: {plan.confidence_score:.2f}")
                 logger.info(f"🔍 Content Credibility: {credibility_score.overall_score}/10 ({content_quality_analysis['credibility_assessment']})")
+                logger.info(f"🧠 Audience Intelligence: {audience_analysis.confidence_score:.2f} confidence")
+                logger.info(f"   Primary Age Group: {audience_analysis.demographic_profile.primary_age_group.value}")
+                logger.info(f"   Engagement Prediction: {audience_analysis.engagement_prediction.get('overall_engagement_score', 'N/A')}")
+                logger.info(f"   Optimization Recommendations: {len(audience_analysis.optimization_recommendations)} provided")
+                logger.info(f"🎯 Ethical Optimization: {ethical_analysis.overall_ethical_rating} rating")
+                logger.info(f"   Compliance Score: {ethical_analysis.ethical_compliance_score}/10")
+                logger.info(f"   Transparency: {ethical_analysis.transparency_assessment.transparency_score:.2f}/10")
+                logger.info(f"   Educational Value: {ethical_analysis.educational_value_metrics.educational_effectiveness:.2f}/10")
+                logger.info(f"   Positive Engagement: {ethical_analysis.positive_engagement_profile.overall_positive_impact:.2f}/10")
                 
                 return plan
                 
@@ -305,6 +441,47 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                                          category: VideoCategory,
                                          target_audience: str) -> MissionPlan:
         """Create plan for informational (non-mission) content"""
+        
+        # Perform audience intelligence analysis for informational content too
+        try:
+            logger.info("🧠 Performing audience intelligence analysis for informational content...")
+            audience_analysis = self.audience_intelligence.analyze_audience(
+                topic=topic,
+                platform=platform.value if platform else "general",
+                target_audience=target_audience
+            )
+            
+            # Also perform credibility analysis for informational content
+            logger.info("🔍 Performing content credibility analysis for informational content...")
+            credibility_score = self.credibility_system.evaluate_content_credibility(
+                content=topic,
+                topic=topic,
+                platform=platform.value if platform else "general"
+            )
+            
+            content_quality_analysis = {
+                "credibility_assessment": self.credibility_system.get_credibility_assessment(credibility_score),
+                "improvement_recommendations": credibility_score.improvement_suggestions,
+                "risk_factors": credibility_score.issues_detected,
+                "evidence_requirements": ["Basic fact verification", "Source credibility check"],
+                "fact_check_priority": "MEDIUM"
+            }
+            
+            # Also perform ethical optimization for informational content
+            logger.info("🎯 Performing ethical optimization analysis for informational content...")
+            ethical_analysis = self.ethical_optimization.optimize_for_ethics(
+                content=topic,
+                topic=topic,
+                platform=platform.value if platform else "general",
+                mission_type="inform"
+            )
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Audience/credibility/ethical analysis failed for informational content: {e}")
+            audience_analysis = None
+            credibility_score = None
+            content_quality_analysis = None
+            ethical_analysis = None
         
         # Simple structure for informational content
         plan = MissionPlan(
@@ -340,7 +517,11 @@ Focus on creating a plan that actually accomplishes the mission, not just create
             },
             risk_mitigation=["Ensure accuracy", "Avoid information overload"],
             confidence_score=0.7,
-            reasoning="Standard informational content approach"
+            reasoning="Standard informational content approach",
+            credibility_score=credibility_score,
+            content_quality_analysis=content_quality_analysis,
+            audience_intelligence=audience_analysis,
+            ethical_optimization=ethical_analysis
         )
         
         logger.info(f"📝 Informational Content Plan: {topic[:50]}...")

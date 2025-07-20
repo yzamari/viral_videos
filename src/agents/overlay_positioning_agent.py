@@ -264,7 +264,8 @@ Return JSON:
         strategy = "dynamic" if platform == "tiktok" and duration_seconds <= 30 else "static"
         
         return {
-            "primary_subtitle_position": primary_position,
+            "primary_overlay_position": primary_position,  # Changed from primary_subtitle_position for consistency
+            "primary_subtitle_position": primary_position,  # Keep both for backward compatibility
             "secondary_overlay_position": secondary_position,
             "positioning_strategy": strategy,
             "safe_zones": ["bottom_third", "top_third"],
@@ -282,18 +283,18 @@ Return JSON:
         # Define positioning zones as percentages
         position_map = {
             "top_third": (0.5, 0.15),          # Center horizontally, 15% from top
-            "bottom_third": (0.5, 0.85),       # Center horizontally, 85% from top
+            "bottom_third": (0.5, 0.65),       # Center horizontally, 65% from top (raised from 85%)
             "center_safe": (0.5, 0.5),         # Dead center
             "center": (0.5, 0.5),              # Dead center (alias)
             "top_center": (0.5, 0.1),          # Top center
-            "bottom_center": (0.5, 0.9),       # Bottom center
-            "center_bottom": (0.5, 0.75),      # Center horizontally, 75% from top
+            "bottom_center": (0.5, 0.75),       # Bottom center (raised from 90% to 75%)
+            "center_bottom": (0.5, 0.65),      # Center horizontally, 65% from top (raised from 75%)
             "left_side": (0.15, 0.5),          # 15% from left, center vertically
             "right_side": (0.85, 0.5),         # 85% from left, center vertically
             "top_left": (0.1, 0.1),            # Top left corner
             "top_right": (0.9, 0.1),           # Top right corner
-            "bottom_left": (0.1, 0.9),         # Bottom left corner
-            "bottom_right": (0.9, 0.9),        # Bottom right corner
+            "bottom_left": (0.1, 0.75),         # Bottom left corner (raised from 90%)
+            "bottom_right": (0.9, 0.75),        # Bottom right corner (raised from 90%)
         }
 
         if position in position_map:

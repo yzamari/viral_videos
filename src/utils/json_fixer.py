@@ -121,6 +121,9 @@ class JSONFixer:
         # Fix common JavaScript-style issues
         cleaned = self._fix_javascript_syntax(cleaned)
         
+        # Fix unescaped quotes in JSON string values
+        cleaned = self._fix_unescaped_quotes(cleaned)
+        
         return cleaned if cleaned.startswith('{') and cleaned.endswith('}') else None
     
     def _fix_template_variables(self, json_str: str) -> str:
@@ -155,6 +158,69 @@ class JSONFixer:
         json_str = re.sub(r'/\*.*?\*/', '', json_str, flags=re.DOTALL)
         
         return json_str
+    
+    def _fix_unescaped_quotes(self, json_str: str) -> str:
+        """Fix unescaped quotes within JSON string values"""
+        # Use a state machine to properly handle quotes in JSON values
+        result = []
+        i = 0
+        while i < len(json_str):
+            # Look for pattern: ": "
+            if i < len(json_str) - 3 and json_str[i:i+3] == ': "':
+                # Found start of a JSON string value
+                result.append(': "')
+                i += 3
+                
+                # Now we're inside a string value
+                # Collect everything until we find the closing quote
+                value_chars = []
+                escaped = False
+                
+                while i < len(json_str):
+                    char = json_str[i]
+                    
+                    if escaped:
+                        value_chars.append(char)
+                        escaped = False
+                        i += 1
+                        continue
+                    
+                    if char == '\\':
+                        value_chars.append(char)
+                        escaped = True
+                        i += 1
+                        continue
+                    
+                    if char == '"':
+                        # Check what comes after this quote
+                        next_chars = json_str[i+1:i+3] if i+1 < len(json_str) else ""
+                        
+                        # If followed by comma, closing brace/bracket, newline, or end, it's the closing quote
+                        if (i+1 >= len(json_str) or 
+                            json_str[i+1] in ',}]\n' or 
+                            (next_chars.strip() == '' and i+2 < len(json_str) and json_str[i+2] in ',}]')):
+                            # This is the closing quote
+                            result.append(''.join(value_chars))
+                            result.append('"')
+                            i += 1
+                            break
+                        else:
+                            # This is a quote inside the value - escape it
+                            value_chars.append('\\')
+                            value_chars.append('"')
+                            i += 1
+                    else:
+                        value_chars.append(char)
+                        i += 1
+                
+                # If we reached the end without finding closing quote, add what we have
+                if i >= len(json_str) and value_chars:
+                    result.append(''.join(value_chars))
+            else:
+                result.append(json_str[i])
+                i += 1
+        
+        return ''.join(result)
     
     def _remove_control_characters(self, text: str) -> str:
         """Remove control characters that break JSON parsing"""
