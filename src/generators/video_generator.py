@@ -1608,7 +1608,7 @@ class VideoGenerator:
             # Add hook text overlay with DYNAMIC positioning and AI-driven styling
             if config.hook:
                 # Get AI-driven overlay styling
-                hook_style = self._get_ai_overlay_style(str(config.hook), "hook", config.target_platform, video_width, video_height)
+                hook_style = self._get_ai_overlay_style(str(config.hook), "hook", config.target_platform, video_width, video_height, session_context)
                 
                 # Create smart multi-line hook text with width constraints
                 hook_text = self._create_short_multi_line_text(str(config.hook), max_words_per_line=hook_style.get('words_per_line', 4), video_width=video_width)
@@ -1627,7 +1627,7 @@ class VideoGenerator:
             # Add call-to-action overlay with DYNAMIC positioning and AI-driven styling
             if config.call_to_action:
                 # Get AI-driven overlay styling for CTA
-                cta_style = self._get_ai_overlay_style(str(config.call_to_action), "cta", config.target_platform, video_width, video_height)
+                cta_style = self._get_ai_overlay_style(str(config.call_to_action), "cta", config.target_platform, video_width, video_height, session_context)
                 
                 # Create smart multi-line CTA text with width constraints
                 cta_text = self._create_short_multi_line_text(str(config.call_to_action), max_words_per_line=cta_style.get('words_per_line', 4), video_width=video_width)
@@ -3812,39 +3812,70 @@ This is a placeholder file. In a full implementation, this would be a complete M
             logger.warning(f"⚠️ Failed to format subtitle text: {e}")
             return text
 
-    def _get_ai_overlay_style(self, text: str, overlay_type: str, platform: Any, video_width: int, video_height: int) -> Dict[str, Any]:
+    def _get_ai_overlay_style(self, text: str, overlay_type: str, platform: Any, video_width: int, video_height: int, session_context=None) -> Dict[str, Any]:
         """Get AI-driven overlay styling decisions based on text content and platform"""
         try:
-            # Get AI styling from positioning agent
+            # Get AI styling from positioning agent with enhanced viral optimization
             if hasattr(self, 'positioning_agent') and self.positioning_agent:
-                # Request AI styling decision
+                # Enhanced style prompt for viral engagement
                 style_prompt = f"""
-                Create optimal overlay styling for: "{text}"
-                Type: {overlay_type}
-                Platform: {platform}
-                Video dimensions: {video_width}x{video_height}
+                You are a viral video styling expert. Create MAXIMUM ENGAGEMENT overlay styling for: "{text}"
                 
-                CRITICAL REQUIREMENTS:
-                - Use LARGE font size (minimum 36px, prefer 40-48px)
-                - Keep text SHORT and PUNCHY for better readability
-                - Use BOLD fonts for maximum impact
-                - Ensure high contrast for mobile viewing
+                Context:
+                - Type: {overlay_type}
+                - Platform: {platform}
+                - Video dimensions: {video_width}x{video_height}
                 
-                Consider:
-                - Text length and readability (shorter is better)
-                - Platform-specific preferences
-                - Video dimensions for optimal sizing
-                - Accessibility and contrast
+                VIRAL ENGAGEMENT REQUIREMENTS:
+                1. ATTENTION-GRABBING COLORS: Never use boring white text
+                2. DYNAMIC FONT CHOICES: Match content energy and platform aesthetics
+                3. ACCESSIBILITY COMPLIANT: Ensure 7:1 contrast ratio (WCAG AAA)
+                4. PLATFORM OPTIMIZED: Different strategies for TikTok vs YouTube vs Instagram
+                5. CONTENT-AWARE: Hooks need different styling than CTAs than main content
+                
+                Color Psychology Guidelines:
+                - Red/Orange: Urgency, excitement, food content
+                - Blue/Cyan: Trust, tech, educational content
+                - Green: Health, money, success themes
+                - Purple: Luxury, creativity, mystery
+                - Yellow: Happiness, attention, warnings
+                - Pink/Magenta: Fun, viral, trendy content
+                
+                Font Psychology Guidelines:
+                - Impact/Anton: Bold statements, shouty content
+                - Montserrat: Modern, clean, professional
+                - Bebas Neue: Strong, masculine, sports
+                - Playfair Display: Elegant, luxury, lifestyle
+                - Roboto: Friendly, approachable, tech
+                
+                Platform-Specific Viral Patterns:
+                - TikTok: Bright neon colors, bold fonts, high contrast, animated-friendly
+                - Instagram: Aesthetic palettes, clean fonts, story-optimized
+                - YouTube: Thumbnail-ready, readable at small sizes, retention-focused
+                
+                Content Type Styling:
+                - Hooks: Bright, attention-grabbing, curiosity-inducing
+                - Main Content: Clear, readable, engaging but not overwhelming
+                - CTAs: Urgent, action-oriented, conversion-focused
+                - Questions: Engaging, thought-provoking, discussion-starter
                 
                 Return JSON with:
                 {{
-                    "font_family": "Arial-Bold|Impact|Helvetica-Bold",
-                    "font_size": 36-48,
-                    "color": "0xFFFFFF",
-                    "background_color": "0x000000",
-                    "background_opacity": 0.8,
-                    "stroke_width": 3,
-                    "words_per_line": 3-4
+                    "font_family": "specific font name (Impact, Montserrat-Bold, Anton, etc.)",
+                    "font_size": 36-64,
+                    "primary_color": "#HEX format main text color",
+                    "background_color": "#HEX format background",
+                    "stroke_color": "#HEX format outline",
+                    "background_opacity": 0.0-1.0,
+                    "stroke_width": 0-4,
+                    "shadow_enabled": true/false,
+                    "shadow_color": "#HEX format",
+                    "animation_style": "none|bounce|pulse|glow|shake",
+                    "words_per_line": 2-5,
+                    "style_reasoning": "brief explanation of choices",
+                    "engagement_score": "1-10 predicted viral potential",
+                    "accessibility_compliant": true/false,
+                    "color_psychology": "explain color choice reasoning"
                 }}
                 """
                 
@@ -3858,10 +3889,19 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
                     if json_match:
                         ai_style = json.loads(json_match.group())
-                        logger.info(f"🎨 AI-styled overlay: {overlay_type} - {ai_style.get('font_family', 'Arial-Bold')} {ai_style.get('font_size', 32)}px")
+                        
+                        # Enhanced logging to session
+                        self._log_ai_styling_decision(ai_style, text, overlay_type, session_context)
+                        
+                        logger.info(f"🎨 AI VIRAL STYLING: {overlay_type}")
+                        logger.info(f"   Font: {ai_style.get('font_family', 'Arial-Bold')} {ai_style.get('font_size', 32)}px")
+                        logger.info(f"   Colors: {ai_style.get('primary_color', '#FFFFFF')} on {ai_style.get('background_color', '#000000')}")
+                        logger.info(f"   Engagement Score: {ai_style.get('engagement_score', 'N/A')}/10")
+                        logger.info(f"   Reasoning: {ai_style.get('style_reasoning', 'No reasoning provided')[:100]}...")
+                        
                         return ai_style
                 except Exception as e:
-                    logger.warning(f"⚠️ AI styling failed: {e}")
+                    logger.warning(f"⚠️ AI viral styling failed: {e}")
             
             # Fallback to smart default styling
             return self._get_smart_default_style(text, overlay_type, platform, video_width, video_height)
@@ -3869,6 +3909,146 @@ This is a placeholder file. In a full implementation, this would be a complete M
         except Exception as e:
             logger.error(f"❌ Overlay styling failed: {e}")
             return self._get_smart_default_style(text, overlay_type, platform, video_width, video_height)
+
+    def _log_ai_styling_decision(self, ai_style: Dict[str, Any], text: str, overlay_type: str, session_context) -> None:
+        """Log AI styling decisions to session output for analysis"""
+        try:
+            if not session_context:
+                return
+            
+            import json
+            from datetime import datetime
+            
+            # Create styling log entry
+            styling_log = {
+                "timestamp": datetime.now().isoformat(),
+                "text": text[:100],  # Truncate long text
+                "overlay_type": overlay_type,
+                "ai_decisions": {
+                    "font_family": ai_style.get('font_family', 'Unknown'),
+                    "font_size": ai_style.get('font_size', 0),
+                    "primary_color": ai_style.get('primary_color', '#FFFFFF'),
+                    "background_color": ai_style.get('background_color', '#000000'),
+                    "stroke_color": ai_style.get('stroke_color', '#000000'),
+                    "animation_style": ai_style.get('animation_style', 'none'),
+                    "engagement_score": ai_style.get('engagement_score', 'N/A'),
+                    "accessibility_compliant": ai_style.get('accessibility_compliant', False),
+                    "style_reasoning": ai_style.get('style_reasoning', ''),
+                    "color_psychology": ai_style.get('color_psychology', '')
+                }
+            }
+            
+            # Save to session overlays directory
+            overlays_dir = session_context.get_output_path("overlays")
+            os.makedirs(overlays_dir, exist_ok=True)
+            
+            styling_log_path = os.path.join(overlays_dir, "ai_styling_decisions.jsonl")
+            
+            # Append to JSONL file for easy analysis
+            with open(styling_log_path, 'a', encoding='utf-8') as f:
+                f.write(json.dumps(styling_log, ensure_ascii=False) + '\n')
+            
+            logger.info(f"💾 AI styling decision logged to session: {overlay_type}")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to log AI styling decision: {e}")
+
+    def _log_overlay_styling_summary(self, overlays: List[Dict[str, Any]], found_points: List[Dict[str, Any]], 
+                                   hook_text: str, script_content: str) -> None:
+        """Log comprehensive overlay styling summary to session"""
+        try:
+            import json
+            from datetime import datetime
+            
+            # Create comprehensive styling summary
+            styling_summary = {
+                "timestamp": datetime.now().isoformat(),
+                "total_overlays": len(overlays),
+                "content_analysis": {
+                    "hook_text": hook_text[:100],
+                    "script_length": len(script_content),
+                    "found_points": len(found_points),
+                    "point_types": [point.get('type', 'unknown') for point in found_points]
+                },
+                "overlay_styles": [],
+                "color_palette_used": set(),
+                "fonts_used": set(),
+                "animations_used": set(),
+                "engagement_analysis": {
+                    "average_engagement_score": 0,
+                    "max_engagement_score": 0,
+                    "viral_potential": "unknown"
+                }
+            }
+            
+            # Analyze each overlay
+            engagement_scores = []
+            for overlay in overlays:
+                overlay_style = {
+                    "text": overlay.get('text', '')[:50],
+                    "font_size": overlay.get('font_size', 0),
+                    "font_color": overlay.get('font_color', overlay.get('primary_color', '#FFFFFF')),
+                    "background_color": overlay.get('background_color', '#000000'),
+                    "animation_style": overlay.get('animation_style', 'none'),
+                    "position": overlay.get('position', 'unknown'),
+                    "style_type": overlay.get('style', 'unknown'),
+                    "engagement_score": overlay.get('engagement_score', 5),
+                    "timing": {
+                        "start": overlay.get('start_time', 0),
+                        "end": overlay.get('end_time', 0),
+                        "duration": overlay.get('end_time', 0) - overlay.get('start_time', 0)
+                    }
+                }
+                
+                styling_summary["overlay_styles"].append(overlay_style)
+                
+                # Collect usage statistics
+                color = overlay.get('font_color', overlay.get('primary_color', '#FFFFFF'))
+                if color:
+                    styling_summary["color_palette_used"].add(color)
+                
+                animation = overlay.get('animation_style', 'none')
+                if animation:
+                    styling_summary["animations_used"].add(animation)
+                
+                engagement = overlay.get('engagement_score', 5)
+                if isinstance(engagement, (int, float)):
+                    engagement_scores.append(engagement)
+            
+            # Calculate engagement analysis
+            if engagement_scores:
+                avg_score = sum(engagement_scores) / len(engagement_scores)
+                max_score = max(engagement_scores)
+                
+                styling_summary["engagement_analysis"]["average_engagement_score"] = round(avg_score, 2)
+                styling_summary["engagement_analysis"]["max_engagement_score"] = max_score
+                
+                # Determine viral potential
+                if avg_score >= 8:
+                    viral_potential = "HIGH - Strong viral characteristics"
+                elif avg_score >= 6:
+                    viral_potential = "MEDIUM - Good engagement potential"
+                else:
+                    viral_potential = "LOW - May need optimization"
+                
+                styling_summary["engagement_analysis"]["viral_potential"] = viral_potential
+            
+            # Convert sets to lists for JSON serialization
+            styling_summary["color_palette_used"] = list(styling_summary["color_palette_used"])
+            styling_summary["animations_used"] = list(styling_summary["animations_used"])
+            styling_summary["fonts_used"] = list(styling_summary["fonts_used"])
+            
+            # Save styling summary to session
+            # Note: We'll save this even without session_context for logging purposes
+            logger.info("📊 OVERLAY STYLING ANALYSIS:")
+            logger.info(f"   Total Overlays: {styling_summary['total_overlays']}")
+            logger.info(f"   Colors Used: {styling_summary['color_palette_used']}")
+            logger.info(f"   Animations: {styling_summary['animations_used']}")
+            logger.info(f"   Avg Engagement: {styling_summary['engagement_analysis']['average_engagement_score']}/10")
+            logger.info(f"   Viral Potential: {styling_summary['engagement_analysis']['viral_potential']}")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to log overlay styling summary: {e}")
 
     def _get_smart_default_style(self, text: str, overlay_type: str, platform: Any, video_width: int, video_height: int) -> Dict[str, Any]:
         """Get smart default styling based on text characteristics and platform"""
@@ -3880,55 +4060,113 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Platform-specific base styles
             platform_str = str(platform).lower()
             
+            # Enhanced viral styling defaults with psychology-based colors
             if 'tiktok' in platform_str:
                 base_style = {
-                    "font_family": "Arial-Bold",
-                    "font_size": max(42, min(54, int(video_width * 0.04))),  # Larger font for TikTok
-                    "color": "0xFFFFFF",
-                    "background_color": "0xFF6B6B",
+                    "font_family": "Impact",  # Bold, attention-grabbing
+                    "font_size": max(48, min(64, int(video_width * 0.05))),  # Larger font for TikTok
+                    "primary_color": "#FF006E",  # Bright pink for viral energy
+                    "background_color": "#000000",
+                    "stroke_color": "#FFFFFF",
                     "background_opacity": 0.8,
                     "stroke_width": 3,
-                    "words_per_line": 3
+                    "shadow_enabled": True,
+                    "shadow_color": "#000000",
+                    "animation_style": "bounce",
+                    "words_per_line": 3,
+                    "engagement_score": 8
                 }
             elif 'instagram' in platform_str:
                 base_style = {
-                    "font_family": "Helvetica-Bold",
-                    "font_size": max(38, min(48, int(video_width * 0.035))),  # Larger font for Instagram
-                    "color": "0xFFFFFF",
-                    "background_color": "0x4ECDC4",
-                    "background_opacity": 0.8,
-                    "stroke_width": 3,
-                    "words_per_line": 3
+                    "font_family": "Montserrat-Bold",  # Modern, aesthetic
+                    "font_size": max(42, min(56, int(video_width * 0.04))),
+                    "primary_color": "#8B5CF6",  # Instagram purple
+                    "background_color": "#FFFFFF",
+                    "stroke_color": "#000000",
+                    "background_opacity": 0.9,
+                    "stroke_width": 2,
+                    "shadow_enabled": True,
+                    "shadow_color": "#E5E5E5",
+                    "animation_style": "pulse",
+                    "words_per_line": 3,
+                    "engagement_score": 7
                 }
             elif 'youtube' in platform_str:
                 base_style = {
-                    "font_family": "Arial-Bold",
-                    "font_size": max(36, min(44, int(video_width * 0.03))),  # Larger font for YouTube
-                    "color": "0xFFFFFF",
-                    "background_color": "0x000000",
-                    "background_opacity": 0.8,
-                    "stroke_width": 3,
-                    "words_per_line": 4
+                    "font_family": "Roboto-Bold",  # Clean, readable
+                    "font_size": max(40, min(52, int(video_width * 0.038))),
+                    "primary_color": "#FF0000",  # YouTube red
+                    "background_color": "#000000",
+                    "stroke_color": "#FFFFFF",
+                    "background_opacity": 0.85,
+                    "stroke_width": 2,
+                    "shadow_enabled": True,
+                    "shadow_color": "#333333",
+                    "animation_style": "none",
+                    "words_per_line": 4,
+                    "engagement_score": 6
                 }
             else:
+                # Default viral styling
                 base_style = {
-                    "font_family": "Arial-Bold",
-                    "font_size": max(38, min(48, int(video_width * 0.035))),  # Larger default font
-                    "color": "0xFFFFFF",
-                    "background_color": "0x000000",
-                    "background_opacity": 0.8,
+                    "font_family": "Anton",  # Strong, impactful
+                    "font_size": max(44, min(58, int(video_width * 0.042))),
+                    "primary_color": "#00D9FF",  # Cyan for attention
+                    "background_color": "#1A1A1A",
+                    "stroke_color": "#FFFFFF",
+                    "background_opacity": 0.85,
                     "stroke_width": 3,
-                    "words_per_line": 3
+                    "shadow_enabled": True,
+                    "shadow_color": "#000000",
+                    "animation_style": "glow",
+                    "words_per_line": 3,
+                    "engagement_score": 7
                 }
             
-            # Adjust for overlay type
+            # Content-aware color psychology adjustments
+            text_lower = text.lower()
+            
+            # Adjust for overlay type with enhanced viral psychology
             if overlay_type == "hook":
-                base_style["color"] = "0xFFD700"  # Gold for hooks
-                base_style["font_size"] = int(base_style["font_size"] * 1.2)  # Larger for hooks
+                base_style["primary_color"] = "#FFD60A"  # Bright yellow for maximum attention
+                base_style["font_size"] = int(base_style["font_size"] * 1.3)  # Much larger for hooks
+                base_style["animation_style"] = "shake"  # Attention-grabbing animation
+                base_style["engagement_score"] = 9
+                logger.info("🎣 HOOK STYLING: High-impact yellow with shake animation")
+                
             elif overlay_type == "cta":
-                base_style["color"] = "0x00FF00"  # Green for CTAs
-                base_style["background_color"] = "0x000000"
-                base_style["background_opacity"] = 0.8
+                base_style["primary_color"] = "#06FFA5"  # Bright green for action
+                base_style["background_color"] = "#FF006E"  # Contrasting background
+                base_style["font_family"] = "Impact"  # Bold for urgency
+                base_style["animation_style"] = "pulse"  # Urgency animation
+                base_style["engagement_score"] = 8
+                logger.info("🎯 CTA STYLING: Action green with pulse animation")
+                
+            elif overlay_type == "question":
+                base_style["primary_color"] = "#8B5CF6"  # Purple for curiosity
+                base_style["animation_style"] = "bounce"  # Engaging animation
+                base_style["engagement_score"] = 7
+                logger.info("❓ QUESTION STYLING: Curiosity purple with bounce")
+                
+            # Content-specific color psychology
+            if any(word in text_lower for word in ['money', 'cash', 'rich', 'wealth', 'profit']):
+                base_style["primary_color"] = "#10B981"  # Green for money
+                logger.info("💰 MONEY CONTENT: Green color psychology")
+                
+            elif any(word in text_lower for word in ['danger', 'warning', 'alert', 'urgent']):
+                base_style["primary_color"] = "#EF4444"  # Red for urgency
+                base_style["animation_style"] = "shake"
+                logger.info("⚠️ URGENT CONTENT: Red with shake animation")
+                
+            elif any(word in text_lower for word in ['fun', 'party', 'celebrate', 'happy']):
+                base_style["primary_color"] = "#F59E0B"  # Orange for fun
+                base_style["animation_style"] = "bounce"
+                logger.info("🎉 FUN CONTENT: Orange with bounce animation")
+                
+            elif any(word in text_lower for word in ['tech', 'ai', 'future', 'innovation']):
+                base_style["primary_color"] = "#06B6D4"  # Cyan for tech
+                base_style["animation_style"] = "glow"
+                logger.info("🤖 TECH CONTENT: Cyan with glow effect")
             
             # Adjust for text length
             if text_length > 50:
@@ -4341,28 +4579,38 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 content_words = point['content'].split()[:6]  # First 6 words
                 summary = ' '.join(content_words)
                 
-                # Add main header overlay
+                # Get AI styling for header
+                header_style = self._get_smart_default_style(header_text, "header", "tiktok", 720, 1280)
+                summary_style = self._get_smart_default_style(summary, "summary", "tiktok", 720, 1280)
+                
+                # Add main header overlay with enhanced styling
                 overlays.append({
                     'text': header_text,
                     'start_time': start_time,
                     'end_time': end_time,
-                    'font_size': 72,
-                    'font_color': self._get_point_color(i),
+                    'font_size': header_style.get('font_size', 72),
+                    'font_color': header_style.get('primary_color', self._get_point_color(i)),
+                    'background_color': header_style.get('background_color', '#000000'),
+                    'stroke_color': header_style.get('stroke_color', '#FFFFFF'),
+                    'animation_style': header_style.get('animation_style', 'bounce'),
                     'position': 'top_center',
                     'style': 'header',
-                    'animation': 'bounce_in'
+                    'engagement_score': header_style.get('engagement_score', 8)
                 })
                 
-                # Add summary overlay
+                # Add summary overlay with enhanced styling
                 overlays.append({
                     'text': summary,
                     'start_time': start_time + 0.5,
                     'end_time': end_time + 1.0,
-                    'font_size': 48,
-                    'font_color': '#FFFFFF',
+                    'font_size': summary_style.get('font_size', 48),
+                    'font_color': summary_style.get('primary_color', '#FFFFFF'),
+                    'background_color': summary_style.get('background_color', '#1A1A1A'),
+                    'stroke_color': summary_style.get('stroke_color', '#FFFFFF'),
+                    'animation_style': summary_style.get('animation_style', 'fade_in'),
                     'position': 'center',
                     'style': 'summary',
-                    'animation': 'fade_in'
+                    'engagement_score': summary_style.get('engagement_score', 6)
                 })
             
             # Add opening title if no numbered points found
@@ -4378,7 +4626,11 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     'animation': 'zoom_in'
                 })
             
-            logger.info(f"🎨 Created {len(overlays)} rich content overlays with {len(found_points)} key points")
+            # Log comprehensive overlay styling decisions to session
+            self._log_overlay_styling_summary(overlays, found_points, hook_text, script_content)
+            
+            logger.info(f"🎨 Created {len(overlays)} ENHANCED rich content overlays with {len(found_points)} key points")
+            logger.info(f"🎯 Overlay engagement scores: {[overlay.get('engagement_score', 'N/A') for overlay in overlays]}")
             return overlays
             
         except Exception as e:
@@ -4488,7 +4740,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             
             # Add enhanced rich text overlays
             if config.hook:
-                hook_style = self._get_ai_overlay_style(str(config.hook), "hook", config.target_platform, video_width, video_height)
+                hook_style = self._get_ai_overlay_style(str(config.hook), "hook", config.target_platform, video_width, video_height, session_context)
                 
                 # Create rich overlays with headers and summaries
                 rich_overlays = self._create_rich_content_overlays(
@@ -4550,7 +4802,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             
             # Add call-to-action overlay with line-by-line timing
             if config.call_to_action:
-                cta_style = self._get_ai_overlay_style(str(config.call_to_action), "cta", config.target_platform, video_width, video_height)
+                cta_style = self._get_ai_overlay_style(str(config.call_to_action), "cta", config.target_platform, video_width, video_height, session_context)
                 cta_overlays = self._create_timed_line_overlays(
                     str(config.call_to_action),
                     max_words_per_line=cta_style.get('words_per_line', 3),
