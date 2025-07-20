@@ -12,6 +12,7 @@ import re
 
 from ..utils.logging_config import get_logger
 from ..models.video_models import Platform, VideoCategory
+from ..frameworks.content_credibility_system import ContentCredibilitySystem, CredibilityScore
 
 logger = get_logger(__name__)
 
@@ -54,6 +55,8 @@ class MissionPlan:
     risk_mitigation: List[str]
     confidence_score: float
     reasoning: str
+    credibility_score: Optional[CredibilityScore] = None
+    content_quality_analysis: Optional[Dict[str, Any]] = None
 
 
 class MissionPlanningAgent:
@@ -75,6 +78,9 @@ class MissionPlanningAgent:
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model_name)
         
+        # Initialize content credibility system
+        self.credibility_system = ContentCredibilitySystem(api_key)
+        
         # Mission keywords for detection
         self.mission_keywords = [
             'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
@@ -82,7 +88,8 @@ class MissionPlanningAgent:
             'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
         ]
         
-        logger.info(f"🎯 Mission Planning Agent initialized with {model_name}")
+        logger.info(f"🎯 Enhanced Mission Planning Agent initialized with {model_name}")
+        logger.info(f"🔍 Content credibility system enabled")
     
     def analyze_mission(self, 
                        mission_statement: str,
@@ -239,6 +246,23 @@ Focus on creating a plan that actually accomplishes the mission, not just create
             if json_match:
                 ai_plan = json.loads(json_match.group())
                 
+                # Perform credibility analysis
+                logger.info("🔍 Performing content credibility analysis...")
+                credibility_score = self.credibility_system.evaluate_content_credibility(
+                    content=mission_statement,
+                    topic=mission_statement,
+                    platform=platform.value if platform else "general"
+                )
+                
+                # Create content quality analysis
+                content_quality_analysis = {
+                    "credibility_assessment": self.credibility_system.get_credibility_assessment(credibility_score),
+                    "improvement_recommendations": credibility_score.improvement_suggestions,
+                    "risk_factors": credibility_score.issues_detected,
+                    "evidence_requirements": self._generate_evidence_requirements(mission_statement, mission_type),
+                    "fact_check_priority": "HIGH" if credibility_score.overall_score < 7.0 else "MEDIUM"
+                }
+                
                 # Create mission plan
                 plan = MissionPlan(
                     mission_statement=mission_statement,
@@ -249,6 +273,8 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                     success_metrics=ai_plan.get('success_metrics', []),
                     content_strategy=ai_plan.get('content_strategy', {}),
                     clip_strategy=ai_plan.get('clip_strategy', {}),
+                    credibility_score=credibility_score,
+                    content_quality_analysis=content_quality_analysis,
                     persuasion_tactics=ai_plan.get('persuasion_tactics', []),
                     timing_strategy=ai_plan.get('timing_strategy', {}),
                     platform_optimization=ai_plan.get('platform_optimization', {}),
@@ -262,6 +288,7 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                 logger.info(f"   Strategic Approach: {plan.strategic_approach}")
                 logger.info(f"   Recommended Clips: {plan.clip_strategy.get('recommended_clips', 'Not specified')}")
                 logger.info(f"   Confidence Score: {plan.confidence_score:.2f}")
+                logger.info(f"🔍 Content Credibility: {credibility_score.overall_score}/10 ({content_quality_analysis['credibility_assessment']})")
                 
                 return plan
                 
@@ -424,3 +451,49 @@ Focus on creating a plan that actually accomplishes the mission, not just create
             'strategic_purposes': clip_strategy.get('clip_purposes', []),
             'cost_benefit_analysis': clip_strategy.get('cost_benefit_analysis', 'Strategic optimization')
         }
+    
+    def _generate_evidence_requirements(self, mission_statement: str, mission_type: MissionType) -> List[str]:
+        """Generate evidence requirements based on mission type and content"""
+        requirements = []
+        
+        # Base requirements for all missions
+        if mission_type in [MissionType.CONVINCE, MissionType.PERSUADE]:
+            requirements.extend([
+                "Statistical data to support claims",
+                "Expert opinions or testimonials", 
+                "Peer-reviewed research citations",
+                "Real-world examples or case studies"
+            ])
+        elif mission_type in [MissionType.TEACH, MissionType.EXPLAIN]:
+            requirements.extend([
+                "Authoritative sources for educational content",
+                "Step-by-step verification of processes",
+                "Multiple perspective validation",
+                "Accuracy check with subject matter experts"
+            ])
+        elif mission_type in [MissionType.DEMONSTRATE, MissionType.HELP]:
+            requirements.extend([
+                "Verified methodology or best practices",
+                "Safety considerations documentation",
+                "Success rate or effectiveness data",
+                "Alternative approaches comparison"
+            ])
+        else:
+            requirements.extend([
+                "Basic fact verification",
+                "Source credibility check",
+                "Content accuracy validation"
+            ])
+        
+        # Content-specific requirements
+        mission_lower = mission_statement.lower()
+        if any(word in mission_lower for word in ['health', 'medical', 'safety', 'nutrition']):
+            requirements.append("Medical or health authority validation required")
+        
+        if any(word in mission_lower for word in ['financial', 'investment', 'money', 'economic']):
+            requirements.append("Financial expert review and disclaimer required")
+        
+        if any(word in mission_lower for word in ['legal', 'law', 'rights', 'regulation']):
+            requirements.append("Legal expert consultation recommended")
+        
+        return requirements
