@@ -173,35 +173,8 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 elif response_text.startswith('```'):
                     response_text = response_text[3:-3]
                 
-                # Additional JSON cleaning
-                response_text = response_text.strip()
-                
-                # Fix common JSON issues
-                response_text = response_text.replace('\\n', ' ')  # Replace newlines with spaces
-                response_text = response_text.replace('\n', ' ')   # Remove actual newlines in JSON values
-                response_text = response_text.replace('\r', '')    # Remove carriage returns
-                response_text = response_text.replace('\t', ' ')   # Replace tabs with spaces
-                response_text = response_text.replace('\\"', '"')
-                
-                # Try to extract JSON from response if it contains other text
-                import re
-                json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
-                if json_match:
-                    response_text = json_match.group()
-                
-                # Fix common JSON syntax issues
-                # Remove trailing commas before closing brackets/braces
-                response_text = re.sub(r',\s*}', '}', response_text)
-                response_text = re.sub(r',\s*]', ']', response_text)
-                
-                # Try to fix incomplete JSON by adding closing braces if missing
-                brace_count = response_text.count('{') - response_text.count('}')
-                if brace_count > 0:
-                    response_text += '}' * brace_count
-                
-                bracket_count = response_text.count('[') - response_text.count(']')
-                if bracket_count > 0:
-                    response_text += ']' * bracket_count
+                # Comprehensive JSON cleaning and fixing
+                response_text = self._comprehensive_json_fix(response_text)
                 
                 result = json.loads(response_text)
                 
@@ -249,11 +222,105 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                         logger.info("✅ Successfully parsed manually")
                     else:
                         logger.error("Manual parsing failed, using fallback")
-                        return self._create_fallback_result(script_content, language, target_duration)
+                        result = self._create_fallback_result(script_content, language, target_duration)
+                
+                # Ensure we always have a valid result
+                if not result:
+                    logger.error("❌ All parsing failed, creating emergency fallback")
+                    result = self._create_fallback_result(script_content, language, target_duration)
                 
         except Exception as e:
             logger.error(f"Script processing failed: {e}")
             return self._create_fallback_result(script_content, language, target_duration)
+
+    def _comprehensive_json_fix(self, response_text: str) -> str:
+        """Comprehensive JSON fixing for AI responses"""
+        try:
+            import re
+            
+            # Step 1: Basic cleaning
+            response_text = response_text.strip()
+            
+            # Step 2: Fix common escape sequence issues
+            response_text = response_text.replace('\\\\n', ' ')  # Double escaped newlines
+            response_text = response_text.replace('\\n', ' ')    # Escaped newlines in JSON values
+            response_text = response_text.replace('\n', ' ')     # Actual newlines
+            response_text = response_text.replace('\r', '')      # Carriage returns
+            response_text = response_text.replace('\t', ' ')     # Tabs
+            response_text = response_text.replace('\\"', '"')    # Escaped quotes
+            
+            # Step 3: Extract JSON from response if it contains other text
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group()
+            
+            # Step 4: Fix malformed JSON structure issues
+            
+            # Fix trailing commas before closing brackets/braces (multiple passes)
+            for _ in range(3):  # Multiple passes to catch nested issues
+                response_text = re.sub(r',\s*}', '}', response_text)
+                response_text = re.sub(r',\s*]', ']', response_text)
+            
+            # Fix missing commas between array elements
+            response_text = re.sub(r'}\s*{', '}, {', response_text)
+            response_text = re.sub(r']\s*\[', '], [', response_text)
+            
+            # Fix missing commas between object properties
+            response_text = re.sub(r'"\s*"([^"]+)"\s*:', '", "\\1":', response_text)
+            
+            # Step 5: Fix incomplete JSON structures
+            
+            # Count and balance braces
+            open_braces = response_text.count('{')
+            close_braces = response_text.count('}')
+            if open_braces > close_braces:
+                response_text += '}' * (open_braces - close_braces)
+            
+            # Count and balance brackets
+            open_brackets = response_text.count('[')
+            close_brackets = response_text.count(']')
+            if open_brackets > close_brackets:
+                response_text += ']' * (open_brackets - close_brackets)
+            
+            # Step 6: Fix specific AI response issues
+            
+            # Fix truncated strings that might end with incomplete quotes
+            if response_text.count('"') % 2 != 0:
+                # Odd number of quotes - likely truncated
+                response_text = response_text.rstrip('",') + '"'
+            
+            # Fix common AI truncation patterns
+            if response_text.endswith('...'):
+                response_text = response_text.rstrip('.') + '"}'
+            
+            # Step 7: Advanced pattern fixes for specific errors
+            
+            # Fix case where there's a comma followed by spaces and closing brace
+            response_text = re.sub(r',\s+}', '}', response_text)
+            response_text = re.sub(r',\s+]', ']', response_text)
+            
+            # Fix missing quotes around property names
+            response_text = re.sub(r'(\w+):', r'"\1":', response_text)
+            
+            # Fix specific common issues from the error log
+            # Handle the specific case where we have trailing commas in complex structures
+            response_text = re.sub(r',(\s*[}\]])', r'\1', response_text)  # Remove trailing commas more aggressively
+            
+            # Step 8: Final validation and cleanup
+            response_text = response_text.strip()
+            
+            # Ensure it starts and ends with proper JSON structure
+            if not response_text.startswith('{'):
+                response_text = '{' + response_text
+            if not response_text.endswith('}'):
+                response_text = response_text + '}'
+            
+            logger.info(f"🔧 JSON fixed successfully (length: {len(response_text)})")
+            return response_text
+            
+        except Exception as e:
+            logger.warning(f"⚠️ JSON fixing failed: {e}")
+            return response_text
 
     def _reprocess_for_duration(self, script_content: str, target_duration: float, language) -> Dict[str, Any]:
         """Re-process script with stricter duration constraints"""
