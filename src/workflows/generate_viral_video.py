@@ -169,7 +169,9 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
 
         # Generate video
         logger.info("🎬 Starting enhanced AI agent video generation")
-        result = orchestrator.generate_video(config)
+        # Run async method in sync context
+        import asyncio
+        result = asyncio.run(orchestrator.generate_video(config))
 
         generation_time = time.time() - start_time
         # Check for success using the correct key from orchestrator result

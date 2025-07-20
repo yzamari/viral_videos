@@ -305,7 +305,7 @@ class WorkingOrchestrator:
                 self.session_id)
             # Enhanced discussion systems would be initialized here for future expansion
     
-    def generate_video(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    async def generate_video(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """
         Generate video using comprehensive AI agent system
 
@@ -345,7 +345,7 @@ class WorkingOrchestrator:
             
             # Phase 4: Script Generation with AI Enhancement
             try:
-                script_data = self._generate_enhanced_script(config)
+                script_data = await self._generate_enhanced_script(config)
                 logger.info("✅ Script generation completed successfully")
             except Exception as e:
                 logger.error(f"❌ Script generation failed: {e}")
@@ -713,7 +713,7 @@ class WorkingOrchestrator:
         self.discussion_results['multilingual_strategy'] = multilang_result
         logger.info("✅ Multilingual discussions completed")
 
-    def _generate_enhanced_script(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    async def _generate_enhanced_script(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Generate script with AI enhancement and processing"""
         logger.info("📝 Generating enhanced script...")
 
@@ -733,7 +733,7 @@ class WorkingOrchestrator:
 
         # Enhanced script processing for advanced modes
         if self.script_processor and self.mode != OrchestratorMode.SIMPLE:
-            processed_script = self.script_processor.process_script_for_tts(
+            processed_script = await self.script_processor.process_script_for_tts(
                 script_content=str(script_data),
                 language=config.get('language', Language.ENGLISH_US),
                 target_duration=self.duration
