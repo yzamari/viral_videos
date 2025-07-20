@@ -2213,7 +2213,7 @@ class VideoGenerator:
                     duration = remaining_time * 0.8  # Leave some buffer
                 
                 # Format text for MoviePy subtitle display with proper line breaks and width constraints
-                max_chars = min(50, int(video_width * 0.04))  # Responsive character limit
+                max_chars = min(10, int(video_width * 0.01))  # Very short lines to prevent cutting
                 formatted_text = self._format_subtitle_text(sentence.strip(), max_chars_per_line=max_chars)
                 
                 segments.append({
@@ -3750,10 +3750,10 @@ This is a placeholder file. In a full implementation, this would be a complete M
         except Exception as e:
             logger.warning(f"⚠️ Failed to create multi-line text: {e}")
             # Fallback to simple truncation with width constraint
-            max_chars = min(50, int(video_width * 0.04))
+            max_chars = min(10, int(video_width * 0.01))
             return text[:max_chars].replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
 
-    def _format_subtitle_text(self, text: str, max_words_per_line: int = 6, max_chars_per_line: int = 50) -> str:
+    def _format_subtitle_text(self, text: str, max_words_per_line: int = 2, max_chars_per_line: int = 10) -> str:
         """Format text for MoviePy subtitle display with proper line breaks and width constraints"""
         try:
             # Split text into words

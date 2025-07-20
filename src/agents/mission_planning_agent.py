@@ -3,14 +3,16 @@ Mission Planning Agent - Strategic Work Plan Generation
 Creates comprehensive work plans for mission-oriented content
 """
 
-import google.generativeai as genai
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
 import json
 import re
+import asyncio
 
 from ..utils.logging_config import get_logger
+from ..ai.manager import AIServiceManager
+from ..ai.interfaces.text_generation import TextGenerationRequest
 from ..models.video_models import Platform, VideoCategory
 from ..frameworks.content_credibility_system import ContentCredibilitySystem, CredibilityScore
 from ..frameworks.audience_intelligence_system import AudienceIntelligenceSystem, AudienceIntelligence
@@ -72,15 +74,17 @@ class MissionPlanningAgent:
     mission accomplishment.
     """
     
-    def __init__(self, api_key: str, model_name: str = "gemini-1.5-flash"):
+    def __init__(self, api_key: str = None, model_name: str = "gemini-1.5-flash", ai_manager: AIServiceManager = None):
         """Initialize Mission Planning Agent"""
-        if not api_key or not api_key.strip():
-            raise ValueError("API key cannot be empty")
+        if ai_manager:
+            self.ai_manager = ai_manager
+        else:
+            if not api_key or not api_key.strip():
+                raise ValueError("Either API key or ai_manager must be provided")
+            self.ai_manager = AIServiceManager()
         
-        self.api_key = api_key
+        self.api_key = api_key or "dummy"
         self.model_name = model_name
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel(model_name)
         
         # Initialize content credibility system
         self.credibility_system = ContentCredibilitySystem(api_key)
@@ -117,7 +121,7 @@ class MissionPlanningAgent:
         logger.info(f"🧠 Audience intelligence system enabled")
         logger.info(f"🎯 Ethical optimization system enabled")
     
-    def analyze_mission(self, 
+    async def analyze_mission(self, 
                        mission_statement: str,
                        duration: int,
                        platform: Platform,
@@ -140,11 +144,11 @@ class MissionPlanningAgent:
             logger.info(f"🎯 Analyzing mission: {mission_statement[:50]}...")
             
             # Detect mission type
-            mission_type, is_strategic = self._detect_mission_type(mission_statement)
+            mission_type, is_strategic = await self._detect_mission_type(mission_statement)
             
             if is_strategic:
                 # Create strategic mission plan
-                plan = self._create_strategic_mission_plan(
+                plan = await self._create_strategic_mission_plan(
                     mission_statement, mission_type, duration, platform, category, target_audience
                 )
                 logger.info(f"✅ Strategic mission plan created: {mission_type.value}")
@@ -162,12 +166,12 @@ class MissionPlanningAgent:
             # Return fallback plan
             return self._create_fallback_plan(mission_statement, duration, platform, category)
     
-    def _detect_mission_type(self, mission_statement: str) -> tuple[MissionType, bool]:
-        """AI-powered mission type detection using Gemini Flash"""
+    async def _detect_mission_type(self, mission_statement: str) -> tuple[MissionType, bool]:
+        """AI-powered mission type detection using AI service manager"""
         try:
             # First try AI-powered detection
-            if self.model:
-                ai_mission_type, is_strategic = self._ai_mission_detection(mission_statement)
+            if self.ai_manager:
+                ai_mission_type, is_strategic = await self._ai_mission_detection(mission_statement)
                 if ai_mission_type:
                     return ai_mission_type, is_strategic
             
@@ -178,7 +182,7 @@ class MissionPlanningAgent:
             logger.warning(f"⚠️ Mission type detection failed: {e}")
             return MissionType.INFORM, False
     
-    def _ai_mission_detection(self, mission_statement: str) -> tuple[Optional[MissionType], bool]:
+    async def _ai_mission_detection(self, mission_statement: str) -> tuple[Optional[MissionType], bool]:
         """AI-powered mission type detection"""
         try:
             # Create mission types list for prompt
@@ -212,7 +216,14 @@ class MissionPlanningAgent:
             }}
             """
             
-            response = self.model.generate_content(mission_prompt)
+            # Use AI service manager for generation
+            text_service = self.ai_manager.get_text_service()
+            request = TextGenerationRequest(
+                prompt=mission_prompt,
+                temperature=0.3,
+                max_tokens=500
+            )
+            response = await text_service.generate(request)
             
             # Parse response
             json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
@@ -272,7 +283,7 @@ class MissionPlanningAgent:
         logger.info(f"🎯 Mission Detection: inform (strategic: False)")
         return MissionType.INFORM, False
     
-    def _create_strategic_mission_plan(self,
+    async def _create_strategic_mission_plan(self,
                                      mission_statement: str,
                                      mission_type: MissionType,
                                      duration: int,
@@ -347,7 +358,14 @@ Provide your strategic analysis in this exact JSON format:
 Focus on creating a plan that actually accomplishes the mission, not just creates content about the topic.
 """
             
-            response = self.model.generate_content(prompt)
+            # Use AI service manager for generation
+            text_service = self.ai_manager.get_text_service()
+            request = TextGenerationRequest(
+                prompt=prompt,
+                temperature=0.4,
+                max_tokens=2000
+            )
+            response = await text_service.generate(request)
             
             # Parse AI response
             json_match = re.search(r'\{.*\}', response.text, re.DOTALL)

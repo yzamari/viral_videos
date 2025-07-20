@@ -5,27 +5,30 @@ Ensures proper punctuation, short sentences, and TTS-optimized formatting
 import re
 import os
 from typing import List, Dict, Any, Optional
-import google.generativeai as genai
 import json
 from datetime import datetime
 
 from ..utils.logging_config import get_logger
 from ..models.video_models import Language, Platform, VideoCategory
 from ..utils.json_fixer import JSONFixer
+from ..ai.manager import AIServiceManager
+from ..ai.interfaces.text_generation import TextGenerationRequest
 
 logger = get_logger(__name__)
 
 class EnhancedScriptProcessor:
     """Processes scripts for optimal TTS delivery with proper punctuation and structure"""
 
-    def __init__(self, api_key: str):
-        if not api_key:
-            raise ValueError("API key cannot be None or empty")
+    def __init__(self, api_key: str = None, ai_manager: AIServiceManager = None):
+        if ai_manager:
+            self.ai_manager = ai_manager
+        else:
+            if not api_key:
+                raise ValueError("Either api_key or ai_manager must be provided")
+            self.ai_manager = AIServiceManager()
         
-        self.api_key = api_key
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
-        self.json_fixer = JSONFixer(api_key)
+        # Keep json_fixer for compatibility
+        self.json_fixer = JSONFixer(api_key or "dummy")
 
         # TTS optimization rules by language
         self.language_rules = {
@@ -77,7 +80,7 @@ class EnhancedScriptProcessor:
 
         logger.info("✅ Enhanced Script Processor initialized")
 
-    def process_script_for_tts(self, script_content: str, language,
+    async def process_script_for_tts(self, script_content: str, language,
                              target_duration: float = None) -> Dict[str, Any]:
         """Process script with AI optimization for exact duration matching"""
         try:
@@ -163,7 +166,14 @@ Please return a JSON response with the following structure:
 CRITICAL: If target duration is {target_duration}s, ensure total_estimated_duration is within ±2 seconds of this target.
 """
 
-            response = self.model.generate_content(processing_prompt)
+            # Use the AI service manager to generate content
+            text_service = self.ai_manager.get_text_service()
+            request = TextGenerationRequest(
+                prompt=processing_prompt,
+                temperature=0.7,
+                max_tokens=2000
+            )
+            response = await text_service.generate(request)
             
             # Parse AI response
             response_text = response.text.strip()
