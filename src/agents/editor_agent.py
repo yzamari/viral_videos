@@ -3,7 +3,6 @@ from src.services.file_service import FileService
 from moviepy.editor import VideoFileClip, concatenate_videoclips, AudioFileClip
 import os
 
-
 class EditorAgent:
     def __init__(self, session_id):
         self.session_id = session_id
@@ -24,8 +23,13 @@ class EditorAgent:
                 final_clip.audio = audioclip
 
             # Write the final video file
-            final_video_path = os.path.join(self.file_service.session_path, "final_video.mp4")
-            final_clip.write_videofile(final_video_path, codec="libx264", audio_codec="aac")
+            final_video_path = os.path.join(
+                self.file_service.session_path,
+                "final_video.mp4")
+            final_clip.write_videofile(
+                final_video_path,
+                codec="libx264",
+                audio_codec="aac")
 
             self.monitoring_service.log(f"EditorAgent: Final video saved to {final_video_path}")
             return final_video_path
@@ -33,4 +37,3 @@ class EditorAgent:
         except Exception as e:
             self.monitoring_service.log(f"EditorAgent: Error editing video: {e}")
             return None
-

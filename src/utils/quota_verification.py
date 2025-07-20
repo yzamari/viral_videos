@@ -16,7 +16,6 @@ from ..utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-
 def get_real_google_quota_info(api_key: str) -> Dict[str, Any]:
     """
     Get real quota information from Google AI Studio API using SDK
@@ -62,23 +61,23 @@ def get_real_google_quota_info(api_key: str) -> Dict[str, Any]:
             methods = getattr(model, 'supported_generation_methods', [])
 
             if 'veo' in model_name.lower():
-                veo_models.append({
+                veo_models.append(
                     'name': model_name,
                     'display_name': display_name,
                     'supported_methods': methods
-                })
+                )
             elif 'gemini' in model_name.lower():
-                gemini_models.append({
+                gemini_models.append(
                     'name': model_name,
                     'display_name': display_name,
                     'supported_methods': methods
-                })
+                )
             else:
-                other_models.append({
+                other_models.append(
                     'name': model_name,
                     'display_name': display_name,
                     'supported_methods': methods
-                })
+                )
 
         # Check if we can access the API (successful model listing means API works)
         if len(models) > 0:
@@ -159,7 +158,6 @@ def get_real_google_quota_info(api_key: str) -> Dict[str, Any]:
                 "service": "Google AI SDK"
             }
 
-
 def _check_veo_model_quota(api_key: str) -> Dict[str, Any]:
     """
     Check VEO model specific quota by attempting to list VEO models
@@ -190,11 +188,14 @@ def _check_veo_model_quota(api_key: str) -> Dict[str, Any]:
         veo_models = []
         for model in models:
             if 'veo' in model.name.lower():
-                veo_models.append({
+                veo_models.append(
                     'name': model.name,
                     'display_name': getattr(model, 'display_name', 'Unknown'),
-                    'supported_generation_methods': getattr(model, 'supported_generation_methods', [])
-                })
+                    'supported_generation_methods': getattr(
+                        model,
+                        'supported_generation_methods',
+                        [])
+                )
 
         return {
             "veo_models_available": len(veo_models),
@@ -210,7 +211,6 @@ def _check_veo_model_quota(api_key: str) -> Dict[str, Any]:
             "access_status": "Error checking",
             "error": str(e)
         }
-
 
 def get_google_cloud_quota_info(project_id: Optional[str] = None) -> Dict[str, Any]:
     """
@@ -234,7 +234,6 @@ def get_google_cloud_quota_info(project_id: Optional[str] = None) -> Dict[str, A
         )
 
         if result.returncode == 0:
-
             # Try to get project info if not provided
             if not project_id:
                 project_result = subprocess.run(
@@ -306,7 +305,6 @@ def get_google_cloud_quota_info(project_id: Optional[str] = None) -> Dict[str, A
             "service": "Google Cloud Console"
         }
 
-
 def get_real_google_quota_usage(api_key: str) -> Dict[str, Any]:
     """
     Get real quota usage from Google AI Studio by attempting actual API calls
@@ -318,7 +316,7 @@ def get_real_google_quota_usage(api_key: str) -> Dict[str, Any]:
         Dictionary with real quota usage from Google
     """
     try:
-        import google.generativeai as genai
+         import google.generativeai as genai
         genai.configure(api_key=api_key)
 
         logger.info("🔍 Testing real Google AI Studio quota usage...")
@@ -326,7 +324,7 @@ def get_real_google_quota_usage(api_key: str) -> Dict[str, Any]:
         # Try to make a small test request to check quota status
         try:
             # Use a simple text generation request to test quota
-            model = genai.GenerativeModel('gemini-2.5-flash')
+            _model = genai.GenerativeModel('gemini-2.5-flash')
 
             # If we get here, quota is available
             return {
@@ -395,7 +393,6 @@ def get_real_google_quota_usage(api_key: str) -> Dict[str, Any]:
             "timestamp": datetime.now().isoformat()
         }
 
-
 def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
     """
     Get VEO-specific quota information by testing VEO video generation
@@ -407,7 +404,7 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
         Dictionary with VEO quota information from Google
     """
     try:
-        from google import genai
+        from google  import genai
         from google.genai import types
 
         # Configure client
@@ -462,7 +459,7 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
             except Exception as quota_extract_error:
                 logger.info(f"ℹ️ Could not extract detailed quota info: {quota_extract_error}")
 
-            # Since we successfully started generation, let's try a few more to see rate limits
+            # Since we successfully started generation, let's try a few more to see rate limits'
             logger.info("🔍 Testing rate limits with multiple requests...")
             test_results = []
 
@@ -476,15 +473,19 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
                             aspect_ratio="16:9"
                         )
                     )
-                    test_results.append({"test": i + 1, "status": "SUCCESS", "operation": str(test_op)[:100]})
+                    test_results.append("test": i + 1,
+                        "status": "SUCCESS",
+                        "operation": str(test_op)[:100])
                     logger.info(f"✅ Test {i + 1}/3 successful")
 
                 except Exception as test_error:
                     error_msg = str(test_error)
-                    test_results.append({"test": i + 1, "status": "FAILED", "error": error_msg[:200]})
+                    test_results.append("test": i + 1,
+                        "status": "FAILED",
+                        "error": error_msg[:200])
                     logger.info(f"❌ Test {i + 1}/3 failed: {error_msg[:100]}...")
 
-                    # Check if it's a rate limit error
+                    # Check if it's a rate limit error'
                     if "429" in error_msg or "rate" in error_msg.lower():
                         logger.info("⏰ Hit rate limit - this helps estimate usage")
                         break
@@ -500,7 +501,7 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
             successful_tests = len([r for r in test_results if r["status"] == "SUCCESS"])
             failed_tests = len([r for r in test_results if r["status"] == "FAILED"])
 
-            quota_info.update({
+            quota_info.update(
                 "status": "AVAILABLE",
                 "status_emoji": "✅",
                 "quota_exhausted": False,
@@ -515,11 +516,11 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
                     "results": test_results
                 },
                 "estimated_usage": {
-                    "note": "Cannot get exact usage from API - Google doesn't expose this",
+                    "note": "Cannot get exact usage from API - Google doesn't expose this",'
                     "rate_limit_status": "No immediate rate limit hit" if successful_tests >= 2 else "Rate limit detected",
                     "quota_status": "Available for generation"
                 }
-            })
+            )
 
             return quota_info
 
@@ -540,7 +541,7 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
                     quota_details["type"] = "General quota limit"
 
                 # Try to extract numbers from error message
-                import re
+                 import re
                 numbers = re.findall(r'\d+', error_msg)
                 if numbers:
                     quota_details["numbers_in_error"] = numbers
@@ -557,7 +558,8 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
                     "timestamp": datetime.now().isoformat(),
                     "estimated_usage": {
                         "status": "Quota exhausted",
-                        "likely_cause": "Hit daily limit (50 videos/day) or rate limit (2 videos/minute)"
+                        "likely_cause": "Hit daily limit (50 videos/day) or"
+                                rate limit (2 videos/minute)"
                     }
                 }
 
@@ -618,7 +620,6 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
             "timestamp": datetime.now().isoformat()
         }
 
-
 def verify_google_quota_startup() -> Dict[str, Any]:
     """
     Comprehensive quota verification using ONLY real Google APIs - no local tracking
@@ -678,7 +679,6 @@ def verify_google_quota_startup() -> Dict[str, Any]:
 
 # Keep the original function for backward compatibility
 
-
 def verify_google_quota_startup_legacy() -> Dict[str, Any]:
     """
     Simple quota verification - returns available status
@@ -708,7 +708,6 @@ def verify_google_quota_startup_legacy() -> Dict[str, Any]:
 
     return quota_info
 
-
 def log_quota_status(quota_info: Dict[str, Any]):
     """Log detailed quota status information"""
 
@@ -718,16 +717,16 @@ def log_quota_status(quota_info: Dict[str, Any]):
 
     if quota_info.get("comprehensive_check"):
         # New comprehensive format
-        logger.info(f"🎯 COMPREHENSIVE QUOTA CHECK")
+        logger.info("🎯 COMPREHENSIVE QUOTA CHECK")
         logger.info(
-            f"📊 Google AI Studio: {
+            f"📊 Google AI Studio: {"
                 quota_info['ai_studio']['status']} {
-                quota_info['ai_studio']['status_emoji']}")
+                quota_info['ai_studio']['status_emoji']}")"
         logger.info(f"🎬 VEO Quota: {quota_info['veo_quota']['status']} {quota_info['veo_quota']['status_emoji']}")
         logger.info(
-            f"☁️ Google Cloud: {
+            f"☁️ Google Cloud: {"
                 quota_info['google_cloud']['status']} {
-                quota_info['google_cloud']['status_emoji']}")
+                quota_info['google_cloud']['status_emoji']}")"
 
         # AI Studio details
         ai_studio = quota_info['ai_studio']
@@ -748,14 +747,13 @@ def log_quota_status(quota_info: Dict[str, Any]):
         # Usage details - handle non-numeric usage_percentage
         usage_pct = quota_info['usage_percentage']
         if isinstance(usage_pct, (int, float)):
-            usage_display = f"({usage_pct:.1f}%)"
+            usage_display = f"(usage_pct:.1f}%)"
         else:
-            usage_display = f"({usage_pct})"
+            usage_display = f"(usage_pct)"
 
         logger.info(f"📈 Usage: {quota_info['today_usage']}/{quota_info['daily_limit']} {usage_display}")
 
     logger.info("=" * 60)
-
 
 def check_quota_before_generation(estimated_clips: int = 1) -> Tuple[bool, str]:
     """
@@ -769,13 +767,14 @@ def check_quota_before_generation(estimated_clips: int = 1) -> Tuple[bool, str]:
         if ai_studio_status == "AVAILABLE":
             return True, f"✅ Google AI Studio ready for {estimated_clips} clips"
         elif ai_studio_status == "EXHAUSTED":
-            return False, f"🚫 Google AI Studio quota exhausted - try again later"
+            return False, "🚫 Google AI Studio quota exhausted - try again later"
         else:
-            return False, f"❌ Google AI Studio error: {quota_info['ai_studio'].get('message', 'Unknown error')}"
+            return False, f"❌ Google AI Studio error: {quota_info['ai_studio'].get("
+                'message',
+                'Unknown error')}"
     else:
         # Legacy check
         return True, f"✅ Vertex AI ready for {estimated_clips} clips (Google Cloud credits active)"
-
 
 def get_quota_recommendations(quota_info: Dict[str, Any]) -> list:
     """Get recommendations based on real quota status"""
@@ -788,7 +787,7 @@ def get_quota_recommendations(quota_info: Dict[str, Any]) -> list:
 
         if ai_studio['status'] == "AVAILABLE":
             recommendations.append("🚀 Google AI Studio API accessible")
-            if ai_studio.get('veo_quota', {}).get('veo_models_available', 0) > 0:
+            if ai_studio.get('veo_quota', {).get('veo_models_available', 0) > 0:
                 recommendations.append("🎬 VEO models available for generation")
             else:
                 recommendations.append("⚠️ VEO models not accessible - check API permissions")
@@ -815,7 +814,6 @@ def get_quota_recommendations(quota_info: Dict[str, Any]) -> list:
             "⚡ Real quota managed by Google Cloud"
         ]
 
-
 def print_startup_quota_banner(quota_info: Dict[str, Any]):
     """Print banner with real quota info"""
 
@@ -832,7 +830,7 @@ def print_startup_quota_banner(quota_info: Dict[str, Any]):
         print(f"☁️ Google Cloud: {cloud_info['status']} {cloud_info['status_emoji']}")
 
         if ai_studio['status'] == "AVAILABLE":
-            veo_models = ai_studio.get('veo_quota', {}).get('veo_models_available', 0)
+            veo_models = ai_studio.get('veo_quota', {).get('veo_models_available', 0)
             print(f"🎬 VEO Models: {veo_models} available")
         elif ai_studio['status'] == "EXHAUSTED":
             print("⏰ Quota exhausted - wait for reset")
@@ -840,9 +838,9 @@ def print_startup_quota_banner(quota_info: Dict[str, Any]):
         if cloud_info.get('project_id'):
             print(f"🏗️ Project: {cloud_info['project_id']}")
     else:
-        print(f"\n📊 ✅ Google Cloud Credits Active")
-        print(f"💰 Credits available for Vertex AI")
-        print(f"🚀 Real quota managed by Google Cloud")
+        print("\n📊 ✅ Google Cloud Credits Active")
+        print("💰 Credits available for Vertex AI")
+        print("🚀 Real quota managed by Google Cloud")
 
     print("\n⚙️ Configuration:")
     print("   💰 Vertex AI VEO: ENABLED")
@@ -851,14 +849,13 @@ def print_startup_quota_banner(quota_info: Dict[str, Any]):
 
     print("\n" + "🎬" * 20 + "\n")
 
-
 class QuotaVerifier:
     """
     Quota verification class that provides a unified interface for checking
     Google AI quotas across different services.
     """
 
-    def __init__(self, api_key: str):
+    def __init(self, api_key: str):
         """
         Initialize quota verifier with API key
 
@@ -922,11 +919,11 @@ class QuotaVerifier:
             True if overall status is good, False if there are issues
         """
         # Check critical services
-        google_ai_ok = results.get('google_ai_studio', {}).get('api_accessible', False)
-        usage_ok = results.get('google_ai_usage', {}).get('can_generate', False)
+        google_ai_ok = results.get('google_ai_studio', {).get('api_accessible', False)
+        usage_ok = results.get('google_ai_usage', {).get('can_generate', False)
 
-        # VEO is optional - don't fail overall status if VEO is not available
-        veo_status = results.get('veo_quota', {}).get('status', 'UNKNOWN')
+        # VEO is optional - don't fail overall status if VEO is not available'
+        veo_status = results.get('veo_quota', {).get('status', 'UNKNOWN')
         veo_critical_failure = veo_status in ['FORBIDDEN', 'UNAUTHORIZED']
 
         # Overall status is good if Google AI is accessible and can generate
@@ -975,18 +972,21 @@ class QuotaVerifier:
             return True, "All quotas available for generation"
 
         # Determine specific reason
-        google_ai = quota_status.get('google_ai_studio', {})
-        usage = quota_status.get('google_ai_usage', {})
-        veo = quota_status.get('veo_quota', {})
+        google_ai = quota_status.get('google_ai_studio', {)
+        usage = quota_status.get('google_ai_usage', {)
+        veo = quota_status.get('veo_quota', {)
 
         if not google_ai.get('api_accessible', False):
-            return False, f"Google AI Studio API not accessible: {google_ai.get('message', 'Unknown error')}"
+            return False, f"Google AI Studio API not accessible: {google_ai.get("
+                'message',
+                'Unknown error')}"
 
         if not usage.get('can_generate', False):
-            return False, f"Google AI quota exhausted: {usage.get('message', 'Unknown error')}"
+            return False, f"Google AI quota exhausted: {usage.get("
+                'message',
+                'Unknown error')}"
 
         if veo.get('status') in ['FORBIDDEN', 'UNAUTHORIZED']:
             return False, f"VEO access denied: {veo.get('message', 'Unknown error')}"
 
         return True, "Generation possible with potential limitations"
-

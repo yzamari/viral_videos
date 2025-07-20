@@ -33,14 +33,13 @@ pip install -q --upgrade pip
 pip install -q -r requirements.txt
 echo -e "${GREEN}✅ Dependencies installed${NC}"
 
-# Step 3: Configuration
-echo -e "${BLUE}[3/6]${NC} Setting up configuration..."
-if [ ! -f ".env" ]; then
-    cp env.example .env
-    echo -e "${YELLOW}⚠️  Please add your Google AI Studio API key to .env${NC}"
-    echo "   GOOGLE_API_KEY=your_api_key_here"
-    echo
-    read -p "Press Enter after adding your API key..."
+# Step 3: Authentication & Configuration
+echo -e "${BLUE}[3/6]${NC} Setting up authentication and configuration..."
+echo -e "${BLUE}🔐 Running automatic authentication setup...${NC}"
+if python3 setup_env_with_auth.py; then
+    echo -e "${GREEN}✅ Authentication setup completed!${NC}"
+else
+    echo -e "${YELLOW}⚠️ Authentication setup had some issues, but continuing...${NC}"
 fi
 echo -e "${GREEN}✅ Configuration ready${NC}"
 

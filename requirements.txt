@@ -2,6 +2,12 @@
 python-dotenv==1.0.0
 pydantic==2.5.2
 pydantic-settings==2.1.0
+click==8.1.8  # CLI framework
+
+# FastAPI Backend
+fastapi==0.108.0
+uvicorn==0.25.0
+websockets>=13.0,<15.1.0
 
 # Google Cloud & AI
 google-cloud-storage==2.13.0
@@ -22,14 +28,14 @@ youtube-transcript-api==0.6.1
 # Video Generation & Processing
 moviepy==1.0.3
 pillow==10.1.0
-numpy==1.26.2
+numpy==1.26.4
 opencv-python==4.8.1.78
 gtts==2.5.0  # Google Text-to-Speech fallback
 imageio==2.33.0  # Video I/O support
-imageio-ffmpeg==0.4.9  # FFmpeg wrapper for video processing
+imageio-ffmpeg==0.6.0  # FFmpeg wrapper for video processing (updated to fix pkg_resources deprecation)
 
 # Web Scraping
-requests==2.31.0
+requests==2.32.4
 beautifulsoup4==4.12.2
 selenium==4.16.0
 webdriver-manager==4.0.1
@@ -42,9 +48,14 @@ seaborn==0.13.0
 scikit-learn==1.3.2
 
 # API & Scheduling
-fastapi==0.108.0
-uvicorn==0.25.0
 celery==5.3.4
+
+# Social Media Integration
+keyring==25.6.0  # Secure credential storage
+cryptography==45.0.5  # Encryption for sensitive data
+instagrapi==2.0.0  # Instagram API (alternative implementation)
+pycryptodomex==3.18.0  # Required by instagrapi
+# instagram-private-api==1.6.0  # Alternative Instagram API
 redis==5.0.1
 schedule==1.2.0
 
@@ -52,22 +63,22 @@ schedule==1.2.0
 pytest==7.4.3
 pytest-asyncio==0.23.2
 pytest-cov==4.1.0
+pytest-mock==3.12.0  # Enhanced mocking capabilities
+pytest-playwright==0.4.4  # For browser testing
+pytest-xdist==3.5.0  # Parallel test execution
 
 # Utilities
 tqdm==4.66.1
 colorlog==6.8.0
 tenacity==8.2.3  # For retry logic
-click==8.1.7  # CLI framework 
 
 # Additional dependencies for enhanced functionality
 pathlib2>=2.3.0  # Path handling compatibility
-json5>=0.9.0  # Enhanced JSON parsing
+json5>=0.9.0  # Enhanced JSON parsing for AI responses
 
-# Web UI Dependencies
-gradio==4.16.0  # Main UI framework
+# Web UI Dependencies (React frontend + FastAPI backend)
 plotly==5.17.0  # Interactive charts and graphs
-dash==2.16.1  # Dashboard components
-websockets==12.0  # Real-time communication
+websockets>=13.0,<15.1.0  # Real-time communication
 asyncio-mqtt==0.13.0  # Async messaging for real-time updates
 
 # Note: Built-in Python modules (os, sys, time, math, random, datetime, logging, uuid, tempfile, subprocess, re, collections) don't need to be installed

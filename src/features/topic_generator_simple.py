@@ -4,7 +4,8 @@ AI-Powered Topic Generation System
 ==================================
 
 This module provides intelligent topic generation through multi-agent discussions.
-Given a high-level idea or goal, AI agents will discuss and craft optimal video topics.
+Given a high-level idea or goal, AI agents will discuss and
+        craft optimal video topics.
 """
 
 import os
@@ -22,18 +23,18 @@ logger = get_logger(__name__)
 
 class TopicGenerationAgent:
     """Individual AI agent for topic generation discussions"""
-
-    def __init__(self, role: str, expertise: str, api_key: str):
+:
+    def __init(self, role: str, expertise: str, api_key: str):
         self.role = role
         self.expertise = expertise
         self.api_key = api_key
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel("gemini-2.5-flash")
 
-    def discuss_topic(self, idea: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    def discuss_topi(c(self, idea: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Generate topic suggestion based on idea and context"""
         try:
-            prompt = f"""
+            prompt = """
 You are {self.role}, an expert in {self.expertise}.
 
 TASK: Generate a specific, actionable video topic based on this high-level idea:
@@ -48,11 +49,10 @@ CONTEXT:
 
 REQUIREMENTS:
 1. Create a SPECIFIC video topic (not generic)
-2. Ensure it's ACTIONABLE and VIRAL-WORTHY
+2. Ensure it's ACTIONABLE and VIRAL-WORTHY'
 3. Consider ethical implications and platform guidelines
 4. Make it ENGAGING and SHAREABLE
-5. Provide clear REASONING for your choice
-
+5. Provide clear REASONING for your choice:
 RESPONSE FORMAT:
 {{
     "topic": "Specific video topic here",
@@ -76,7 +76,7 @@ Focus on creating content that is persuasive but ethical, engaging but responsib
                 return result
             except json.JSONDecodeError:
                 # Fallback if JSON parsing fails
-                return {
+                return {:
                     "topic": f"Engaging content about {idea}",
                     "reasoning": response.text[:200],
                     "target_emotion": "Interest",
@@ -103,8 +103,8 @@ Focus on creating content that is persuasive but ethical, engaging but responsib
 
 class TopicGeneratorSystem:
     """AI-powered topic generation system with multi-agent discussions"""
-
-    def __init__(self, api_key: str, output_dir: str = "outputs"):
+:
+    def __init(self, api_key: str, output_dir: str = "outputs"):
         self.api_key = api_key
         self.output_dir = output_dir
         self.session_id = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{str(uuid.uuid4())[:8]}"
@@ -114,17 +114,38 @@ class TopicGeneratorSystem:
 
         # Define specialized agents for topic generation
         self.agents = [
-            TopicGenerationAgent("ContentStrategist", "viral content strategy and audience engagement", api_key),
-            TopicGenerationAgent("PsychologyExpert", "human psychology and persuasion techniques", api_key),
-            TopicGenerationAgent("EthicsAdvisor", "content ethics and responsible messaging", api_key),
-            TopicGenerationAgent("PlatformSpecialist", "social media platform optimization", api_key),
-            TopicGenerationAgent("TrendAnalyst", "viral trends and content patterns", api_key),
-            TopicGenerationAgent("CommunicationExpert", "effective messaging and storytelling", api_key)
+            TopicGenerationAgent(
+                "ContentStrategist",
+                "viral content strategy and audience engagement",
+                api_key),
+            TopicGenerationAgent(
+                "PsychologyExpert",
+                "human psychology and persuasion techniques",
+                api_key),
+            TopicGenerationAgent(
+                "EthicsAdvisor",
+                "content ethics and responsible messaging",
+                api_key),
+            TopicGenerationAgent(
+                "PlatformSpecialist",
+                "social media platform optimization",
+                api_key),
+            TopicGenerationAgent(
+                "TrendAnalyst",
+                "viral trends and content patterns",
+                api_key),
+            TopicGenerationAgent(
+                "CommunicationExpert",
+                "effective messaging and storytelling",
+                api_key)
         ]
 
         logger.info(f"🤖 TopicGenerator initialized with {len(self.agents)} specialized agents")
 
-    def generate_topic(self, idea: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def generate_topi(c(self,
+        idea: str,
+        context: Optional[Dict[str,
+        Any]] = None) -> Dict[str, Any]:
         """
         Generate an optimal video topic through AI agent discussions
 
@@ -168,7 +189,7 @@ class TopicGeneratorSystem:
             logger.info("🗣️ Starting multi-agent discussion for consensus...")
 
             # Prepare discussion context
-            discussion_context = {
+            discussion_context = {:
                 "original_idea": idea,
                 "context": context,
                 "agent_suggestions": agent_suggestions,
@@ -176,13 +197,17 @@ class TopicGeneratorSystem:
             }
 
             # Conduct discussion using simplified consensus
-            discussion_result = self._conduct_consensus_discussion(discussion_context, session_dir)
-
+            discussion_result = self._conduct_consensus_discussion(
+                discussion_context,
+                session_dir):
             # Phase 3: Generate final topic with context
-            final_topic = self._finalize_topic(discussion_result, agent_suggestions, context)
+            final_topic = self._finalize_topic(
+                discussion_result,
+                agent_suggestions,
+                context)
 
             # Save complete results
-            results = {
+            results = {:
                 "session_id": self.session_id,
                 "original_idea": idea,
                 "input_context": context,
@@ -197,7 +222,7 @@ class TopicGeneratorSystem:
             with open(results_file, 'w') as f:
                 json.dump(results, f, indent=2)
 
-            logger.info(f"✅ Topic generation complete!")
+            logger.info("✅ Topic generation complete!")
             logger.info(f"🎯 Final Topic: {final_topic['topic']}")
             logger.info(f"📁 Results saved to: {session_dir}")
 
@@ -222,7 +247,10 @@ class TopicGeneratorSystem:
                 "error": str(e)
             }
 
-    def _conduct_consensus_discussion(self, context: Dict[str, Any], session_dir: str) -> Dict[str, Any]:
+    def _conduct_consensus_discussio(n(self,
+        context: Dict[str,
+        Any],
+        session_dir: str) -> Dict[str, Any]:
         """Conduct multi-agent discussion to reach consensus on best topic"""
         try:
             # Create discussion prompt
@@ -231,9 +259,8 @@ class TopicGeneratorSystem:
                 for s in context['agent_suggestions']
             ])
 
-            discussion_prompt = f"""
-TOPIC GENERATION CONSENSUS DISCUSSION
-
+            discussion_prompt = """
+TOPIC GENERATION CONSENSUS DISCUSSION:
 Original Idea: {context['original_idea']}
 Platform: {context['context']['platform']}
 Target Audience: {context['context']['audience']}
@@ -248,14 +275,15 @@ TASK: Discuss and reach consensus on the BEST topic that:
 4. Is optimized for the target platform
 5. Will engage the target audience
 
-Consider combining elements from different suggestions or creating a refined version.
+Consider combining elements from different suggestions or
+        creating a refined version.
 Focus on specificity, actionability, and viral potential.
 """
 
             # Use simplified discussion system
             consensus_agents = ['ContentStrategist', 'PsychologyExpert', 'EthicsAdvisor', 'TrendAnalyst']
 
-            discussion_result = {
+            discussion_result = {:
                 "consensus_topic": None,
                 "reasoning": "",
                 "participants": consensus_agents,
@@ -265,24 +293,22 @@ Focus on specificity, actionability, and viral potential.
             # Get consensus from primary agents
             try:
                 model = genai.GenerativeModel("gemini-2.5-flash")
-                consensus_prompt = f"""
+                consensus_prompt = """
 {discussion_prompt}
 
 As a consensus of expert agents, provide the FINAL OPTIMAL TOPIC:
-
 RESPONSE FORMAT:
 {{
     "final_topic": "Specific, actionable video topic",
     "reasoning": "Why this topic is optimal",
     "viral_elements": ["element1", "element2", "element3"],
     "ethical_safeguards": ["safeguard1", "safeguard2"],
-    "platform_optimization": "How it's optimized for the platform",
+    "platform_optimization": "How it's optimized for the platform",':
     "expected_engagement": "High/Medium/Low with explanation"
 }}
 """
 
-                response = model.generate_content(consensus_prompt)
-
+                response = model.generate_content(consensus_prompt):
                 try:
                     consensus_result = json.loads(response.text.strip())
                     discussion_result["consensus_topic"] = consensus_result
@@ -322,11 +348,11 @@ RESPONSE FORMAT:
             logger.error(f"Discussion failed: {e}")
             return {"error": str(e), "consensus_topic": None}
 
-    def _finalize_topic(self, discussion_result: Dict[str, Any],
+    def _finalize_topi(c(self, discussion_result: Dict[str, Any],
                        agent_suggestions: List[Dict[str, Any]],
                        context: Dict[str, Any]) -> Dict[str, Any]:
         """Finalize the topic with context for other AI agents"""
-
+:
         try:
             if discussion_result.get("consensus_topic"):
                 consensus = discussion_result["consensus_topic"]
@@ -340,9 +366,11 @@ RESPONSE FORMAT:
                 reasoning = best_suggestion['reasoning']
 
             # Create context for other AI agents
-            agent_context = f"""
+            agent_context = """:"
 TOPIC GENERATION CONTEXT:
-This topic was generated through multi-agent discussion to address: "{context.get('original_idea', 'content creation')}"
+This topic was generated through multi-agent discussion to address: "{context.get("
+    'original_idea',
+    'content creation')}"
 
 The AI agents considered:
 - Viral potential and engagement factors
@@ -361,13 +389,17 @@ This topic is designed to be compelling, shareable, and ethically responsible.
                 "topic": final_topic,
                 "reasoning": reasoning,
                 "context_for_agents": agent_context,
-                "viral_potential": consensus.get("expected_engagement", "Medium") if discussion_result.get("consensus_topic") else "Medium",
-                "ethical_considerations": "; ".join(consensus.get("ethical_safeguards", [])) if discussion_result.get("consensus_topic") else "Standard guidelines",
-                "platform_optimization": consensus.get("platform_optimization", "Standard") if discussion_result.get("consensus_topic") else "Standard",
+                "viral_potential": consensus.get(
+                    "expected_engagement",
+                    "Medium") if discussion_result.get("consensus_topic") else "Medium",:
+                "ethical_considerations": "; ".join(consensus.get("ethical_safeguards", [])) if discussion_result.get("consensus_topic") else "Standard guidelines",:
+                "platform_optimization": consensus.get(
+                    "platform_optimization",
+                    "Standard") if discussion_result.get("consensus_topic") else "Standard",:
                 "generation_method": "multi_agent_consensus",
                 "confidence": "High" if discussion_result.get("consensus_topic") else "Medium"
             }
-
+:
         except Exception as e:
             logger.error(f"Topic finalization failed: {e}")
             return {
@@ -378,4 +410,3 @@ This topic is designed to be compelling, shareable, and ethically responsible.
                 "ethical_considerations": "Standard content guidelines",
                 "error": str(e)
             }
-

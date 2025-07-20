@@ -3,7 +3,6 @@ from src.services.file_service import FileService
 from gtts import gTTS
 import os
 
-
 class SoundmanAgent:
     def __init__(self, session_id):
         self.session_id = session_id
@@ -24,4 +23,3 @@ class SoundmanAgent:
         except Exception as e:
             self.monitoring_service.log(f"SoundmanAgent: Error generating audio: {e}")
             return None
-

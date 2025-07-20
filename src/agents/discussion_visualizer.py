@@ -15,7 +15,6 @@ from ..utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-
 class DiscussionPhase(Enum):
     """Discussion phases for visualization"""
     STARTING = "🚀 Starting"
@@ -23,7 +22,6 @@ class DiscussionPhase(Enum):
     CONSENSUS_BUILDING = "🤝 Building Consensus"
     COMPLETED = "✅ Completed"
     FAILED = "❌ Failed"
-
 
 @dataclass
 class AgentContribution:
@@ -35,14 +33,19 @@ class AgentContribution:
     vote: Optional[str] = None
     key_points: Optional[List[str]] = None
 
-
 class DiscussionVisualizer:
     """Enhanced visualization and logging for AI agent discussions"""
 
     def __init__(self, session_dir: str):
         self.session_dir = session_dir
-        self.discussions_dir = os.path.join(session_dir, "agent_discussions")
-        os.makedirs(self.discussions_dir, exist_ok=True)
+        
+        # Use unified session structure - look for 'discussions' subdirectory first
+        if os.path.exists(os.path.join(session_dir, "discussions")):
+            self.discussions_dir = os.path.join(session_dir, "discussions")
+        else:
+            # Fallback to agent_discussions for backward compatibility
+            self.discussions_dir = os.path.join(session_dir, "agent_discussions")
+            os.makedirs(self.discussions_dir, exist_ok=True)
 
         # Real-time tracking
         self.current_discussion: Optional[Dict[str, Any]] = None
@@ -94,7 +97,11 @@ class DiscussionVisualizer:
         self.start_time = time.time()
 
         # Print beautiful header
-        self._print_discussion_header(topic, participating_agents, max_rounds, target_consensus)
+        self._print_discussion_header(
+            topic,
+            participating_agents,
+            max_rounds,
+            target_consensus)
 
     def log_agent_contribution(self, agent_name: str, message: str, round_number: int,
                                vote: Optional[str] = None, reasoning: Optional[str] = None):
@@ -115,7 +122,12 @@ class DiscussionVisualizer:
         self.current_discussion["phase"] = DiscussionPhase.IN_PROGRESS
 
         # Real-time console output
-        self._print_agent_contribution(agent_name, message, round_number, vote, reasoning)
+        self._print_agent_contribution(
+            agent_name,
+            message,
+            round_number,
+            vote,
+            reasoning)
 
     def update_consensus(self, consensus_level: float, round_number: int):
         """Update and visualize consensus progress"""
@@ -136,7 +148,7 @@ class DiscussionVisualizer:
         self._print_consensus_update(consensus_level, round_number)
 
     def complete_discussion(self, final_consensus: float, total_rounds: int,
-                            key_insights: List[str], final_decision: Dict):
+                            key_insights: List[str], final_decision: Optional[Dict] = None):
         """Complete discussion visualization"""
         if not self.current_discussion:
             return
@@ -145,7 +157,7 @@ class DiscussionVisualizer:
         self.current_discussion["final_consensus"] = final_consensus
         self.current_discussion["total_rounds"] = total_rounds
         self.current_discussion["end_time"] = datetime.now()
-        
+
         if self.start_time is not None:
             self.current_discussion["duration"] = time.time() - self.start_time
         else:
@@ -161,7 +173,12 @@ class DiscussionVisualizer:
         self.discussion_history.append(self.current_discussion.copy())
         self.current_discussion = None
 
-    def _print_discussion_header(self, topic: str, agents: List[str], max_rounds: int, target_consensus: float):
+    def _print_discussion_header(
+        self,
+        topic: str,
+        agents: List[str],
+        max_rounds: int,
+        target_consensus: float):
         """Print beautiful discussion header"""
         header = f"""
 {self.colors['bold']}{self.colors['cyan']}╔══════════════════════════════════════════════════════════════════════════════════════╗
@@ -213,7 +230,7 @@ class DiscussionVisualizer:
         """Print consensus progress bar"""
         if not self.current_discussion:
             return
-            
+
         target = self.current_discussion.get("target_consensus", 0.7)
         progress = min(consensus_level / target, 1.0)
         bar_length = 30
@@ -234,11 +251,15 @@ class DiscussionVisualizer:
         print(consensus_display)
         logger.info(f"📊 Consensus level: {consensus_level:.2f} (Round {round_number})")
 
-    def _print_discussion_completion(self, final_consensus: float, total_rounds: int, key_insights: List[str]):
+    def _print_discussion_completion(
+        self,
+        final_consensus: float,
+        total_rounds: int,
+        key_insights: List[str]):
         """Print discussion completion summary"""
         if not self.current_discussion or self.start_time is None:
             return
-            
+
         duration = time.time() - self.start_time
         target_consensus = self.current_discussion.get("target_consensus", 0.7)
         status_emoji = "✅" if final_consensus >= target_consensus else "⚠️"
@@ -276,17 +297,17 @@ class DiscussionVisualizer:
     def _sanitize_filename(self, text: str, max_length: int = 50) -> str:
         """
         Sanitize text for safe filename usage
-        
+
         Args:
             text: Input text to sanitize
             max_length: Maximum filename length (default 50)
-            
+
         Returns:
             Safe filename string
         """
         if not text:
             return "unnamed"
-            
+
         # Remove/replace problematic characters
         safe_text = text.replace(" ", "_").replace("/", "_").replace("\\", "_")
         safe_text = safe_text.replace(":", "_").replace("*", "_").replace("?", "_")
@@ -298,23 +319,23 @@ class DiscussionVisualizer:
         safe_text = safe_text.replace("!", "_").replace("@", "_").replace("#", "_")
         safe_text = safe_text.replace("$", "_").replace("%", "_").replace("^", "_")
         safe_text = safe_text.replace("&", "_").replace("+", "_").replace("=", "_")
-        
+
         # Convert to lowercase and remove multiple underscores
         safe_text = safe_text.lower()
         while "__" in safe_text:
             safe_text = safe_text.replace("__", "_")
-            
+
         # Trim to max length
         if len(safe_text) > max_length:
             safe_text = safe_text[:max_length]
-            
+
         # Remove trailing underscore
         safe_text = safe_text.rstrip("_")
-        
+
         # Ensure it's not empty
         if not safe_text:
             safe_text = "unnamed"
-            
+
         return safe_text
 
     def _save_discussion_visualization(self):
@@ -341,7 +362,9 @@ class DiscussionVisualizer:
 
         # Save visualization with safe filename
         topic_safe = self._sanitize_filename(self.current_discussion["topic"])
-        viz_file = os.path.join(self.discussions_dir, f"visualization_{topic_safe}.json")
+        viz_file = os.path.join(
+            self.discussions_dir,
+            f"visualization_{topic_safe}.json")
 
         with open(viz_file, 'w') as f:
             json.dump(viz_data, f, indent=2, default=str)
@@ -356,7 +379,7 @@ class DiscussionVisualizer:
         """Generate round-by-round breakdown"""
         if not self.current_discussion:
             return []
-            
+
         rounds = {}
         for contrib in self.current_discussion["contributions"]:
             round_num = contrib.round_number
@@ -375,7 +398,9 @@ class DiscussionVisualizer:
             })
 
             if contrib.vote:
-                rounds[round_num]["votes"][contrib.vote] = rounds[round_num]["votes"].get(contrib.vote, 0) + 1
+                rounds[round_num]["votes"][contrib.vote] = rounds[round_num]["votes"].get(
+                    contrib.vote,
+                    0) + 1
 
         return list(rounds.values())
 
@@ -383,7 +408,7 @@ class DiscussionVisualizer:
         """Generate agent participation statistics"""
         if not self.current_discussion:
             return {}
-            
+
         stats = {}
         for contrib in self.current_discussion["contributions"]:
             agent = contrib.agent_name
@@ -410,7 +435,7 @@ class DiscussionVisualizer:
         """Generate discussion timeline"""
         if not self.current_discussion:
             return []
-            
+
         timeline = []
         start_time = self.current_discussion.get("start_time")
         end_time = self.current_discussion.get("end_time")
@@ -458,7 +483,7 @@ class DiscussionVisualizer:
         report_file = os.path.join(self.discussions_dir, f"report_{topic_safe}.md")
 
         with open(report_file, 'w') as f:
-            f.write(f"# AI Agent Discussion Report\n\n")
+            f.write("# AI Agent Discussion Report\n\n")
             f.write(f"**Topic:** {viz_data['discussion_summary']['topic']}\n\n")
             f.write(f"**Duration:** {viz_data['discussion_summary']['duration_seconds']:.1f} seconds\n\n")
             f.write(f"**Final Consensus:** {viz_data['discussion_summary']['final_consensus']:.1%}\n\n")
@@ -518,4 +543,3 @@ class DiscussionVisualizer:
                 agent_activity[agent] += 1
 
         return dict(sorted(agent_activity.items(), key=lambda x: x[1], reverse=True))
-

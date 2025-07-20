@@ -6,9 +6,9 @@ import os
 import tempfile
 import uuid
 from typing import Optional, Dict, Any
-from enum import Enum
+from enum  import Enum
 
-from google.cloud import texttospeech
+from google.cloud  import texttospeech
 from ..utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -119,17 +119,22 @@ class GoogleTTSClient:
                        use_ssml: bool = False, voice_override: Optional[str] = None) -> str:
         """Generate high-quality speech with Google Cloud TTS"""
         try:
-            logger.info(f"🎤 Generating Google Cloud TTS voice ({feeling} emotion)")
+            logger.info(f"🎤 Generating Google Cloud TTS voice (feeling {feeling} emotion)")
 
             # Get voice configuration for emotion
-            voice_config = self.emotion_voice_mapping.get(feeling.lower(), self.emotion_voice_mapping["neutral"])
+            voice_config = self.emotion_voice_mapping.get(
+                feeling.lower(),
+                self.emotion_voice_mapping["neutral"])
 
             # Allow voice override from environment or parameter
-            selected_voice = voice_override or os.getenv("GOOGLE_TTS_VOICE_TYPE", voice_config["voice"])
+            selected_voice = voice_override or os.getenv(
+                "GOOGLE_TTS_VOICE_TYPE",
+                voice_config["voice"])
 
             # Get appropriate gender for the voice
             try:
-                voice_gender = self.voice_gender_map.get(GoogleVoiceType(selected_voice), texttospeech.SsmlVoiceGender.FEMALE)
+                voice_gender = self.voice_gender_map.get(GoogleVoiceType(selected_voice),
+                    texttospeech.SsmlVoiceGender.FEMALE)
             except ValueError:
                 # If voice not in enum, default to Journey F
                 selected_voice = GoogleVoiceType.EN_US_JOURNEY_F
@@ -138,7 +143,7 @@ class GoogleTTSClient:
             # Enhance text with natural speech patterns
             enhanced_text = self._enhance_text_for_naturalness(text, feeling)
 
-            # Use text input for Journey voices (they don't support SSML pitch/speed)
+            # Use text input for Journey voices (they don't support SSML pitch/speed)'
             if "Journey" in selected_voice:
                 synthesis_input = texttospeech.SynthesisInput(text=enhanced_text)
 
@@ -153,20 +158,38 @@ class GoogleTTSClient:
                 audio_config = texttospeech.AudioConfig(
                     audio_encoding=texttospeech.AudioEncoding.MP3,
                     speaking_rate=voice_config["speed"],
-                    # No pitch control for Journey voices - they're naturally expressive
+                    # No pitch control for Journey voices - they're naturally expressive'
                     sample_rate_hertz=24000,
                     effects_profile_id=["headphone-class-device"],
                     volume_gain_db=voice_config["volume"]
                 )
             else:
                 # Use SSML for Neural2/Studio voices that support it
-                ssml_text = f"""
-                <speak>
-                    <prosody rate="{voice_config['speed']}" pitch="{voice_config['pitch']}st" volume="{voice_config['volume']}dB">
-                        {enhanced_text}
-                    </prosody>
-                </speak>
-                """
+                # Create SSML with prosody controls
+                if voice_config.get('pitch') is not None and voice_config.get('speed') is not None:
+                    # Check if this is a Studio voice (doesn't support pitch)
+                    is_studio_voice = 'Studio' in voice_config.get('name', '')
+                    
+                    if is_studio_voice:
+                        # Studio voices don't support pitch attributes
+                        ssml_text = f"""
+                        <speak>
+                            <prosody rate="{voice_config['speed']}" volume="{voice_config['volume']}dB">
+                                {text}
+                            </prosody>
+                        </speak>
+                        """
+                    else:
+                        # Neural2/Wavenet/Standard voices support pitch
+                        ssml_text = f"""
+                        <speak>
+                            <prosody rate="{voice_config['speed']}" pitch="{voice_config['pitch']}st" volume="{voice_config['volume']}dB">
+                                {text}
+                            </prosody>
+                        </speak>
+                        """
+                else:
+                    ssml_text = f"<speak>{text}</speak>"
 
                 synthesis_input = texttospeech.SynthesisInput(ssml=ssml_text)
 
@@ -192,7 +215,9 @@ class GoogleTTSClient:
             )
 
             # Save the audio to a file
-            audio_path = os.path.join(tempfile.gettempdir(), f"google_neural_voice_{uuid.uuid4()}.mp3")
+            audio_path = os.path.join(
+                tempfile.gettempdir(),
+                f"google_neural_voice_{uuid.uuid4()}.mp3")
 
             with open(audio_path, "wb") as out:
                 out.write(response.audio_content)
@@ -201,7 +226,7 @@ class GoogleTTSClient:
             if os.path.exists(audio_path) and os.path.getsize(audio_path) > 0:
                 file_size = os.path.getsize(audio_path) / (1024 * 1024)
                 logger.info(f"✅ Google Cloud TTS generated: {audio_path} ({file_size:.2f}MB)")
-                logger.info(f"   Voice: {selected_voice}, Speed: {voice_config['speed']}x, Pitch: {voice_config['pitch']}st")
+                logger.info(f"Voice: {selected_voice}, Speed: {voice_config['speed']}x, Pitch: {voice_config['pitch']}st")
                 return audio_path
             else:
                 raise Exception("Generated audio file is empty or missing")
@@ -245,7 +270,7 @@ class GoogleTTSClient:
     def _fallback_to_gtts(self, text: str, feeling: str) -> str:
         """Fallback to basic gTTS if Cloud TTS fails"""
         try:
-            from gtts import gTTS
+            from gtts  import gTTS
 
             logger.warning("🔄 Falling back to enhanced gTTS...")
 
@@ -268,7 +293,9 @@ class GoogleTTSClient:
             enhanced_text = self._enhance_text_for_naturalness(text, feeling)
 
             tts = gTTS(text=enhanced_text, **tts_config)
-            audio_path = os.path.join(tempfile.gettempdir(), f"gtts_enhanced_{uuid.uuid4()}.mp3")
+            audio_path = os.path.join(
+                tempfile.gettempdir(),
+                f"gtts_enhanced_{uuid.uuid4()}.mp3")
             tts.save(audio_path)
 
             logger.info(f"✅ Enhanced gTTS fallback generated: {audio_path}")
@@ -297,4 +324,3 @@ class GoogleTTSClient:
         except Exception as e:
             logger.error(f"❌ Failed to get available voices: {e}")
             return {}
-

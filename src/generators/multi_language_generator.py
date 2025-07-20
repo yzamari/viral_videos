@@ -2,14 +2,14 @@
 Multi-language video generator - Generate same video in multiple languages with RTL support
 """
 import os
-import json
+
 from datetime import datetime
 from typing import List, Dict, Optional
 import uuid
 import google.generativeai as genai
-from gtts import gTTS
+from gtts  import gTTS
 from moviepy.editor import *
-import tempfile
+
 import time
 import re # Added for Hebrew TTS
 
@@ -135,13 +135,15 @@ class MultiLanguageVideoGenerator:
         self.current_feeling = getattr(config, 'feeling', 'neutral')
         self.current_narrative = getattr(config, 'narrative', 'neutral')
 
-        logger.info(f"🌍 Generating video in {len(valid_languages)} languages")
-        logger.info(f"📋 Selected languages: {', '.join([self.language_names[lang] for lang in valid_languages])}")
+        logger.info(f"🌍 Generating multilingual video for {len(valid_languages)} languages:")
+        logger.info(f"   Languages: {', '.join([self.language_names[lang] for lang in valid_languages])}")
         logger.info(f"🎤 Realistic audio: {'Yes' if self.use_realistic_audio else 'No'}")
 
         base_video_id = str(uuid.uuid4())
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        session_dir = os.path.join("outputs", f"multilang_{timestamp}_{base_video_id[:8]}")
+        session_dir = os.path.join(
+            "outputs",
+            f"multilang_{timestamp}_{base_video_id[:8]}")
         shared_clips_dir = os.path.join(session_dir, "shared_clips")
 
         os.makedirs(session_dir, exist_ok=True)
@@ -149,7 +151,7 @@ class MultiLanguageVideoGenerator:
 
         # Generate master script (in first selected language)
         primary_language = valid_languages[0]
-        logger.info(f"📝 Generating master script in {self.language_names[primary_language]}...")
+        logger.info(f"📝 Generating master script in {self.language_names[primary_language]}")
         generator = VideoGenerator(api_key=self.api_key, use_real_veo2=True)
         master_script = generator._generate_creative_script(config, base_video_id)
 
@@ -161,7 +163,9 @@ class MultiLanguageVideoGenerator:
         clips_needed = max(2, config.duration_seconds // 6)
 
         if len(veo_prompts) < clips_needed:
-            logger.warning(f"Only {len(veo_prompts)} prompts for {config.duration_seconds}s, generating more...")
+            logger.warning(
+                f"Only {len(veo_prompts)} prompts for {config.duration_seconds}s, "
+                "generating more...")
             additional_prompts = clips_needed - len(veo_prompts)
 
             for i in range(additional_prompts):
@@ -280,10 +284,11 @@ class MultiLanguageVideoGenerator:
 
         logger.info(f"📝 Translating to {lang_name} ({target_words} words)")
         if is_rtl:
-            logger.info(f"📜 RTL language detected - applying right-to-left formatting")
+            logger.info("📜 RTL language detected - applying right-to-left formatting")
 
-        translation_prompt = f"""
-        Translate this video script to {lang_name} maintaining exact timing and emotion.
+        translation_prompt = """
+        Translate this video script to {lang_name} maintaining exact timing and
+                emotion.
 
         ORIGINAL SCRIPT:
         {master_script}
@@ -337,18 +342,21 @@ class MultiLanguageVideoGenerator:
 
                 ext_list = extensions.get(target_language, extensions[Language.ENGLISH_US])
                 while len(translated_script.split()) < target_words:
-                    translated_script += " " + ext_list[len(translated_script.split()) % len(ext_list)]
+                    translated_script += " " + \
+                        ext_list[len(translated_script.split()) % len(ext_list)]
 
                 words = translated_script.split()[:target_words]
                 translated_script = ' '.join(words) + "."
 
             # Apply RTL formatting if needed
             if is_rtl:
-                translated_script = self._apply_rtl_formatting(translated_script, target_language)
+                translated_script = self._apply_rtl_formatting(
+                    translated_script,
+                    target_language)
 
             logger.info(f"✅ {lang_name} translation: {len(translated_script.split())} words")
             if is_rtl:
-                logger.info(f"📜 RTL formatting applied")
+                logger.info("📜 RTL formatting applied")
 
             return translated_script
 
@@ -539,14 +547,18 @@ class MultiLanguageVideoGenerator:
             logger.error(f"❌ Video composition failed for {lang_name}: {e}")
             raise
 
-    def _add_multilingual_text_overlays(self, video_clip, language: Language, duration: float):
+    def _add_multilingual_text_overlays(
+        self,
+        video_clip,
+        language: Language,
+        duration: float):
         """Add text overlays appropriate for the target language"""
         from moviepy.editor import TextClip, CompositeVideoClip
 
         lang_name = self.language_names[language]
         is_rtl = language in self.rtl_languages
 
-        logger.info(f"📝 Adding text overlays for {lang_name} (RTL: {is_rtl})")
+        logger.info(f"📝 Adding text overlays for {lang_name} (RTL: {is_rtl}")
 
         try:
             overlays = []
@@ -557,26 +569,34 @@ class MultiLanguageVideoGenerator:
                 overlay_texts = [
                     {"text": "🔥 תוכן ויראלי", "start": 0, "end": 3, "position": "top"},
                     {"text": "💡 מידע חשוב", "start": 4, "end": 8, "position": "center"},
-                    {"text": "👆 עקבו לעוד", "start": max(0, duration-4), "end": duration, "position": "bottom"}
+                    {"text": "👆 עקבו לעוד", "start": max(
+                        0,
+                        duration-4), "end": duration, "position": "bottom"}
                 ]
             elif language == Language.ARABIC:
                 overlay_texts = [
                     {"text": "🔥 محتوى فيروسي", "start": 0, "end": 3, "position": "top"},
                     {"text": "💡 معلومات مهمة", "start": 4, "end": 8, "position": "center"},
-                    {"text": "👆 تابعونا للمزيد", "start": max(0, duration-4), "end": duration, "position": "bottom"}
+                    {"text": "👆 تابعونا للمزيد", "start": max(
+                        0,
+                        duration-4), "end": duration, "position": "bottom"}
                 ]
             elif language == Language.PERSIAN:
                 overlay_texts = [
                     {"text": "🔥 محتوای ویروسی", "start": 0, "end": 3, "position": "top"},
                     {"text": "💡 اطلاعات مهم", "start": 4, "end": 8, "position": "center"},
-                    {"text": "👆 دنبال کنید", "start": max(0, duration-4), "end": duration, "position": "bottom"}
+                    {"text": "👆 دنبال کنید", "start": max(
+                        0,
+                        duration-4), "end": duration, "position": "bottom"}
                 ]
             else:
                 # English and other languages
                 overlay_texts = [
                     {"text": "🔥 Viral Content", "start": 0, "end": 3, "position": "top"},
                     {"text": "💡 Important Info", "start": 4, "end": 8, "position": "center"},
-                    {"text": "👆 Follow for more", "start": max(0, duration-4), "end": duration, "position": "bottom"}
+                    {"text": "👆 Follow for more", "start": max(
+                        0,
+                        duration-4), "end": duration, "position": "bottom"}
                 ]
 
             # Create text clips
@@ -599,7 +619,7 @@ class MultiLanguageVideoGenerator:
                     elif position == "center":
                         y_pos = video_height * 0.5
                     else:  # bottom
-                        y_pos = video_height * 0.85
+                        y_pos = video_height * 0.75
 
                     # Create text clip
                     text_clip = TextClip(
@@ -636,7 +656,10 @@ class MultiLanguageVideoGenerator:
             logger.error(f"❌ Text overlay generation failed for {lang_name}: {e}")
             return video_clip
 
-    def _save_multilingual_project_info(self, multilang_video: MultiLanguageVideo, session_dir: str):
+    def _save_multilingual_project_info(
+        self,
+        multilang_video: MultiLanguageVideo,
+        session_dir: str):
         """Save project information"""
         try:
             report_path = os.path.join(session_dir, "multilingual_report.txt")
@@ -659,4 +682,3 @@ class MultiLanguageVideoGenerator:
 
         except Exception as e:
             logger.error(f"Failed to save project info: {e}")
-

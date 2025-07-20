@@ -1,209 +1,412 @@
 """
-Visual Style Agent
-AI agent that decides the optimal visual style for video generation
+Visual Style Agent - AI-powered visual style analysis and optimization
 """
 
-import google.generativeai as genai
-from typing import Dict, List, Any
+import json
+import re
+from typing import Dict, Any, Optional
 from ..utils.logging_config import get_logger
+
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
 
 logger = get_logger(__name__)
 
-
 class VisualStyleAgent:
-    """AI agent for determining optimal visual style for video content"""
+    """AI agent for visual style analysis and optimization"""
     
     def __init__(self, api_key: str):
+        """Initialize Visual Style Agent"""
         self.api_key = api_key
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
         
+        if genai:
+            genai.configure(api_key=api_key)
+            self.model = genai.GenerativeModel('gemini-2.5-flash')
+        else:
+            self.model = None
+            
         logger.info("🎨 VisualStyleAgent initialized")
     
     def analyze_optimal_style(self, topic: str, target_audience: str, platform: str, 
-                            content_type: str, humor_level: str = "medium") -> Dict[str, Any]:
-        """Analyze and decide optimal visual style for the content"""
+                            content_type: str = "general", humor_level: str = "medium") -> Dict[str, Any]:
+        """
+        Analyze and determine optimal visual style for content
         
-        logger.info(f"🎨 Analyzing optimal visual style for: {topic}")
-        logger.info(f"👥 Audience: {target_audience}, Platform: {platform}")
-        
+        Args:
+            topic: Content topic/subject
+            target_audience: Target audience description
+            platform: Target platform (tiktok, youtube, instagram, etc.)
+            content_type: Type of content (educational, entertainment, etc.)
+            humor_level: Level of humor (low, medium, high)
+            
+        Returns:
+            Dictionary with style decision and reasoning
+        """
         try:
+            logger.info(f"🎨 Analyzing optimal visual style for: {topic}")
+            logger.info(f"👥 Audience: {target_audience}, Platform: {platform}")
+            
+            # Optimized concise prompt for faster processing
             style_prompt = f"""
-            You are an expert creative director specializing in video content styles for social media.
-            
-            CONTENT DETAILS:
-            - Topic: {topic}
-            - Target Audience: {target_audience}
-            - Platform: {platform}
-            - Content Type: {content_type}
-            - Humor Level: {humor_level}
-            
-            TASK: Decide the optimal visual style that will maximize engagement and appropriateness.
-            
-            AVAILABLE VISUAL STYLES:
-            1. "realistic" - Photorealistic, documentary-style, professional
-            2. "cartoon" - Animated, colorful, playful, stylized
-            3. "disney" - Disney-style animation, magical, family-friendly
-            4. "anime" - Japanese animation style, expressive, dramatic
-            5. "comic" - Comic book style, bold colors, action-oriented
-            6. "minimalist" - Clean, simple, modern, abstract
-            7. "retro" - Vintage, nostalgic, classic aesthetics
-            8. "cyberpunk" - Futuristic, neon, high-tech, edgy
-            9. "watercolor" - Artistic, soft, painterly, elegant
-            10. "clay" - Claymation style, tactile, quirky, charming
-            
-            DECISION FACTORS:
-            - Topic appropriateness (educational topics may prefer realistic)
-            - Audience preferences (young people often prefer animated styles)
-            - Platform culture (TikTok loves creative styles, LinkedIn prefers professional)
-            - Humor integration (cartoon styles work better for comedy)
-            - Content complexity (simple topics can use more stylized approaches)
-            
-            PLATFORM CONSIDERATIONS:
-            - TikTok: Creative, animated, eye-catching styles preferred
-            - YouTube Shorts: Mix of realistic and animated works well
-            - Instagram Reels: Aesthetic, visually appealing styles
-            - LinkedIn: Professional, realistic styles preferred
-            
-            AUDIENCE CONSIDERATIONS:
-            - Young people (13-25): Prefer animated, cartoon, anime styles
-            - Adults (26-45): Mix of realistic and stylized content
-            - Professionals: Realistic, minimalist, clean styles
-            - Students: Educational content with engaging visuals
-            
-            Return a JSON decision with this structure:
-            {{
-                "primary_style": "realistic|cartoon|disney|anime|comic|minimalist|retro|cyberpunk|watercolor|clay",
-                "secondary_style": "optional_secondary_style_for_variety",
-                "style_intensity": "low|medium|high",
-                "color_palette": "vibrant|muted|monochrome|pastel|neon|natural",
-                "visual_effects": ["effect1", "effect2"],
-                "reasoning": "Detailed explanation of style choice",
-                "engagement_prediction": "high|medium|low",
-                "appropriateness_score": 0.95
-            }}
-            """
-            
+Analyze visual style for: "{topic}"
+Platform: {platform}
+Audience: {target_audience}
+
+Choose optimal style from: realistic, cartoon, disney, anime, comic, minimalist, retro, cyberpunk, watercolor, clay
+
+Platform preferences:
+- TikTok/Instagram: Creative, animated styles
+- YouTube: Mix of realistic and animated
+- LinkedIn: Professional, realistic
+
+Return JSON:
+{{
+    "primary_style": "style_name",
+    "color_palette": "vibrant|muted|pastel|natural",
+    "reasoning": "Brief explanation",
+    "engagement_prediction": "high|medium|low"
+}}
+"""
+
             response = self.model.generate_content(style_prompt)
-            
+
+            # Check if response is valid
+            if not response or not response.text:
+                logger.warning("⚠️ Empty response from Visual Style API")
+                return self._get_fallback_style(topic, target_audience, platform)
+
             # Parse the response
-            import json
-            import re
-            
-            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
-            if json_match:
-                style_decision = json.loads(json_match.group())
+            try:
+                response_text = response.text.strip()
                 
-                logger.info(f"🎨 Style Decision: {style_decision.get('primary_style')}")
-                logger.info(f"🎨 Color Palette: {style_decision.get('color_palette')}")
-                logger.info(f"📊 Engagement Prediction: {style_decision.get('engagement_prediction')}")
-                logger.info(f"💭 Reasoning: {style_decision.get('reasoning', '')[:100]}...")
-                
-                return style_decision
-            else:
-                logger.warning("⚠️ Could not parse style decision, using fallback")
+                # Check if response is empty
+                if not response_text:
+                    logger.warning("⚠️ Empty response text from Visual Style API")
+                    return self._get_fallback_style(topic, target_audience, platform)
+
+                json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+                if json_match:
+                    style_decision = json.loads(json_match.group())
+
+                    logger.info(f"🎨 Style Decision: {style_decision.get('primary_style')}")
+                    logger.info(f"🎨 Color Palette: {style_decision.get('color_palette')}")
+                    logger.info(f"📊 Engagement Prediction: {style_decision.get('engagement_prediction')}")
+                    logger.info(f"💭 Reasoning: {style_decision.get('reasoning', '')[:100]}...")
+
+                    return style_decision
+                else:
+                    logger.warning("⚠️ No JSON found in Visual Style response")
+                    return self._get_fallback_style(topic, target_audience, platform)
+                    
+            except json.JSONDecodeError as e:
+                logger.warning(f"⚠️ Could not parse style decision: {e}")
+                return self._get_fallback_style(topic, target_audience, platform)
+            except Exception as e:
+                logger.error(f"❌ Style analysis failed: {e}")
                 return self._get_fallback_style(topic, target_audience, platform)
                 
         except Exception as e:
-            logger.error(f"❌ Style analysis failed: {e}")
+            logger.error(f"❌ Visual style analysis failed: {e}")
             return self._get_fallback_style(topic, target_audience, platform)
-    
+
     def _get_fallback_style(self, topic: str, target_audience: str, platform: str) -> Dict[str, Any]:
         """Fallback style decision based on topic and audience"""
-        
+
         topic_lower = topic.lower()
-        audience_lower = target_audience.lower()
         platform_lower = platform.lower()
-        
-        # Topic-based style decisions
-        if any(word in topic_lower for word in ['quantum', 'physics', 'math', 'science', 'theorem']):
-            primary_style = "minimalist"
-            color_palette = "muted"
-        elif any(word in topic_lower for word in ['cartoon', 'funny', 'comedy', 'humor', 'chimpanzee']):
-            primary_style = "cartoon"
-            color_palette = "vibrant"
-        elif any(word in topic_lower for word in ['war', 'military', 'nato', 'conflict']):
-            primary_style = "realistic"
-            color_palette = "muted"
-        elif any(word in topic_lower for word in ['disney', 'magical', 'fantasy']):
-            primary_style = "disney"
-            color_palette = "pastel"
-        else:
-            # Default based on audience and platform
-            if 'young' in audience_lower or platform_lower in ['tiktok', 'youtube_shorts']:
-                primary_style = "cartoon"
-                color_palette = "vibrant"
+        audience_lower = target_audience.lower()
+
+        # Platform-based defaults
+        if 'tiktok' in platform_lower:
+            if any(word in audience_lower for word in ['young', 'teen', 'gen z', 'student']):
+                primary_style = 'cartoon'
+                color_palette = 'vibrant'
+                engagement_prediction = 'high'
             else:
-                primary_style = "realistic"
-                color_palette = "natural"
+                primary_style = 'comic'
+                color_palette = 'vibrant'
+                engagement_prediction = 'high'
+        elif 'linkedin' in platform_lower:
+            primary_style = 'realistic'
+            color_palette = 'muted'
+            engagement_prediction = 'medium'
+        elif 'youtube' in platform_lower:
+            primary_style = 'realistic'
+            color_palette = 'natural'
+            engagement_prediction = 'medium'
+        else:
+            # Default for unknown platforms
+            primary_style = 'realistic'
+            color_palette = 'natural'
+            engagement_prediction = 'medium'
+
+        # Topic-based adjustments with priority for serious content
+        serious_keywords = ['veteran', 'ptsd', 'military', 'health', 'mental', 'trauma', 'medical', 'war', 
+                           'soldier', 'depression', 'anxiety', 'therapy', 'serious', 'important', 'awareness']
+        educational_keywords = ['education', 'tutorial', 'how to', 'learn', 'fact', 'knowledge', 'science']
+        humor_keywords = ['funny', 'comedy', 'humor', 'meme', 'joke', 'laugh']
         
+        if any(word in topic_lower for word in serious_keywords):
+            primary_style = 'realistic'
+            color_palette = 'natural'
+            engagement_prediction = 'high'  # Serious content can still be engaging
+            logger.info(f"🎭 Detected serious topic, using realistic style for: {topic}")
+        elif any(word in topic_lower for word in educational_keywords):
+            primary_style = 'realistic'
+            color_palette = 'natural'
+        elif any(word in topic_lower for word in humor_keywords):
+            # Only use cartoon for clearly humorous topics that aren't serious
+            if not any(word in topic_lower for word in serious_keywords):
+                primary_style = 'cartoon'
+                color_palette = 'vibrant'
+                engagement_prediction = 'high'
+            else:
+                primary_style = 'realistic'
+                color_palette = 'natural'
+                engagement_prediction = 'high'
+
         return {
-            "primary_style": primary_style,
-            "secondary_style": None,
-            "style_intensity": "medium",
-            "color_palette": color_palette,
-            "visual_effects": ["smooth_transitions"],
-            "reasoning": f"Fallback style selection for {topic} targeting {target_audience}",
-            "engagement_prediction": "medium",
-            "appropriateness_score": 0.8
+            'primary_style': primary_style,
+            'secondary_style': None,
+            'style_intensity': 'medium',
+            'color_palette': color_palette,
+            'visual_effects': [],
+            'reasoning': f'Fallback style decision based on platform ({platform}) and topic analysis. This is a safe default that should work well for most content.',
+            'engagement_prediction': engagement_prediction,
+            'appropriateness_score': 0.8
         }
-    
+
     def generate_style_prompt_enhancement(self, base_prompt: str, style_decision: Dict[str, Any]) -> str:
-        """Enhance a base prompt with style-specific instructions"""
+        """
+        Enhance a base prompt with style-specific instructions
         
-        primary_style = style_decision.get('primary_style', 'realistic')
-        color_palette = style_decision.get('color_palette', 'natural')
-        style_intensity = style_decision.get('style_intensity', 'medium')
-        
-        # Style-specific prompt enhancements
-        style_enhancements = {
-            'realistic': f"photorealistic, high quality, professional cinematography, natural lighting",
-            'cartoon': f"cartoon style, animated, colorful, playful, stylized characters",
-            'disney': f"Disney animation style, magical, enchanting, family-friendly, beautiful characters",
-            'anime': f"anime style, Japanese animation, expressive characters, dramatic lighting",
-            'comic': f"comic book style, bold outlines, vibrant colors, action-oriented",
-            'minimalist': f"minimalist design, clean lines, simple shapes, modern aesthetic",
-            'retro': f"retro style, vintage aesthetics, nostalgic feel, classic design",
-            'cyberpunk': f"cyberpunk style, futuristic, neon lights, high-tech, edgy atmosphere",
-            'watercolor': f"watercolor painting style, soft edges, artistic, painterly texture",
-            'clay': f"claymation style, clay figures, tactile texture, stop-motion feel"
-        }
-        
-        # Color palette enhancements
-        color_enhancements = {
-            'vibrant': "bright vibrant colors, high saturation, energetic palette",
-            'muted': "muted colors, soft tones, subtle palette, professional look",
-            'monochrome': "black and white, grayscale, classic monochrome aesthetic",
-            'pastel': "pastel colors, soft hues, gentle palette, dreamy atmosphere",
-            'neon': "neon colors, glowing effects, electric palette, futuristic feel",
-            'natural': "natural colors, earth tones, realistic palette, organic feel"
-        }
-        
-        # Intensity modifiers
-        intensity_modifiers = {
-            'low': "subtle, understated, gentle",
-            'medium': "balanced, moderate, well-defined",
-            'high': "bold, dramatic, intense, striking"
-        }
-        
-        # Build enhanced prompt
-        style_enhancement = style_enhancements.get(primary_style, style_enhancements['realistic'])
-        color_enhancement = color_enhancements.get(color_palette, color_enhancements['natural'])
-        intensity_modifier = intensity_modifiers.get(style_intensity, intensity_modifiers['medium'])
-        
-        enhanced_prompt = f"{base_prompt}, {style_enhancement}, {color_enhancement}, {intensity_modifier} style"
-        
-        logger.info(f"🎨 Enhanced prompt with {primary_style} style")
-        return enhanced_prompt
-    
+        Args:
+            base_prompt: Original video generation prompt
+            style_decision: Style decision from analyze_optimal_style
+            
+        Returns:
+            Enhanced prompt with style instructions
+        """
+        try:
+            primary_style = style_decision.get('primary_style', 'realistic')
+            color_palette = style_decision.get('color_palette', 'natural')
+            visual_effects = style_decision.get('visual_effects', [])
+            
+            # Build style enhancement
+            style_enhancements = []
+            
+            # Add primary style
+            style_enhancements.append(f"in {primary_style} style")
+            
+            # Add color palette
+            if color_palette:
+                style_enhancements.append(f"with {color_palette} colors")
+            
+            # Add visual effects
+            if visual_effects:
+                effects_str = ", ".join(visual_effects)
+                style_enhancements.append(f"featuring {effects_str}")
+            
+            # Combine enhancements
+            enhancement_text = ", ".join(style_enhancements)
+            
+            # Create enhanced prompt
+            enhanced_prompt = f"{base_prompt}, {enhancement_text}"
+            
+            logger.info(f"🎨 Enhanced prompt with {primary_style} style")
+            return enhanced_prompt
+            
+        except Exception as e:
+            logger.error(f"❌ Prompt enhancement failed: {e}")
+            return base_prompt
+
     def enhance_prompt_with_style(self, base_prompt: str, style: str) -> str:
-        """Enhance a base prompt with the specified style - compatibility method"""
+        """
+        Simple prompt enhancement with a specific style
         
-        # Create a style decision dict for the given style
-        style_decision = {
-            'primary_style': style,
-            'color_palette': 'vibrant' if style in ['cartoon', 'anime', 'comic'] else 'natural',
-            'style_intensity': 'medium'
-        }
-        
-        return self.generate_style_prompt_enhancement(base_prompt, style_decision) 
+        Args:
+            base_prompt: Original prompt
+            style: Style to apply
+            
+        Returns:
+            Enhanced prompt
+        """
+        try:
+            # Comprehensive Style Mapping - 100+ Visual Styles
+            style_mappings = {
+                # Photographic & Realistic Styles
+                'realistic': 'photorealistic, high quality, detailed, lifelike',
+                'photorealistic': 'ultra-realistic, professional photography, crisp details',
+                'cinematic': 'cinematic lighting, dramatic composition, film-like quality',
+                'documentary': 'documentary style, authentic, real-world settings',
+                'portrait': 'portrait photography, focused composition, professional lighting',
+                'landscape': 'landscape photography, wide vistas, natural beauty',
+                'street': 'street photography, candid moments, urban environments',
+                'macro': 'macro photography, extreme close-ups, fine details',
+                'black_and_white': 'monochrome, black and white, classic photography',
+                'sepia': 'sepia tone, vintage photography, warm brown tints',
+                'high_contrast': 'high contrast, dramatic shadows and highlights',
+                'low_key': 'low key lighting, dramatic shadows, moody atmosphere',
+                'high_key': 'high key lighting, bright, airy, optimistic feel',
+                'golden_hour': 'golden hour lighting, warm sunset glow',
+                'blue_hour': 'blue hour lighting, twilight atmosphere',
+                'neon': 'neon lighting, vibrant colors, urban nightlife',
+                'natural_light': 'natural lighting, soft shadows, organic feel',
+                'studio': 'studio lighting, controlled environment, clean backgrounds',
+                'candid': 'candid photography, natural moments, unposed',
+                'dynamic': 'dynamic composition, movement, energy, action-packed',
+                
+                # Animation & Cartoon Styles
+                'cartoon': 'animated, colorful, playful cartoon style',
+                'disney': 'Disney animation style, magical, family-friendly',
+                'pixar': 'Pixar 3D animation style, vibrant, heartwarming',
+                'anime': 'anime style, expressive, dramatic, Japanese animation',
+                'manga': 'manga style, black and white, detailed linework',
+                'comic': 'comic book style, bold colors, action-oriented',
+                'comic_book': 'comic book illustration, speech bubbles, dynamic panels',
+                'graphic_novel': 'graphic novel style, sophisticated storytelling',
+                'webcomic': 'webcomic style, digital art, modern humor',
+                'superhero': 'superhero comic style, bold, powerful, heroic',
+                'chibi': 'chibi style, cute, small proportions, adorable',
+                'kawaii': 'kawaii style, cute, pastel colors, Japanese cute culture',
+                'cel_shading': 'cel shading, flat colors, anime-inspired',
+                'toon_shading': 'toon shading, stylized lighting, cartoon-like',
+                'flash_animation': 'Flash animation style, vector graphics, smooth motion',
+                'stop_motion': 'stop motion animation, tactile, handcrafted feel',
+                'claymation': 'claymation style, clay figures, quirky texture',
+                'clay': 'clay animation, moldable characters, playful texture',
+                'puppet': 'puppet animation, string puppets, theatrical',
+                'paper_cutout': 'paper cutout animation, flat layers, handmade',
+                'silhouette': 'silhouette animation, shadow play, dramatic',
+                
+                # Artistic & Painting Styles
+                'watercolor': 'watercolor painting style, soft, artistic, flowing',
+                'oil_painting': 'oil painting style, rich textures, classical art',
+                'acrylic': 'acrylic painting style, vibrant colors, modern art',
+                'gouache': 'gouache painting style, opaque watercolor, illustration',
+                'tempera': 'tempera painting style, traditional medium, smooth finish',
+                'fresco': 'fresco painting style, wall painting, renaissance',
+                'impressionist': 'impressionist style, light and color, loose brushstrokes',
+                'expressionist': 'expressionist style, emotional, distorted reality',
+                'cubist': 'cubist style, geometric shapes, multiple perspectives',
+                'surrealist': 'surrealist style, dreamlike, impossible scenarios',
+                'abstract': 'abstract art style, non-representational, conceptual',
+                'pointillism': 'pointillism style, dots of color, neo-impressionist',
+                'pop_art': 'pop art style, bold colors, commercial imagery',
+                'art_nouveau': 'art nouveau style, flowing lines, natural forms',
+                'art_deco': 'art deco style, geometric patterns, luxury aesthetics',
+                'baroque': 'baroque style, ornate, dramatic, religious themes',
+                'renaissance': 'renaissance style, classical beauty, realistic proportions',
+                'medieval': 'medieval art style, illuminated manuscripts, religious',
+                'byzantine': 'byzantine art style, golden backgrounds, religious icons',
+                'japanese_ink': 'Japanese ink painting, minimalist, zen-like',
+                'chinese_brush': 'Chinese brush painting, traditional, flowing strokes',
+                'calligraphy': 'calligraphic style, elegant lettering, artistic writing',
+                
+                # Design & Illustration Styles
+                'minimalist': 'clean, simple, modern, minimalist design',
+                'maximalist': 'maximalist design, busy, ornate, decorative',
+                'flat_design': 'flat design, simple shapes, no gradients',
+                'material_design': 'material design, Google style, cards and shadows',
+                'skeuomorphic': 'skeuomorphic design, realistic textures, dimensional',
+                'isometric': 'isometric design, 3D perspective, technical illustration',
+                'vector': 'vector illustration, scalable graphics, clean lines',
+                'line_art': 'line art illustration, simple lines, minimal color',
+                'geometric': 'geometric design, shapes and patterns, mathematical',
+                'organic': 'organic design, natural forms, flowing curves',
+                'technical': 'technical illustration, precise, instructional',
+                'infographic': 'infographic style, data visualization, informative',
+                'logo_design': 'logo design style, brand identity, memorable',
+                'typography': 'typography-focused, text as art, letterforms',
+                'monoline': 'monoline illustration, single line weight, modern',
+                'duotone': 'duotone style, two-color palette, high contrast',
+                'gradient': 'gradient design, color transitions, modern',
+                'neon_gradient': 'neon gradient, vibrant transitions, futuristic',
+                
+                # Genre & Thematic Styles
+                'cyberpunk': 'futuristic, neon, high-tech, cyberpunk style',
+                'steampunk': 'steampunk style, Victorian era, brass and gears',
+                'dieselpunk': 'dieselpunk style, 1940s aesthetic, industrial',
+                'biopunk': 'biopunk style, organic technology, biotechnology',
+                'space_opera': 'space opera style, grand scale, futuristic',
+                'fantasy': 'fantasy style, magical, mythical creatures',
+                'medieval_fantasy': 'medieval fantasy, castles, dragons, knights',
+                'urban_fantasy': 'urban fantasy, modern world with magic',
+                'horror': 'horror style, dark, scary, unsettling',
+                'gothic': 'gothic style, dark, mysterious, ornate',
+                'noir': 'film noir style, high contrast, shadows, mystery',
+                'western': 'western style, cowboys, desert landscapes',
+                'post_apocalyptic': 'post-apocalyptic, destroyed world, survival',
+                'utopian': 'utopian style, perfect world, optimistic future',
+                'dystopian': 'dystopian style, oppressive society, dark future',
+                'vintage': 'vintage style, nostalgic, aged appearance',
+                'retro': 'retro aesthetic, past decades, nostalgic',
+                'retro_futurism': 'retro-futurism, 1950s vision of future',
+                'vaporwave': 'vaporwave aesthetic, 80s nostalgia, neon pastels',
+                'synthwave': 'synthwave style, 80s neon, outrun aesthetic',
+                'cottagecore': 'cottagecore aesthetic, rural, cozy, natural',
+                'dark_academia': 'dark academia, scholarly, gothic architecture',
+                'light_academia': 'light academia, bright, intellectual, classical',
+                
+                # Cultural & Historical Styles
+                'japanese': 'Japanese art style, traditional aesthetics',
+                'chinese': 'Chinese art style, traditional culture',
+                'indian': 'Indian art style, rich colors, intricate patterns',
+                'african': 'African art style, tribal patterns, earth tones',
+                'aztec': 'Aztec art style, geometric patterns, ancient civilization',
+                'egyptian': 'Egyptian art style, hieroglyphs, ancient symbols',
+                'greek': 'Greek art style, classical proportions, marble',
+                'roman': 'Roman art style, imperial grandeur, classical',
+                'viking': 'Viking art style, Norse mythology, runic symbols',
+                'celtic': 'Celtic art style, intricate knots, mystical',
+                'native_american': 'Native American art style, spiritual, nature-based',
+                'persian': 'Persian art style, intricate carpets, miniatures',
+                'islamic': 'Islamic art style, geometric patterns, calligraphy',
+                'tibetan': 'Tibetan art style, Buddhist themes, spiritual',
+                'mayan': 'Mayan art style, complex calendars, jungle themes',
+                
+                # Texture & Material Styles
+                'wood': 'wood texture, natural grain, organic material',
+                'metal': 'metal texture, industrial, reflective surfaces',
+                'glass': 'glass texture, transparent, reflective',
+                'fabric': 'fabric texture, soft, textile patterns',
+                'paper': 'paper texture, handmade, organic feel',
+                'stone': 'stone texture, rough, natural materials',
+                'marble': 'marble texture, luxury, classical architecture',
+                'concrete': 'concrete texture, industrial, modern architecture',
+                'brick': 'brick texture, urban, architectural',
+                'leather': 'leather texture, luxury, crafted materials',
+                'fur': 'fur texture, soft, natural animal textures',
+                'water': 'water effects, flowing, reflective surfaces',
+                'fire': 'fire effects, dynamic, warm energy',
+                'smoke': 'smoke effects, ethereal, atmospheric',
+                'crystal': 'crystal texture, geometric, magical',
+                'holographic': 'holographic effects, rainbow, futuristic',
+                'glitch': 'glitch effects, digital corruption, cyberpunk',
+                'pixelated': 'pixelated style, retro gaming, 8-bit aesthetic',
+                'low_poly': 'low poly style, geometric, minimalist 3D',
+                'high_poly': 'high poly style, detailed 3D, smooth surfaces',
+                'wireframe': 'wireframe style, technical, blueprint-like',
+                'x_ray': 'x-ray style, transparent, medical imaging',
+                'thermal': 'thermal imaging style, heat signatures, scientific',
+                'microscopic': 'microscopic style, cellular, scientific detail',
+                'astronomical': 'astronomical style, cosmic, space imagery',
+                'underwater': 'underwater style, aquatic, marine life',
+                'aerial': 'aerial view style, bird\'s eye perspective',
+                'cross_section': 'cross-section style, technical, educational',
+                'blueprint': 'blueprint style, technical drawings, architectural',
+                'schematic': 'schematic style, technical diagrams, instructional'
+            }
+            
+            style_description = style_mappings.get(style.lower())
+            if style_description:
+                return f"{base_prompt}, {style_description}"
+            else:
+                logger.warning(f"⚠️ Unknown style: {style}")
+                return base_prompt
+                
+        except Exception as e:
+            logger.error(f"❌ Simple style enhancement failed: {e}")
+            return base_prompt

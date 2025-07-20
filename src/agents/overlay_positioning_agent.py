@@ -1,87 +1,69 @@
 """
 Smart Overlay Positioning Agent
-AI agent that makes intelligent decisions about subtitle and text overlay positioning
+AI agent that makes intelligent decisions about subtitle and
+        text overlay positioning with colorful hooks and fonts
 """
 
 import google.generativeai as genai
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from ..utils.logging_config import get_logger
+import json
+import re
 
 logger = get_logger(__name__)
 
-
 class OverlayPositioningAgent:
-    """AI agent for smart subtitle and overlay positioning decisions"""
-    
+    """AI agent for smart subtitle and overlay positioning decisions with colorful hooks"""
+
     def __init__(self, api_key: str):
-        self.api_key = api_key
+        """Initialize the positioning agent"""
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-2.5-flash')
-        
-        logger.info("🎯 OverlayPositioningAgent initialized")
-    
-    def analyze_optimal_positioning(self, topic: str, video_style: str, platform: str, 
+
+        logger.info("🎯 OverlayPositioningAgent initialized with colorful hooks support")
+
+    def analyze_optimal_positioning(self, topic: str, video_style: str, platform: str,
                                   duration: float, subtitle_count: int) -> Dict[str, Any]:
-        """Analyze and decide optimal positioning for subtitles and overlays"""
-        
+        """Analyze optimal positioning for subtitles and colorful text overlays"""
+
         logger.info(f"🎯 Analyzing optimal positioning for: {topic}")
-        logger.info(f"📱 Platform: {platform}, Style: {video_style}, Duration: {duration}s")
-        
+        logger.info(
+            f"📱 Platform: {platform}, "
+            f"Style: {video_style}, "
+            f"Duration: {duration}s")
+
         try:
+            # Optimized concise prompt for faster processing
             positioning_prompt = f"""
-            You are an expert UI/UX designer specializing in video overlay positioning for social media.
-            
-            VIDEO DETAILS:
-            - Topic: {topic}
-            - Style: {video_style}
-            - Platform: {platform}
-            - Duration: {duration} seconds
-            - Number of subtitle segments: {subtitle_count}
-            
-            TASK: Decide optimal positioning strategy for subtitles and text overlays.
-            
-            POSITIONING RULES:
-            1. Subtitles should NEVER overlap with important visual content
-            2. For face-focused content: position subtitles at bottom
-            3. For action/movement: position subtitles at top or sides
-            4. For object demonstrations: avoid center positioning
-            5. Consider platform-specific safe zones
-            6. Ensure readability on mobile devices
-            
-            PLATFORM CONSIDERATIONS:
-            - TikTok: Bottom positioning preferred, avoid center
-            - YouTube Shorts: Lower third is safe zone
-            - Instagram Reels: Avoid bottom 20% (UI overlap)
-            
-            STYLE CONSIDERATIONS:
-            - Realistic/Documentary: Professional lower third
-            - Cartoon/Animated: More flexible positioning
-            - Action/Sports: Dynamic side positioning
-            - Educational: Traditional bottom positioning
-            
-            Return a JSON decision with this structure:
-            {{
-                "primary_subtitle_position": "bottom_third",
-                "secondary_overlay_position": "top_right",
-                "positioning_strategy": "static",
-                "safe_zones": ["bottom_third", "top_third"],
-                "avoid_zones": ["center"],
-                "reasoning": "Explanation of positioning decisions",
-                "mobile_optimized": true,
-                "accessibility_compliant": true
-            }}
-            """
-            
+Overlay positioning for: "{topic}"
+Platform: {platform}, Style: {video_style}, Duration: {duration}s
+
+Rules:
+- TikTok: Bottom positioning, avoid center
+- YouTube: Lower third safe zone
+- Instagram: Avoid bottom 20%
+
+Choose position: bottom_center, bottom_left, bottom_right, top_center, top_left, top_right, center_left, center_right
+
+Return JSON:
+{{
+    "primary_overlay_position": "position_name",
+    "positioning_strategy": "static|dynamic",
+    "reasoning": "Brief explanation",
+    "mobile_optimized": true
+}}
+"""
+
             response = self.model.generate_content(positioning_prompt)
-            
+
             # Parse the response with improved error handling
             import json
             import re
-            
+
             # Clean the response text to remove control characters and non-printable chars
             clean_text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response.text)
             clean_text = re.sub(r'[^\x20-\x7E\s]', '', clean_text)  # Keep only printable ASCII
-            
+
             json_match = re.search(r'\{[^{}]*\}', clean_text, re.DOTALL)
             if json_match:
                 try:
@@ -89,35 +71,184 @@ class OverlayPositioningAgent:
                     # Additional cleaning for common JSON issues
                     json_str = re.sub(r',\s*}', '}', json_str)  # Remove trailing commas
                     json_str = re.sub(r',\s*]', ']', json_str)  # Remove trailing commas in arrays
-                    
+
                     positioning_decision = json.loads(json_str)
-                    
+
                     # Validate required fields
-                    required_fields = ['primary_subtitle_position', 'positioning_strategy']
+                    required_fields = ['primary_overlay_position', 'positioning_strategy']
                     if all(field in positioning_decision for field in required_fields):
-                        logger.info(f"🎯 Positioning Decision: {positioning_decision.get('primary_subtitle_position')}")
+                        logger.info(f"🎯 Positioning Decision: {positioning_decision.get('primary_overlay_position')}")
                         logger.info(f"📋 Strategy: {positioning_decision.get('positioning_strategy')}")
                         logger.info(f"💭 Reasoning: {positioning_decision.get('reasoning', '')[:100]}...")
-                        
+
                         return positioning_decision
                     else:
                         logger.warning("⚠️ Missing required fields in JSON response, using fallback")
                         return self._get_fallback_positioning(platform, video_style)
-                        
+
                 except json.JSONDecodeError as e:
                     logger.warning(f"⚠️ JSON parsing failed: {e}, using fallback")
                     return self._get_fallback_positioning(platform, video_style)
             else:
                 logger.warning("⚠️ Could not find valid JSON in response, using fallback")
                 return self._get_fallback_positioning(platform, video_style)
-                
+
         except Exception as e:
             logger.error(f"❌ Positioning analysis failed: {e}")
             return self._get_fallback_positioning(platform, video_style)
-    
-    def _get_fallback_positioning(self, platform: str, video_style: str) -> Dict[str, Any]:
-        """Fallback positioning strategy based on platform and style"""
+
+    def create_colorful_text_hooks(self, topic: str, platform: str, video_duration: float,
+                                  script_content: str) -> List[Dict[str, Any]]:
+        """Create colorful text hooks and overlays using AI"""
         
+        logger.info(f"🎨 Creating colorful text hooks for: {topic}")
+        
+        try:
+            hooks_prompt = f"""
+            You are a creative designer specializing in viral social media content.
+            
+            CONTENT DETAILS:
+            - Topic: {topic}
+            - Platform: {platform}
+            - Duration: {video_duration} seconds
+            - Script: {script_content[:300]}...
+            
+            TASK: Create engaging colorful text hooks and overlays that will make the video viral.
+            
+            REQUIREMENTS:
+            1. Create 6-10 text hooks that appear at different times throughout the video
+            2. Use vibrant colors that grab attention (#FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FECA57)
+            3. Choose fonts that match the content style (Arial-Bold, Impact, Helvetica-Bold)
+            4. Position hooks strategically for maximum impact
+            5. Include emojis and visual elements
+            6. Make hooks short and punchy (max 20 characters)
+            7. Ensure hooks appear every 3-5 seconds for maximum engagement
+            
+            PLATFORM OPTIMIZATION:
+            - TikTok: Bold, colorful, trending phrases
+            - YouTube: Professional but engaging
+            - Instagram: Aesthetic, hashtag-friendly
+            
+            Return JSON array of text hooks:
+            [
+                {{
+                    "text": "🔥 VIRAL FACT!",
+                    "start_time": 0.5,
+                    "end_time": 3.0,
+                    "position": "top_center",
+                    "font_family": "Arial-Bold",
+                    "font_size": 48,
+                    "color": "#FF6B6B",
+                    "background_color": "#FFFFFF",
+                    "stroke_color": "#000000",
+                    "stroke_width": 2,
+                    "animation": "bounce",
+                    "opacity": 0.9,
+                    "reasoning": "Hook to grab attention early"
+                }}
+            ]
+            """
+            
+            response = self.model.generate_content(hooks_prompt)
+            
+            # Parse JSON response
+            json_match = re.search(r'\[.*\]', response.text, re.DOTALL)
+            if json_match:
+                try:
+                    hooks_data = json.loads(json_match.group())
+                    
+                    # Validate and enhance hooks
+                    validated_hooks = []
+                    for hook in hooks_data:
+                        if self._validate_hook(hook):
+                            validated_hooks.append(hook)
+                    
+                    logger.info(f"🎨 Created {len(validated_hooks)} colorful text hooks")
+                    return validated_hooks
+                    
+                except json.JSONDecodeError as e:
+                    logger.warning(f"⚠️ Failed to parse hooks JSON: {e}")
+                    return self._get_fallback_hooks(topic, platform, video_duration)
+            else:
+                logger.warning("⚠️ No valid JSON found in hooks response")
+                return self._get_fallback_hooks(topic, platform, video_duration)
+                
+        except Exception as e:
+            logger.error(f"❌ Text hooks creation failed: {e}")
+            return self._get_fallback_hooks(topic, platform, video_duration)
+
+    def _validate_hook(self, hook: Dict[str, Any]) -> bool:
+        """Validate a text hook has required fields"""
+        required_fields = ['text', 'start_time', 'end_time', 'position', 'color']
+        return all(field in hook for field in required_fields)
+
+    def _get_fallback_hooks(self, topic: str, platform: str, video_duration: float) -> List[Dict[str, Any]]:
+        """Create fallback text hooks when AI generation fails"""
+        
+        logger.info("🎨 Creating fallback colorful text hooks")
+        
+        # Create topic-specific hooks
+        topic_words = topic.split()
+        main_word = topic_words[0] if topic_words else "Content"
+        
+        # Generate more frequent hooks based on video duration
+        num_hooks = max(6, min(12, int(video_duration / 3)))  # One hook every 3-5 seconds
+        
+        hook_templates = [
+            {"text": f"🔥 {main_word.upper()}!", "color": "#FF6B6B", "position": "top_center", "animation": "bounce"},
+            {"text": "💡 WATCH THIS!", "color": "#4ECDC4", "position": "center_right", "animation": "fade"},
+            {"text": "😱 MIND BLOWN!", "color": "#45B7D1", "position": "top_right", "animation": "pulse"},
+            {"text": "🚀 VIRAL CONTENT", "color": "#96CEB4", "position": "center_left", "animation": "bounce"},
+            {"text": "⚡ AMAZING FACT!", "color": "#FECA57", "position": "top_left", "animation": "fade"},
+            {"text": "🎯 MUST KNOW!", "color": "#FF9FF3", "position": "bottom_left", "animation": "pulse"},
+            {"text": "🌟 INCREDIBLE!", "color": "#54A0FF", "position": "center_right", "animation": "bounce"},
+            {"text": "🔥 SO TRUE!", "color": "#5F27CD", "position": "top_center", "animation": "fade"},
+            {"text": "💯 FACTS ONLY!", "color": "#00D2D3", "position": "bottom_right", "animation": "pulse"},
+            {"text": "👀 LOOK AT THIS!", "color": "#FF9F43", "position": "center_left", "animation": "bounce"},
+            {"text": "🎉 AWESOME!", "color": "#C44569", "position": "top_right", "animation": "fade"},
+            {"text": "👍 LIKE & FOLLOW!", "color": "#FECA57", "position": "bottom_right", "animation": "pulse"}
+        ]
+        
+        fallback_hooks = []
+        hook_duration = 2.5
+        time_per_hook = video_duration / num_hooks
+        
+        for i in range(num_hooks):
+            template = hook_templates[i % len(hook_templates)]
+            start_time = i * time_per_hook + 0.5
+            end_time = min(start_time + hook_duration, video_duration - 0.5)
+            
+            # Skip if would go beyond video duration
+            if start_time >= video_duration - 1:
+                break
+                
+            fallback_hooks.append({
+                "text": template["text"],
+                "start_time": start_time,
+                "end_time": end_time,
+                "position": template["position"],
+                "font_family": "Arial-Bold" if i % 2 == 0 else "Impact",
+                "font_size": 52 if i % 3 == 0 else 46,  # Larger fonts for better visibility
+                "color": template["color"],
+                "background_color": "#000000" if i % 2 == 0 else "#FFFFFF",
+                "stroke_color": "#FFFFFF" if i % 2 == 0 else "#000000",
+                "stroke_width": 3,
+                "animation": template["animation"],
+                "opacity": 0.95,
+                "reasoning": f"Hook {i+1} for continuous engagement"
+            })
+        
+        # Filter hooks that fit within video duration
+        valid_hooks = [hook for hook in fallback_hooks if hook['end_time'] <= video_duration]
+        
+        logger.info(f"🎨 Created {len(valid_hooks)} fallback text hooks")
+        return valid_hooks
+
+    def _get_fallback_positioning(self,
+        platform: str,
+        video_style: str) -> Dict[str, Any]:
+        """Fallback positioning strategy based on platform and style"""
+
         # Platform-specific defaults
         if platform.lower() in ['tiktok', 'youtube_shorts']:
             primary_position = "bottom_third"
@@ -128,53 +259,62 @@ class OverlayPositioningAgent:
         else:
             primary_position = "bottom_third"
             secondary_position = "top_center"
+
+        # CRITICAL FIX: Use dynamic positioning for TikTok viral content
+        strategy = "dynamic" if platform == "tiktok" and duration_seconds <= 30 else "static"
         
         return {
-            "primary_subtitle_position": primary_position,
+            "primary_overlay_position": primary_position,  # Changed from primary_subtitle_position for consistency
+            "primary_subtitle_position": primary_position,  # Keep both for backward compatibility
             "secondary_overlay_position": secondary_position,
-            "positioning_strategy": "static",
+            "positioning_strategy": strategy,
             "safe_zones": ["bottom_third", "top_third"],
             "avoid_zones": ["center"],
-            "reasoning": f"Fallback positioning for {platform} with {video_style} style",
+            "reasoning": f"FIXED: Using {strategy} positioning for {platform} with {video_style} style - TikTok videos benefit from dynamic overlays",
             "mobile_optimized": True,
-            "accessibility_compliant": True
+            "accessibility_compliant": True,
+            "animation_enabled": strategy == "dynamic"
         }
-    
+
     def calculate_precise_coordinates(self, position: str, video_width: int, video_height: int,
                                     text_width: int, text_height: int) -> tuple:
         """Calculate precise pixel coordinates for positioning"""
-        
+
         # Define positioning zones as percentages
         position_map = {
             "top_third": (0.5, 0.15),          # Center horizontally, 15% from top
-            "bottom_third": (0.5, 0.85),       # Center horizontally, 85% from top
+            "bottom_third": (0.5, 0.65),       # Center horizontally, 65% from top (raised from 85%)
             "center_safe": (0.5, 0.5),         # Dead center
+            "center": (0.5, 0.5),              # Dead center (alias)
+            "top_center": (0.5, 0.1),          # Top center
+            "bottom_center": (0.5, 0.75),       # Bottom center (raised from 90% to 75%)
+            "center_bottom": (0.5, 0.65),      # Center horizontally, 65% from top (raised from 75%)
             "left_side": (0.15, 0.5),          # 15% from left, center vertically
             "right_side": (0.85, 0.5),         # 85% from left, center vertically
             "top_left": (0.1, 0.1),            # Top left corner
             "top_right": (0.9, 0.1),           # Top right corner
-            "bottom_left": (0.1, 0.9),         # Bottom left corner
-            "bottom_right": (0.9, 0.9),        # Bottom right corner
-            "center_top": (0.5, 0.25),         # Center horizontally, 25% from top
-            "center_bottom": (0.5, 0.75),      # Center horizontally, 75% from top
+            "bottom_left": (0.1, 0.75),         # Bottom left corner (raised from 90%)
+            "bottom_right": (0.9, 0.75),        # Bottom right corner (raised from 90%)
         }
-        
+
         if position in position_map:
             x_percent, y_percent = position_map[position]
-            
+
             # Calculate pixel coordinates
             x = int((video_width * x_percent) - (text_width / 2))
             y = int((video_height * y_percent) - (text_height / 2))
-            
+
             # Ensure coordinates are within bounds
             x = max(10, min(x, video_width - text_width - 10))
             y = max(10, min(y, video_height - text_height - 10))
-            
+
             logger.info(f"📍 Position '{position}': ({x}, {y}) in {video_width}x{video_height}")
             return (x, y)
         else:
             # Default to center bottom
             x = int((video_width / 2) - (text_width / 2))
-            y = int((video_height * 0.85) - (text_height / 2))
-            logger.warning(f"⚠️ Unknown position '{position}', using center bottom: ({x}, {y})")
-            return (x, y) 
+            y = int((video_height * 0.75) - (text_height / 2))
+            logger.warning(
+                f"⚠️ Unknown position '{position}', "
+                f"using center bottom: ({x}, {y})")
+            return (x, y)

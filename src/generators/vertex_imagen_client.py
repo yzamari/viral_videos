@@ -8,7 +8,6 @@ import tempfile
 
 logger = logging.getLogger(__name__)
 
-
 class VertexImagenClient:
     """Client for generating images using Google's Imagen through Vertex AI"""
 
@@ -155,4 +154,3 @@ class VertexImagenClient:
         except Exception as e:
             logger.error(f"Imagen connection test failed: {e}")
             return False
-

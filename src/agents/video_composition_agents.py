@@ -3,14 +3,21 @@ Video Composition AI Agents
 Specialized agents for making granular video composition decisions
 """
 
-import google.generativeai as genai
+try:
+    from google.generativeai.generative_models import GenerativeModel
+    genai_available = True
+except ImportError:
+    GenerativeModel = None
+    genai_available = False
+
 from typing import Dict, Any, List, Optional, Tuple
 import logging
 from datetime import datetime
 import json
+import re
+from ..utils.json_fixer import create_json_fixer
 
 logger = logging.getLogger(__name__)
-
 
 class VideoStructureAgent:
     """
@@ -20,8 +27,14 @@ class VideoStructureAgent:
 
     def __init__(self, api_key: str):
         self.api_key = api_key
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        if genai_available and GenerativeModel:
+            self.model = GenerativeModel('gemini-2.5-flash')
+        else:
+            logger.warning("Google Generative AI is not available. Structure analysis will be limited.")
+            self.model = None
+        
+        # Initialize JSON fixer
+        self.json_fixer = create_json_fixer(api_key)
 
         self.agent_profile = {
             'name': 'StructureMaster',
@@ -49,8 +62,9 @@ class VideoStructureAgent:
             f"🏗️ StructureMaster analyzing video structure for: {topic}")
 
         try:
-            analysis_prompt = f"""
-You are StructureMaster, an expert AI agent specializing in video structure and composition strategy.
+            analysis_prompt = """
+You are StructureMaster, an expert AI agent specializing in video structure and
+        composition strategy.
 
 ANALYZE THIS VIDEO CONTENT:
 - Topic: {topic}
@@ -67,7 +81,9 @@ DESIGN OPTIMAL VIDEO STRUCTURE:
    - What's the optimal pacing for each segment?
 
 2. CONTINUITY STRATEGY:
-   - Identify segments that should flow continuously (e.g., 3 clips of 8s = 24s continuous)
+   - Identify segments that should flow continuously (
+       e.g.,
+       3 clips of 8s = 24s continuous)
    - Identify segments that should be standalone clips
    - Consider narrative flow and audience engagement
 
@@ -112,17 +128,25 @@ Respond in JSON format:
 }}
 """
 
+            if not self.model:
+                logger.warning("⚠️ AI model not available, using fallback structure")
+                return self._create_fallback_structure(total_duration)
+
             response = self.model.generate_content(analysis_prompt)
 
-            try:
-                response_text = response.text.strip()
-                if response_text.startswith('```json'):
-                    response_text = response_text[7:-3]
-                elif response_text.startswith('```'):
-                    response_text = response_text[3:-3]
-
-                structure_data = json.loads(response_text)
-
+            # Use centralized JSON fixer to handle parsing
+            expected_structure = {
+                "total_segments": int,
+                "structure_strategy": str,
+                "segments": list,
+                "continuity_groups": list,
+                "engagement_strategy": str,
+                "platform_optimization": str
+            }
+            
+            structure_data = self.json_fixer.fix_json(response.text, expected_structure)
+            
+            if structure_data:
                 structure_data.update({
                     'agent_name': 'StructureMaster',
                     'analysis_timestamp': datetime.now().isoformat(),
@@ -137,15 +161,14 @@ Respond in JSON format:
 
                 logger.info(
                     f"🏗️ StructureMaster Decision: {
-                        structure_data['total_segments']} segments")
+                        structure_data.get('total_segments', 0)} segments")
                 logger.info(
                     f"   Strategy: {
-                        structure_data['structure_strategy']}")
+                        structure_data.get('structure_strategy', 'Unknown')}")
 
                 return structure_data
-
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse StructureMaster response: {e}")
+            else:
+                logger.warning("⚠️ JSON fixer could not parse StructureMaster response")
                 return self._create_fallback_structure(total_duration)
 
         except Exception as e:
@@ -233,7 +256,6 @@ Respond in JSON format:
             'agent_name': 'StructureMaster (Fallback)',
             'analysis_timestamp': datetime.now().isoformat()}
 
-
 class ClipTimingAgent:
     """
     AI Agent specialized in determining optimal timing for individual clips
@@ -241,8 +263,14 @@ class ClipTimingAgent:
 
     def __init__(self, api_key: str):
         self.api_key = api_key
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        if genai_available and GenerativeModel:
+            self.model = GenerativeModel('gemini-2.5-flash')
+        else:
+            logger.warning("Google Generative AI is not available. Timing analysis will be limited.")
+            self.model = None
+        
+        # Initialize JSON fixer
+        self.json_fixer = create_json_fixer(api_key)
 
         self.agent_profile = {
             'name': 'TimingMaster',
@@ -270,8 +298,9 @@ class ClipTimingAgent:
                 video_structure['total_segments']} segments")
 
         try:
-            timing_prompt = f"""
-You are TimingMaster, an expert AI agent specializing in clip timing and pacing optimization.
+            timing_prompt = """
+You are TimingMaster, an expert AI agent specializing in clip timing and
+        pacing optimization.
 
 ANALYZE CLIP TIMING REQUIREMENTS:
 
@@ -320,31 +349,41 @@ Respond in JSON format:
 }}
 """
 
+            if not self.model:
+                logger.warning("⚠️ AI model not available, using fallback timing")
+                return self._create_fallback_timing(video_structure)
+
             response = self.model.generate_content(timing_prompt)
 
-            try:
-                response_text = response.text.strip()
-                if response_text.startswith('```json'):
-                    response_text = response_text[7:-3]
-                elif response_text.startswith('```'):
-                    response_text = response_text[3:-3]
-
-                timing_data = json.loads(response_text)
-
+            # Use centralized JSON fixer to handle parsing
+            expected_timing = {
+                "timing_strategy": str,
+                "total_clips": int,
+                "clips": list,
+                "pacing_flow": str,
+                "attention_optimization": str
+            }
+            
+            timing_data = self.json_fixer.fix_json(response.text, expected_timing)
+            
+            if timing_data:
                 timing_data.update({
                     'agent_name': 'TimingMaster',
-                    'analysis_timestamp': datetime.now().isoformat()
+                    'analysis_timestamp': datetime.now().isoformat(),
+                    'input_parameters': {
+                        'video_structure': video_structure,
+                        'content_details': content_details
+                    }
                 })
 
                 logger.info(
                     f"⏱️ TimingMaster Decision: {
-                        timing_data['total_clips']} clips")
-                logger.info(f"   Strategy: {timing_data['timing_strategy']}")
+                        timing_data.get('total_clips', 0)} clips")
+                logger.info(f"   Strategy: {timing_data.get('timing_strategy', 'Unknown')}")
 
                 return timing_data
-
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse TimingMaster response: {e}")
+            else:
+                logger.warning("⚠️ JSON fixer could not parse TimingMaster response")
                 return self._create_fallback_timing(video_structure)
 
         except Exception as e:
@@ -360,8 +399,8 @@ Respond in JSON format:
         current_time = 0
 
         for segment in video_structure['segments']:
-            clip_count = segment['clip_count']
-            segment_duration = segment['duration']
+            clip_count = int(segment['clip_count'])
+            segment_duration = float(segment['duration'])
             clip_duration = segment_duration / clip_count
 
             for i in range(clip_count):
@@ -388,7 +427,6 @@ Respond in JSON format:
             'analysis_timestamp': datetime.now().isoformat()
         }
 
-
 class VisualElementsAgent:
     """
     AI Agent specialized in visual elements design (headers, titles, subtitles)
@@ -396,8 +434,14 @@ class VisualElementsAgent:
 
     def __init__(self, api_key: str):
         self.api_key = api_key
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        if genai_available and GenerativeModel:
+            self.model = GenerativeModel('gemini-2.5-flash')
+        else:
+            logger.warning("Google Generative AI is not available. Visual design analysis will be limited.")
+            self.model = None
+        
+        # Initialize JSON fixer
+        self.json_fixer = create_json_fixer(api_key)
 
         self.agent_profile = {
             'name': 'VisualDesigner',
@@ -418,112 +462,88 @@ class VisualElementsAgent:
                                platform: str) -> Dict[str,
                                                       Any]:
         """
-        Design headers, titles, subtitles with optimal positioning and styling
+        Design visual elements for the video (headers, overlays, etc.)
         """
-        logger.info(
-            f"🎨 VisualDesigner designing visual elements for {platform}")
+        logger.info(f"🎨 VisualDesigner designing visual elements for {platform}")
 
         try:
-            design_prompt = f"""
-You are VisualDesigner, an expert AI agent specializing in visual elements and typography design.
+            design_prompt = """
+You are VisualDesigner, an expert AI agent specializing in visual elements design.
 
-DESIGN VISUAL ELEMENTS FOR:
+ANALYZE VISUAL DESIGN REQUIREMENTS:
 
 Video Structure: {json.dumps(video_structure, indent=2)}
 Content Theme: {content_theme}
 Platform: {platform}
 
-DESIGN REQUIREMENTS:
+DESIGN OPTIMAL VISUAL ELEMENTS:
 
-1. HEADERS & TITLES:
-   - Main title design and positioning
-   - Segment headers for different parts
-   - Typography that matches content style
-   - Platform-optimized sizing
+1. HEADER/TITLE DESIGN:
+   - What should the main header/title look like?
+   - Font, color, size, placement recommendations
 
-2. SUBTITLES & CAPTIONS:
-   - Subtitle styling and positioning
-   - Readability optimization
-   - Color contrast for accessibility
-   - Animation and timing
+2. OVERLAY STRATEGY:
+   - When and where should overlays appear?
+   - How to maximize readability and engagement?
 
-3. VISUAL HIERARCHY:
-   - Primary, secondary, tertiary text elements
-   - Size, weight, and color relationships
-   - Positioning for different screen sizes
+3. SUBTITLE DESIGN:
+   - Subtitle style, placement, and timing
+   - Accessibility considerations
 
-4. PLATFORM OPTIMIZATION:
-   - TikTok: Bold, high-contrast, mobile-first
-   - YouTube: Professional, varied sizing
-   - Instagram: Aesthetic, brand-consistent
+4. PLATFORM-SPECIFIC DESIGN:
+   - TikTok: Bold, high-contrast, large text
+   - YouTube: Professional, clean, brand-aligned
+   - Instagram: Aesthetic, visually consistent
 
-PROVIDE COMPREHENSIVE DESIGN SPECIFICATION:
+PROVIDE DETAILED VISUAL DESIGN PLAN:
 
 Respond in JSON format:
-{{
-    "design_strategy": "overall visual approach",
-    "color_palette": {{
-        "primary": "#hex",
-        "secondary": "#hex",
-        "accent": "#hex",
-        "text": "#hex",
-        "background": "#hex"
-    }},
-    "typography": {{
-        "main_font": "font family",
-        "header_font": "font family",
-        "subtitle_font": "font family",
-        "font_weights": ["normal", "bold", "extra-bold"]
-    }},
-    "text_elements": [
-        {{
-            "element_id": 1,
-            "type": "main_title/header/subtitle/caption",
-            "content": "text content",
-            "position": {{"x": "percentage", "y": "percentage"}},
-            "size": "pixels or percentage",
-            "color": "#hex",
-            "font_weight": "normal/bold/extra-bold",
-            "animation": "fade-in/slide-up/none",
-            "duration": "seconds on screen",
-            "timing": "when to appear"
-        }}
+{
+    "header": {"text": "string", "font": "string", "color": "string", "size": "string", "placement": "string"},
+    "overlays": [
+        {"text": "string", "start_time": number, "end_time": number, "style": "string", "placement": "string"}
     ],
-    "accessibility": {{
-        "contrast_ratio": "4.5:1 minimum",
-        "font_size_minimum": "16px",
-        "readability_score": "high/medium/low"
-    }},
-    "platform_adaptations": "platform-specific adjustments"
-}}
+    "subtitles": {"style": "string", "placement": "string", "timing": "string"},
+    "color_palette": ["#RRGGBB", ...],
+    "platform_guidelines": "string"
+}
 """
+
+            if not self.model:
+                logger.warning("⚠️ AI model not available, using fallback design")
+                return self._create_fallback_design(platform)
 
             response = self.model.generate_content(design_prompt)
 
-            try:
-                response_text = response.text.strip()
-                if response_text.startswith('```json'):
-                    response_text = response_text[7:-3]
-                elif response_text.startswith('```'):
-                    response_text = response_text[3:-3]
-
-                design_data = json.loads(response_text)
-
+            # Use centralized JSON fixer to handle parsing
+            expected_design = {
+                "header": dict,
+                "overlays": list,
+                "subtitles": dict,
+                "color_palette": list,
+                "platform_guidelines": str
+            }
+            
+            design_data = self.json_fixer.fix_json(response.text, expected_design)
+            
+            if design_data:
                 design_data.update({
                     'agent_name': 'VisualDesigner',
-                    'analysis_timestamp': datetime.now().isoformat()
+                    'analysis_timestamp': datetime.now().isoformat(),
+                    'input_parameters': {
+                        'video_structure': video_structure,
+                        'content_theme': content_theme,
+                        'platform': platform
+                    }
                 })
 
-                logger.info(
-                    f"🎨 VisualDesigner Decision: {len(design_data['text_elements'])} text elements")
-                logger.info(f"   Strategy: {design_data['design_strategy']}")
+                logger.info(f"🎨 VisualDesigner Decision: Header: {design_data.get('header', {}).get('text', 'N/A')}")
+                logger.info(f"   Overlays: {len(design_data.get('overlays', []))}")
 
                 return design_data
-
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse VisualDesigner response: {e}")
+            else:
+                logger.warning("⚠️ JSON fixer could not parse VisualDesigner response")
                 return self._create_fallback_design(platform)
-
         except Exception as e:
             logger.error(f"VisualDesigner analysis failed: {e}")
             return self._create_fallback_design(platform)
@@ -561,9 +581,9 @@ Respond in JSON format:
             'design_strategy': f'Fallback design optimized for {platform}',
             'color_palette': color_palette,
             'typography': {
-                "main_font": "Arial, sans-serif",
-                "header_font": "Arial Black, sans-serif",
-                "subtitle_font": "Arial, sans-serif",
+                "main_font": "Arial, sans-seri",
+                "header_font": "Arial Black, sans-seri",
+                "subtitle_font": "Arial, sans-seri",
                 "font_weights": ["normal", "bold", "extra-bold"]
             },
             'text_elements': [
@@ -590,7 +610,6 @@ Respond in JSON format:
             'analysis_timestamp': datetime.now().isoformat()
         }
 
-
 class MediaTypeAgent:
     """
     AI Agent specialized in deciding between VEO2 video clips vs static images
@@ -598,8 +617,14 @@ class MediaTypeAgent:
 
     def __init__(self, api_key: str):
         self.api_key = api_key
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        if genai_available and GenerativeModel:
+            self.model = GenerativeModel('gemini-2.5-flash')
+        else:
+            logger.warning("Google Generative AI is not available. Media type analysis will be limited.")
+            self.model = None
+        
+        # Initialize JSON fixer
+        self.json_fixer = create_json_fixer(api_key)
 
         self.agent_profile = {
             'name': 'MediaStrategist',
@@ -620,103 +645,80 @@ class MediaTypeAgent:
                                                    Any]) -> Dict[str,
                                                                  Any]:
         """
-        Decide whether each clip should be VEO2 video or static images
+        Analyze and decide optimal media types for each clip (image, video, animation)
         """
-        logger.info(
-            f"📱 MediaStrategist analyzing media types for {
-                clip_plan['total_clips']} clips")
+        logger.info(f"🖼️ MediaTypeAgent analyzing media types for {len(clip_plan.get('clips', []))} clips")
 
         try:
-            media_prompt = f"""
-You are MediaStrategist, an expert AI agent specializing in media type optimization.
+            media_prompt = """
+You are MediaTypeAgent, an expert AI agent specializing in media type selection.
 
 ANALYZE MEDIA TYPE REQUIREMENTS:
 
 Clip Plan: {json.dumps(clip_plan, indent=2)}
 Content Analysis: {json.dumps(content_analysis, indent=2)}
 
-DECIDE OPTIMAL MEDIA TYPES:
+DETERMINE OPTIMAL MEDIA TYPES:
 
-1. CLIP-BY-CLIP ANALYSIS:
-   For each clip, decide:
-   - VEO2 video clip: For dynamic content, movement, action
-   - Static images: For text-heavy content, infographics, pauses
-   - Image sequences: For step-by-step content, comparisons
+1. CLIP ANALYSIS:
+   - For each clip, decide if it should be image, video, or animation
+   - Consider content, pacing, and engagement
 
-2. DECISION FACTORS:
-   - Content complexity and movement requirements
-   - Information density and reading time
-   - Visual impact and engagement needs
-   - Resource optimization and generation time
-   - Platform preferences and user expectations
+2. PLATFORM OPTIMIZATION:
+   - TikTok: Fast, dynamic visuals
+   - YouTube: Mix of video and image
+   - Instagram: Aesthetic, high-quality images
 
-3. OPTIMIZATION STRATEGY:
-   - Balance video and static content
-   - Consider narrative flow and pacing
-   - Optimize for attention retention
-   - Account for accessibility needs
+3. ENGAGEMENT STRATEGY:
+   - Use of animation for emphasis
+   - When to use real video vs. generated images
 
-PROVIDE DETAILED MEDIA STRATEGY:
+PROVIDE DETAILED MEDIA PLAN:
 
 Respond in JSON format:
-{{
-    "media_strategy": "overall approach description",
-    "resource_allocation": {{
-        "veo2_clips": number,
-        "static_images": number,
-        "image_sequences": number
-    }},
-    "clip_media_decisions": [
-        {{
-            "clip_id": 1,
-            "media_type": "veo2_video/static_image/image_sequence",
-            "duration": number_in_seconds,
-            "rationale": "why this media type",
-            "content_description": "what will be shown",
-            "visual_requirements": "specific visual needs",
-            "generation_parameters": {{
-                "style": "description",
-                "quality": "high/medium/standard",
-                "effects": ["list of effects"]
-            }}
-        }}
+{
+    "media_strategy": "string",
+    "clip_media_types": [
+        {"clip_id": 1, "media_type": "image/video/animation", "rationale": "string"}
     ],
-    "flow_optimization": "how media types support narrative flow",
-    "engagement_strategy": "how media mix enhances engagement"
-}}
+    "platform_guidelines": "string"
+}
 """
+
+            if not self.model:
+                logger.warning("⚠️ AI model not available, using fallback media plan")
+                return self._create_fallback_media_plan(clip_plan)
 
             response = self.model.generate_content(media_prompt)
 
-            try:
-                response_text = response.text.strip()
-                if response_text.startswith('```json'):
-                    response_text = response_text[7:-3]
-                elif response_text.startswith('```'):
-                    response_text = response_text[3:-3]
-
-                media_data = json.loads(response_text)
-
+            # Use centralized JSON fixer to handle parsing
+            expected_media = {
+                "media_strategy": str,
+                "clip_media_types": list,
+                "platform_guidelines": str
+            }
+            
+            media_data = self.json_fixer.fix_json(response.text, expected_media)
+            
+            if media_data:
                 media_data.update({
-                    'agent_name': 'MediaStrategist',
-                    'analysis_timestamp': datetime.now().isoformat()
+                    'agent_name': 'MediaTypeAgent',
+                    'analysis_timestamp': datetime.now().isoformat(),
+                    'input_parameters': {
+                        'clip_plan': clip_plan,
+                        'content_analysis': content_analysis
+                    }
                 })
 
-                allocation = media_data['resource_allocation']
-                logger.info(
-                    f"📱 MediaStrategist Decision: {
-                        allocation['veo2_clips']} VEO2 clips, {
-                        allocation['static_images']} images")
-                logger.info(f"   Strategy: {media_data['media_strategy']}")
+                logger.info(f"🖼️ MediaTypeAgent Decision: Strategy: {media_data.get('media_strategy', 'N/A')}")
+                logger.info(f"   Clip Media Types: {len(media_data.get('clip_media_types', []))}")
 
                 return media_data
-
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse MediaStrategist response: {e}")
+            else:
+                logger.warning("⚠️ JSON fixer could not parse MediaTypeAgent response")
                 return self._create_fallback_media_plan(clip_plan)
-
         except Exception as e:
-            logger.error(f"MediaStrategist analysis failed: {e}")
+            logger.error(f"MediaTypeAgent analysis failed: {e}")
             return self._create_fallback_media_plan(clip_plan)
 
     def _create_fallback_media_plan(
@@ -764,7 +766,6 @@ Respond in JSON format:
             'agent_name': 'MediaStrategist (Fallback)',
             'analysis_timestamp': datetime.now().isoformat()
         }
-
 
 def get_composition_agents_summary() -> Dict[str, Any]:
     """Get summary of all video composition agents"""

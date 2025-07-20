@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 
-
 class MonitoringService:
     def __init__(self, session_id):
         # Fix path construction to match actual session directory format

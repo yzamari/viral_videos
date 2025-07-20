@@ -7,13 +7,13 @@ from pydantic import BaseModel, Field, HttpUrl
 from enum import Enum
 from dataclasses import dataclass
 
-
 class Platform(str, Enum):
     """
     Target destination platforms for video publishing and optimization.
 
     This represents the social media platform where the generated video will be published.
-    The AI agents optimize content, format, duration, and style specifically for each platform's:
+    The AI agents optimize content, format, duration, and
+            style specifically for each platform's:
     - Algorithm preferences
     - Audience behavior patterns
     - Technical requirements (aspect ratio, duration limits)
@@ -28,12 +28,12 @@ class Platform(str, Enum):
     INSTAGRAM = "instagram"
     FACEBOOK = "facebook"
 
-
 class VideoCategory(str, Enum):
     """Video content categories"""
     COMEDY = "Comedy"
     ENTERTAINMENT = "Entertainment"
     EDUCATION = "Education"
+    EDUCATIONAL = "Educational"  # Alias for Education
     TECHNOLOGY = "Technology"
     GAMING = "Gaming"
     MUSIC = "Music"
@@ -52,7 +52,6 @@ class VideoCategory(str, Enum):
     PETS = "Pets"
     OTHER = "Other"
 
-
 class ForceGenerationMode(str, Enum):
     AUTO = "auto"  # Use normal fallback chain
     FORCE_VEO3 = "force_veo3"  # Force VEO-3 only
@@ -60,13 +59,11 @@ class ForceGenerationMode(str, Enum):
     FORCE_IMAGE_GEN = "force_image_gen"  # Force Image Generation only
     FORCE_CONTINUOUS = "force_continuous"  # Force continuous generation (no stopping)
 
-
 class VideoOrientation(str, Enum):
     PORTRAIT = "portrait"  # 9:16 (TikTok, Instagram Stories)
     LANDSCAPE = "landscape"  # 16:9 (YouTube, traditional video)
     SQUARE = "square"  # 1:1 (Instagram Posts)
     AUTO = "auto"  # Let AI agents decide based on platform
-
 
 class TrendingVideo(BaseModel):
     """Model for a trending video from any platform"""
@@ -100,7 +97,6 @@ class TrendingVideo(BaseModel):
     has_captions: bool = False
     language: Optional[str] = None
 
-
 @dataclass
 class GeneratedVideoConfig:
     topic: str
@@ -108,11 +104,19 @@ class GeneratedVideoConfig:
     target_platform: Platform
     category: VideoCategory
 
+    # Session tracking
+    session_id: Optional[str] = None
+
     # Visual and audio settings
     visual_style: str = "cinematic"
     tone: str = "engaging"
     style: str = "professional"
     target_audience: str = "general audience"  # Add target_audience parameter
+    
+    # Platform alias for backward compatibility
+    @property
+    def platform(self) -> Platform:
+        return self.target_platform
 
     # Content structure
     hook: str = "Amazing content ahead!"
@@ -144,6 +148,10 @@ class GeneratedVideoConfig:
     # NEW: Video orientation settings
     video_orientation: VideoOrientation = VideoOrientation.AUTO
     ai_decide_orientation: bool = True  # Let AI agents decide orientation
+    
+    # NEW: Core decision integration
+    num_clips: Optional[int] = None
+    clip_durations: Optional[List[float]] = None
 
     # Advanced settings
     frame_continuity: bool = False
@@ -157,6 +165,8 @@ class GeneratedVideoConfig:
     fallback_only: bool = False
     use_image_fallback: bool = True
     images_per_second: int = 2
+    cheap_mode: bool = False  # Enable cost-saving mode
+    cheap_mode_level: str = "full"  # Granular cheap mode: full, audio, video
 
     def __post_init__(self):
         if self.main_content is None:
@@ -203,7 +213,6 @@ class GeneratedVideoConfig:
         else:
             return (1080, 1920)  # Default to portrait for modern social media
 
-
 class Narrative(str, Enum):
     """Video narrative/viewpoint options"""
     PRO_AMERICAN_GOVERNMENT = "pro_american_government"
@@ -216,7 +225,6 @@ class Narrative(str, Enum):
     PRO_FAMILY = "pro_family"
     NEUTRAL = "neutral"
 
-
 class Feeling(str, Enum):
     """Video emotional tone options"""
     SERIOUS = "serious"
@@ -228,7 +236,6 @@ class Feeling(str, Enum):
     EMOTIONAL = "emotional"
     ENERGETIC = "energetic"
     CALM = "calm"
-
 
 class Language(str, Enum):
     """Supported languages for multi-language video generation"""
@@ -256,7 +263,6 @@ class Language(str, Enum):
     RUSSIAN = "ru"
     CHINESE = "zh"
     JAPANESE = "ja"
-
 
 class TTSVoice(str, Enum):
     """TTS voice types for different languages and emotions"""
@@ -311,7 +317,6 @@ class TTSVoice(str, Enum):
     # Auto-select based on language and emotion
     AUTO = "auto"
 
-
 class LanguageVersion(BaseModel):
     """Single language version of a video"""
     language: Language
@@ -335,7 +340,6 @@ class LanguageVersion(BaseModel):
     generated_at: datetime = Field(default_factory=datetime.now)
     translation_model: str = "gemini-2.5-pro"
 
-
 class MultiLanguageVideo(BaseModel):
     """Multi-language video with shared visual content"""
     base_video_id: str
@@ -358,7 +362,6 @@ class MultiLanguageVideo(BaseModel):
     primary_language: Language
     supported_languages: List[Language] = Field(default_factory=list)
 
-
 @dataclass
 class VideoAnalysis:
     video_id: str
@@ -369,7 +372,6 @@ class VideoAnalysis:
     platform_optimization: Dict[str, float]
     recommended_improvements: List[str]
     ai_confidence: float
-
 
 @dataclass
 class GeneratedVideo:
@@ -396,7 +398,6 @@ class GeneratedVideo:
             return 0.0
         return (self.clips_generated - self.fallback_clips) / self.clips_generated
 
-
 class VideoPerformance(BaseModel):
     """Track performance of published videos"""
     video_id: str
@@ -420,4 +421,3 @@ class VideoPerformance(BaseModel):
     success_factors: List[str]
     failure_factors: List[str]
     recommendations: List[str]
-

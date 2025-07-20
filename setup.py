@@ -11,7 +11,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="viral-video-generator",
-    version="2.1.0-rc1",
+    version="2.5.0-rc1",
     author="Viral AI Team",
     description="AI-powered system for generating viral social media videos",
     long_description=long_description,
@@ -20,7 +20,7 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
@@ -39,4 +39,4 @@ setup(
     },
     include_package_data=True,
     zip_safe=False,
-) 
+)

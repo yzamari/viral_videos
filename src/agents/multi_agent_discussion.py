@@ -7,10 +7,9 @@ import os
 import json
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from enum import Enum
-
 try:
     import google.generativeai as genai
 except ImportError:
@@ -22,10 +21,9 @@ from ..services.monitoring_service import MonitoringService
 from ..utils.logging_config import get_logger
 
 logger = get_logger(__name__)
-
-
 class AgentRole(Enum):
     """Available agent roles for discussions"""
+    # Core Creative Team (7 agents)
     TREND_ANALYST = "trend_analyst"
     SCRIPT_WRITER = "script_writer"
     DIRECTOR = "director"
@@ -33,7 +31,23 @@ class AgentRole(Enum):
     SOUNDMAN = "soundman"
     EDITOR = "editor"
     ORCHESTRATOR = "orchestrator"
-
+    
+    # Professional Team Extensions (12+ additional agents)
+    MARKETING_STRATEGIST = "marketing_strategist"
+    SOCIAL_MEDIA_EXPERT = "social_media_expert"
+    BRAND_SPECIALIST = "brand_specialist"
+    ENGAGEMENT_OPTIMIZER = "engagement_optimizer"
+    ANALYTICS_EXPERT = "analytics_expert"
+    CONTENT_STRATEGIST = "content_strategist"
+    VISUAL_DESIGNER = "visual_designer"
+    MOTION_GRAPHICS = "motion_graphics"
+    COLOR_SPECIALIST = "color_specialist"
+    TYPOGRAPHY_EXPERT = "typography_expert"
+    PLATFORM_OPTIMIZER = "platform_optimizer"
+    AUDIENCE_RESEARCHER = "audience_researcher"
+    VIRAL_SPECIALIST = "viral_specialist"
+    COPYWRITER = "copywriter"
+    THUMBNAIL_DESIGNER = "thumbnail_designer"
 
 @dataclass
 class AgentMessage:
@@ -48,7 +62,6 @@ class AgentMessage:
     concerns: Optional[List[str]] = None
     vote: Optional[str] = None
 
-
 @dataclass
 class DiscussionTopic:
     """Represents a topic for agent discussion"""
@@ -60,7 +73,6 @@ class DiscussionTopic:
     max_rounds: int = 10
     min_consensus: float = 0.7
 
-
 @dataclass
 class DiscussionResult:
     """Final result of agent discussion"""
@@ -71,7 +83,6 @@ class DiscussionResult:
     participating_agents: List[str]
     key_insights: List[str]
     alternative_approaches: List[str]
-
 
 class MultiAgentDiscussionSystem:
     """
@@ -95,30 +106,68 @@ class MultiAgentDiscussionSystem:
             self.model = None
             logger.warning("Google Generative AI not available")
 
-        # Set up directories
-        self.discussions_dir = os.path.join(
-            "outputs", f"session_{session_id}", "agent_discussions")
-        os.makedirs(self.discussions_dir, exist_ok=True)
+        # ENHANCED: Use session manager for proper file organization
+        from ..utils.session_manager import session_manager
+        self.session_manager = session_manager
+        
+        # Try to activate session in session manager if not already active
+        session_managed = False
+        if self.session_manager:
+            try:
+                # Check if session is already active and matches our session_id
+                if (self.session_manager.current_session and 
+                    self.session_manager.current_session == self.session_id):
+                    # Perfect! Use the session manager
+                    self.discussions_dir = self.session_manager.get_session_path("discussions")
+                    session_managed = True
+                    logger.info(f"✅ Session-managed discussions: {self.session_id}")
+                else:
+                    # Different session active or no active session
+                    # Try to activate our session in the session manager
+                    try:
+                        # Check if our session exists
+                        session_info = self.session_manager.get_session_info(self.session_id)
+                        # Activate our session
+                        self.session_manager.current_session = self.session_id
+                        self.discussions_dir = self.session_manager.get_session_path("discussions")
+                        session_managed = True
+                        logger.info(f"✅ Activated session-managed discussions: {self.session_id}")
+                    except ValueError:
+                        # Our session doesn't exist in session manager, use manual path
+                        logger.info(f"🎭 Session not in manager, using manual path: {self.session_id}")
+                        self.discussions_dir = os.path.join("outputs", self.session_id, "discussions")
+                        os.makedirs(self.discussions_dir, exist_ok=True)
+            except Exception as e:
+                logger.warning(f"⚠️ Could not use session manager: {e}")
+                # Fallback to manual path creation
+                self.discussions_dir = os.path.join("outputs", self.session_id, "discussions")
+                os.makedirs(self.discussions_dir, exist_ok=True)
+        else:
+            # No session manager available, use manual path
+            self.discussions_dir = os.path.join("outputs", self.session_id, "discussions")
+            os.makedirs(self.discussions_dir, exist_ok=True)
 
-        # Initialize monitoring
-        self.monitoring_service = MonitoringService(session_id)
-
-        # Initialize visualizer
-        if enable_visualization:
+        # Initialize discussion visualizer with correct session directory
+        if self.enable_visualization:
             self.visualizer = DiscussionVisualizer(
-                f"outputs/session_{session_id}")
+                session_dir=os.path.join("outputs", self.session_id)
+            )
+            logger.info(f"🎭 Discussion visualizer initialized with session dir: outputs/{self.session_id}")
         else:
             self.visualizer = None
 
-        # Agent personalities and expertise
+        # Initialize monitoring service
+        self.monitoring_service = MonitoringService(self.session_id)
+
+        # Initialize agent personalities
         self.agent_personalities = self._initialize_agent_personalities()
 
-        logger.info("🎭 Multi-agent discussion system initialized")
-        logger.info(f"   Session: {session_id}")
+        logger.info(f"🎭 Multi-agent discussion system initialized")
+        logger.info(f"   Session: {self.session_id}")
         logger.info(f"   Agents available: {len(self.agent_personalities)}")
+        logger.info(f"   Session-managed discussions: {'✅' if session_managed else '❌'}")
 
-    def _initialize_agent_personalities(
-            self) -> Dict[AgentRole, Dict[str, Any]]:
+    def _initialize_agent_personalities(self) -> Dict[AgentRole, Dict[str, Any]]:
         """Initialize agent personalities and expertise"""
         return {
             AgentRole.TREND_ANALYST: {
@@ -176,13 +225,103 @@ class MultiAgentDiscussionSystem:
                 "expertise": ["workflow coordination", "agent synchronization",
                               "resource management", "timeline optimization"],
                 "decision_style": "Holistic with coordination priority"
+            },
+            # Professional Team Extensions
+            AgentRole.MARKETING_STRATEGIST: {
+                "name": "MarketMind",
+                "personality": "Strategic, ROI-focused, brand-aware marketing expert",
+                "expertise": ["marketing strategy", "brand positioning", "audience targeting", "campaign optimization"],
+                "decision_style": "Strategic with brand consistency focus"
+            },
+            AgentRole.SOCIAL_MEDIA_EXPERT: {
+                "name": "SocialSavvy",
+                "personality": "Platform-native, trend-aware, engagement-focused specialist",
+                "expertise": ["platform algorithms", "social trends", "community management", "viral mechanics"],
+                "decision_style": "Platform-optimized with viral potential priority"
+            },
+            AgentRole.BRAND_SPECIALIST: {
+                "name": "BrandGuard",
+                "personality": "Consistent, quality-focused, brand identity protector",
+                "expertise": ["brand guidelines", "visual consistency", "tone of voice", "brand values"],
+                "decision_style": "Brand-consistent with quality assurance"
+            },
+            AgentRole.ENGAGEMENT_OPTIMIZER: {
+                "name": "EngagePro",
+                "personality": "Metrics-driven, interaction-focused, conversion-oriented",
+                "expertise": ["engagement rates", "call-to-actions", "user behavior", "retention strategies"],
+                "decision_style": "Engagement-maximizing with data support"
+            },
+            AgentRole.ANALYTICS_EXPERT: {
+                "name": "DataDive",
+                "personality": "Analytical, performance-focused, insights-driven researcher",
+                "expertise": ["performance analytics", "A/B testing", "data interpretation", "KPI optimization"],
+                "decision_style": "Data-driven with performance focus"
+            },
+            AgentRole.CONTENT_STRATEGIST: {
+                "name": "ContentCraft",
+                "personality": "Strategic, audience-focused, content planning specialist",
+                "expertise": ["content planning", "editorial calendars", "content pillars", "audience journeys"],
+                "decision_style": "Strategic with long-term content focus"
+            },
+            AgentRole.VISUAL_DESIGNER: {
+                "name": "VisualVibe",
+                "personality": "Aesthetic-focused, design-thinking, visual harmony expert",
+                "expertise": ["visual design", "composition", "aesthetic appeal", "design trends"],
+                "decision_style": "Design-centric with aesthetic priority"
+            },
+            AgentRole.MOTION_GRAPHICS: {
+                "name": "MotionMaster",
+                "personality": "Dynamic, animation-focused, movement specialist",
+                "expertise": ["motion graphics", "animation", "visual effects", "dynamic elements"],
+                "decision_style": "Motion-enhanced with dynamic impact"
+            },
+            AgentRole.COLOR_SPECIALIST: {
+                "name": "ColorCraft",
+                "personality": "Psychology-aware, emotion-focused, color theory expert",
+                "expertise": ["color psychology", "brand colors", "emotional impact", "visual accessibility"],
+                "decision_style": "Color-optimized with psychological impact"
+            },
+            AgentRole.TYPOGRAPHY_EXPERT: {
+                "name": "TypeTech",
+                "personality": "Readability-focused, font-specialized, text optimization expert",
+                "expertise": ["typography", "font selection", "readability", "text hierarchy"],
+                "decision_style": "Typography-optimized with readability focus"
+            },
+            AgentRole.PLATFORM_OPTIMIZER: {
+                "name": "PlatformPro",
+                "personality": "Platform-specific, algorithm-aware, optimization specialist",
+                "expertise": ["platform algorithms", "format optimization", "best practices", "platform features"],
+                "decision_style": "Platform-native with algorithm optimization"
+            },
+            AgentRole.AUDIENCE_RESEARCHER: {
+                "name": "AudienceAce",
+                "personality": "User-focused, behavior-analyzing, demographic specialist",
+                "expertise": ["audience research", "user personas", "behavior patterns", "demographic insights"],
+                "decision_style": "Audience-centric with user behavior focus"
+            },
+            AgentRole.VIRAL_SPECIALIST: {
+                "name": "ViralVault",
+                "personality": "Trend-obsessed, virality-focused, shareability expert",
+                "expertise": ["viral mechanics", "shareability factors", "trend analysis", "viral triggers"],
+                "decision_style": "Virality-maximizing with trend awareness"
+            },
+            AgentRole.COPYWRITER: {
+                "name": "CopyCoach",
+                "personality": "Persuasive, message-focused, conversion-oriented writer",
+                "expertise": ["copywriting", "persuasive text", "CTAs", "message clarity"],
+                "decision_style": "Message-optimized with persuasion focus"
+            },
+            AgentRole.THUMBNAIL_DESIGNER: {
+                "name": "ThumbTech",
+                "personality": "Click-focused, visual-impact, first-impression specialist",
+                "expertise": ["thumbnail design", "click-through rates", "visual impact", "preview optimization"],
+                "decision_style": "Click-optimized with visual impact priority"
             }
         }
 
     def _sanitize_filename(self, text: str, max_length: int = 50) -> str:
         """
-        Sanitize text for safe filename usage
-
+        Sanitize text for safe filename usage:
         Args:
             text: Input text to sanitize
             max_length: Maximum filename length (default 50)
@@ -265,14 +404,13 @@ class MultiAgentDiscussionSystem:
         # Remove trailing underscore
         safe_text = safe_text.rstrip("_")
 
-        # Ensure it's not empty
+        # Ensure it's not empty'
         if not safe_text:
             safe_text = "unnamed"
 
         return safe_text
 
-    def start_discussion(
-            self,
+    def start_discussion(self,
             topic: DiscussionTopic,
             participating_agents: List[AgentRole]) -> DiscussionResult:
         """
@@ -312,7 +450,7 @@ class MultiAgentDiscussionSystem:
         context_message = self._create_context_message(topic)
         discussion_log.append(context_message)
 
-        # Discussion rounds
+        # Discussion rounds:
         while current_round < topic.max_rounds and not consensus_reached:
             current_round += 1
             logger.info(
@@ -390,12 +528,11 @@ class MultiAgentDiscussionSystem:
         self._save_final_result(discussion_file, result)
 
         logger.info(
-            f"🎯 Discussion completed: {
-                result.consensus_level:.2f} consensus " f"in {current_round} rounds")
+            f"🎯 Discussion completed: {result.consensus_level:.2f} consensus "
+            f"in {current_round} rounds")
         return result
 
-    def _create_context_message(
-            self, topic: DiscussionTopic) -> Dict[str, Any]:
+    def _create_context_message(self, topic: DiscussionTopic) -> Dict[str, Any]:
         """Create initial context message for the discussion"""
         return {
             "type": "context",
@@ -407,8 +544,7 @@ class MultiAgentDiscussionSystem:
             "timestamp": datetime.now().isoformat()
         }
 
-    def _get_agent_response(
-            self,
+    def _get_agent_response(self,
             agent_role: AgentRole,
             topic: DiscussionTopic,
             discussion_log: List[Dict],
@@ -427,7 +563,6 @@ class MultiAgentDiscussionSystem:
         # Retry logic for quota errors
         max_retries = 3
         base_delay = 1.0
-
         for attempt in range(max_retries):
             try:
                 # Get response from Gemini model
@@ -456,29 +591,24 @@ class MultiAgentDiscussionSystem:
             except Exception as e:
                 error_message = str(e)
 
-                # Check if this is a quota error (429 status)
+                # Check if this is a quota error (429 status):
                 if "429" in error_message or "quota" in error_message.lower():
                     if attempt < max_retries - 1:
                         # Exponential backoff delay
                         delay = base_delay * (2 ** attempt)
                         logger.warning(
-                            f"Quota error for {
-                                agent_info['name']}, retrying in {
-                                delay:.1f}s (attempt {
-                                attempt + 1}/{max_retries})")
+                            f"Quota error for {agent_info['name']}, retrying in {delay:.1f}s (attempt {attempt + 1}/{max_retries})")
                         import time
                         time.sleep(delay)
                         continue
                     else:
                         logger.error(
-                            f"Quota error for {
-                                agent_info['name']} after {max_retries} attempts: {e}")
+                            f"❌ Failed to get response from {agent_info['name']} after {max_retries} attempts: {e}")
                         # Return quota-specific fallback response
                         return AgentMessage(
                             agent_role=agent_role,
                             agent_name=agent_info['name'],
-                            message=f"I need more information to provide a detailed response about {
-                                topic.title}.",
+                            message=f"I need more information to provide a detailed response about {topic.title}.",
                             timestamp=datetime.now(),
                             message_id=str(
                                 uuid.uuid4())[
@@ -488,13 +618,11 @@ class MultiAgentDiscussionSystem:
                 else:
                     # Non-quota error, log and return fallback
                     logger.error(
-                        f"Error getting response from {
-                            agent_info['name']}: {e}")
+                        f"Error getting response from {agent_info['name']}: {e}")
                     return AgentMessage(
                         agent_role=agent_role,
                         agent_name=agent_info['name'],
-                        message=f"I need more information to provide a detailed response about {
-                            topic.title}.",
+                        message=f"I need more information to provide a detailed response about {topic.title}.",
                         timestamp=datetime.now(),
                         message_id=str(
                             uuid.uuid4())[
@@ -505,8 +633,7 @@ class MultiAgentDiscussionSystem:
         return AgentMessage(
             agent_role=agent_role,
             agent_name=agent_info['name'],
-            message=f"I need more information to provide a detailed response about {
-                topic.title}.",
+            message=f"I need more information to provide a detailed response about {topic.title}.",
             timestamp=datetime.now(),
             message_id=str(
                 uuid.uuid4())[
@@ -528,16 +655,34 @@ class MultiAgentDiscussionSystem:
                 # Convert non-serializable objects to string representation
                 serializable_context[key] = str(value)
 
-        return f"""
-You are {agent_info['name']}, an AI agent with the following characteristics:
+        # Extract the mission/topic from context for emphasis
+        mission_or_topic = serializable_context.get('topic', serializable_context.get('mission', 'Unknown'))
+        platform = serializable_context.get('platform', 'Unknown Platform')
+        duration = serializable_context.get('duration', 'Unknown Duration')
+        
+        # Determine if this is a mission (action-oriented) or topic (informational)
+        is_mission = any(action_word in str(mission_or_topic).lower() for action_word in [
+            'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
+            'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
+            'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
+        ])
 
+        if is_mission:
+            # Mission-focused prompt
+            return f"""
+You are {agent_info['name']}, an AI agent with the following characteristics:
 PERSONALITY: {agent_info['personality']}
 EXPERTISE: {', '.join(agent_info['expertise'])}
 DECISION STYLE: {agent_info['decision_style']}
 
+🎯 MISSION TO ACCOMPLISH: "{mission_or_topic}"
+📱 PLATFORM: {platform}
+⏱️ DURATION: {duration} seconds
+
 DISCUSSION TOPIC: {topic.title}
 DESCRIPTION: {topic.description}
-CONTEXT: {json.dumps(serializable_context, indent=2)}
+
+FULL CONTEXT: {json.dumps(serializable_context, indent=2)}
 
 REQUIRED DECISIONS: {', '.join(topic.required_decisions)}
 
@@ -546,24 +691,83 @@ DISCUSSION ROUND: {round_num}
 PREVIOUS DISCUSSION:
 {discussion_context}
 
-Your task is to contribute to this discussion by providing your expert perspective based on your role and expertise.
+🚨 MISSION-CRITICAL INSTRUCTIONS:
+- This is a MISSION to accomplish: "{mission_or_topic}"
+- Your goal is to determine HOW to accomplish this mission within {duration} seconds
+- Think strategically about persuasion, evidence, emotional impact, and effectiveness
+- Focus on ACCOMPLISHING the mission, not just discussing it
+- Consider what content will actually achieve the desired outcome
+- Every second of the video must advance the mission objective
+- Do NOT create generic content - create mission-accomplishing content
+
+Your task is to contribute expertise on how to strategically ACCOMPLISH the mission "{mission_or_topic}" through video content.
 
 Please respond in the following JSON format:
 {{
-    "message": "Your main contribution to the discussion (2-3 sentences)",
-    "reasoning": "Your reasoning behind this perspective (1-2 sentences)",
-    "suggestions": ["Specific suggestion 1", "Specific suggestion 2"],
-    "concerns": ["Concern 1 if any", "Concern 2 if any"],
+    "message": "Your strategic approach to accomplish '{mission_or_topic}' (2-3 sentences)",
+    "reasoning": "Why this approach will effectively accomplish '{mission_or_topic}' (1-2 sentences)",
+    "suggestions": ["Specific tactical suggestion to accomplish '{mission_or_topic}'", "Another mission-accomplishing tactic"],
+    "concerns": ["Risk or challenge in accomplishing '{mission_or_topic}' if any"],
     "vote": "agree/disagree/neutral"
 }}
 
-Focus on:
-1. Your area of expertise
-2. Practical considerations
-3. Potential challenges or opportunities
-4. Specific actionable recommendations
+Focus specifically on:
+1. How to strategically accomplish "{mission_or_topic}" using {platform} in {duration}s
+2. Persuasion/teaching techniques that will achieve the mission objective
+3. Content that will effectively change minds/behaviors toward the mission goal
+4. Evidence, emotions, or logical arguments needed to accomplish "{mission_or_topic}"
 
-Be concise but insightful. Consider what other agents have said and build upon or respectfully challenge their ideas.
+Be strategic and mission-focused about ACCOMPLISHING: "{mission_or_topic}"
+"""
+        else:
+            # Topic-focused prompt (original behavior)
+            return f"""
+You are {agent_info['name']}, an AI agent with the following characteristics:
+PERSONALITY: {agent_info['personality']}
+EXPERTISE: {', '.join(agent_info['expertise'])}
+DECISION STYLE: {agent_info['decision_style']}
+
+🎯 VIDEO TOPIC: "{mission_or_topic}"
+📱 PLATFORM: {platform}
+⏱️ DURATION: {duration} seconds
+
+DISCUSSION TOPIC: {topic.title}
+DESCRIPTION: {topic.description}
+
+FULL CONTEXT: {json.dumps(serializable_context, indent=2)}
+
+REQUIRED DECISIONS: {', '.join(topic.required_decisions)}
+
+DISCUSSION ROUND: {round_num}
+
+PREVIOUS DISCUSSION:
+{discussion_context}
+
+🚨 CRITICAL INSTRUCTIONS:
+- You MUST discuss the specific topic: "{mission_or_topic}"
+- Focus on how to create the best video for this exact topic
+- Consider the platform ({platform}) and duration ({duration}s) requirements
+- Provide specific, actionable advice for THIS topic only
+- Do NOT discuss generic topics or unrelated scenarios
+
+Your task is to contribute to this discussion by providing your expert perspective on how to create the best possible video for the topic "{mission_or_topic}".
+
+Please respond in the following JSON format:
+{{
+    "message": "Your main contribution about creating a video for '{mission_or_topic}' (2-3 sentences)",
+    "reasoning": "Your reasoning for this approach to '{mission_or_topic}' (1-2 sentences)",
+    "suggestions": ["Specific suggestion for '{mission_or_topic}' video", "Another '{mission_or_topic}' suggestion"],
+    "concerns": ["Concern about '{mission_or_topic}' video if any"],
+    "vote": "agree/disagree/neutral"
+}}
+
+Focus specifically on:
+1. How to make "{mission_or_topic}" engaging for {platform}
+2. Best practices for {duration}-second videos about "{mission_or_topic}"
+3. Viral potential of "{mission_or_topic}" content
+4. Technical considerations for "{mission_or_topic}" video production
+
+Be concise but insightful about THIS SPECIFIC TOPIC: "{mission_or_topic}"
 """
 
     def _parse_agent_response(self, response_text: str,
@@ -594,14 +798,13 @@ Be concise but insightful. Consider what other agents have said and build upon o
                 "vote": "neutral"
             }
 
-    def _format_discussion_for_agent(
-            self,
+    def _format_discussion_for_agent(self,
             discussion_log: List,
             current_agent: AgentRole) -> str:
         """Format discussion history for agent context"""
         formatted = []
 
-        # Last 6 entries to keep context manageable
+        # Last 6 entries to keep context manageable:
         for entry in discussion_log[-6:]:
             # Handle dictionary entries (context messages)
             if isinstance(entry, dict):
@@ -618,8 +821,7 @@ Be concise but insightful. Consider what other agents have said and build upon o
 
         return "\n".join(formatted) if formatted else "No previous discussion"
 
-    def _calculate_consensus(
-            self,
+    def _calculate_consensus(self,
             round_messages: List[AgentMessage]) -> float:
         """Calculate consensus level from agent votes"""
         if not round_messages:
@@ -692,10 +894,8 @@ Be concise but insightful. Consider what other agents have said and build upon o
             "final_approach": self._synthesize_approach(
                 key_points,
                 suggestions),
-            "key_considerations": list(
-                set(concerns)) if concerns else [],
-            "recommended_actions": list(
-                set(suggestions)) if suggestions else [],
+            "key_considerations": list(set(concerns)) if concerns else [],
+            "recommended_actions": list(set(suggestions)) if suggestions else [],
             "consensus_points": self._extract_consensus_points(discussion_log),
             "implementation_notes": self._generate_implementation_notes(
                     topic,
@@ -703,18 +903,14 @@ Be concise but insightful. Consider what other agents have said and build upon o
 
         return decision
 
-    def _synthesize_approach(
-            self,
+    def _synthesize_approach(self,
             key_points: List[str],
             suggestions: List[str]) -> str:
         """Synthesize the final approach from discussion points"""
         # This is a simplified synthesis - in practice, you might use another
         # AI model
         if suggestions:
-            return f"Based on agent discussion, the recommended approach combines: {
-                ', '.join(
-                    suggestions[
-                        :3])}"
+            return f"Based on agent discussion, the recommended approach combines: {', '.join(suggestions[:3])}"
         elif key_points:
             return f"The discussion centered on: {key_points[0][:100]}..."
         else:
@@ -766,34 +962,33 @@ Be concise but insightful. Consider what other agents have said and build upon o
         # This is simplified - you could implement more sophisticated consensus
         # detection
         for entry in discussion_log:
-            if isinstance(entry, dict) and entry.get(
-                    'vote') == 'agree' and entry.get('message'):
+            if isinstance(entry, dict) and entry.get('vote') == 'agree' and entry.get('message'):
                 consensus_points.append(entry.get('message', ''))
-            elif hasattr(entry, 'vote') and hasattr(entry, 'message') and getattr(entry, 'vote', None) == 'agree':
+            elif hasattr(
+                entry,
+                'vote') and hasattr(entry,
+                'message') and getattr(entry,
+                'vote',
+                None) == 'agree':
                 consensus_points.append(getattr(entry, 'message', ''))
         return consensus_points[:3]
 
-    def _generate_implementation_notes(
-            self,
+    def _generate_implementation_notes(self,
             topic: DiscussionTopic,
             key_points: List[str]) -> List[str]:
         """Generate implementation notes based on discussion"""
         return [
-            f"Consider {
-                topic.context.get(
-                    'platform',
-                    'platform')} specific requirements",
+            f"Consider {topic.context.get('platform', 'platform')} specific requirements",
             "Ensure coordination between all agents during implementation",
             "Monitor consensus points during execution"]
 
-    def _save_discussion_progress(
-            self,
+    def _save_discussion_progress(self,
             discussion_file: str,
             topic: DiscussionTopic,
             discussion_log: List,
             round_num: int,
             consensus_level: float):
-        """Save discussion progress to file"""
+        """Save discussion progress to file with session management"""
         # Convert discussion log to serializable format
         serializable_log = []
         for entry in discussion_log:
@@ -809,38 +1004,54 @@ Be concise but insightful. Consider what other agents have said and build upon o
             "discussion_log": serializable_log,
             "current_round": round_num,
             "consensus_level": consensus_level,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "session_id": self.session_id
         }
 
         with open(discussion_file, 'w') as f:
             json.dump(progress_data, f, indent=2, default=str)
 
-    def _save_final_result(
-            self,
+        # ENHANCED: Track file with session manager:
+        if hasattr(self.session_manager, 'current_session') and self.session_manager.current_session:
+            self.session_manager.track_file(
+                discussion_file,
+                "discussion",
+                "MultiAgentDiscussion")
+
+    def _save_final_result(self,
             discussion_file: str,
             result: DiscussionResult):
-        """Save final discussion result"""
+        """Save final discussion result with session management"""
         result_file = discussion_file.replace('.json', '_final.json')
 
+        # Enhanced result data with session info
+        result_data = asdict(result)
+        result_data["session_id"] = self.session_id
+        result_data["final_timestamp"] = datetime.now().isoformat()
+
         with open(result_file, 'w') as f:
-            json.dump(asdict(result), f, indent=2, default=str)
+            json.dump(result_data, f, indent=2, default=str)
+
+        # ENHANCED: Track file with session manager:
+        if hasattr(self.session_manager, 'current_session') and self.session_manager.current_session:
+            self.session_manager.track_file(
+                result_file,
+                "discussion",
+                "MultiAgentDiscussion")
+
+            # Also save to session manager's discussion tracking'
+            self.session_manager.save_discussion(result_data, result.topic_id)
 
         # Also log to monitoring service
         self.monitoring_service.log(
-            f"🎯 Agent Discussion Complete: {
-                result.topic_id}")
+            f"🎯 Agent Discussion Complete: {result.topic_id}")
         self.monitoring_service.log(
-            f"   Consensus: {
-                result.consensus_level:.2f}")
+            f"   Consensus: {result.consensus_level:.2f}")
         self.monitoring_service.log(f"   Rounds: {result.total_rounds}")
         self.monitoring_service.log(
-            f"   Participants: {
-                ', '.join(
-                    result.participating_agents)}")
+            f"   Participants: {', '.join(result.participating_agents)}")
 
-# Predefined discussion topics for common video generation decisions
-
-
+# Predefined discussion topics for common video generation decisions:
 class VideoGenerationTopics:
     """Predefined discussion topics for video generation"""
 
@@ -848,28 +1059,53 @@ class VideoGenerationTopics:
     def script_optimization(context: Dict[str, Any]) -> DiscussionTopic:
         # Get the actual user topic from context
         user_topic = context.get('topic', 'Unknown Topic')
+        
+        # Determine if this is a mission (action-oriented) or topic (informational)
+        is_mission = any(action_word in user_topic.lower() for action_word in [
+            'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
+            'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
+            'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
+        ])
 
-        return DiscussionTopic(
-            topic_id="script_optimization",
-            title=f"Script Content and Structure Optimization for '{user_topic}'",
-            description=(f"Determine the optimal script structure, content, and style for '{user_topic}' "
-                         "with maximum viral potential"),
-            context=context,
-            required_decisions=[
-                "script_length_and_pacing",
-                "hook_strategy",
-                "content_structure",
-                "call_to_action_placement",
-                "viral_elements_integration"],
-            max_rounds=8,
-            min_consensus=0.6)
+        if is_mission:
+            return DiscussionTopic(
+                topic_id="mission_accomplishment",
+                title=f"Mission Accomplishment Strategy: '{user_topic}'",
+                description=(f"Determine the optimal strategic approach to ACCOMPLISH the mission: '{user_topic}' "
+                           f"within {context.get('duration', 'unknown')} seconds with maximum effectiveness"),
+                context=context,
+                required_decisions=[
+                    "mission_accomplishment_strategy",
+                    "persuasion_technique_selection",
+                    "evidence_and_argument_structure", 
+                    "emotional_vs_logical_approach",
+                    "target_audience_adaptation",
+                    "call_to_action_for_mission_reinforcement"],
+                max_rounds=8,
+                min_consensus=0.6)
+        else:
+            return DiscussionTopic(
+                topic_id="script_optimization",
+                title=f"Script Content and Structure Optimization for '{user_topic}'",
+                description=(f"Determine the optimal script structure, content, and style for '{user_topic}' "
+                            "with maximum viral potential"),
+                context=context,
+                required_decisions=[
+                    "script_length_and_pacing",
+                    "hook_strategy",
+                    "content_structure",
+                    "call_to_action_placement",
+                    "viral_elements_integration"],
+                max_rounds=8,
+                min_consensus=0.6)
 
     @staticmethod
     def visual_strategy(context: Dict[str, Any]) -> DiscussionTopic:
         return DiscussionTopic(
             topic_id="visual_strategy",
             title="Visual Style and Composition Strategy",
-            description="Determine optimal visual approach, style, and composition for maximum impact",
+            description=("Determine optimal visual approach, style, and "
+                    "composition for maximum impact"),
             context=context,
             required_decisions=[
                 "visual_style_direction",
@@ -901,7 +1137,8 @@ class VideoGenerationTopics:
         return DiscussionTopic(
             topic_id="platform_optimization",
             title="Platform-Specific Optimization",
-            description="Optimize content for specific platform requirements and algorithms",
+            description=("Optimize content for specific platform requirements and "
+                    "algorithms"),
             context=context,
             required_decisions=[
                 "platform_format_optimization",
@@ -910,4 +1147,5 @@ class VideoGenerationTopics:
                 "trending_elements_integration",
                 "audience_targeting"],
             max_rounds=4,
-            min_consensus=0.75)
+            min_consensus=0.75
+        )

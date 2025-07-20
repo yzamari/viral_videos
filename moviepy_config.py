@@ -8,4 +8,4 @@ from moviepy.config import IMAGEMAGICK_BINARY
 IMAGEMAGICK_BINARY = None
 
 # Set environment variable to disable ImageMagick
-os.environ['IMAGEMAGICK_BINARY'] = '' 
+os.environ['IMAGEMAGICK_BINARY'] = ''

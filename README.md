@@ -1,256 +1,451 @@
-# 🎬 AI Video Generator with Intelligent Agents
+# ViralAI - AI-Powered Video Generation System
 
-> **Production-Ready AI Video Generation System** with intelligent voice selection, smart positioning, and advanced AI agent collaboration.
+🚀 **Production-ready AI video generation system with 22 specialized agents, centralized decision-making, and comprehensive social media integration.**
 
-## ✅ **System Status: FULLY OPERATIONAL**
+[![Version](https://img.shields.io/badge/version-2.5.0--rc2-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v2.5.0-rc2)
+[![Status](https://img.shields.io/badge/status-Production%20Ready-green.svg)](https://github.com/yourusername/viral-video-generator)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 
-- **✅ All Tests Passing**: 30/30 unit tests pass, integration tests validated
-- **✅ CLI & UI Working**: Both command-line and web interface fully functional
-- **✅ All AI Agents Active**: Voice selection, positioning, style decisions operational
-- **✅ Documentation Updated**: Complete setup and usage guides
-- **✅ Shell Scripts Fixed**: Launch scripts work correctly
+## ✨ **What's New in v2.5.0-rc2**
 
-## 🚀 **Quick Start**
+### 🚨 **Critical Bug Fixes**
+- **Fixed**: DiscussionResult object handling causing video generation crashes
+- **Fixed**: Type safety issues in video generation pipeline
+- **Fixed**: Return type annotations and error handling
+- **Enhanced**: System reliability and error recovery
 
-### Option 1: Web Interface (Recommended)
-```bash
-./run_video_generator.sh ui
-```
-- **URL**: http://localhost:7860
-- **Features**: Real-time AI agent decisions, voice selection interface, visual controls
+### 🎯 **Perfect Subtitle Synchronization**
+- **Auto-Calibrating Timing**: Adapts to gTTS and premium TTS automatically
+- **Word-Level Precision**: Calculates timing based on actual word count
+- **Real Audio Analysis**: Syncs to actual audio duration, not theoretical
+- **Natural Pauses**: Intelligent pause detection between sentences
 
-### Option 2: Command Line
-```bash
-./run_video_generator.sh cli --mission "Create awareness about quantum computing breakthroughs"
-```
+### 🕐 **Duration-Aware AI Agents**
+- **Hard Duration Constraints**: AI agents respect exact time limits
+- **Smart Content Scaling**: Automatically adjusts content to fit duration
+- **Word Count Limits**: Uses 2.8-3.2 words/second speaking rate constraints
+- **Script Completion**: Ensures full story within time bounds
 
-### Option 3: Direct Python
-```bash
-python main.py generate --mission "Your mission here" --duration 30 --platform tiktok
-```
+### 🎭 **Enhanced Voice System**
+- **Single Voice Preference**: Professional single-voice narration by default
+- **Multi-Speaker Detection**: Intelligent detection for dialogue and interviews
+- **Voice Boundary Protection**: Never switches voice mid-sentence
+- **Context-Aware Selection**: Contextually appropriate voice selection
 
-## 🤖 **AI Agent System**
+### 🎨 **100+ Visual Styles**
+- **Photographic**: realistic, cinematic, documentary, portrait, macro
+- **Artistic**: watercolor, oil painting, impressionist, cubist, abstract
+- **Animation**: Disney, Pixar, anime, comic book, claymation
+- **Cultural**: Japanese, Egyptian, Celtic, Persian, African
+- **Technical**: blueprint, wireframe, x-ray, holographic, glitch
 
-Our **specialized AI agents** collaborate to create viral content with intelligent voice selection and perfect timing:
+### 🔧 **Production-Ready Features**
+- **Robust Session Management**: Auto-recovery and error handling
+- **Instagram Integration**: Real API posting with instagrapi
+- **Multi-Language Support**: 10+ languages with RTL rendering
+- **Professional Quality**: Studio-grade audio and HD video output
 
-### 👥 **The AI Agent Team**
-
-1. **🎭 Director Agent** - Script generation and creative direction with dynamic content
-2. **🔄 ContinuityDecisionAgent** - Smart frame continuity decisions based on content analysis
-3. **🎤 VoiceDirectorAgent** - AI-powered voice selection with 8 personalities and emotion control
-4. **🎯 OverlayPositioningAgent** - Smart subtitle and overlay positioning decisions
-5. **🎨 VisualStyleAgent** - Dynamic visual style selection (cartoon, realistic, anime, etc.)
-6. **📝 EnhancedScriptProcessor** - TTS optimization with punctuation enhancement and sentence protection
-7. **🌍 EnhancedMultilingualTTS** - AI voice generation with 14+ language support
-
-### 🎤 **Advanced Voice Selection**
-
-**8 AI-Powered Voice Personalities:**
-- 🎭 **Narrator** - Professional storytelling voice
-- 📚 **Educator** - Clear, instructional tone
-- 🎪 **Comedian** - Playful, entertaining delivery
-- 🎬 **Dramatic** - Emotional, impactful narration
-- 🗣️ **Conversational** - Natural, friendly tone
-- 📢 **Announcer** - Bold, attention-grabbing voice
-- 🎵 **Storyteller** - Engaging narrative style
-- 🎯 **Presenter** - Professional presentation voice
-
-**Smart Voice Features:**
-- **Emotion-based selection**: Matches voice to content emotion
-- **Multi-voice strategies**: Single voice, dialogue, or narrator combinations
-- **Platform optimization**: Different voices for TikTok vs YouTube
-- **Language support**: 14+ languages with native voice actors
-- **Punctuation enhancement**: Proper pronunciation of punctuation marks
-
-### 🎨 **Visual Style Intelligence**
-
-**10+ Dynamic Visual Styles:**
-- 🎨 **Realistic** - Photorealistic content
-- 🎭 **Cartoon** - Animated, playful visuals
-- 🏰 **Disney** - Magical, family-friendly style
-- 🎌 **Anime** - Japanese animation aesthetic
-- 📚 **Comic** - Comic book visual style
-- 🎯 **Minimalist** - Clean, simple design
-- 🕰️ **Retro** - Vintage, nostalgic feel
-- 🚀 **Cyberpunk** - Futuristic, tech-focused
-- 🎨 **Watercolor** - Artistic, soft visuals
-- 🎭 **Clay** - 3D clay animation style
-
-### 🎯 **Smart Positioning System**
-
-**AI-Driven Subtitle Positioning:**
-- **Platform-specific optimization**: TikTok, YouTube, Instagram layouts
-- **Content-aware placement**: Avoids hiding important visual elements
-- **Dynamic positioning strategies**: Static, adaptive, or dynamic based on content
-- **Accessibility compliance**: High contrast, readable fonts, proper sizing
-
-## 🛠️ **Installation & Setup**
+## Quick Start
 
 ### Prerequisites
 - Python 3.8+
-- Google API Key (Gemini)
-- Virtual environment (recommended)
+- Google Cloud Project with Vertex AI enabled
+- Google AI API key
 
-### 1. Clone & Setup
+### 🚀 **Latest Release: v2.5.0-rc2**
+- **Critical Bug Fixes**: Fixed DiscussionResult object handling causing system crashes
+- **Enhanced Type Safety**: Improved error recovery and system stability
+- **Production Ready**: All critical issues resolved for production deployment
+
+### Installation
 ```bash
 git clone <repository-url>
 cd viralAi
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Configure API Keys
+### Authentication Setup
 ```bash
-# Option 1: Environment Variable
-export GOOGLE_API_KEY="your-google-api-key-here"
-
-# Option 2: .env File
-echo "GOOGLE_API_KEY=your-google-api-key-here" > .env
+# The system will automatically configure authentication
+python main.py generate --mission "Test video" --platform instagram --duration 10
 ```
 
-### 3. Launch
+### Basic Usage
 ```bash
-# Web Interface
-./run_video_generator.sh ui
-
-# Command Line
-./run_video_generator.sh cli --topic "Your video topic"
-```
-
-## 📋 **Usage Examples**
-
-### Web Interface
-```bash
-./run_video_generator.sh ui
-# Opens http://localhost:7860
-# - Select topic and platform
-# - Choose voice personality
-# - Set visual style
-# - Generate with real-time progress
-```
-
-### Command Line Examples
-```bash
-# Basic generation
-python main.py generate --mission "Educate people about quantum computing breakthroughs"
-
-# Advanced options
+# Generate a professional video with 22 AI agents
 python main.py generate \
-  --mission "Make people laugh by explaining funny cat behaviors" \
-  --duration 30 \
+  --mission "Teach kids about recycling" \
+  --platform instagram \
+  --duration 15 \
+  --mode professional
+
+# Generate with specific style and tone
+python main.py generate \
+  --mission "Promote healthy eating habits" \
   --platform tiktok \
-  --category Comedy \
-  --discussions enhanced
+  --duration 30 \
+  --style viral \
+  --tone engaging \
+  --visual-style cinematic
 
-# Educational content
+# Use artistic visual styles
 python main.py generate \
-  --mission "Teach students how photosynthesis works in plants" \
-  --duration 45 \
+  --mission "Art tutorial for beginners" \
   --platform youtube \
-  --category Educational \
-  --discussions deep
+  --duration 45 \
+  --visual-style watercolor \
+  --mode professional
+
+# Cultural-themed content
+python main.py generate \
+  --mission "Traditional Japanese tea ceremony" \
+  --platform instagram \
+  --duration 30 \
+  --visual-style japanese \
+  --tone respectful
+
+# Cost-effective testing mode
+python main.py generate \
+  --mission "Test content creation" \
+  --platform youtube \
+  --duration 20 \
+  --cheap full
 ```
 
-## 🔧 **Features**
+## Key Features
 
-### ✅ **Core Features**
-- **AI Agent Collaboration**: Multiple specialized AI agents work together
-- **Smart Voice Selection**: 8 personalities with emotion matching
-- **Dynamic Visual Styles**: 10+ styles with AI-driven selection
-- **Perfect Timing**: ±5 second duration control with sentence protection
-- **Multi-platform Support**: TikTok, YouTube, Instagram, Twitter
-- **14+ Languages**: Full multilingual support with native voices
+### 🎯 **Centralized Decision Framework**
+- All decisions made upfront before generation
+- No conflicting parameters between components
+- Complete traceability of decision sources
+- Consistent results across all components
 
-### ✅ **Advanced Features**
-- **Movie-Quality Subtitles**: Precise timing with 1.8-2.5 words/second
-- **Smart Positioning**: AI-driven subtitle and overlay placement
-- **Punctuation Enhancement**: Proper pronunciation of all punctuation
-- **Sentence Protection**: Never cuts sentences mid-way
-- **Frame Continuity**: AI-decided visual continuity for smooth flow
-- **Real-time Progress**: Live generation tracking in web interface
+### 🤖 **22 AI Agents System**
+- **Professional Mode**: 22 specialized agents
+- **Enhanced Mode**: 7 core agents  
+- **Simple Mode**: Minimal AI for fast generation
+- Consensus-based collaboration
+- Platform-specific optimizations
 
-### ✅ **Technical Features**
-- **Fallback Systems**: Multiple generation methods for reliability
-- **Quota Management**: Smart API usage optimization
-- **Session Tracking**: Complete generation history and analytics
-- **Error Handling**: Graceful degradation and recovery
-- **Testing Suite**: 30+ unit tests with 100% pass rate
+### 🎬 **Advanced Video Generation**
+- **VEO-2**: Google's latest video generation model
+- **VEO-3**: Premium model with native audio
+- **Fallback**: FFmpeg-based generation for testing
+- Frame continuity for seamless transitions
+- Precise duration control
 
-## 🧪 **Testing**
+### 🎵 **Intelligent Audio**
+- AI-powered voice selection
+- Enhanced multilingual TTS
+- Voice strategy optimization
+- Perfect audio-video synchronization
 
-### Run All Tests
+### 📱 **Social Media Integration**
+- Auto-posting to Instagram, TikTok, YouTube
+- AI-generated trending hashtags
+- Platform-specific optimization
+- Engagement tracking
+
+### 💰 **Cost Management**
+- **Cheap Mode**: Cost-effective testing
+- **Granular Levels**: Full/Audio/Video cheap modes
+- **Fallback Systems**: Automatic cost reduction
+- **Quota Management**: Smart resource usage
+
+## System Architecture
+
+### Decision-First Architecture
+```
+CLI Input → Decision Framework → Core Decisions → All Components
+```
+
+### AI Agent Discussions
+```
+22 Agents → 7 Discussion Topics → Consensus → Strategy Implementation
+```
+
+### Generation Pipeline
+```
+Decisions → Discussions → Scripts → Video/Audio → Assembly → Social Media
+```
+
+## Command Line Options
+
+### Required Parameters
+- `--mission` - Video mission/topic (e.g., "Teach about climate change")
+- `--platform` - Target platform (instagram, tiktok, youtube, twitter, linkedin)
+
+### Optional Parameters
+- `--duration` - Video duration in seconds (default: 20)
+- `--mode` - Generation mode (simple/enhanced/professional, default: enhanced)
+- `--style` - Content style (viral/educational/professional, default: viral)
+- `--tone` - Content tone (engaging/professional/humorous, default: engaging)
+- `--visual-style` - Visual style (dynamic/minimalist/cinematic, default: dynamic)
+- `--category` - Content category (Comedy/Educational/Entertainment/News/Tech)
+- `--target-audience` - Target audience description
+- `--cheap` - Cheap mode level (full/audio/video/off, default: off)
+- `--no-cheap` - Disable cheap mode
+- `--frame-continuity` - Enable frame continuity (on/off/auto, default: auto)
+
+## Generation Modes
+
+### Simple Mode
+- Basic generation with minimal AI
+- Fastest generation time
+- Lowest cost
+- Good for testing
+
+### Enhanced Mode (Default)
+- 7 AI agents with discussions
+- Balanced performance and quality
+- Moderate cost
+- Recommended for most use cases
+
+### Professional Mode
+- 22 AI agents with comprehensive discussions
+- Highest quality and optimization
+- Premium cost
+- Best for production content
+
+## 🎨 **Visual Styles (100+ Options)**
+
+### Photographic & Realistic
 ```bash
-# Unit tests
-python -m pytest tests/unit/ -v
-
-# Integration tests
-python -m pytest tests/integration/ -v
-
-# AI Agent tests
-python test_ai_agents_integration.py
+--visual-style realistic        # Photorealistic, high quality
+--visual-style cinematic        # Cinematic lighting, dramatic
+--visual-style documentary      # Authentic, real-world settings
+--visual-style portrait         # Professional portrait photography
+--visual-style macro            # Extreme close-ups, fine details
+--visual-style golden_hour      # Warm sunset lighting
+--visual-style neon            # Neon lighting, urban nightlife
 ```
 
-### Test Results
-- **✅ Unit Tests**: 30/30 passing
-- **✅ Integration Tests**: All passing
-- **✅ AI Agent Tests**: 100% success rate
-- **✅ CLI Tests**: All commands working
-- **✅ UI Tests**: Web interface fully functional
+### Animation & Cartoon
+```bash
+--visual-style disney          # Disney animation style
+--visual-style pixar           # Pixar 3D animation
+--visual-style anime           # Japanese animation style
+--visual-style comic_book      # Comic book illustration
+--visual-style claymation      # Clay animation, tactile
+--visual-style stop_motion     # Stop motion animation
+```
 
-## 📊 **Performance**
+### Artistic & Painting
+```bash
+--visual-style watercolor      # Watercolor painting style
+--visual-style oil_painting    # Rich textures, classical art
+--visual-style impressionist   # Light and color, loose brushstrokes
+--visual-style cubist          # Geometric shapes, multiple perspectives
+--visual-style pop_art         # Bold colors, commercial imagery
+--visual-style abstract        # Non-representational, conceptual
+```
 
-### Generation Speed
-- **VEO2 Video**: 30-60 seconds per clip
-- **Gemini Images**: 5-10 seconds per image
-- **TTS Audio**: 2-5 seconds per segment
-- **Total Generation**: 2-5 minutes for 30-second video
+### Cultural & Historical
+```bash
+--visual-style japanese        # Traditional Japanese aesthetics
+--visual-style egyptian        # Ancient Egyptian symbols
+--visual-style celtic          # Celtic knots, mystical
+--visual-style persian         # Intricate carpets, miniatures
+--visual-style aztec           # Geometric patterns, ancient civilization
+--visual-style viking          # Norse mythology, runic symbols
+```
 
-### Quality Metrics
-- **Voice Selection Accuracy**: 95%+ appropriate voice matching
-- **Subtitle Timing**: ±0.1 second precision
-- **Visual Style Matching**: 90%+ content-appropriate styles
-- **Sentence Protection**: 100% complete sentences
-- **Platform Optimization**: Custom layouts for each platform
+### Genre & Thematic
+```bash
+--visual-style cyberpunk       # Futuristic, neon, high-tech
+--visual-style steampunk       # Victorian era, brass and gears
+--visual-style horror          # Dark, scary, unsettling
+--visual-style noir            # High contrast, shadows, mystery
+--visual-style synthwave       # 80s neon, outrun aesthetic
+--visual-style cottagecore     # Rural, cozy, natural
+```
 
-## 🔍 **Troubleshooting**
+### Technical & Material
+```bash
+--visual-style blueprint       # Technical drawings, architectural
+--visual-style wireframe       # Technical, blueprint-like
+--visual-style holographic     # Rainbow effects, futuristic
+--visual-style glitch          # Digital corruption, cyberpunk
+--visual-style crystal         # Geometric, magical textures
+--visual-style microscopic     # Cellular, scientific detail
+```
+
+## Platform Support
+
+### Instagram
+- 9:16 aspect ratio
+- 15-90 second duration
+- Auto-posting with hashtags
+- Stories and Reels optimization
+
+### TikTok
+- 9:16 aspect ratio
+- 15-60 second duration
+- Trend-based optimization
+- Hashtag strategy
+
+### YouTube
+- 16:9 aspect ratio
+- 15-300 second duration
+- SEO optimization
+- Thumbnail generation
+
+### Twitter
+- 16:9 aspect ratio
+- 15-140 second duration
+- Character-limited captions
+- Engagement optimization
+
+### LinkedIn
+- 16:9 aspect ratio
+- 15-300 second duration
+- Professional tone adaptation
+- Business-focused content
+
+## Session Management
+
+Every generation creates a session with complete tracking:
+
+```
+outputs/session_YYYYMMDD_HHMMSS/
+├── decisions/           # All decisions made
+├── discussions/         # AI agent discussions
+├── scripts/            # Script versions
+├── audio/              # Audio files
+├── video_clips/        # Generated clips
+├── final_output/       # Final video
+├── hashtags/           # Generated hashtags
+├── logs/               # Comprehensive logs
+└── metadata/           # Session metadata
+```
+
+## Configuration
+
+### Environment Variables
+```bash
+export GOOGLE_AI_API_KEY="your-gemini-api-key"
+export GOOGLE_CLOUD_PROJECT="your-gcp-project"
+```
+
+### Configuration Files
+- `config.json` - User preferences
+- `CLAUDE.md` - System instructions
+- Platform-specific settings
+
+## Cost Optimization
+
+### Cheap Mode Options
+```bash
+# Full cheap mode - text video + gTTS audio
+python main.py generate --mission "Test" --cheap full
+
+# Audio cheap mode - normal video + gTTS audio  
+python main.py generate --mission "Test" --cheap audio
+
+# Video cheap mode - fallback video + normal audio
+python main.py generate --mission "Test" --cheap video
+```
+
+### Resource Management
+- Automatic fallback on quota exceeded
+- Smart retry logic
+- Cost tracking and reporting
+- Batch processing optimization
+
+## Monitoring & Debugging
+
+### Comprehensive Logging
+- Decision traceability
+- AI agent discussions
+- Generation pipeline tracking
+- Performance metrics
+
+### Session Analysis
+- Complete audit trail
+- Error debugging
+- Performance analysis
+- Cost tracking
+
+## Security & Privacy
+
+### Authentication
+- Google Cloud IAM integration
+- Secure API key management
+- Auto-authentication setup
+
+### Data Protection
+- No sensitive data in logs
+- Secure credential storage
+- Session-based file organization
+
+## Troubleshooting
 
 ### Common Issues
-1. **API Key Issues**: Ensure `GOOGLE_API_KEY` is set correctly
-2. **Import Errors**: Run `pip install -r requirements.txt`
-3. **UI Not Loading**: Check port 7860 is available
-4. **Generation Failures**: Check API quotas with `python main.py veo-quota`
+1. **Authentication Problems**: Run any command - system auto-fixes
+2. **Quota Exceeded**: Use `--cheap full` for testing
+3. **Duration Conflicts**: All resolved with centralized decisions
+4. **VEO Unavailable**: Automatic fallback to alternative generation
 
-### Debug Mode
+### Getting Help
+- Check `logs/` directory for detailed error information
+- Review session files for debugging
+- Use `--cheap full` for cost-effective testing
+
+## Advanced Usage
+
+### Custom Workflows
 ```bash
-# Enable detailed logging
-python main.py generate --mission "test video generation" --discussion-log
+# Educational content with specific targeting
+python main.py generate \
+  --mission "Explain photosynthesis to middle school students" \
+  --platform youtube \
+  --duration 60 \
+  --style educational \
+  --tone engaging \
+  --target-audience "middle school students"
+
+# Marketing content with brand focus
+python main.py generate \
+  --mission "Promote our new sustainable products" \
+  --platform instagram \
+  --duration 30 \
+  --style professional \
+  --tone engaging \
+  --visual-style cinematic
 ```
 
-## 🤝 **Contributing**
+### Batch Processing
+```bash
+# Generate multiple videos with different parameters
+for platform in instagram tiktok youtube; do
+  python main.py generate \
+    --mission "Daily motivation tip" \
+    --platform $platform \
+    --duration 15 \
+    --mode professional
+done
+```
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Run tests (`python -m pytest`)
-4. Commit changes (`git commit -m 'Add amazing feature'`)
-5. Push to branch (`git push origin feature/amazing-feature`)
-6. Open Pull Request
+## Architecture Documents
 
-## 📄 **License**
+- 📖 **[SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md)** - Complete technical architecture
+- 🔄 **[CURRENT_FLOW.md](CURRENT_FLOW.md)** - Detailed system flow and operation
+- 🔧 **[docs/](docs/)** - Additional documentation and guides
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Contributing
 
-## 🙏 **Acknowledgments**
+This is a production system with comprehensive AI integration. For modifications:
 
-- Google Gemini AI for intelligent content generation
-- VEO2/VEO3 for high-quality video generation
-- Google Cloud TTS for natural voice synthesis
-- All contributors and testers
+1. Review the centralized decision framework
+2. Understand the AI agent system
+3. Follow the session management patterns
+4. Test with `--cheap full` mode first
+
+## License
+
+[License information]
 
 ---
 
-**🎬 Ready to create viral content with AI agents? Get started now!**
-
-```bash
-./run_video_generator.sh ui
-```
+**ViralAI** - *Where AI meets viral content creation* 🚀

@@ -1,0 +1,33 @@
+{
+  "whatsapp": {
+    "platform": "whatsapp",
+    "enabled": false,
+    "credentials": {
+      "access_token": "YOUR_WHATSAPP_ACCESS_TOKEN",
+      "phone_number_id": "YOUR_PHONE_NUMBER_ID",
+      "verify_token": "YOUR_VERIFY_TOKEN"
+    },
+    "target_groups": [
+      "GROUP_ID_1",
+      "GROUP_ID_2"
+    ],
+    "auto_send": true,
+    "include_caption": true,
+    "include_hashtags": true
+  },
+  "telegram": {
+    "platform": "telegram",
+    "enabled": false,
+    "credentials": {
+      "bot_token": "YOUR_TELEGRAM_BOT_TOKEN",
+      "bot_username": "your_bot_username"
+    },
+    "target_groups": [
+      "CHAT_ID_1",
+      "CHAT_ID_2"
+    ],
+    "auto_send": true,
+    "include_caption": true,
+    "include_hashtags": true
+  }
+} 
