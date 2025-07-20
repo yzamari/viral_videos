@@ -264,9 +264,9 @@ class EnhancedMultilingualTTS:
                     required_speed = estimated_base_duration / self._target_duration
                     
                     # But we want to avoid speaking too fast - cap at reasonable speed
-                    # For better user experience, limit max speed to 1.5x normal
-                    max_allowed_speed = 1.5
-                    min_allowed_speed = 0.7  # Don't go too slow either
+                    # For better user experience, limit max speed to 1.2x normal
+                    max_allowed_speed = 1.2
+                    min_allowed_speed = 0.9  # Keep speed close to normal
                     
                     adjusted_speed = max(min_allowed_speed, min(max_allowed_speed, required_speed))
                     base_speed = adjusted_speed

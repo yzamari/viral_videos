@@ -1,20 +1,17 @@
 """
 Social Media Integration Module
-Provides autoposting functionality for various social media platforms
+Handles posting ViralAI videos to various social media platforms
 """
 
-from .instagram_autoposter import InstagramAutoPoster, InstagramCredentials, PostContent, PostingOptions
-from .social_config import SocialConfigManager, SocialCredentials, PostingPreferences
-from .cli_integration import add_social_commands, auto_post_if_enabled
+from .instagram_autoposter import InstagramAutoPoster
+from .whatsapp_sender import WhatsAppSender
+from .telegram_sender import TelegramSender
+from .social_media_manager import SocialMediaManager, SocialMediaConfig
 
 __all__ = [
     'InstagramAutoPoster',
-    'InstagramCredentials', 
-    'PostContent',
-    'PostingOptions',
-    'SocialConfigManager',
-    'SocialCredentials',
-    'PostingPreferences',
-    'add_social_commands',
-    'auto_post_if_enabled'
+    'WhatsAppSender', 
+    'TelegramSender',
+    'SocialMediaManager',
+    'SocialMediaConfig'
 ]

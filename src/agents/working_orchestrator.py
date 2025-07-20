@@ -34,7 +34,6 @@ try:
         AgentRole,
         DiscussionTopic
     )
-    from .fact_checker_agent import InternetFactCheckerAgent
 except ImportError:
     # Fallback for direct execution
     import sys
@@ -64,7 +63,6 @@ except ImportError:
         AgentRole,
         DiscussionTopic
     )
-    from src.agents.fact_checker_agent import InternetFactCheckerAgent
 
 logger = get_logger(__name__)
 
@@ -231,7 +229,6 @@ class WorkingOrchestrator:
         self.director = Director(api_key)
         self.continuity_agent = ContinuityDecisionAgent(api_key)
         self.voice_agent = VoiceDirectorAgent(api_key)
-        self.fact_checker = InternetFactCheckerAgent(api_key, enable_web_search=True)
 
         # Initialize enhanced agents based on mode
         self._initialize_agents_by_mode()
@@ -550,7 +547,7 @@ class WorkingOrchestrator:
 
         script_result = self.discussion_system.start_discussion(
             script_topic,
-            [AgentRole.SCRIPT_WRITER, AgentRole.DIRECTOR, AgentRole.FACT_CHECKER]
+            [AgentRole.SCRIPT_WRITER, AgentRole.DIRECTOR]
         )
         self.discussion_results['script_strategy'] = script_result
         
@@ -587,26 +584,6 @@ class WorkingOrchestrator:
         )
         self.discussion_results['audio_strategy'] = audio_result
         
-        # Discussion 4: Fact Checking & Content Verification
-        fact_check_topic = DiscussionTopic(
-            topic_id="fact_checking", 
-            title="Content Fact Checking & Information Verification", 
-            description="Verify factual accuracy and provide current information for content",
-            context={
-                'mission': self.mission,
-                'category': self.category.value,
-                'platform': self.platform.value,
-                'content_claims': script_result.decision.get('content_claims', []) if hasattr(script_result, 'decision') else [],
-                'trending_insights': self.trending_insights
-            }, 
-            required_decisions=["fact_verification", "source_credibility", "misinformation_prevention"]
-        )
-
-        fact_check_result = self.discussion_system.start_discussion(
-            fact_check_topic,
-            [AgentRole.FACT_CHECKER]
-        )
-        self.discussion_results['fact_checking'] = fact_check_result
         
         logger.info(f"✅ Completed {len(self.discussion_results)} enhanced discussions")
 
@@ -680,7 +657,7 @@ class WorkingOrchestrator:
         
         engagement_result = self.discussion_system.start_discussion(
             engagement_topic,
-            [AgentRole.ENGAGEMENT_OPTIMIZER, AgentRole.VIRAL_SPECIALIST, AgentRole.ANALYTICS_EXPERT, AgentRole.CONTENT_STRATEGIST, AgentRole.FACT_CHECKER]
+            [AgentRole.ENGAGEMENT_OPTIMIZER, AgentRole.VIRAL_SPECIALIST, AgentRole.ANALYTICS_EXPERT, AgentRole.CONTENT_STRATEGIST]
         )
         self.discussion_results['engagement_strategy'] = engagement_result
         
@@ -731,7 +708,7 @@ class WorkingOrchestrator:
 
         multilang_result = self.discussion_system.start_discussion(
             multilang_topic,
-            [AgentRole.SCRIPT_WRITER, AgentRole.SOUNDMAN, AgentRole.FACT_CHECKER]
+            [AgentRole.SCRIPT_WRITER, AgentRole.SOUNDMAN]
         )
         self.discussion_results['multilingual_strategy'] = multilang_result
         logger.info("✅ Multilingual discussions completed")
@@ -777,33 +754,6 @@ class WorkingOrchestrator:
             'enhanced': self.mode != OrchestratorMode.SIMPLE
         }
         
-        # Add fact checking for enhanced modes
-        if self.mode != OrchestratorMode.SIMPLE and not self.cheap_mode:
-            logger.info("🔍 Performing fact checking on generated script...")
-            try:
-                # Fact check the script content
-                script_content = str(script_data)
-                fact_check_result = self.fact_checker.verify_facts_for_discussion(
-                    content=script_content,
-                    topic=self.mission,
-                    platform=self.platform.value
-                )
-                
-                # Store fact check results
-                self.agent_decisions['fact_checking'] = {
-                    'agent': 'InternetFactCheckerAgent',
-                    'verification_summary': fact_check_result.get('verification_summary', {}),
-                    'recommendations': fact_check_result.get('recommendations', {}),
-                    'confidence_level': fact_check_result.get('confidence_level', 'medium')
-                }
-                
-                # Log fact checking summary
-                verification = fact_check_result.get('verification_summary', {})
-                logger.info(f"✅ Fact checking completed: {verification.get('total_claims_checked', 0)} claims checked, "
-                           f"accuracy: {verification.get('overall_accuracy', 0.5):.2f}")
-                
-            except Exception as e:
-                logger.warning(f"⚠️ Fact checking failed: {e}")
         
         return script_data
     
@@ -1110,15 +1060,15 @@ class WorkingOrchestrator:
     def _count_agents_used(self) -> int:
         """Count the number of agents used based on mode"""
         if self.mode == OrchestratorMode.SIMPLE:
-            return 4  # Director, Continuity, Voice, Fact Checker
+            return 3  # Director, Continuity, Voice
         elif self.mode == OrchestratorMode.ENHANCED:
-            return 8  # Core agents with enhanced features + Fact Checker
+            return 7  # Core agents with enhanced features
         elif self.mode == OrchestratorMode.MULTILINGUAL:
-            return 9  # Core agents + multilingual + Fact Checker
+            return 8  # Core agents + multilingual
         elif self.mode == OrchestratorMode.ADVANCED:
-            return 16  # Enhanced agents with advanced features + Fact Checker
+            return 15  # Enhanced agents with advanced features
         else:  # PROFESSIONAL
-            return 23  # All agents with professional features + Fact Checker
+            return 22  # All agents with professional features
 
     def _generate_cheap_video(self, script_data: Dict[str, Any], decisions: Dict[str, Any], config: Dict[str, Any]) -> Optional[str]:
         """Generate video in cheap mode with granular level control"""

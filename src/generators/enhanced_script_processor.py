@@ -130,10 +130,14 @@ CRITICAL TTS RULES:
 - Use "cannot" instead of "can't"
 - This prevents TTS from pronouncing contractions as separate letters (like "I S N T")
 
-DURATION CALCULATION:
-- Average speaking speed: 3 words per second
-- Target words for {target_duration}s: {int(target_duration * 3) if target_duration else 'Not specified'}
-- Adjust content to fit this word count precisely
+DURATION CALCULATION AND STRATEGY:
+- PRIORITY: Create concise, impactful scripts that fit naturally within the duration
+- Average speaking speed: 2.5 words per second (comfortable pace)
+- Target words for {target_duration}s: {int(target_duration * 2.5) if target_duration else 'Not specified'}
+- STRATEGY: Focus on shorter, punchy content rather than fast delivery
+- Remove unnecessary words, filler phrases, and redundant information
+- Use active voice and direct statements
+- Prioritize impact over comprehensiveness
 
 Please return a JSON response with the following structure:
 {{

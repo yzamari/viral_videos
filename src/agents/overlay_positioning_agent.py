@@ -312,7 +312,7 @@ Return JSON:
         else:
             # Default to center bottom
             x = int((video_width / 2) - (text_width / 2))
-            y = int((video_height * 0.85) - (text_height / 2))
+            y = int((video_height * 0.75) - (text_height / 2))
             logger.warning(
                 f"⚠️ Unknown position '{position}', "
                 f"using center bottom: ({x}, {y})")

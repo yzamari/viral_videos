@@ -322,6 +322,8 @@ class VertexAIVeo2Client(BaseVeoClient):
             if 'error' in result:
                 error_msg = result['error'].get('message', 'Unknown error')
                 logger.error(f"❌ VEO-2 operation failed: {error_msg}")
+                # Store error for fallback decision
+                self._last_error = error_msg
                 return None
             
             # Extract response from result

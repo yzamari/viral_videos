@@ -146,6 +146,13 @@ class BaseVeoClient(ABC):
         """Create fallback clip when VEO generation fails"""
         logger.info(f"🎨 Creating fallback for: {prompt[:50]}...")
         
+        # First try image generation if content was filtered
+        if hasattr(self, '_last_error') and 'filtered' in str(getattr(self, '_last_error', '')).lower():
+            logger.info("🖼️ Content was filtered, attempting image generation fallback...")
+            image_video = self._try_image_generation_fallback(prompt, duration, clip_id)
+            if image_video:
+                return image_video
+        
         try:
             # Create a simple colored video as fallback using FFmpeg
             fallback_path = os.path.join(self.clips_dir, f"fallback_{clip_id}.mp4")
@@ -168,9 +175,12 @@ class BaseVeoClient(ABC):
             # Properly escape text for FFmpeg drawtext filter
             safe_text = prompt[:30].replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
             
+            # Use portrait dimensions (9:16) to match VEO output
+            video_dimensions = "720x1280"
+            
             cmd = [
                 'ffmpeg', '-f', 'lavfi', 
-                '-i', f'color=c={color}:size=1280x720:duration={duration}',
+                '-i', f'color=c={color}:size={video_dimensions}:duration={duration}',
                 '-vf', f'drawtext=text="{safe_text}":fontcolor=white:fontsize=24:x=(w-text_w)/2:y=(h-text_h)/2',
                 '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24',
                 '-y', fallback_path
@@ -196,9 +206,12 @@ class BaseVeoClient(ABC):
             fallback_path = os.path.join(self.clips_dir, f"minimal_{clip_id}.mp4")
             
             # Create simple solid color video
+            # Use portrait dimensions (9:16) to match VEO output
+            video_dimensions = "720x1280"
+            
             cmd = [
                 'ffmpeg', '-f', 'lavfi', 
-                '-i', f'color=c=blue:size=1280x720:duration={duration}',
+                '-i', f'color=c=blue:size={video_dimensions}:duration={duration}',
                 '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24',
                 '-y', fallback_path
             ]
@@ -215,6 +228,59 @@ class BaseVeoClient(ABC):
         except Exception as e:
             logger.error(f"❌ Minimal fallback failed: {e}")
             return ""
+
+    def _try_image_generation_fallback(self, prompt: str, duration: float, clip_id: str) -> Optional[str]:
+        """Try to generate video using image generation as fallback"""
+        try:
+            logger.info("🖼️ Attempting image generation fallback...")
+            
+            # Try to import and use Gemini image client
+            try:
+                from .gemini_image_client import GeminiImageClient
+                import os
+                
+                # Get API key from environment
+                api_key = os.environ.get('GEMINI_API_KEY')
+                if not api_key:
+                    logger.warning("⚠️ No GEMINI_API_KEY found, skipping image generation")
+                    return None
+                
+                # Initialize image client
+                image_client = GeminiImageClient(api_key, self.output_dir)
+                
+                # Create prompts for image generation
+                prompts = [{
+                    'description': prompt,
+                    'duration': duration,
+                    'style': 'cinematic'
+                }]
+                
+                # Generate config
+                config = {
+                    'duration_seconds': duration,
+                    'platform': 'instagram',  # Default to Instagram for portrait videos
+                    'is_fallback_generation': True
+                }
+                
+                # Generate image-based clips
+                clips = image_client.generate_image_based_clips(prompts, config, clip_id)
+                
+                if clips and len(clips) > 0 and 'path' in clips[0]:
+                    video_path = clips[0]['path']
+                    if os.path.exists(video_path):
+                        logger.info(f"✅ Image generation fallback succeeded: {video_path}")
+                        return video_path
+                    
+            except ImportError:
+                logger.warning("⚠️ Gemini image client not available")
+            except Exception as e:
+                logger.warning(f"⚠️ Image generation fallback failed: {e}")
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"❌ Image generation fallback error: {e}")
+            return None
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(" \
