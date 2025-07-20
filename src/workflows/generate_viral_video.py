@@ -24,7 +24,7 @@ from src.utils.logging_config import get_logger
 from src.utils.session_manager import session_manager
 
 logger = get_logger(__name__)
-def main(mission: str, category: str = "Comedy", platform: str = "youtube",
+async def async_main(mission: str, category: str = "Comedy", platform: str = "youtube",
          duration: int = 20, image_only: bool = False, fallback_only: bool = False,
          force: bool = False, discussions: str = "enhanced", discussion_log: bool = False,
          session_id: Optional[str] = None, frame_continuity: str = "auto",
@@ -145,7 +145,7 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
         }
         
         # CRITICAL: Make all decisions before any generation
-        core_decisions = decision_framework.make_all_decisions(cli_args, ai_agents_available=True)
+        core_decisions = await decision_framework.make_all_decisions(cli_args, ai_agents_available=True)
         
         logger.info("✅ All decisions made upfront - propagating to system")
         
@@ -169,9 +169,7 @@ def main(mission: str, category: str = "Comedy", platform: str = "youtube",
 
         # Generate video
         logger.info("🎬 Starting enhanced AI agent video generation")
-        # Run async method in sync context
-        import asyncio
-        result = asyncio.run(orchestrator.generate_video(config))
+        result = await orchestrator.generate_video(config)
 
         generation_time = time.time() - start_time
         # Check for success using the correct key from orchestrator result
@@ -220,6 +218,11 @@ def _get_frame_continuity_emoji(mode: str) -> str:
         "of": "❌ DISABLED"
     }
     return emojis.get(mode, "🤖 AI Agent Decision")
+
+def main(*args, **kwargs):
+    """Synchronous wrapper for async_main"""
+    import asyncio
+    return asyncio.run(async_main(*args, **kwargs))
 
 if __name__ == "__main__":
     # Example usage

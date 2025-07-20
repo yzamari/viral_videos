@@ -126,7 +126,7 @@ class DecisionFramework:
         else:
             logger.info("🎯 Decision Framework initialized without Mission Planning Agent")
     
-    def make_all_decisions(self, 
+    async def make_all_decisions(self, 
                           cli_args: Dict[str, Any],
                           user_config: Dict[str, Any] = None,
                           ai_agents_available: bool = True) -> CoreDecisions:
@@ -181,7 +181,7 @@ class DecisionFramework:
         )
         
         # 8. Generation decisions (based on all previous decisions)
-        clip_structure = self._decide_clip_structure_with_scores(
+        clip_structure = await self._decide_clip_structure_with_scores(
             duration_seconds, voice_strategy, ai_agents_available
         )
         num_clips = clip_structure['num_clips']
@@ -453,11 +453,11 @@ class DecisionFramework:
         
         return music_style, sound_effects
     
-    def _decide_clip_structure_with_scores(self, duration: int, voice_strategy: str, ai_available: bool) -> Dict[str, Any]:
+    async def _decide_clip_structure_with_scores(self, duration: int, voice_strategy: str, ai_available: bool) -> Dict[str, Any]:
         """Decide clip structure using AI-based optimization with scores"""
         if ai_available:
             # AI-driven clip structure optimization
-            clip_structure = self._ai_optimize_clip_structure(duration, voice_strategy)
+            clip_structure = await self._ai_optimize_clip_structure(duration, voice_strategy)
             self._record_decision('num_clips', clip_structure['num_clips'], DecisionSource.AI_AGENT, 0.9, 
                                 clip_structure['reasoning'])
         else:
@@ -476,7 +476,7 @@ class DecisionFramework:
         
         return clip_structure
     
-    def _ai_optimize_clip_structure(self, duration: int, voice_strategy: str) -> Dict[str, Any]:
+    async def _ai_optimize_clip_structure(self, duration: int, voice_strategy: str) -> Dict[str, Any]:
         """AI-driven clip structure optimization using Mission Planning Agent"""
         try:
             # Use Mission Planning Agent if available
@@ -491,7 +491,7 @@ class DecisionFramework:
                 category_enum = VideoCategory(category) if isinstance(category, str) else category
                 
                 # Analyze mission and get strategic clip recommendations
-                mission_plan = self.mission_planning_agent.analyze_mission(
+                mission_plan = await self.mission_planning_agent.analyze_mission(
                     mission_statement=mission,
                     duration=duration,
                     platform=platform_enum,
