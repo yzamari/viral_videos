@@ -177,7 +177,10 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 response_text = response_text.strip()
                 
                 # Fix common JSON issues
-                response_text = response_text.replace('\\n', '\n')
+                response_text = response_text.replace('\\n', ' ')  # Replace newlines with spaces
+                response_text = response_text.replace('\n', ' ')   # Remove actual newlines in JSON values
+                response_text = response_text.replace('\r', '')    # Remove carriage returns
+                response_text = response_text.replace('\t', ' ')   # Replace tabs with spaces
                 response_text = response_text.replace('\\"', '"')
                 
                 # Try to extract JSON from response if it contains other text
