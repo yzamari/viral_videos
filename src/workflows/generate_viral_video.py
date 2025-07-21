@@ -28,7 +28,7 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
          duration: int = 20, image_only: bool = False, fallback_only: bool = False,
          force: bool = False, discussions: str = "enhanced", discussion_log: bool = False,
          session_id: Optional[str] = None, frame_continuity: str = "auto",
-         target_audience: Optional[str] = None, style: Optional[str] = None,
+         continuous: bool = False, target_audience: Optional[str] = None, style: Optional[str] = None,
          tone: Optional[str] = None, visual_style: Optional[str] = None,
          mode: str = "enhanced", cheap_mode: bool = True, cheap_mode_level: str = "full", **kwargs):
     """
@@ -82,6 +82,7 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             "visual_style": visual_style,  # Don't override user's visual style choice
             "use_subtitle_overlays": True,
             "frame_continuity": frame_continuity == "on" or (frame_continuity == "auto"),
+            "continuous_generation": continuous,
             "cheap_mode": cheap_mode
         }
 

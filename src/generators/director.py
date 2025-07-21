@@ -922,7 +922,7 @@ class Director:
             else:
                 # Middle segments: Key aspects
                 if len(meaningful_words) > i:
-                    text = f"Here's what you need to know about {meaningful_words[i]}"
+                    text = f"Important aspect: {meaningful_words[i]}"
                 else:
                     text = f"Another important aspect of {topic} to consider"
 
@@ -1012,7 +1012,7 @@ class Director:
             if hook_text:
                 fallback_content = f"Let's explore {hook_text.lower()}"
             else:
-                fallback_content = "Here's what you need to know"
+                fallback_content = "Important information"
 
             return {
                 'hook': hook,
@@ -1090,7 +1090,7 @@ class Director:
                 'when',
                 'where']):
                 # Enhance naturally without "Discover:" prefix
-                hook['text'] = f"Here's what you need to know about {hook_text.lower()}"
+                hook['text'] = f"Learn about {hook_text.lower()}"
 
         return hook
 
@@ -1111,7 +1111,8 @@ class Director:
                 if len(text) > 100:
                     # Store both full text and display text
                     segment['full_text'] = text  # Keep full text for TTS
-                    segment['text'] = text[:97] + '...'  # Truncated for display
+                    segment['display_text'] = text[:97] + '...'  # Truncated for display only
+                    # IMPORTANT: Keep 'text' field intact for processing
 
         return segments
 
@@ -1347,7 +1348,8 @@ class Director:
                     # Trim if too long (for display only, preserve full text for TTS)
                     if len(text) > optimization['max_text_length']:
                         segment['full_text'] = text  # Keep full text for TTS
-                        segment['text'] = text[:optimization['max_text_length']-3] + '...'
+                        segment['display_text'] = text[:optimization['max_text_length']-3] + '...'  # For display only
+                        # IMPORTANT: Keep 'text' field intact for processing
                     
                     # Add platform-specific enhancements
                     if optimization['emojis'] and target_platform == Platform.TIKTOK:
@@ -1361,13 +1363,17 @@ class Director:
             if 'hook' in script and 'text' in script['hook']:
                 hook_text = script['hook']['text']
                 if len(hook_text) > optimization['max_text_length']:
-                    script['hook']['text'] = hook_text[:optimization['max_text_length']-3] + '...'
+                    script['hook']['full_text'] = hook_text  # Keep full text
+                    script['hook']['display_text'] = hook_text[:optimization['max_text_length']-3] + '...'
+                    # IMPORTANT: Keep 'text' field intact for processing
             
             # Optimize CTA
             if 'cta' in script and 'text' in script['cta']:
                 cta_text = script['cta']['text']
                 if len(cta_text) > optimization['max_text_length']:
-                    script['cta']['text'] = cta_text[:optimization['max_text_length']-3] + '...'
+                    script['cta']['full_text'] = cta_text  # Keep full text
+                    script['cta']['display_text'] = cta_text[:optimization['max_text_length']-3] + '...'
+                    # IMPORTANT: Keep 'text' field intact for processing
             
             script['platform_optimized'] = True
             script['optimization_applied'] = optimization

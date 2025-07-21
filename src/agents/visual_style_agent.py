@@ -6,6 +6,7 @@ import json
 import re
 from typing import Dict, Any, Optional
 from ..utils.logging_config import get_logger
+from .gemini_helper import GeminiModelHelper, ensure_api_key
 
 try:
     import google.generativeai as genai
@@ -19,11 +20,10 @@ class VisualStyleAgent:
     
     def __init__(self, api_key: str):
         """Initialize Visual Style Agent"""
-        self.api_key = api_key
+        self.api_key = ensure_api_key(api_key)
         
         if genai:
-            genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
+            self.model = GeminiModelHelper.get_configured_model(self.api_key, 'gemini-2.5-flash')
         else:
             self.model = None
             
@@ -112,7 +112,7 @@ Return JSON:
             return self._get_fallback_style(topic, target_audience, platform)
 
     def _get_fallback_style(self, topic: str, target_audience: str, platform: str) -> Dict[str, Any]:
-        """Fallback style decision based on topic and audience"""
+        """Fallback style decision based on topic and audience with improved typography and colors"""
 
         topic_lower = topic.lower()
         platform_lower = platform.lower()
@@ -150,32 +150,56 @@ Return JSON:
         
         if any(word in topic_lower for word in serious_keywords):
             primary_style = 'realistic'
-            color_palette = 'natural'
-            engagement_prediction = 'high'  # Serious content can still be engaging
-            logger.info(f"🎭 Detected serious topic, using realistic style for: {topic}")
+            color_palette = 'muted'
+            engagement_prediction = 'medium'
         elif any(word in topic_lower for word in educational_keywords):
             primary_style = 'realistic'
             color_palette = 'natural'
+            engagement_prediction = 'medium'
         elif any(word in topic_lower for word in humor_keywords):
-            # Only use cartoon for clearly humorous topics that aren't serious
-            if not any(word in topic_lower for word in serious_keywords):
-                primary_style = 'cartoon'
-                color_palette = 'vibrant'
-                engagement_prediction = 'high'
-            else:
-                primary_style = 'realistic'
-                color_palette = 'natural'
-                engagement_prediction = 'high'
+            primary_style = 'cartoon'
+            color_palette = 'vibrant'
+            engagement_prediction = 'high'
+
+        # Enhanced typography selection
+        enhanced_fonts = {
+            'professional': ['Helvetica-Bold', 'Arial-Bold', 'Georgia-Bold'],
+            'casual': ['Arial-Bold', 'Verdana-Bold', 'Trebuchet-Bold'],
+            'impact': ['Impact', 'Helvetica-Bold', 'Arial-Bold'],
+            'elegant': ['Georgia-Bold', 'Helvetica-Bold', 'Arial-Bold']
+        }
+
+        # Enhanced color palette - avoiding redundant orange
+        enhanced_colors = {
+            'vibrant': ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#54A0FF', '#5F27CD', '#00D2D3', '#C44569'],
+            'muted': ['#2C3E50', '#34495E', '#7F8C8D', '#95A5A6', '#BDC3C7', '#ECF0F1'],
+            'natural': ['#27AE60', '#2ECC71', '#3498DB', '#9B59B6', '#E67E22', '#E74C3C'],
+            'professional': ['#2C3E50', '#34495E', '#E74C3C', '#3498DB', '#27AE60', '#F39C12']
+        }
+
+        # Select appropriate fonts and colors
+        font_style = 'professional' if 'professional' in primary_style else 'casual'
+        selected_fonts = enhanced_fonts[font_style]
+        selected_colors = enhanced_colors[color_palette]
 
         return {
             'primary_style': primary_style,
-            'secondary_style': None,
-            'style_intensity': 'medium',
             'color_palette': color_palette,
-            'visual_effects': [],
-            'reasoning': f'Fallback style decision based on platform ({platform}) and topic analysis. This is a safe default that should work well for most content.',
             'engagement_prediction': engagement_prediction,
-            'appropriateness_score': 0.8
+            'typography': {
+                'primary_font': selected_fonts[0],
+                'secondary_font': selected_fonts[1],
+                'accent_font': selected_fonts[2],
+                'font_weights': ['normal', 'bold', 'extra-bold']
+            },
+            'colors': {
+                'primary': selected_colors[0],
+                'secondary': selected_colors[1],
+                'accent': selected_colors[2],
+                'text': '#FFFFFF' if color_palette in ['vibrant', 'natural'] else '#000000',
+                'background': '#000000' if color_palette in ['vibrant', 'natural'] else '#FFFFFF'
+            },
+            'reasoning': f'Enhanced fallback style: {primary_style} with {color_palette} palette, avoiding redundant orange colors'
         }
 
     def generate_style_prompt_enhancement(self, base_prompt: str, style_decision: Dict[str, Any]) -> str:

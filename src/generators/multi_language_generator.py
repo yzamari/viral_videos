@@ -564,39 +564,31 @@ class MultiLanguageVideoGenerator:
             overlays = []
             video_width, video_height = video_clip.size
 
-            # Language-specific text overlays
+            # Language-specific text overlays with enhanced styling
             if language == Language.HEBREW:
                 overlay_texts = [
-                    {"text": "🔥 תוכן ויראלי", "start": 0, "end": 3, "position": "top"},
-                    {"text": "💡 מידע חשוב", "start": 4, "end": 8, "position": "center"},
-                    {"text": "👆 עקבו לעוד", "start": max(
-                        0,
-                        duration-4), "end": duration, "position": "bottom"}
+                    {"text": "🔥 תוכן ויראלי", "start": 0, "end": 3, "position": "top", "color": "#FF6B6B", "font": "Helvetica-Bold"},
+                    {"text": "💡 מידע חשוב", "start": 4, "end": 8, "position": "center", "color": "#4ECDC4", "font": "Arial-Bold"},
+                    {"text": "👆 עקבו לעוד", "start": max(0, duration-4), "end": duration, "position": "bottom", "color": "#45B7D1", "font": "Impact"}
                 ]
             elif language == Language.ARABIC:
                 overlay_texts = [
-                    {"text": "🔥 محتوى فيروسي", "start": 0, "end": 3, "position": "top"},
-                    {"text": "💡 معلومات مهمة", "start": 4, "end": 8, "position": "center"},
-                    {"text": "👆 تابعونا للمزيد", "start": max(
-                        0,
-                        duration-4), "end": duration, "position": "bottom"}
+                    {"text": "🔥 محتوى فيروسي", "start": 0, "end": 3, "position": "top", "color": "#96CEB4", "font": "Helvetica-Bold"},
+                    {"text": "💡 معلومات مهمة", "start": 4, "end": 8, "position": "center", "color": "#54A0FF", "font": "Arial-Bold"},
+                    {"text": "👆 تابعونا للمزيد", "start": max(0, duration-4), "end": duration, "position": "bottom", "color": "#5F27CD", "font": "Impact"}
                 ]
             elif language == Language.PERSIAN:
                 overlay_texts = [
-                    {"text": "🔥 محتوای ویروسی", "start": 0, "end": 3, "position": "top"},
-                    {"text": "💡 اطلاعات مهم", "start": 4, "end": 8, "position": "center"},
-                    {"text": "👆 دنبال کنید", "start": max(
-                        0,
-                        duration-4), "end": duration, "position": "bottom"}
+                    {"text": "🔥 محتوای ویروسی", "start": 0, "end": 3, "position": "top", "color": "#00D2D3", "font": "Helvetica-Bold"},
+                    {"text": "💡 اطلاعات مهم", "start": 4, "end": 8, "position": "center", "color": "#C44569", "font": "Arial-Bold"},
+                    {"text": "👆 دنبال کنید", "start": max(0, duration-4), "end": duration, "position": "bottom", "color": "#2C3E50", "font": "Impact"}
                 ]
             else:
-                # English and other languages
+                # English and other languages with enhanced colors
                 overlay_texts = [
-                    {"text": "🔥 Viral Content", "start": 0, "end": 3, "position": "top"},
-                    {"text": "💡 Important Info", "start": 4, "end": 8, "position": "center"},
-                    {"text": "👆 Follow for more", "start": max(
-                        0,
-                        duration-4), "end": duration, "position": "bottom"}
+                    {"text": "🔥 Viral Content", "start": 0, "end": 3, "position": "top", "color": "#FF6B6B", "font": "Helvetica-Bold"},
+                    {"text": "💡 Important Info", "start": 4, "end": 8, "position": "center", "color": "#4ECDC4", "font": "Arial-Bold"},
+                    {"text": "👆 Follow for more", "start": max(0, duration-4), "end": duration, "position": "bottom", "color": "#45B7D1", "font": "Impact"}
                 ]
 
             # Create text clips
@@ -621,12 +613,12 @@ class MultiLanguageVideoGenerator:
                     else:  # bottom
                         y_pos = video_height * 0.75
 
-                    # Create text clip
+                    # Create text clip with enhanced styling
                     text_clip = TextClip(
                         text,
                         fontsize=font_size,
-                        color='white',
-                        font='Arial-Bold',
+                        color=overlay.get("color", "white"),  # Use enhanced color
+                        font=overlay.get("font", "Arial-Bold"),  # Use enhanced font
                         stroke_color='black',
                         stroke_width=3,
                         method='caption',

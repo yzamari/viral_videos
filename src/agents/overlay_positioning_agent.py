@@ -7,6 +7,7 @@ AI agent that makes intelligent decisions about subtitle and
 import google.generativeai as genai
 from typing import Dict, List, Any, Optional
 from ..utils.logging_config import get_logger
+from .gemini_helper import GeminiModelHelper, ensure_api_key
 import json
 import re
 
@@ -17,8 +18,8 @@ class OverlayPositioningAgent:
 
     def __init__(self, api_key: str):
         """Initialize the positioning agent"""
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        self.api_key = ensure_api_key(api_key)
+        self.model = GeminiModelHelper.get_configured_model(self.api_key, 'gemini-2.5-flash')
 
         logger.info("🎯 OverlayPositioningAgent initialized with colorful hooks support")
 
@@ -117,12 +118,13 @@ Return JSON:
             
             REQUIREMENTS:
             1. Create 6-10 text hooks that appear at different times throughout the video
-            2. Use vibrant colors that grab attention (#FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FECA57)
-            3. Choose fonts that match the content style (Arial-Bold, Impact, Helvetica-Bold)
+            2. Use sophisticated colors that grab attention (avoid redundant orange - use #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #54A0FF, #5F27CD, #00D2D3, #C44569, #2C3E50, #E74C3C)
+            3. Choose professional fonts that match the content style (Helvetica-Bold, Arial-Bold, Impact, Georgia-Bold, Verdana-Bold, Trebuchet-Bold)
             4. Position hooks strategically for maximum impact
             5. Include emojis and visual elements
             6. Make hooks short and punchy (max 20 characters)
             7. Ensure hooks appear every 3-5 seconds for maximum engagement
+            8. AVOID redundant orange colors - use diverse, sophisticated color palette
             
             PLATFORM OPTIMIZATION:
             - TikTok: Bold, colorful, trending phrases
@@ -136,7 +138,7 @@ Return JSON:
                     "start_time": 0.5,
                     "end_time": 3.0,
                     "position": "top_center",
-                    "font_family": "Arial-Bold",
+                    "font_family": "Helvetica-Bold",
                     "font_size": 48,
                     "color": "#FF6B6B",
                     "background_color": "#FFFFFF",
@@ -183,9 +185,9 @@ Return JSON:
         return all(field in hook for field in required_fields)
 
     def _get_fallback_hooks(self, topic: str, platform: str, video_duration: float) -> List[Dict[str, Any]]:
-        """Create fallback text hooks when AI generation fails"""
+        """Create fallback text hooks when AI generation fails with improved styling"""
         
-        logger.info("🎨 Creating fallback colorful text hooks")
+        logger.info("🎨 Creating enhanced fallback text hooks with better fonts and colors")
         
         # Create topic-specific hooks
         topic_words = topic.split()
@@ -194,23 +196,51 @@ Return JSON:
         # Generate more frequent hooks based on video duration
         num_hooks = max(6, min(12, int(video_duration / 3)))  # One hook every 3-5 seconds
         
+        # Enhanced hook templates with better colors and fonts
         hook_templates = [
-            {"text": f"🔥 {main_word.upper()}!", "color": "#FF6B6B", "position": "top_center", "animation": "bounce"},
-            {"text": "💡 WATCH THIS!", "color": "#4ECDC4", "position": "center_right", "animation": "fade"},
-            {"text": "😱 MIND BLOWN!", "color": "#45B7D1", "position": "top_right", "animation": "pulse"},
-            {"text": "🚀 VIRAL CONTENT", "color": "#96CEB4", "position": "center_left", "animation": "bounce"},
-            {"text": "⚡ AMAZING FACT!", "color": "#FECA57", "position": "top_left", "animation": "fade"},
-            {"text": "🎯 MUST KNOW!", "color": "#FF9FF3", "position": "bottom_left", "animation": "pulse"},
-            {"text": "🌟 INCREDIBLE!", "color": "#54A0FF", "position": "center_right", "animation": "bounce"},
-            {"text": "🔥 SO TRUE!", "color": "#5F27CD", "position": "top_center", "animation": "fade"},
-            {"text": "💯 FACTS ONLY!", "color": "#00D2D3", "position": "bottom_right", "animation": "pulse"},
-            {"text": "👀 LOOK AT THIS!", "color": "#FF9F43", "position": "center_left", "animation": "bounce"},
-            {"text": "🎉 AWESOME!", "color": "#C44569", "position": "top_right", "animation": "fade"},
-            {"text": "👍 LIKE & FOLLOW!", "color": "#FECA57", "position": "bottom_right", "animation": "pulse"}
+            {"text": f"🔥 {main_word.upper()}!", "color": "#FF6B6B", "font": "Helvetica-Bold", "position": "top_center", "animation": "bounce"},
+            {"text": "💡 WATCH THIS!", "color": "#4ECDC4", "font": "Arial-Bold", "position": "center_right", "animation": "fade"},
+            {"text": "😱 MIND BLOWN!", "color": "#45B7D1", "font": "Impact", "position": "top_right", "animation": "pulse"},
+            {"text": "🚀 VIRAL CONTENT", "color": "#96CEB4", "font": "Helvetica-Bold", "position": "center_left", "animation": "bounce"},
+            {"text": "⚡ AMAZING FACT!", "color": "#FECA57", "font": "Arial-Bold", "position": "top_left", "animation": "fade"},
+            {"text": "🎯 MUST KNOW!", "color": "#FF9FF3", "font": "Impact", "position": "bottom_left", "animation": "pulse"},
+            {"text": "🌟 INCREDIBLE!", "color": "#54A0FF", "font": "Helvetica-Bold", "position": "center_right", "animation": "bounce"},
+            {"text": "🔥 SO TRUE!", "color": "#5F27CD", "font": "Arial-Bold", "position": "top_center", "animation": "fade"},
+            {"text": "💯 FACTS ONLY!", "color": "#00D2D3", "font": "Impact", "position": "bottom_right", "animation": "pulse"},
+            {"text": "👀 LOOK AT THIS!", "color": "#FF9F43", "font": "Helvetica-Bold", "position": "center_left", "animation": "bounce"},
+            {"text": "🎉 AWESOME!", "color": "#C44569", "font": "Arial-Bold", "position": "top_right", "animation": "fade"},
+            {"text": "👍 LIKE & FOLLOW!", "color": "#FECA57", "font": "Impact", "position": "bottom_right", "animation": "pulse"}
+        ]
+        
+        # Enhanced color palette - removing redundant orange and using more sophisticated colors
+        enhanced_colors = [
+            "#FF6B6B",  # Coral Red
+            "#4ECDC4",  # Turquoise
+            "#45B7D1",  # Sky Blue
+            "#96CEB4",  # Mint Green
+            "#FECA57",  # Golden Yellow
+            "#FF9FF3",  # Pink
+            "#54A0FF",  # Blue
+            "#5F27CD",  # Purple
+            "#00D2D3",  # Cyan
+            "#C44569",  # Rose
+            "#2C3E50",  # Dark Blue
+            "#E74C3C"   # Red
+        ]
+        
+        # Enhanced font selection with better typography
+        enhanced_fonts = [
+            "Helvetica-Bold",
+            "Arial-Bold", 
+            "Impact",
+            "Georgia-Bold",
+            "Verdana-Bold",
+            "Trebuchet-Bold"
         ]
         
         fallback_hooks = []
-        hook_duration = 2.5
+        # Calculate hook duration as a percentage of video duration (8-10% of total, max 3 seconds)
+        hook_duration = min(3.0, max(1.5, video_duration * 0.08))
         time_per_hook = video_duration / num_hooks
         
         for i in range(num_hooks):
@@ -221,27 +251,35 @@ Return JSON:
             # Skip if would go beyond video duration
             if start_time >= video_duration - 1:
                 break
+            
+            # Choose enhanced color and font
+            color = enhanced_colors[i % len(enhanced_colors)]
+            font = enhanced_fonts[i % len(enhanced_fonts)]
+            
+            # Remove redundant orange colors - replace with better alternatives
+            if color in ["#FF9F43", "#FECA57"]:  # Orange variants
+                color = enhanced_colors[(i + 3) % len(enhanced_colors)]  # Skip to next color
                 
             fallback_hooks.append({
                 "text": template["text"],
                 "start_time": start_time,
                 "end_time": end_time,
                 "position": template["position"],
-                "font_family": "Arial-Bold" if i % 2 == 0 else "Impact",
+                "font_family": font,
                 "font_size": 52 if i % 3 == 0 else 46,  # Larger fonts for better visibility
-                "color": template["color"],
+                "color": color,
                 "background_color": "#000000" if i % 2 == 0 else "#FFFFFF",
                 "stroke_color": "#FFFFFF" if i % 2 == 0 else "#000000",
                 "stroke_width": 3,
                 "animation": template["animation"],
                 "opacity": 0.95,
-                "reasoning": f"Hook {i+1} for continuous engagement"
+                "reasoning": f"Enhanced hook {i+1} with better typography and color selection"
             })
         
         # Filter hooks that fit within video duration
         valid_hooks = [hook for hook in fallback_hooks if hook['end_time'] <= video_duration]
         
-        logger.info(f"🎨 Created {len(valid_hooks)} fallback text hooks")
+        logger.info(f"🎨 Created {len(valid_hooks)} enhanced fallback text hooks with improved styling")
         return valid_hooks
 
     def _get_fallback_positioning(self,

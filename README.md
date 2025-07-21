@@ -9,6 +9,19 @@
 
 ## ✨ **What's New in v2.5.0-rc2**
 
+### 🎬 **Multiple Video Versions**
+- **Three Output Versions**: Final (with subtitles/overlays), Audio Only, Overlays Only
+- **Maximum Flexibility**: Choose the version that best fits your needs
+- **Editing Freedom**: Clean versions for custom modifications
+- **Multi-Platform Ready**: Different versions for different platforms
+- **Language Versatility**: Easy to add custom subtitles to clean versions
+
+### 🎨 **Enhanced Styling System**
+- **Improved Font Selection**: Professional fonts (Helvetica-Bold, Arial-Bold, Impact, Georgia-Bold)
+- **Sophisticated Color Palette**: No more redundant orange - uses coral red, turquoise, sky blue, mint green, purple, cyan, rose
+- **AI-Powered Typography**: Intelligent font and color selection based on content type
+- **Better Visual Hierarchy**: Enhanced text overlays with improved readability
+
 ### 🚨 **Critical Bug Fixes**
 - **Fixed**: DiscussionResult object handling causing video generation crashes
 - **Fixed**: Type safety issues in video generation pipeline
@@ -73,7 +86,7 @@ python main.py generate --mission "Test video" --platform instagram --duration 1
 
 ### Basic Usage
 ```bash
-# Generate a professional video with 22 AI agents
+# Generate a professional video with 22 AI agents (creates 3 versions)
 python main.py generate \
   --mission "Teach kids about recycling" \
   --platform instagram \
@@ -111,6 +124,22 @@ python main.py generate \
   --platform youtube \
   --duration 20 \
   --cheap full
+```
+
+### 🎬 **Multiple Video Versions Output**
+Every generation creates three versions automatically:
+
+```bash
+# Example output files for session_20250721_123456:
+outputs/session_20250721_123456/final_output/
+├── final_video_session_20250721_123456_final.mp4      # Complete version
+├── final_video_session_20250721_123456_audio_only.mp4 # Clean version
+└── final_video_session_20250721_123456_overlays_only.mp4 # Overlays only
+
+# Summary files:
+outputs/session_20250721_123456/metadata/
+├── video_versions_summary.json  # Machine-readable metadata
+└── video_versions_summary.md    # Human-readable documentation
 ```
 
 ## Key Features

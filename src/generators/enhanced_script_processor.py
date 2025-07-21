@@ -25,7 +25,13 @@ class EnhancedScriptProcessor:
         else:
             if not api_key:
                 raise ValueError("Either api_key or ai_manager must be provided")
-            self.ai_manager = AIServiceManager()
+            # Create AI configuration with the provided API key
+            from ..ai.config import AIConfiguration, AIProvider
+            from ..ai.factory import AIServiceType
+            config = AIConfiguration()
+            config.api_keys[AIProvider.GEMINI] = api_key
+            config.default_providers[AIServiceType.TEXT_GENERATION] = AIProvider.GEMINI
+            self.ai_manager = AIServiceManager(config)
         
         # Keep json_fixer for compatibility
         self.json_fixer = JSONFixer(api_key or "dummy")
@@ -140,10 +146,12 @@ DURATION CALCULATION AND STRATEGY:
 - PRIORITY: Create concise, impactful scripts that fit naturally within the duration
 - Average speaking speed: 2.5 words per second (comfortable pace)
 - Target words for {target_duration}s: {int(target_duration * 2.5) if target_duration else 'Not specified'}
+- IMPORTANT: Account for contraction expansion when calculating word count (e.g., "don't" becomes "do not" = 2 words)
 - STRATEGY: Focus on shorter, punchy content rather than fast delivery
 - Remove unnecessary words, filler phrases, and redundant information
 - Use active voice and direct statements
 - Prioritize impact over comprehensiveness
+- AIM FOR SLIGHTLY FEWER WORDS to account for contraction expansion
 
 Please return a JSON response with the following structure:
 {{
@@ -240,7 +248,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 # Assume it's already an enum
                 language_value = language.value if hasattr(language, 'value') else str(language)
                 
-            target_words = int(target_duration * 3)  # 3 words per second
+            target_words = int(target_duration * 2.5)  # 2.5 words per second (matching prompt)
             
             # Simple word-based trimming/expansion
             words = script_content.split()
@@ -285,7 +293,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 end_idx = (i + 1) * words_per_segment if i < segment_count - 1 else len(words)
                 
                 segment_text = ' '.join(words[start_idx:end_idx])
-                segment_duration = len(segment_text.split()) / 3.0  # 3 words per second
+                segment_duration = len(segment_text.split()) / 2.5  # 2.5 words per second (matching prompt)
                 
                 segments.append({
                     "text": segment_text,
@@ -345,7 +353,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
             # Calculate basic metrics
             words = optimized_script.split()
             word_count = len(words)
-            estimated_duration = word_count / 3.0
+            estimated_duration = word_count / 2.5  # 2.5 words per second (matching prompt)
             
             # If target duration specified, trim to fit
             if target_duration and estimated_duration > target_duration:
@@ -380,6 +388,11 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
     def _create_fallback_result(self, script_content: str, language, target_duration: float = None) -> Dict[str, Any]:
         """Create fallback result when AI processing fails"""
         
+        # Check for truncated text and warn
+        if "..." in script_content and len(script_content.split("...")) > 3:
+            logger.warning("⚠️ Script appears to be truncated with multiple '...' - this may cause issues")
+            logger.warning(f"⚠️ Script preview: {script_content[:200]}")
+        
         # Handle both string and enum inputs for language
         if isinstance(language, str):
             language_value = language
@@ -389,7 +402,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
             
         words = script_content.split()
         word_count = len(words)
-        estimated_duration = word_count / 3.0  # 3 words per second
+        estimated_duration = word_count / 2.5  # 2.5 words per second (matching prompt)
         
         # If target duration specified, trim to fit
         if target_duration and estimated_duration > target_duration:
@@ -797,9 +810,9 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
 
             # Calculate timing with different speech rates
             speech_rates = {
-                'slow': 1.8,     # Slow, clear speech
-                'normal': 2.2,   # Normal conversational pace
-                'fast': 2.6      # Fast, energetic pace
+                'slow': 2.0,     # Slow, clear speech
+                'normal': 2.5,   # Normal conversational pace (matching prompt)
+                'fast': 3.0      # Fast, energetic pace
             }
 
             timing_analysis = {}

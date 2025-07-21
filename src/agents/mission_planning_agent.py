@@ -81,7 +81,13 @@ class MissionPlanningAgent:
         else:
             if not api_key or not api_key.strip():
                 raise ValueError("Either API key or ai_manager must be provided")
-            self.ai_manager = AIServiceManager()
+            # Create AI configuration with the provided API key
+            from ..ai.config import AIConfiguration, AIProvider
+            from ..ai.factory import AIServiceType
+            config = AIConfiguration()
+            config.api_keys[AIProvider.GEMINI] = api_key
+            config.default_providers[AIServiceType.TEXT_GENERATION] = AIProvider.GEMINI
+            self.ai_manager = AIServiceManager(config)
         
         self.api_key = api_key or "dummy"
         self.model_name = model_name
@@ -224,9 +230,14 @@ class MissionPlanningAgent:
                 max_tokens=500
             )
             response = await text_service.generate(request)
+            logger.debug(f"AI response text: {response.text[:500]}...")
             
-            # Parse response
-            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+            # Parse response - handle markdown code blocks
+            text = response.text
+            # Remove markdown code blocks if present
+            text = re.sub(r'```json\s*', '', text)
+            text = re.sub(r'```\s*', '', text)
+            json_match = re.search(r'\{.*\}', text, re.DOTALL)
             if json_match:
                 try:
                     raw_json = json_match.group()
@@ -249,6 +260,11 @@ class MissionPlanningAgent:
                 confidence = result.get('confidence', 0.5)
                 reasoning = result.get('reasoning', 'AI classification')
                 
+                # Handle multiple mission types (e.g., "encourage|motivate")
+                if '|' in mission_type_str:
+                    # Take the first one
+                    mission_type_str = mission_type_str.split('|')[0].strip()
+                
                 # Convert string to MissionType enum
                 for mission_type in MissionType:
                     if mission_type.value == mission_type_str:
@@ -256,9 +272,12 @@ class MissionPlanningAgent:
                         logger.info(f"   Confidence: {confidence:.2f}")
                         logger.info(f"   Reasoning: {reasoning}")
                         return mission_type, is_strategic
+            else:
+                logger.warning("⚠️ No JSON found in AI response")
             
         except Exception as e:
             logger.warning(f"⚠️ AI mission detection failed: {e}")
+            logger.debug(f"Full error details: {e}", exc_info=True)
         
         return None, False
     
@@ -381,8 +400,12 @@ Focus on creating a plan that actually accomplishes the mission, not just create
             )
             response = await text_service.generate(request)
             
-            # Parse AI response
-            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+            # Parse AI response - handle markdown code blocks
+            text = response.text
+            # Remove markdown code blocks if present
+            text = re.sub(r'```json\s*', '', text)
+            text = re.sub(r'```\s*', '', text)
+            json_match = re.search(r'\{.*\}', text, re.DOTALL)
             if json_match:
                 try:
                     # Log the raw JSON for debugging

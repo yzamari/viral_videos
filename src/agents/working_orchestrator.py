@@ -1360,7 +1360,7 @@ class WorkingOrchestrator:
         # Create a simple script based on the mission
         fallback_script = {
             'hook': f"Amazing content ahead!",
-            'main_content': f"Here's what you need to know about {self.mission}.",
+            'main_content': f"{self.mission}",
             'call_to_action': "Follow for more!",
             'segments': [
                 {
@@ -1370,7 +1370,7 @@ class WorkingOrchestrator:
                 },
                 {
                     'type': 'content',
-                    'text': f"Here's what you need to know about {self.mission}.",
+                    'text': f"{self.mission}",
                     'duration': self.duration - 6
                 },
                 {

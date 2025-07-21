@@ -18,6 +18,7 @@ except ImportError:
 from ..utils.logging_config import get_logger
 from ..models.video_models import Language, Platform, VideoCategory
 from ..utils.json_fixer import create_json_fixer
+from .gemini_helper import GeminiModelHelper, ensure_api_key
 
 logger = get_logger(__name__)
 
@@ -43,9 +44,9 @@ class VoiceDirectorAgent:
     """AI agent that intelligently selects voices for optimal content delivery"""
 
     def __init__(self, api_key: str):
-        self.api_key = api_key
+        self.api_key = ensure_api_key(api_key)
         if genai_available and GenerativeModel:
-            self.model = GenerativeModel('gemini-2.5-flash')
+            self.model = GeminiModelHelper.get_configured_model(self.api_key, 'gemini-2.5-flash')
         else:
             logger.warning("Google Generative AI is not available. Voice selection will be limited.")
             self.model = None
@@ -231,8 +232,8 @@ class VoiceDirectorAgent:
             "🎭 Voice Director Agent initialized with AI-powered voice selection")
 
     def get_voice_config(self, content: str, platform: Platform, num_clips: int, 
-                        style: str = "professional", tone: str = "engaging", 
-                        duration_seconds: int = 10) -> Dict[str, Any]:
+                        duration_seconds: int,
+                        style: str = "professional", tone: str = "engaging") -> Dict[str, Any]:
         """Get voice configuration for the given content"""
         try:
             # Use the existing analyze_content_and_select_voices method

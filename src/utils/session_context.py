@@ -143,15 +143,18 @@ class SessionContext:
             logger.error(f"Failed to save file {filename}: {e}")
             return source_path
 
-    def save_final_video(self, video_path: str) -> str:
-        """Save final video to session directory"""
+    def save_final_video(self, video_path: str, suffix: str = "") -> str:
+        """Save final video to session directory with optional suffix"""
         try:
             # Ensure final_output directory exists
             final_dir = self.get_output_path("final_output")
             os.makedirs(final_dir, exist_ok=True)
             
-            # Generate final video filename
-            final_filename = f"final_video_{self.session_id}.mp4"
+            # Generate final video filename with optional suffix
+            if suffix:
+                final_filename = f"final_video_{self.session_id}_{suffix}.mp4"
+            else:
+                final_filename = f"final_video_{self.session_id}.mp4"
             final_path = os.path.join(final_dir, final_filename)
             
             # Only copy if source and destination are different

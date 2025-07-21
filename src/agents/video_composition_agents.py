@@ -551,39 +551,22 @@ Respond in JSON format:
     def _create_fallback_design(self, platform: str) -> Dict[str, Any]:
         """Create fallback design when AI analysis fails"""
 
-        # Platform-specific defaults
-        if platform.lower() == 'tiktok':
-            color_palette = {
-                "primary": "#FF0050",
-                "secondary": "#00F2EA",
-                "accent": "#FFFF00",
-                "text": "#FFFFFF",
-                "background": "#000000"
-            }
-        elif platform.lower() == 'youtube':
-            color_palette = {
-                "primary": "#FF0000",
-                "secondary": "#282828",
-                "accent": "#FFFFFF",
-                "text": "#FFFFFF",
-                "background": "#0F0F0F"
-            }
-        else:  # Instagram/default
-            color_palette = {
-                "primary": "#E4405F",
-                "secondary": "#833AB4",
-                "accent": "#F77737",
-                "text": "#FFFFFF",
-                "background": "#000000"
-            }
+        # Enhanced color palette - avoiding redundant orange
+        color_palette = {
+            'primary': '#FF6B6B',  # Coral Red
+            'secondary': '#4ECDC4',  # Turquoise
+            'accent': '#45B7D1',  # Sky Blue
+            'text': '#FFFFFF',
+            'background': '#000000'
+        }
 
         return {
-            'design_strategy': f'Fallback design optimized for {platform}',
+            'design_strategy': f'Enhanced design optimized for {platform}',
             'color_palette': color_palette,
             'typography': {
-                "main_font": "Arial, sans-seri",
-                "header_font": "Arial Black, sans-seri",
-                "subtitle_font": "Arial, sans-seri",
+                "main_font": "Helvetica-Bold, sans-serif",
+                "header_font": "Arial-Bold, sans-serif",
+                "subtitle_font": "Georgia-Bold, sans-serif",
                 "font_weights": ["normal", "bold", "extra-bold"]
             },
             'text_elements': [
@@ -605,8 +588,8 @@ Respond in JSON format:
                 "font_size_minimum": "16px",
                 "readability_score": "high"
             },
-            'platform_adaptations': f'Standard {platform} optimizations',
-            'agent_name': 'VisualDesigner (Fallback)',
+            'platform_adaptations': f'Enhanced {platform} optimizations with improved typography',
+            'agent_name': 'VisualDesigner (Enhanced)',
             'analysis_timestamp': datetime.now().isoformat()
         }
 

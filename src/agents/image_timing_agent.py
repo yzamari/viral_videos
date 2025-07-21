@@ -358,9 +358,13 @@ Respond in JSON format:
         if 'image_timings' not in analysis:
             analysis['image_timings'] = []
 
+        # Calculate default duration based on target duration and number of images
+        default_duration = target_duration / num_images if num_images > 0 else 7.0
+        default_duration = max(5.0, min(10.0, default_duration))  # Keep within 5-10 range
+        
         # Enforce 5-10 second range for each image:
         for img_timing in analysis['image_timings']:
-            duration = img_timing.get('duration', 7.0)  # Default to 7 seconds
+            duration = img_timing.get('duration', default_duration)
 
             # Enforce 5-10 second range
             if duration < 5.0:
@@ -377,7 +381,7 @@ Respond in JSON format:
                 img_timing['duration'] = round(duration, 1)
 
         # If we don't have enough images to fill duration, adjust proportionally'
-        total_from_timings = sum(img.get('duration', 7.0) for img in analysis['image_timings'])
+        total_from_timings = sum(img.get('duration', default_duration) for img in analysis['image_timings'])
 :
         if total_from_timings < target_duration and num_images > 0:
             # Distribute extra time across images, keeping within 5-10 second range
@@ -385,7 +389,7 @@ Respond in JSON format:
             extra_per_image = extra_time / num_images
 
             for img_timing in analysis['image_timings']:
-                current_duration = img_timing.get('duration', 7.0)
+                current_duration = img_timing.get('duration', default_duration)
                 new_duration = min(10.0, current_duration + extra_per_image)
                 img_timing['duration'] = round(new_duration, 1)
 
@@ -393,8 +397,8 @@ Respond in JSON format:
                     img_timing['timing_rationale'] += f" (Extended by {new_duration - current_duration:.1f}s to fill target duration)"
 
         # Recalculate totals
-        analysis['total_calculated_duration'] = sum(img.get('duration', 7.0) for img in analysis['image_timings'])
-        analysis['average_duration_per_image'] = analysis['total_calculated_duration'] / num_images if num_images > 0 else 7.0
+        analysis['total_calculated_duration'] = sum(img.get('duration', default_duration) for img in analysis['image_timings'])
+        analysis['average_duration_per_image'] = analysis['total_calculated_duration'] / num_images if num_images > 0 else default_duration
 
         # Ensure average is in 5-10 range:
         if analysis['average_duration_per_image'] < 5.0:
@@ -475,20 +479,23 @@ Respond in JSON format:
             elif platform.lower() == 'instagram':
                 base_duration = max(6.0, min(8.0, base_duration))  # 6-8 seconds for Instagram:
         else:
-            # Standard generation: use original logic
+            # Standard generation: calculate base duration from target
+            target_avg = total_duration / num_images if num_images > 0 else 1.5
             if platform.lower() == 'tiktok':
                 # CRITICAL FIX: Remove duration multiplier to maintain exact target duration
-            base_duration = 1.0  # Fast-paced (was 1.2)
+                # Fast-paced: slightly shorter than average
+                base_duration = target_avg * 0.9
             elif platform.lower() == 'youtube':
-                base_duration = 2.0  # More relaxed
+                # More relaxed: slightly longer than average
+                base_duration = target_avg * 1.1
             elif platform.lower() == 'instagram':
-                base_duration = 1.8  # Aesthetic focus
+                # Aesthetic focus: close to average
+                base_duration = target_avg * 1.0
             else:
-                base_duration = 1.5  # General default
+                base_duration = target_avg  # Use calculated average
 
-            # Adjust to fit total duration
-            target_avg = total_duration / num_images if num_images > 0 else base_duration
-            base_duration = min(max(target_avg, 0.8), 4.0)  # Clamp between 0.8 and 4 seconds
+            # Ensure reasonable bounds while respecting target duration
+            base_duration = max(0.5, min(base_duration, 8.0))
 
         # Create timing for each image
         image_timings = []:
