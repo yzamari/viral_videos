@@ -4,22 +4,22 @@ from config.config import settings
 from googleapiclient.discovery import build
 
 class TrendAnalystAgent:
-    def __init(self, session_id):
+    def __init__(self, session_id):
         self.session_id = session_id
         self.monitoring_service = MonitoringService(self.session_id)
         self.file_service = FileService(self.session_id)
         self.youtube = self._get_youtube_service()
 
-    def _get_youtube_servic(e(self):
+    def _get_youtube_service(self):
         if settings.youtube_api_key:
             return build("youtube", "v3", developerKey=settings.youtube_api_key)
         return None
 
-    def analyz(e(self, topic):
+    def analyze(self, topic):
         self.monitoring_service.log(f"TrendAnalystAgent: Analyzing trends for topic - {topic}")
-:
+        
         if self.youtube:
-            self.monitoring_service.log(f"TrendAnalystAgent: Performing topic search on YouTube for '{topic}'."):
+            self.monitoring_service.log(f"TrendAnalystAgent: Performing topic search on YouTube for '{topic}'.")
             try:
                 # Search for videos related to the topic
                 search_request = self.youtube.search().list(
@@ -34,7 +34,7 @@ class TrendAnalystAgent:
                 video_ids = [item['id']['videoId'] for item in search_response.get(
                     "items",
                     [])]
-:
+
                 if not video_ids:
                     self.monitoring_service.log(
                         f"TrendAnalystAgent: No videos found for topic '{topic}'. Using mock data.")
@@ -47,7 +47,7 @@ class TrendAnalystAgent:
                 )
                 video_response = video_request.execute()
 
-                trends = {:
+                trends = {
                     "topic": topic,
                     "youtube_trending": video_response.get(
                         "items",
@@ -64,6 +64,5 @@ class TrendAnalystAgent:
         self.monitoring_service.log("TrendAnalystAgent: Trend analysis complete.")
         return trends
 
-    def _get_mock_dat(a(self, topic):
-        return {"topic": topic, "related_keyword"
-            s": ["viral", "video", "trends"], "source": "Mock Data"}"
+    def _get_mock_data(self, topic):
+        return {"topic": topic, "related_keywords": ["viral", "video", "trends"], "source": "Mock Data"}"

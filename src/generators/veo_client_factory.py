@@ -13,17 +13,22 @@ if 'src' not in sys.path:
     sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 try:
-    from src.utils.logging_config import get_logger
+    from ..utils.logging_config import get_logger
     from config.config import Settings
 except ImportError:
-    from utils.logging_config import get_logger
     try:
+        from utils.logging_config import get_logger
         from config.config import Settings
     except ImportError:
         # Fallback settings if config not available
         class Settings:
             disable_veo3 = True
             prefer_veo2_over_veo3 = True
+        
+        # Simple logger fallback
+        import logging
+        def get_logger(name):
+            return logging.getLogger(name)
 
 logger = get_logger(__name__)
 

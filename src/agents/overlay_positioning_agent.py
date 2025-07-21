@@ -261,7 +261,8 @@ Return JSON:
             secondary_position = "top_center"
 
         # CRITICAL FIX: Use dynamic positioning for TikTok viral content
-        strategy = "dynamic" if platform == "tiktok" and duration_seconds <= 30 else "static"
+        # Default to dynamic for TikTok (most TikTok videos are short)
+        strategy = "dynamic" if platform.lower() == "tiktok" else "static"
         
         return {
             "primary_overlay_position": primary_position,  # Changed from primary_subtitle_position for consistency

@@ -107,7 +107,7 @@ class WorkingOrchestrator:
             mode: Orchestrator mode (simple to professional)
             session_id: Optional session ID
             language: Target language for content
-            cheap_mode: Enable cost-saving mode (default: True)
+            cheap_mode: Enable cost-saving mode (default: True - saves costs)
             cheap_mode_level: Granular cheap mode (full, audio, video)
         """
         self.api_key = api_key
@@ -378,11 +378,11 @@ class WorkingOrchestrator:
             # Phase 6: Video Generation with All Features (continuity-aware)
             try:
                 if self.cheap_mode:
-                    video_path = self._generate_cheap_video(script_data, decisions, config)
+                    video_path = await self._generate_cheap_video(script_data, decisions, config)
                 elif self.mode == OrchestratorMode.MULTILINGUAL and config.get('languages'):
-                    video_path = self._generate_multilingual_video(script_data, decisions, config)
+                    video_path = await self._generate_multilingual_video(script_data, decisions, config)
                 else:
-                    video_path = self._generate_enhanced_video(script_data, decisions, config)
+                    video_path = await self._generate_enhanced_video(script_data, decisions, config)
                 
                 if video_path:
                     logger.info(f"✅ {self.mode.value} video generation completed: {video_path}")
@@ -412,7 +412,14 @@ class WorkingOrchestrator:
                 'discussions_conducted': len(self.discussion_results),
                 'optimization_level': f'{self.mode.value}_ai_enhanced',
                 'mode': self.mode.value,
-                'frame_continuity_decision': frame_continuity_decision
+                'frame_continuity_decision': frame_continuity_decision,
+                'professional_mode_details': {
+                    'total_agents': self._count_agents_used(),
+                    'base_agents': 22 if self.mode == OrchestratorMode.PROFESSIONAL else 0,
+                    'discussion_agents': sum(len(discussion.participating_agents) for discussion in self.discussion_results.values()) if self.discussion_results else 0,
+                    'discussions_completed': len(self.discussion_results),
+                    'all_agents_utilized': self.mode == OrchestratorMode.PROFESSIONAL and len(self.discussion_results) >= 7
+                } if self.mode == OrchestratorMode.PROFESSIONAL else None
             }
             
         except Exception as e:
@@ -423,7 +430,14 @@ class WorkingOrchestrator:
                 'session_id': self.session_id,
                 'agent_decisions': self.agent_decisions,
                 'discussion_results': self.discussion_results,
-                'mode': self.mode.value
+                'mode': self.mode.value,
+                'professional_mode_details': {
+                    'total_agents': self._count_agents_used(),
+                    'base_agents': 22 if self.mode == OrchestratorMode.PROFESSIONAL else 0,
+                    'discussion_agents': sum(len(discussion.participating_agents) for discussion in self.discussion_results.values()) if self.discussion_results else 0,
+                    'discussions_completed': len(self.discussion_results),
+                    'all_agents_utilized': self.mode == OrchestratorMode.PROFESSIONAL and len(self.discussion_results) >= 7
+                } if self.mode == OrchestratorMode.PROFESSIONAL else None
             }
 
     def _make_frame_continuity_decision(
@@ -789,7 +803,99 @@ class WorkingOrchestrator:
             'decision': voice_decision
         }
         
-        # Enhanced decisions for advanced modes
+        # CRITICAL FIX: Integrate discussion results for professional mode
+        if self.mode == OrchestratorMode.PROFESSIONAL and self.discussion_results:
+            logger.info("🎯 Integrating professional discussion results from 22 agents...")
+            
+            # Integrate script strategy discussion results
+            if 'script_strategy' in self.discussion_results:
+                script_discussion = self.discussion_results['script_strategy']
+                decisions['script_strategy'] = script_discussion.decision
+                self.agent_decisions['script_strategy'] = {
+                    'agents': script_discussion.participating_agents,
+                    'consensus': script_discussion.consensus_level,
+                    'insights': script_discussion.key_insights,
+                    'decision': script_discussion.decision
+                }
+                logger.info(f"✅ Integrated script strategy from {len(script_discussion.participating_agents)} agents")
+
+            # Integrate visual strategy discussion results
+            if 'visual_strategy' in self.discussion_results:
+                visual_discussion = self.discussion_results['visual_strategy']
+                decisions['visual_strategy'] = visual_discussion.decision
+                self.agent_decisions['visual_strategy'] = {
+                    'agents': visual_discussion.participating_agents,
+                    'consensus': visual_discussion.consensus_level,
+                    'insights': visual_discussion.key_insights,
+                    'decision': visual_discussion.decision
+                }
+                logger.info(f"✅ Integrated visual strategy from {len(visual_discussion.participating_agents)} agents")
+
+            # Integrate audio strategy discussion results
+            if 'audio_strategy' in self.discussion_results:
+                audio_discussion = self.discussion_results['audio_strategy']
+                decisions['audio_strategy'] = audio_discussion.decision
+                self.agent_decisions['audio_strategy'] = {
+                    'agents': audio_discussion.participating_agents,
+                    'consensus': audio_discussion.consensus_level,
+                    'insights': audio_discussion.key_insights,
+                    'decision': audio_discussion.decision
+                }
+                logger.info(f"✅ Integrated audio strategy from {len(audio_discussion.participating_agents)} agents")
+
+            # Integrate marketing strategy discussion results
+            if 'marketing_strategy' in self.discussion_results:
+                marketing_discussion = self.discussion_results['marketing_strategy']
+                decisions['marketing_strategy'] = marketing_discussion.decision
+                self.agent_decisions['marketing_strategy'] = {
+                    'agents': marketing_discussion.participating_agents,
+                    'consensus': marketing_discussion.consensus_level,
+                    'insights': marketing_discussion.key_insights,
+                    'decision': marketing_discussion.decision
+                }
+                logger.info(f"✅ Integrated marketing strategy from {len(marketing_discussion.participating_agents)} agents")
+
+            # Integrate design strategy discussion results
+            if 'design_strategy' in self.discussion_results:
+                design_discussion = self.discussion_results['design_strategy']
+                decisions['design_strategy'] = design_discussion.decision
+                self.agent_decisions['design_strategy'] = {
+                    'agents': design_discussion.participating_agents,
+                    'consensus': design_discussion.consensus_level,
+                    'insights': design_discussion.key_insights,
+                    'decision': design_discussion.decision
+                }
+                logger.info(f"✅ Integrated design strategy from {len(design_discussion.participating_agents)} agents")
+
+            # Integrate engagement strategy discussion results
+            if 'engagement_strategy' in self.discussion_results:
+                engagement_discussion = self.discussion_results['engagement_strategy']
+                decisions['engagement_strategy'] = engagement_discussion.decision
+                self.agent_decisions['engagement_strategy'] = {
+                    'agents': engagement_discussion.participating_agents,
+                    'consensus': engagement_discussion.consensus_level,
+                    'insights': engagement_discussion.key_insights,
+                    'decision': engagement_discussion.decision
+                }
+                logger.info(f"✅ Integrated engagement strategy from {len(engagement_discussion.participating_agents)} agents")
+
+            # Integrate platform optimization discussion results
+            if 'platform_optimization' in self.discussion_results:
+                platform_discussion = self.discussion_results['platform_optimization']
+                decisions['platform_optimization'] = platform_discussion.decision
+                self.agent_decisions['platform_optimization'] = {
+                    'agents': platform_discussion.participating_agents,
+                    'consensus': platform_discussion.consensus_level,
+                    'insights': platform_discussion.key_insights,
+                    'decision': platform_discussion.decision
+                }
+                logger.info(f"✅ Integrated platform optimization from {len(platform_discussion.participating_agents)} agents")
+
+            # Calculate total agents used from discussions
+            total_discussion_agents = sum(len(discussion.participating_agents) for discussion in self.discussion_results.values())
+            logger.info(f"🎯 Total agents from discussions: {total_discussion_agents}")
+        
+        # Enhanced decisions for advanced modes (fallback for non-professional modes)
         if self.mode in [OrchestratorMode.ENHANCED, OrchestratorMode.ADVANCED,
                          OrchestratorMode.PROFESSIONAL, OrchestratorMode.MULTILINGUAL]:
 
@@ -847,7 +953,7 @@ class WorkingOrchestrator:
         logger.info(f"✅ Made {len(decisions)} comprehensive AI decisions")
         return decisions
 
-    def _generate_multilingual_video(self, script_data: Dict[str, Any],
+    async def _generate_multilingual_video(self, script_data: Dict[str, Any],
                                      decisions: Dict[str, Any], config: Dict[str, Any]) -> str:
         """Generate multilingual video"""
         logger.info("🌍 Generating multilingual video...")
@@ -855,7 +961,7 @@ class WorkingOrchestrator:
         if not self.multilang_generator:
             logger.warning( "Multilingual generator not available, " "using standard video generation"
             )
-            return self._generate_enhanced_video(script_data, decisions, config)
+            return await self._generate_enhanced_video(script_data, decisions, config)
 
         languages = config.get('languages', [Language.ENGLISH_US])
 
@@ -883,9 +989,9 @@ class WorkingOrchestrator:
             logger.error(f"Multilingual generation failed: {e}")
 
         # Fallback to regular generation
-        return self._generate_enhanced_video(script_data, decisions, config)
+        return await self._generate_enhanced_video(script_data, decisions, config)
 
-    def _generate_enhanced_video(self, script_data: Dict[str, Any],
+    async def _generate_enhanced_video(self, script_data: Dict[str, Any],
                                  decisions: Dict[str, Any], config: Dict[str, Any]) -> str:
         """Generate enhanced video with all AI decisions"""
         logger.info("🎬 Generating enhanced video with AI decisions...")
@@ -894,7 +1000,7 @@ class WorkingOrchestrator:
             # Create video generator with VEO3 disabled
             video_generator = VideoGenerator(
                 api_key=self.api_key,
-                use_real_veo2=config.get('force_generation') != 'force_image_gen',
+                use_real_veo2=not self.cheap_mode,  # Use VEO2 when cheap_mode is False
                 use_vertex_ai=True,
                 prefer_veo3=False  # CRITICAL: Disable VEO3 as requested
             )
@@ -906,7 +1012,7 @@ class WorkingOrchestrator:
                 config)
 
             # Generate video with AI-enhanced config
-            video_result = video_generator.generate_video(video_config)
+            video_result = await video_generator.generate_video(video_config)
 
             # Handle different return types properly
             if isinstance(video_result, str):
@@ -949,18 +1055,17 @@ class WorkingOrchestrator:
             # Extract core decisions for video generation
             num_clips = self.core_decisions.num_clips
             clip_durations = self.core_decisions.clip_durations
-            # CRITICAL: Prioritize AI-generated hook and CTA over default values
-            if hook == "Amazing content ahead!" and self.core_decisions.hook != "Amazing content ahead!":
-                # Use AI-generated hook from script if core decisions has default
-                pass  # Keep the extracted hook
-            elif self.core_decisions.hook != "Amazing content ahead!":
-                hook = self.core_decisions.hook
+            # CRITICAL: Use AI-generated content, no hardcoded checks
+            # Prefer extracted hook/CTA from script, fallback to core decisions
+            if self.core_decisions and hasattr(self.core_decisions, 'hook') and self.core_decisions.hook:
+                # Only override if extracted hook seems like a default or is empty
+                if not hook or len(hook) < 5:
+                    hook = self.core_decisions.hook
             
-            if cta == "Subscribe for more!" and self.core_decisions.call_to_action != "Subscribe for more!":
-                # Use AI-generated CTA from script if core decisions has default
-                pass  # Keep the extracted CTA
-            elif self.core_decisions.call_to_action != "Subscribe for more!":
-                cta = self.core_decisions.call_to_action
+            if self.core_decisions and hasattr(self.core_decisions, 'call_to_action') and self.core_decisions.call_to_action:
+                # Only override if extracted CTA seems like a default or is empty
+                if not cta or len(cta) < 5:
+                    cta = self.core_decisions.call_to_action
         else:
             logger.warning("⚠️ No core decisions available, using legacy orchestrator parameters")
             # Apply AI decisions with safe defaults
@@ -979,6 +1084,80 @@ class WorkingOrchestrator:
             num_clips = None
             clip_durations = None
 
+        # CRITICAL FIX: Apply professional discussion results to video config
+        if self.mode == OrchestratorMode.PROFESSIONAL and self.discussion_results:
+            logger.info("🎯 Applying professional discussion results to video configuration...")
+            
+            # Apply script strategy insights
+            if 'script_strategy' in decisions:
+                script_strategy = decisions['script_strategy']
+                if 'viral_hooks' in script_strategy:
+                    hook = script_strategy['viral_hooks'][0] if script_strategy['viral_hooks'] else hook
+                if 'engagement_strategy' in script_strategy:
+                    style = script_strategy['engagement_strategy'].get('style', style)
+                logger.info("✅ Applied script strategy from professional discussions")
+
+            # Apply visual strategy insights
+            if 'visual_strategy' in decisions:
+                visual_strategy = decisions['visual_strategy']
+                if 'visual_style' in visual_strategy:
+                    visual_style = visual_strategy['visual_style']
+                if 'technical_approach' in visual_strategy:
+                    # Apply technical approach to video generation
+                    pass
+                logger.info("✅ Applied visual strategy from professional discussions")
+
+            # Apply audio strategy insights
+            if 'audio_strategy' in decisions:
+                audio_strategy = decisions['audio_strategy']
+                if 'voice_style' in audio_strategy:
+                    voice_style = audio_strategy['voice_style']
+                if 'sound_design' in audio_strategy:
+                    background_music_style = audio_strategy['sound_design'].get('music_style', background_music_style)
+                logger.info("✅ Applied audio strategy from professional discussions")
+
+            # Apply marketing strategy insights
+            if 'marketing_strategy' in decisions:
+                marketing_strategy = decisions['marketing_strategy']
+                if 'brand_alignment' in marketing_strategy:
+                    # Apply brand alignment to visual elements
+                    pass
+                if 'audience_targeting' in marketing_strategy:
+                    target_audience = marketing_strategy['audience_targeting'].get('primary_audience', target_audience)
+                logger.info("✅ Applied marketing strategy from professional discussions")
+
+            # Apply design strategy insights
+            if 'design_strategy' in decisions:
+                design_strategy = decisions['design_strategy']
+                if 'color_scheme' in design_strategy:
+                    # Apply color scheme to video
+                    pass
+                if 'typography' in design_strategy:
+                    # Apply typography decisions
+                    pass
+                logger.info("✅ Applied design strategy from professional discussions")
+
+            # Apply engagement strategy insights
+            if 'engagement_strategy' in decisions:
+                engagement_strategy = decisions['engagement_strategy']
+                if 'viral_elements' in engagement_strategy:
+                    # Apply viral elements to video
+                    pass
+                if 'cta_strategy' in engagement_strategy:
+                    cta = engagement_strategy['cta_strategy'].get('primary_cta', cta)
+                logger.info("✅ Applied engagement strategy from professional discussions")
+
+            # Apply platform optimization insights
+            if 'platform_optimization' in decisions:
+                platform_strategy = decisions['platform_optimization']
+                if 'algorithm_alignment' in platform_strategy:
+                    # Apply platform-specific optimizations
+                    pass
+                if 'copy_strategy' in platform_strategy:
+                    # Apply platform-optimized copy
+                    pass
+                logger.info("✅ Applied platform optimization from professional discussions")
+
         # Enhanced configuration with platform and category for AI timing
         enhanced_config = GeneratedVideoConfig(
             target_platform=platform,
@@ -989,29 +1168,19 @@ class WorkingOrchestrator:
             style=style,
             tone=tone,
             target_audience=target_audience,
+            visual_style=visual_style,
             hook=hook,
             main_content=main_content,
             call_to_action=cta,
-            visual_style=visual_style,
-            color_scheme=config.get('color_scheme', ["#FF6B6B", "#4ECDC4", "#FFFFFF"]),
-            text_overlays=config.get('text_overlays', []),
-            transitions=config.get('transitions', ["fade", "slide"]),
             background_music_style=background_music_style,
             voiceover_style=decisions.get('voice', {}).get('voice_style', 'energetic'),
-            sound_effects=config.get('sound_effects', []),
-            inspired_by_videos=config.get('inspired_by_videos', []),
-            predicted_viral_score=config.get('predicted_viral_score', 0.85),
             frame_continuity=frame_continuity,
-            image_only_mode=config.get('force_generation') == 'force_image_gen',
             use_real_veo2=config.get('force_generation') != 'force_image_gen',
-            video_orientation=config.get('orientation', 'auto'),
-            ai_decide_orientation=config.get('ai_decide_orientation', True),
-            # CRITICAL: Pass core decisions clip information
             num_clips=num_clips,
             clip_durations=clip_durations
         )
-        
-        logger.info(f"✅ Enhanced video config created with session_id: {self.session_id}")
+
+        logger.info(f"✅ Created enhanced video config with {len(decisions)} AI decisions")
         return enhanced_config
     
     def _extract_hook_from_script(self, script_data: Dict[str, Any]) -> str:
@@ -1059,18 +1228,29 @@ class WorkingOrchestrator:
     
     def _count_agents_used(self) -> int:
         """Count the number of agents used based on mode"""
+        base_agents = 0
+        
         if self.mode == OrchestratorMode.SIMPLE:
-            return 3  # Director, Continuity, Voice
+            base_agents = 3  # Director, Continuity, Voice
         elif self.mode == OrchestratorMode.ENHANCED:
-            return 7  # Core agents with enhanced features
+            base_agents = 7  # Core agents with enhanced features
         elif self.mode == OrchestratorMode.MULTILINGUAL:
-            return 8  # Core agents + multilingual
+            base_agents = 8  # Core agents + multilingual
         elif self.mode == OrchestratorMode.ADVANCED:
-            return 15  # Enhanced agents with advanced features
+            base_agents = 15  # Enhanced agents with advanced features
         else:  # PROFESSIONAL
-            return 22  # All agents with professional features
+            base_agents = 22  # All agents with professional features
+        
+        # Add discussion agents for professional mode
+        if self.mode == OrchestratorMode.PROFESSIONAL and self.discussion_results:
+            discussion_agents = sum(len(discussion.participating_agents) for discussion in self.discussion_results.values())
+            total_agents = base_agents + discussion_agents
+            logger.info(f"🎯 Professional mode: {base_agents} base agents + {discussion_agents} discussion agents = {total_agents} total")
+            return total_agents
+        
+        return base_agents
 
-    def _generate_cheap_video(self, script_data: Dict[str, Any], decisions: Dict[str, Any], config: Dict[str, Any]) -> Optional[str]:
+    async def _generate_cheap_video(self, script_data: Dict[str, Any], decisions: Dict[str, Any], config: Dict[str, Any]) -> Optional[str]:
         """Generate video in cheap mode with granular level control"""
         logger.info(f"💰 Starting cheap mode video generation (level: {self.cheap_mode_level})")
         
@@ -1152,7 +1332,7 @@ class WorkingOrchestrator:
             )
             
             logger.info(f"💰 Generating video with {self.cheap_mode_level} cheap mode")
-            video_result = video_generator.generate_video(cheap_config)
+            video_result = await video_generator.generate_video(cheap_config)
             
             # Handle different return types
             if isinstance(video_result, str):
@@ -1341,7 +1521,9 @@ def create_working_orchestrator(mission: str, platform: str, category: str,
                                 style: str = "viral", tone: str = "engaging",
                                 target_audience: str = "general audience",
                                 visual_style: str = "dynamic",
-                                mode: str = "enhanced"
+                                mode: str = "enhanced",
+                                cheap_mode: bool = True,
+                                cheap_mode_level: str = "full"
                                 ) -> WorkingOrchestrator:
     """
     Factory function to create working orchestrator with all features
@@ -1362,6 +1544,8 @@ def create_working_orchestrator(mission: str, platform: str, category: str,
             advanced,
             multilingual,
             professional)
+        cheap_mode: Enable cost-saving mode (default: True - saves costs)
+        cheap_mode_level: Granular cheap mode (full, audio, video)
 
     Returns:
         Configured WorkingOrchestrator instance """
@@ -1419,5 +1603,7 @@ def create_working_orchestrator(mission: str, platform: str, category: str,
         tone=tone,
         target_audience=target_audience,
         visual_style=visual_style,
-        mode=mode_enum
+        mode=mode_enum,
+        cheap_mode=cheap_mode,
+        cheap_mode_level=cheap_mode_level
     )

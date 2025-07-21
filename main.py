@@ -144,10 +144,8 @@ def generate(**kwargs):
         # Auto-post if requested
         if kwargs.get('auto_post', False) and session_path:
             logger.info("📱 Auto-posting to social media...")
-            # Get the final video path from session
-            import os
-            session_name = os.path.basename(session_path)
-            final_video_path = os.path.join(session_path, 'final_output', f'final_video_{session_name}.mp4')
+            # session_path is actually the final video path returned by generate_main
+            final_video_path = session_path
             if os.path.exists(final_video_path):
                 auto_post_if_enabled(
                     video_path=final_video_path,

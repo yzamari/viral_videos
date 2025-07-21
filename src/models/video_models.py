@@ -119,9 +119,9 @@ class GeneratedVideoConfig:
         return self.target_platform
 
     # Content structure
-    hook: str = "Amazing content ahead!"
+    hook: Optional[str] = None  # AI-generated, no hardcoded default
     main_content: Optional[List[str]] = None
-    call_to_action: str = "Subscribe for more!"
+    call_to_action: Optional[str] = None  # AI-generated, no hardcoded default
 
     # Visual design parameters
     color_scheme: Optional[List[str]] = None
@@ -129,8 +129,8 @@ class GeneratedVideoConfig:
     transitions: Optional[List[str]] = None
 
     # Audio parameters
-    background_music_style: str = "upbeat"
-    voiceover_style: str = "natural"
+    background_music_style: Optional[str] = None  # AI-generated, no hardcoded default
+    voiceover_style: Optional[str] = None  # AI-generated, no hardcoded default
     sound_effects: Optional[List[str]] = None
 
     # Inspiration and scoring

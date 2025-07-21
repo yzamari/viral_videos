@@ -1,5 +1,7 @@
-"""Video Generator - Main video generation orchestrator"
-Coordinates video generation using VEO2/VEO3, Gemini images, and TTS """import os"
+"""Video Generator - Main video generation orchestrator
+Coordinates video generation using VEO2/VEO3, Gemini images, and TTS"""
+
+import os
 import json
 import tempfile
 import shutil
@@ -36,10 +38,16 @@ class VideoGenerator:
         config: GeneratedVideoConfig,
         script_result: Dict[str, Any],
         session_context: SessionContext
-    ) -> str: """Main method to generate a complete viral video."
+    ) -> str:
+        """Main method to generate a complete viral video.
 
         Orchestrates audio generation, video clip creation,
-        and final composition with subtitles. """logger.info("🎬 Starting AI-optimized video generation") logger.info(f"📊 Config: {config.topic[:50]}...") logger.info(f"🎯 Target: {config.target_platform.value}") logger.info(f"⏱️ Duration: {config.duration_seconds}s")"
+        and final composition with subtitles.
+        """
+        logger.info("🎬 Starting AI-optimized video generation")
+        logger.info(f"📊 Config: {config.topic[:50]}...")
+        logger.info(f"🎯 Target: {config.target_platform.value}")
+        logger.info(f"⏱️ Duration: {config.duration_seconds}s")
 
         try:
             # 1. Generate audio clips

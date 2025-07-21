@@ -23,15 +23,15 @@ logger = get_logger(__name__)
 
 class TopicGenerationAgent:
     """Individual AI agent for topic generation discussions"""
-:
-    def __init(self, role: str, expertise: str, api_key: str):
+    
+    def __init__(self, role: str, expertise: str, api_key: str):
         self.role = role
         self.expertise = expertise
         self.api_key = api_key
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel("gemini-2.5-flash")
 
-    def discuss_topi(c(self, idea: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    def discuss_topic(self, idea: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Generate topic suggestion based on idea and context"""
         try:
             prompt = """

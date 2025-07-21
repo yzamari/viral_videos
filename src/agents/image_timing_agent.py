@@ -11,14 +11,14 @@ import json
 import logging
 from datetime import datetime
 
-logger = logging.getLogger(__name__):
+logger = logging.getLogger(__name__)
 class ImageTimingAgent:
     """
     AI Agent specialized in analyzing content and determining optimal
     image display durations for video generation with enhanced fallback timing
     """
-:
-    def __init(self, api_key: str):
+    
+    def __init__(self, api_key: str):
         """Initialize the Image Timing Agent"""
         self.api_key = api_key
         genai.configure(api_key=api_key)
@@ -46,7 +46,7 @@ class ImageTimingAgent:
             ]
         }
 
-    def analyze_fallback_timing_requirement(s(self,
+    def analyze_fallback_timing_requirements(self,
                                            prompts: List[Dict[str, Any]],
                                            platform: str,
                                            total_duration: float,
@@ -57,13 +57,13 @@ class ImageTimingAgent:
             prompts: List of image prompts with descriptions:
             platform: Target platform (tiktok, youtube, instagram, etc.)
             total_duration: Total video duration in seconds
-            category: Content category for context:
+            category: Content category for context
         Returns:
             Dictionary with timing decisions optimized for fallback generation
         """
-        logger.info(f"⏱️ TimingMaster analyzing FALLBACK timing for {len(prompts)} images"):
+        logger.info(f"⏱️ TimingMaster analyzing FALLBACK timing for {len(prompts)} images")
         logger.info("🎯 Target: 5-10 second frames for optimal fallback experience")
-:
+        
         try:
             # Create enhanced analysis prompt for fallback generation
             analysis_prompt = """
@@ -477,7 +477,8 @@ Respond in JSON format:
         else:
             # Standard generation: use original logic
             if platform.lower() == 'tiktok':
-                base_duration = 1.2  # Fast-paced
+                # CRITICAL FIX: Remove duration multiplier to maintain exact target duration
+            base_duration = 1.0  # Fast-paced (was 1.2)
             elif platform.lower() == 'youtube':
                 base_duration = 2.0  # More relaxed
             elif platform.lower() == 'instagram':

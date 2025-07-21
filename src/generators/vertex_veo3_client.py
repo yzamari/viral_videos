@@ -394,7 +394,8 @@ class VertexAIVeo3Client(BaseVeoClient):
         self,
         prompt: str,
         duration: float,
-        clip_id: str) -> str:
+        clip_id: str,
+        aspect_ratio: str = "9:16") -> str:
         """Create fallback clip when VEO-3 generation fails"""
         logger.info("🎨 Creating VEO-3 fallback clip...")
 

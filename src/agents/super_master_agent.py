@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any, Tuple
 import google.generativeai as genai
 from dataclasses  import dataclass
-from enum  import Enum:
+from enum import Enum
 try:
     from ..utils.logging_config import get_logger
     from ..models.video_models import GeneratedVideoConfig
@@ -23,7 +23,7 @@ except ImportError:
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
     from utils.logging_config import get_logger
     from models.video_models import GeneratedVideoConfig
-    from agents.multi_agent_discussionimport (
+    from agents.multi_agent_discussion import (
         AgentRole,
         AgentMessage,
         DiscussionTopic

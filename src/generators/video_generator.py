@@ -488,7 +488,7 @@ class VideoGenerator:
         else:
             logger.warning(f"🔐 Authentication: ⚠️ No VEO models available")
     
-    def generate_video(self, config: GeneratedVideoConfig) -> Union[str, VideoGenerationResult]:
+    async def generate_video(self, config: GeneratedVideoConfig) -> Union[str, VideoGenerationResult]:
         """
         Generate video using AI agents and generation clients
         
@@ -499,6 +499,10 @@ class VideoGenerator:
             Video file path or VideoGenerationResult object
         """
         start_time = time.time()
+        
+        # CRITICAL: Store mission context for VEO prompt generation
+        self._current_mission = config.topic
+        logger.info(f"🎯 Stored mission context: {self._current_mission}")
         
         from ..utils.session_manager import session_manager
         
@@ -567,7 +571,7 @@ class VideoGenerator:
                 )
             
             # Step 1: Process script with AI
-            script_result = self._process_script_with_ai(config, session_context)
+            script_result = await self._process_script_with_ai(config, session_context)
             
             # Store script result for subtitle generation
             self._last_script_result = script_result
@@ -763,7 +767,7 @@ class VideoGenerator:
             target_audience=(user_config or {}).get('target_audience', 'general audience'),
             hook=hook,
             main_content=main_content,
-            call_to_action="Follow for more trending content!",
+            call_to_action=call_to_action or f"Follow for more {topic.split()[0] if topic else 'amazing'} content!",
             visual_style="dynamic",
             color_scheme=["#FF6B6B", "#4ECDC4", "#FFFFFF"],
             text_overlays=[],
@@ -778,7 +782,7 @@ class VideoGenerator:
         logger.info(f"✅ Generated config for: {topic}")
         return config
     
-    def _process_script_with_ai(self, config: GeneratedVideoConfig, session_context: SessionContext) -> Dict[str, Any]:
+    async def _process_script_with_ai(self, config: GeneratedVideoConfig, session_context: SessionContext) -> Dict[str, Any]:
         """Process script using AI script processor"""
         logger.info("📝 Processing script with AI")
         
@@ -808,7 +812,7 @@ class VideoGenerator:
         
         # Process with AI
         from ..models.video_models import Language
-        result = self.script_processor.process_script_for_tts(
+        result = await self.script_processor.process_script_for_tts(
             script_content=script,
             language=Language.ENGLISH_US,
             target_duration=config.duration_seconds
@@ -1029,8 +1033,19 @@ class VideoGenerator:
                 
                 # Check content policy before sending to VEO-2
                 if self._violates_content_policy(enhanced_prompt):
-                    logger.warning(f"⚠️ Content policy violation detected in prompt, using fallback for clip {i+1}")
-                    enhanced_prompt = self._create_safe_fallback_prompt(config.topic, i+1)
+                    logger.warning(f"⚠️ Content policy violation detected in prompt, rephrasing for clip {i+1}")
+                    enhanced_prompt = self._rephrase_problematic_prompt(enhanced_prompt, config.topic, i+1)
+                
+                # CRITICAL: Save ALL VEO prompts to session for debugging
+                self._save_veo_prompt_to_session(session_context, i+1, {
+                    'clip_number': i+1,
+                    'original_segment': segment_text if 'segment_text' in locals() else 'N/A',
+                    'base_prompt': prompt,
+                    'enhanced_prompt': enhanced_prompt,
+                    'mission': config.topic,
+                    'duration': clip_duration,
+                    'style': style_decision.get('primary_style', 'dynamic')
+                })
                 
                 clip_path = None
                 
@@ -1038,6 +1053,9 @@ class VideoGenerator:
                 if veo_client:
                     try:
                         logger.info(f"🎬 Generating VEO clip {i+1}/{num_clips}: {enhanced_prompt[:50]}... (duration: {clip_duration:.1f}s)")
+                        # Log full prompt for debugging
+                        logger.info(f"📝 FULL VEO PROMPT for clip {i+1}: {enhanced_prompt}")
+                        
                         clip_path = veo_client.generate_video(
                             prompt=enhanced_prompt,
                             duration=clip_duration,
@@ -1376,22 +1394,21 @@ class VideoGenerator:
                 logger.error("❌ Failed to create base video")
                 return ""
             
-            # Check actual video duration vs target duration
+            # CRITICAL FIX: Ensure video duration matches target exactly
             actual_duration = self._get_video_duration(temp_video_path)
             target_duration = config.duration_seconds
             
-            if actual_duration and actual_duration > target_duration * 1.3:
-                # Only trim if video is significantly longer than target (30% over)
-                logger.info(f"⏱️ Video is {actual_duration:.1f}s (target: {target_duration}s) - considering trim")
-                trimmed_video_path = self._trim_video_to_duration(temp_video_path, target_duration * 1.2, session_context)
+            if actual_duration and actual_duration > target_duration:
+                # Trim video to exact target duration
+                logger.info(f"⏱️ Video is {actual_duration:.1f}s (target: {target_duration}s) - trimming to exact duration")
+                trimmed_video_path = self._trim_video_to_duration(temp_video_path, target_duration, session_context)
                 if trimmed_video_path:
                     temp_video_path = trimmed_video_path
-                    logger.info(f"✅ Video trimmed to allow complete content")
+                    logger.info(f"✅ Video trimmed to exact target duration: {target_duration}s")
                 else:
                     logger.warning("⚠️ Failed to trim video, using original")
             else:
-                # Keep original duration to preserve complete content
-                logger.info(f"✅ Keeping original video duration ({actual_duration:.1f}s) to preserve complete story")
+                logger.info(f"✅ Video duration is acceptable: {actual_duration:.1f}s (target: {target_duration}s)")
             
             # Step 2: Add subtitle overlays
             video_with_subtitles = self._add_subtitle_overlays(temp_video_path, config, session_context)
@@ -1407,12 +1424,30 @@ class VideoGenerator:
             )
             
             # Step 5: Add final fadeout ending (for all videos)
-            # Note: Basic fadeout already applied during trimming, this adds additional black screen if needed
-            if config.duration_seconds >= 10:  # Add black screen fadeout for videos 10s+
-                final_video_path = self._add_fade_out_ending(oriented_video_path, session_context)
+            # CRITICAL FIX: Only add fadeout if it won't exceed target duration
+            if config.duration_seconds >= 10:  # Add fadeout for videos 10s+
+                # Check if adding fadeout would exceed target duration
+                current_duration = self._get_video_duration(oriented_video_path)
+                if current_duration and current_duration < target_duration - 1.0:  # Leave room for fadeout
+                    final_video_path = self._add_fade_out_ending(oriented_video_path, session_context)
+                    logger.info(f"🎬 Added fadeout ending (current: {current_duration:.1f}s, target: {target_duration}s)")
+                else:
+                    logger.info(f"🎬 Skipping fadeout to maintain target duration (current: {current_duration:.1f}s, target: {target_duration}s)")
+                    final_video_path = oriented_video_path
             else:
-                logger.info(f"🎬 Skipping additional black screen fadeout for short video ({config.duration_seconds}s)")
+                logger.info(f"🎬 Skipping fadeout for short video ({config.duration_seconds}s)")
                 final_video_path = oriented_video_path
+            
+            # CRITICAL FIX: Validate final video duration and force exact duration if needed
+            final_duration = self._get_video_duration(final_video_path)
+            if final_duration and abs(final_duration - target_duration) > 1.0:
+                logger.warning(f"⚠️ CRITICAL: Final video duration {final_duration:.1f}s doesn't match target {target_duration}s")
+                logger.info(f"🔧 Force trimming to exact target duration: {target_duration}s")
+                final_video_path = self._trim_video_to_duration(final_video_path, target_duration, session_context)
+                if final_video_path:
+                    logger.info(f"✅ Video successfully trimmed to exact target duration")
+                else:
+                    logger.error(f"❌ Failed to trim video to target duration")
             
             # Step 6: Save to session
             saved_path = session_context.save_final_video(final_video_path)
@@ -1612,16 +1647,18 @@ class VideoGenerator:
                 
                 # Create smart multi-line hook text with width constraints
                 hook_text = self._create_short_multi_line_text(str(config.hook), max_words_per_line=hook_style.get('words_per_line', 4), video_width=video_width)
+                # Ensure hook text is escaped for FFmpeg
+                escaped_hook_text = self._escape_text_for_ffmpeg(hook_text)
                 
                 if is_dynamic:
                     # DYNAMIC: Moving hook overlay with AI-styled animation
                     overlay_filters.append(
-                        f"drawtext=text='{hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x='if(lt(t,1.5),(w-text_w)/2,if(lt(t,3),(w-text_w)/2-20*sin(2*PI*t),w-text_w-20))':y='60+10*sin(4*PI*t)':enable='between(t,0,3)'"
+                        f"drawtext=text='{escaped_hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x='if(lt(t,1.5),(w-text_w)/2,if(lt(t,3),(w-text_w)/2-20*sin(2*PI*t),w-text_w-20))':y='60+10*sin(4*PI*t)':enable=between(t\\,0\\,3)"
                     )
                 else:
                     # STATIC: AI-styled static positioning
                     overlay_filters.append(
-                        f"drawtext=text='{hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x=(w-text_w)/2:y=60:enable='between(t,0,3)'"
+                        f"drawtext=text='{escaped_hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x=(w-text_w)/2:y=60:enable=between(t\\,0\\,3)"
                     )
             
             # Add call-to-action overlay with DYNAMIC positioning and AI-driven styling
@@ -1631,16 +1668,18 @@ class VideoGenerator:
                 
                 # Create smart multi-line CTA text with width constraints
                 cta_text = self._create_short_multi_line_text(str(config.call_to_action), max_words_per_line=cta_style.get('words_per_line', 4), video_width=video_width)
+                # Ensure CTA text is escaped for FFmpeg
+                escaped_cta_text = self._escape_text_for_ffmpeg(cta_text)
                 
                 if is_dynamic:
                     # DYNAMIC: Sliding CTA with AI-styled bounce effect
                     overlay_filters.append(
-                        f"drawtext=text='{cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x='if(lt(t,{video_duration-3}),w+text_w,w-text_w-30-15*sin(8*PI*(t-{video_duration-3})))':y='120+5*cos(6*PI*t)':enable='between(t,{video_duration-3},{video_duration})'"
+                        f"drawtext=text='{escaped_cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x='if(lt(t,{video_duration-3}),w+text_w,w-text_w-30-15*sin(8*PI*(t-{video_duration-3})))':y='120+5*cos(6*PI*t)':enable=between(t\\,{video_duration-3}\\,{video_duration})"
                     )
                 else:
                     # STATIC: AI-styled static positioning
                     overlay_filters.append(
-                        f"drawtext=text='{cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x=w-text_w-30:y=120:enable='between(t,{video_duration-3},{video_duration})'"
+                        f"drawtext=text='{escaped_cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x=w-text_w-30:y=120:enable=between(t\\,{video_duration-3}\\,{video_duration})"
                     )
             
             # Use professional text renderer instead of FFmpeg drawtext
@@ -1968,8 +2007,10 @@ class VideoGenerator:
             # Priority 3: Fallback to config content (old behavior)
             if not actual_script:
                 main_content = config.main_content or [config.topic]
-                hook = config.hook or "Amazing content!"
-                cta = config.call_to_action or "Follow for more!"
+                # Generate dynamic content based on topic
+                topic_word = config.topic.split()[0] if config.topic else "content"
+                hook = config.hook or f"Discover {topic_word}!"
+                cta = config.call_to_action or f"Follow for more {topic_word} videos!"
                 actual_script = f"{hook} {' '.join(main_content)} {cta}"
                 logger.warning("⚠️ Using fallback config content for subtitles")
             
@@ -2200,7 +2241,8 @@ class VideoGenerator:
                 
                 # Add padding for complex sentences or important content
                 if any(keyword in sentence.lower() for keyword in ['meet', 'how', 'what', 'why', 'when', 'where']):
-                    base_duration *= 1.2  # 20% longer for questions/introductions
+                    # CRITICAL FIX: Remove duration multiplier to maintain exact target duration
+                    pass  # base_duration *= 1.2  # 20% longer for questions/introductions
                 
                 # Ensure minimum and maximum duration per segment
                 duration = max(1.5, min(6.0, base_duration))
@@ -2317,7 +2359,8 @@ class VideoGenerator:
                 
                 # Adjust for sentence complexity and punctuation
                 if any(marker in text_lower for marker in ['?', '!', 'how', 'what', 'why', 'amazing']):
-                    base_duration *= 1.15  # 15% longer for questions and emphasis
+                    # CRITICAL FIX: Remove duration multiplier to maintain exact target duration
+                    pass  # base_duration *= 1.15  # 15% longer for questions and emphasis
                 elif any(marker in text_lower for marker in ['.', 'and', 'the', 'this']):
                     base_duration *= 0.95   # 5% shorter for simple connectors
                 
@@ -2543,9 +2586,11 @@ class VideoGenerator:
                 
                 # Adjust for content type
                 if text.lower().startswith(('discover', 'meet', 'what', 'how', 'why')):
-                    base_duration *= 1.3  # Hooks need more time
+                    # CRITICAL FIX: Remove duration multiplier to maintain exact target duration
+                    pass  # base_duration *= 1.3  # Hooks need more time
                 elif text.lower().endswith(('!', '?')):
-                    base_duration *= 1.1  # Questions/exclamations need emphasis
+                    # CRITICAL FIX: Remove duration multiplier to maintain exact target duration
+                    pass  # base_duration *= 1.1  # Questions/exclamations need emphasis
                 elif 'follow' in text.lower() or 'subscribe' in text.lower():
                     base_duration *= 0.9  # CTAs can be faster
                 
@@ -2758,6 +2803,7 @@ class VideoGenerator:
                 '-c:a', 'aac',
                 '-preset', 'medium',
                 '-crf', '23',
+                '-shortest',  # CRITICAL: Stop encoding when shortest stream ends
                 output_path
             ])
             
@@ -3027,6 +3073,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
         
         try:
             # 1. Analyze actual clip and audio durations
+            # Import moviepy for duration calculation
+            from moviepy.editor import VideoFileClip, AudioFileClip
+            
             clip_durations = []
             for clip in clips:
                 if os.path.exists(clip):
@@ -3309,9 +3358,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
             return video_path
 
     def _add_fade_out_ending(self, video_path: str, session_context: SessionContext) -> str:
-        """Add 1.5 second black screen fade out at the end of the video"""
+        """Add fade out effect at the end of the video without adding extra time"""
         try:
-            logger.info("🎬 Adding 1.5 second black screen fade out")
+            logger.info("🎬 Adding fade out effect (no extra time)")
             
             # Create output path
             output_path = session_context.get_output_path("temp_files", f"fade_out_{os.path.basename(video_path)}")
@@ -3334,21 +3383,15 @@ This is a placeholder file. In a full implementation, this would be a complete M
             else:
                 width, height = 720, 1280  # Default
             
-            # Create 1.5 second black screen
-            black_duration = 1.5
-            fade_start_time = video_duration + black_duration - 0.5  # Start fade 0.5s before end
+            # CRITICAL FIX: Create fadeout within the existing video duration (no extra time)
+            fade_duration = 0.5  # Short fadeout
+            fade_start_time = video_duration - fade_duration  # Start fade 0.5s before end
             
-            # FFmpeg command to:
-            # 1. Concatenate original video with black screen
-            # 2. Add fade out effect
+            # FFmpeg command to add fadeout effect to existing video (no concatenation)
             cmd = [
                 'ffmpeg', '-y',
                 '-i', video_path,
-                '-f', 'lavfi', '-i', f'color=c=black:size={width}x{height}:duration={black_duration}:rate=30',
-                '-filter_complex', 
-                f'[0:v][1:v]concat=n=2:v=1:a=0[v_concat];[v_concat]fade=t=out:st={fade_start_time}:d=0.5[v_out]',
-                '-map', '[v_out]',
-                '-map', '0:a',  # Keep original audio
+                '-vf', f'fade=t=out:st={fade_start_time}:d={fade_duration}',
                 '-c:v', 'libx264', '-c:a', 'aac',
                 '-preset', 'fast',
                 output_path
@@ -3357,7 +3400,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             
             if result.returncode == 0 and os.path.exists(output_path):
-                logger.info(f"✅ Added fade out ending: {output_path}")
+                logger.info(f"✅ Added fade out effect: {output_path}")
                 return output_path
             else:
                 logger.error(f"❌ Fade out failed: {result.stderr}")
@@ -3518,6 +3561,31 @@ This is a placeholder file. In a full implementation, this would be a complete M
             self._veo_prompts = []
         self._veo_prompts.extend(prompts)
         
+    def _save_veo_prompt_to_session(self, session_context: SessionContext, clip_number: int, prompt_data: Dict[str, Any]):
+        """Save individual VEO prompt to session immediately"""
+        try:
+            # Save to list for later comprehensive save
+            if not hasattr(self, '_veo_prompt_details'):
+                self._veo_prompt_details = []
+            self._veo_prompt_details.append(prompt_data)
+            
+            # Also save immediately to individual file
+            prompt_file = session_context.get_output_path("logs", f"veo_prompt_clip_{clip_number}.json")
+            os.makedirs(os.path.dirname(prompt_file), exist_ok=True)
+            
+            with open(prompt_file, 'w') as f:
+                json.dump(prompt_data, f, indent=2)
+            
+            logger.info(f"💾 Saved VEO prompt for clip {clip_number} to: {prompt_file}")
+            
+            # Also save accumulated prompts
+            all_prompts_file = session_context.get_output_path("logs", "all_veo_prompts.json")
+            with open(all_prompts_file, 'w') as f:
+                json.dump(self._veo_prompt_details, f, indent=2)
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to save VEO prompt: {e}")
+        
     def _save_audio_prompts(self, prompts: List[str], session_context: SessionContext):
         """Save audio prompts for transparency"""
         if not hasattr(self, '_audio_prompts'):
@@ -3573,97 +3641,253 @@ This is a placeholder file. In a full implementation, this would be a complete M
 
     def _create_visual_prompt_from_segment(self, segment_text: str, scene_number: int, style: str = "dynamic") -> str:
         """Transform segment text into a safe visual prompt for VEO"""
+        logger.info(f"🎨 Creating visual prompt from segment: '{segment_text[:100]}...'")
+        
         # Analyze the segment to extract visual elements
         segment_lower = segment_text.lower()
         
-        # Map common words to visual scenes (animated style)
-        visual_mappings = {
-            # Family/People
-            'parent': 'animated happy family in bright colorful cartoon kitchen',
-            'mom': 'animated caring mother with cartoon children in stylized home setting',
-            'mother': 'animated caring mother with cartoon children in stylized home setting',
-            'kid': 'animated cheerful children playing in cartoon style',
-            'child': 'animated happy children in colorful cartoon environment',
-            
-            # Actions
-            'seeking': 'animated character looking thoughtfully at cartoon options',
-            'best': 'stylized premium items on animated display',
-            'vibrant': 'colorful energetic animated scene',
-            'energy': 'dynamic animated movement and cartoon activity',
-            'joy': 'animated characters smiling and celebrating in cartoon style',
-            'happiness': 'joyful animated celebration scene',
-            
-            # Objects (generic)
-            'water': 'animated clear refreshing beverage in cartoon style',
-            'drink': 'animated refreshing beverages on stylized table',
-            'bottle': 'cartoon product bottles arranged in 3D animation',
-            
-            # Environments
-            'home': 'animated modern family home interior in cartoon style',
-            'kitchen': 'bright colorful cartoon kitchen',
-            'play': "animated children's playground with colorful cartoon equipment"
-        }
+        # CRITICAL FIX: Use AI to generate prompts based on actual content
+        logger.info(f"🤖 Using AI to generate visual prompt from segment: '{segment_text[:100]}...'")
         
-        # Build visual prompt from mappings
-        visual_elements = []
-        for keyword, visual in visual_mappings.items():
-            if keyword in segment_lower:
-                visual_elements.append(visual)
+        # Get mission context
+        mission_context = getattr(self, '_current_mission', '')
         
-        # If no specific mappings found, use generic safe visuals
-        if not visual_elements:
-            visual_elements = [f"abstract {style} visual scene {scene_number}"]
-        
-        # Combine elements into coherent prompt
-        base_prompt = ', '.join(visual_elements[:2])  # Limit to 2 main elements
-        
-        # Add style and technical requirements with non-realistic approach
-        visual_prompt = f"{base_prompt}, {style} animated cartoon style, 3D animation, stylized graphics, colorful illustration, no text overlays"
+        try:
+            # Use AI to generate appropriate visual prompt
+            if hasattr(self, 'positioning_agent') and self.positioning_agent:
+                ai_prompt = f"""
+                Generate a VEO video generation prompt based on this content:
+                
+                MISSION: {mission_context}
+                SEGMENT TEXT: {segment_text}
+                SCENE NUMBER: {scene_number}
+                STYLE: {style}
+                
+                Requirements:
+                1. Create a visual scene that represents the segment content
+                2. Make it appropriate for the mission context
+                3. Use animated/cartoon style for child-friendly content
+                4. Be specific about visual elements, colors, and atmosphere
+                5. Avoid any text overlays or words in the video
+                6. Focus on visual storytelling
+                
+                Return ONLY the VEO prompt text (one line, no JSON):
+                """
+                
+                response = self.positioning_agent.model.generate_content(ai_prompt)
+                visual_prompt = response.text.strip()
+                
+                # Clean up the prompt
+                if visual_prompt.startswith('"') and visual_prompt.endswith('"'):
+                    visual_prompt = visual_prompt[1:-1]
+                
+                # Ensure it ends with technical requirements
+                if "no text overlays" not in visual_prompt:
+                    visual_prompt += ", no text overlays"
+                    
+                logger.info(f"🎯 AI-generated visual prompt: '{visual_prompt}'")
+                return visual_prompt
+                
+            else:
+                logger.warning("⚠️ No AI agent available, using fallback prompt generation")
+                # Simple fallback without hardcoded mappings
+                visual_prompt = f"animated educational scene illustrating '{segment_text[:50]}...', {style} cartoon style, colorful 3D animation, child-friendly, no text overlays"
+                return visual_prompt
+                
+        except Exception as e:
+            logger.error(f"❌ AI prompt generation failed: {e}")
+            # Emergency fallback
+            visual_prompt = f"animated educational scene about {mission_context[:30] if mission_context else 'topic'}, {style} style, scene {scene_number}, colorful animation, no text overlays"
+            return visual_prompt
         
         logger.info(f"🎨 Transformed segment to visual: '{segment_text[:30]}...' → '{visual_prompt}'")
         return visual_prompt
     
     def _create_generic_visual_prompt(self, scene_number: int, style: str = "dynamic") -> str:
-        """Create a generic safe visual prompt when no segment is available"""
-        generic_prompts = [
-            f"colorful abstract {style} animated motion graphics, cartoon style, scene {scene_number}",
-            f"dynamic geometric patterns with {style} 3D animation transitions, stylized graphics, scene {scene_number}",
-            f"beautiful animated nature scenery with {style} cartoon illustration, scene {scene_number}",
-            f"modern lifestyle animated visuals in {style} cartoon style, 3D graphics, scene {scene_number}",
-            f"creative animated storytelling with {style} cartoon effects, stylized illustration, scene {scene_number}"
-        ]
+        """Create a generic safe visual prompt when no segment is available using AI"""
+        logger.info(f"🤖 Using AI to generate generic visual prompt for scene {scene_number}")
         
-        # Use scene number to select different prompts
-        prompt_index = (scene_number - 1) % len(generic_prompts)
-        return generic_prompts[prompt_index]
+        # Get mission context
+        mission_context = getattr(self, '_current_mission', 'educational content')
+        
+        try:
+            # Use AI to generate generic prompt
+            if hasattr(self, 'positioning_agent') and self.positioning_agent:
+                ai_prompt = f"""
+                Generate a generic VEO video prompt for scene {scene_number}:
+                
+                MISSION CONTEXT: {mission_context}
+                STYLE: {style}
+                SCENE NUMBER: {scene_number} (vary visuals based on scene number)
+                
+                Requirements:
+                1. Create an engaging visual scene related to the mission
+                2. Use animated/cartoon style appropriate for the content
+                3. Make each scene visually distinct
+                4. Be creative but safe for all audiences
+                5. No text overlays or words in the video
+                
+                Return ONLY the VEO prompt text (one line, no JSON):
+                """
+                
+                response = self.positioning_agent.model.generate_content(ai_prompt)
+                visual_prompt = response.text.strip()
+                
+                # Clean up the prompt
+                if visual_prompt.startswith('"') and visual_prompt.endswith('"'):
+                    visual_prompt = visual_prompt[1:-1]
+                
+                # Ensure technical requirements
+                if "no text overlays" not in visual_prompt:
+                    visual_prompt += ", no text overlays"
+                    
+                logger.info(f"🎯 AI-generated generic prompt: '{visual_prompt}'")
+                return visual_prompt
+                
+            else:
+                # Simple fallback
+                visual_prompt = f"animated {style} educational scene {scene_number}, colorful visuals, engaging content, no text overlays"
+                return visual_prompt
+                
+        except Exception as e:
+            logger.error(f"❌ AI generic prompt generation failed: {e}")
+            # Emergency fallback
+            return f"animated {style} scene {scene_number}, educational content, colorful visuals, no text overlays"
     
     def _create_safe_fallback_prompt(self, topic: str, scene_number: int) -> str:
-        """Create a safe fallback prompt that won't violate content policies"""
-        # Extract safe keywords from the original topic
-        safe_keywords = []
-        topic_lower = topic.lower()
+        """This method is deprecated - use _rephrase_problematic_prompt instead"""
+        logger.warning("⚠️ Using deprecated fallback method, this should not happen")
+        return self._rephrase_problematic_prompt("Generic content", topic, scene_number)
+
+    def _rephrase_problematic_prompt(self, original_prompt: str, topic: str, scene_number: int) -> str:
+        """Intelligently rephrase a problematic prompt to preserve intent while being policy-safe"""
+        logger.info(f"🔄 Rephrasing problematic prompt: '{original_prompt[:100]}...'")
         
-        # Safe words that are generally acceptable
-        safe_words = [
-            'explain', 'show', 'demonstrate', 'illustrate', 'present', 'display',
-            'create', 'build', 'make', 'design', 'develop', 'produce', 'generate',
-            'learn', 'teach', 'educate', 'inform', 'guide', 'help', 'support',
-            'fun', 'entertaining', 'engaging', 'interesting', 'amazing', 'wonderful',
-            'beautiful', 'creative', 'innovative', 'modern', 'trendy', 'popular'
-        ]
+        try:
+            # Use AI to intelligently rephrase the prompt
+            if hasattr(self, 'positioning_agent') and self.positioning_agent:
+                ai_prompt = f"""
+                You are an expert at rephrasing video prompts to be policy-compliant while preserving same intent.
+                
+                ORIGINAL PROMPT: {original_prompt}
+                TOPIC CONTEXT: {topic}
+                SCENE NUMBER: {scene_number}
+                
+                The original prompt contains content that violates VEO policies. Your job is to:
+                
+                1. PRESERVE THE VISUAL CONCEPT: Keep the core visual idea and value
+                2. REMOVE POLICY VIOLATIONS: Replace problematic elements with safe alternatives
+                3. MAINTAIN DOCUMENTARY STYLE: Keep it educational and informative
+                4. USE SAFE METAPHORS: Replace violent/controversial content with symbolic representations
+                
+                Examples of good rephrasing:
+                - "soldiers fighting" → "animated figures representing different sides in a historical conflict"
+                - "explosion" → "dramatic visual effects representing conflict intensity" 
+                - "war scene" → "historical documentary-style animation showing the impact of conflict"
+                - "violence" → "symbolic representation of conflict and its consequences"
+                - "battle" → "animated historical recreation showing opposing forces"
+                
+                Requirements:
+                - Maintain educational documentary feel
+                - Use animated/cartoon style
+                - Focus on historical/educational context
+                - Be specific to the scene content
+                - Add "no text overlays" at the end
+                
+                Return ONLY the rephrased prompt (one line):
+                """
+                
+                response = self.positioning_agent.model.generate_content(ai_prompt)
+                rephrased_prompt = response.text.strip()
+                
+                # Clean up the prompt
+                if rephrased_prompt.startswith('"') and rephrased_prompt.endswith('"'):
+                    rephrased_prompt = rephrased_prompt[1:-1]
+                
+                # Ensure technical requirements
+                if "no text overlays" not in rephrased_prompt:
+                    rephrased_prompt += ", no text overlays"
+                    
+                logger.info(f"✅ AI-rephrased prompt: {rephrased_prompt}")
+                return rephrased_prompt
+                
+            else:
+                # Fallback: Try basic word replacement
+                safe_prompt = self._basic_prompt_sanitization(original_prompt, topic, scene_number)
+                logger.info(f"🔧 Basic sanitized prompt: {safe_prompt}")
+                return safe_prompt
+                
+        except Exception as e:
+            logger.error(f"❌ AI prompt rephrasing failed: {e}")
+            # Emergency: Try basic sanitization
+            return self._basic_prompt_sanitization(original_prompt, topic, scene_number)
+    
+    def _basic_prompt_sanitization(self, original_prompt: str, topic: str, scene_number: int) -> str:
+        """Basic word replacement for prompt sanitization when AI is unavailable"""
+        sanitized = original_prompt.lower()
         
-        for word in safe_words:
-            if word in topic_lower:
-                safe_keywords.append(word)
+        # Replace problematic words with safe alternatives
+        replacements = {
+            'violence': 'conflict representation',
+            'violent': 'intense',
+            'fighting': 'opposing forces',
+            'battle': 'historical confrontation',
+            'war': 'historical conflict',
+            'attack': 'approach',
+            'assault': 'confrontation',
+            'shooting': 'rapid action',
+            'weapon': 'symbolic tool',
+            'blood': 'red elements',
+            'death': 'conclusion',
+            'kill': 'overcome',
+            'murder': 'dramatic event',
+            'explosion': 'dramatic effect',
+            'bomb': 'dramatic device',
+            'soldier': 'historical figure',
+            'army': 'organized group',
+            'military': 'organized forces'
+        }
         
-        # Create a generic safe prompt
-        if safe_keywords:
-            safe_prompt = f"An engaging and informative scene about {topic.split(',')[0]}, {', '.join(safe_keywords[:3])}, scene {scene_number}"
-        else:
-            safe_prompt = f"An engaging and informative educational scene, dynamic style, scene {scene_number}"
+        for problematic, safe in replacements.items():
+            sanitized = sanitized.replace(problematic, safe)
         
-        logger.info(f"✅ Created safe fallback prompt: {safe_prompt}")
-        return safe_prompt
+        # Ensure it's educational and animated
+        if 'animated' not in sanitized:
+            sanitized = f"animated documentary-style {sanitized}"
+        
+        if 'historical' not in sanitized and 'educational' not in sanitized:
+            sanitized = f"educational {sanitized}"
+            
+        # Add technical requirements
+        if "no text overlays" not in sanitized:
+            sanitized += ", no text overlays"
+            
+        logger.info(f"🛡️ Sanitized prompt: {sanitized}")
+        return sanitized
+    
+    def _escape_text_for_ffmpeg(self, text: str) -> str:
+        """Escape text for FFmpeg drawtext filter"""
+        if not text or not text.strip():
+            return "Text"
+        
+        escaped = text
+        
+        # FIRST: Replace Unicode quotes with regular quotes to avoid double-escaping
+        escaped = escaped.replace('"', '"').replace('"', '"').replace('"', '"')
+        escaped = escaped.replace(''', "'").replace(''', "'")
+        
+        # Remove problematic characters that cause FFmpeg filter issues
+        escaped = escaped.replace("'", "").replace('"', '')
+        escaped = escaped.replace(':', '').replace('=', '').replace(',', '')
+        escaped = escaped.replace('[', '').replace(']', '').replace('(', '').replace(')', '')
+        escaped = escaped.replace('{', '').replace('}', '').replace('\\', '').replace('/', '')
+        escaped = escaped.replace('!', '').replace('?', '').replace(';', '')
+        
+        # Convert newlines to spaces and clean up whitespace
+        escaped = escaped.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
+        escaped = ' '.join(escaped.split())  # Remove extra whitespace
+        
+        return escaped.strip() or "Text"
 
     def _create_short_multi_line_text(self, text: str, max_words_per_line: int = 4, video_width: int = 1280) -> str:
         """Create smart multi-line text for overlays with overflow prevention and width constraints"""
@@ -3671,8 +3895,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Ensure max_words_per_line is an integer
             max_words_per_line = int(max_words_per_line) if max_words_per_line else 4
             
-            # Clean the text - enhanced for FFmpeg compatibility
-            cleaned_text = text.replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '').replace('\\', '').replace('/', '').replace('(', '').replace(')', '').replace('[', '').replace(']', '').replace('{', '').replace('}', '')
+            # Use the escape function for consistency
+            cleaned_text = self._escape_text_for_ffmpeg(text)
             
             # Split into words
             words = cleaned_text.split()
@@ -3753,7 +3977,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             max_chars = min(10, int(video_width * 0.01))
             return text[:max_chars].replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
 
-    def _format_subtitle_text(self, text: str, max_words_per_line: int = 2, max_chars_per_line: int = 10) -> str:
+    def _format_subtitle_text(self, text: str, max_words_per_line: int = 2, max_chars_per_line: int = 15) -> str:
         """Format text for MoviePy subtitle display with proper line breaks and width constraints"""
         try:
             # Split text into words
@@ -3786,18 +4010,25 @@ This is a placeholder file. In a full implementation, this would be a complete M
                         lines.append(truncated_word)
                         current_line = []
                 
-                # Limit to maximum 3 lines for readability
-                if len(lines) >= 3:
+                # CRITICAL FIX: Limit to maximum 2 lines for subtitles
+                if len(lines) >= 2:
                     break
             
-            # Add remaining words to the last line
-            if current_line and len(lines) < 3:
+            # Add remaining words to the last line (only if we have less than 2 lines)
+            if current_line and len(lines) < 2:
                 remaining_text = ' '.join(current_line)
                 if len(remaining_text) <= max_chars_per_line:
                     lines.append(remaining_text)
                 else:
                     # Truncate if too long
                     lines.append(remaining_text[:max_chars_per_line-3] + "...")
+            
+            # CRITICAL FIX: Ensure we never exceed 2 lines
+            if len(lines) > 2:
+                lines = lines[:2]
+                # Add ellipsis to indicate truncation
+                if lines[1]:
+                    lines[1] = lines[1][:max_chars_per_line-3] + "..."
             
             # Join lines with newline character for MoviePy
             formatted_text = '\n'.join(lines)
@@ -4477,7 +4708,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     stroke_width=3,
                     size=(1000, None),
                     method='caption'
-                ).set_start(start_time).set_duration(end_time - start_time).set_position(('center', 1700))
+                ).set_start(start_time).set_duration(end_time - start_time).set_position(('center', 1248))  # 65% of 1920 height
                 
                 subtitle_clips.append(subtitle_clip)
             
@@ -4537,9 +4768,10 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 header_style = self._get_smart_default_style(header_text, "header", "tiktok", 720, 1280)
                 summary_style = self._get_smart_default_style(summary, "summary", "tiktok", 720, 1280)
                 
-                # Add main header overlay with enhanced styling
+                # Add main header overlay with enhanced styling  
+                safe_header_text = self._escape_text_for_ffmpeg(header_text)
                 overlays.append({
-                    'text': header_text,
+                    'text': safe_header_text,
                     'start_time': start_time,
                     'end_time': end_time,
                     'font_size': header_style.get('font_size', 72),
@@ -4553,8 +4785,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 })
                 
                 # Add summary overlay with enhanced styling
+                safe_summary = self._escape_text_for_ffmpeg(summary)
                 overlays.append({
-                    'text': summary,
+                    'text': safe_summary,
                     'start_time': start_time + 0.5,
                     'end_time': end_time + 1.0,
                     'font_size': summary_style.get('font_size', 48),
@@ -4569,8 +4802,10 @@ This is a placeholder file. In a full implementation, this would be a complete M
             
             # Add opening title if no numbered points found
             if not found_points:
+                # Escape the text to prevent FFmpeg filter issues
+                safe_hook_text = self._escape_text_for_ffmpeg(hook_text[:30].upper())
                 overlays.append({
-                    'text': hook_text[:30].upper(),
+                    'text': safe_hook_text,
                     'start_time': 0.0,
                     'end_time': 3.0,
                     'font_size': 64,
@@ -4601,7 +4836,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
         """Create timed line-by-line overlays for better readability"""
         try:
             # Clean the text for FFmpeg compatibility
-            cleaned_text = text.replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '').replace('\\', '').replace('/', '').replace('(', '').replace(')', '').replace('[', '').replace(']', '').replace('{', '').replace('}', '')
+            # Also handle Unicode apostrophes and quotes
+            cleaned_text = text.replace("'", "").replace("'", "").replace("'", "").replace('"', '').replace('"', '').replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '').replace('\\', '').replace('/', '').replace('(', '').replace(')', '').replace('[', '').replace(']', '').replace('{', '').replace('}', '')
             
             # Split into words
             words = cleaned_text.split()
@@ -4727,32 +4963,52 @@ This is a placeholder file. In a full implementation, this would be a complete M
                         else:
                             y_pos = 200
                         
-                        # Create rich overlay filter
+                        # Create rich overlay filter with properly escaped text and semi-transparent background
+                        escaped_text = self._escape_text_for_ffmpeg(overlay['text'])
+                        
+                        # CRITICAL FIX: Ensure semi-transparent background like subtitles
+                        background_opacity = 0.6  # Consistent with subtitle backgrounds
+                        
                         filter_expr = (
-                            f"drawtext=text='{overlay['text']}':"
+                            f"drawtext=text='{escaped_text}':"
                             f"fontcolor={overlay.get('font_color', '#FFFFFF')}:"
                             f"fontsize={overlay.get('font_size', 48)}:"
                             f"font='Impact':"
-                            f"box=1:boxcolor=0x000000@0.8:boxborderw=5:"
+                            f"box=1:boxcolor=0x000000@{background_opacity}:boxborderw=5:"
                             f"x=(w-text_w)/2:y={y_pos}:"
-                            f"enable='between(t,{overlay['start_time']},{overlay['end_time']})'"
+                            f"enable=between(t\\,{overlay['start_time']}\\,{overlay['end_time']})"
                         )
                         overlay_filters.append(filter_expr)
                 
-                # Add traditional hook overlays
+                # Add traditional hook overlays with proper text splitting and semi-transparent backgrounds
                 for i, overlay in enumerate(hook_overlays):
                     y_offset = 60 + (i * 40)  # Stack lines vertically
-                    filter_expr = (
-                        f"drawtext=text='{overlay['text']}':"
-                        f"fontcolor={hook_style['color']}:"
-                        f"fontsize={hook_style['font_size']}:"
-                        f"font='{hook_style['font_family']}':"
-                        f"box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:"
-                        f"boxborderw={hook_style['stroke_width']}:"
-                        f"x=(w-text_w)/2:y={y_offset}:"
-                        f"enable='between(t,{overlay['start_time']},{overlay['end_time']})'"
-                    )
-                    overlay_filters.append(filter_expr)
+                    
+                    # CRITICAL FIX: Split long text into multiple lines
+                    text_lines = self._format_subtitle_text(overlay['text'], max_words_per_line=3, max_chars_per_line=20)
+                    text_lines = text_lines.split('\n')
+                    
+                    for line_idx, line_text in enumerate(text_lines):
+                        if not line_text.strip():
+                            continue
+                            
+                        line_y_offset = y_offset + (line_idx * 35)  # Stack lines vertically
+                        escaped_text = self._escape_text_for_ffmpeg(line_text)
+                        
+                        # CRITICAL FIX: Ensure semi-transparent background like subtitles
+                        background_opacity = max(0.6, hook_style.get('background_opacity', 0.8))
+                        
+                        filter_expr = (
+                            f"drawtext=text='{escaped_text}':"
+                            f"fontcolor={hook_style['color']}:"
+                            f"fontsize={hook_style['font_size']}:"
+                            f"font='{hook_style['font_family']}':"
+                            f"box=1:boxcolor={hook_style['background_color']}@{background_opacity}:"
+                            f"boxborderw={hook_style['stroke_width']}:"
+                            f"x=(w-text_w)/2:y={line_y_offset}:"
+                            f"enable=between(t\\,{overlay['start_time']}\\,{overlay['end_time']})"
+                        )
+                        overlay_filters.append(filter_expr)
             
             # Add call-to-action overlay with line-by-line timing
             if config.call_to_action:
@@ -4768,21 +5024,35 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 cta_start_time = max(0, video_duration - 6.0)
                 
                 for i, overlay in enumerate(cta_overlays):
-                    y_offset = video_height - 120 - (i * 40)  # Position from bottom
+                    base_y_offset = video_height - 120 - (i * 40)  # Position from bottom
                     adjusted_start = cta_start_time + overlay['start_time']
                     adjusted_end = cta_start_time + overlay['end_time']
                     
-                    filter_expr = (
-                        f"drawtext=text='{overlay['text']}':"
-                        f"fontcolor={cta_style['color']}:"
-                        f"fontsize={cta_style['font_size']}:"
-                        f"font='{cta_style['font_family']}':"
-                        f"box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:"
-                        f"boxborderw={cta_style['stroke_width']}:"
-                        f"x=(w-text_w)/2:y={y_offset}:"
-                        f"enable='between(t,{adjusted_start},{adjusted_end})'"
-                    )
-                    overlay_filters.append(filter_expr)
+                    # CRITICAL FIX: Split long text into multiple lines
+                    text_lines = self._format_subtitle_text(overlay['text'], max_words_per_line=3, max_chars_per_line=20)
+                    text_lines = text_lines.split('\n')
+                    
+                    for line_idx, line_text in enumerate(text_lines):
+                        if not line_text.strip():
+                            continue
+                            
+                        line_y_offset = base_y_offset + (line_idx * 35)  # Stack lines vertically
+                        escaped_text = self._escape_text_for_ffmpeg(line_text)
+                        
+                        # CRITICAL FIX: Ensure semi-transparent background like subtitles
+                        background_opacity = max(0.6, cta_style.get('background_opacity', 0.8))
+                        
+                        filter_expr = (
+                            f"drawtext=text='{escaped_text}':"
+                            f"fontcolor={cta_style['color']}:"
+                            f"fontsize={cta_style['font_size']}:"
+                            f"font='{cta_style['font_family']}':"
+                            f"box=1:boxcolor={cta_style['background_color']}@{background_opacity}:"
+                            f"boxborderw={cta_style['stroke_width']}:"
+                            f"x=(w-text_w)/2:y={line_y_offset}:"
+                            f"enable=between(t\\,{adjusted_start}\\,{adjusted_end})"
+                        )
+                        overlay_filters.append(filter_expr)
             
             # Apply overlays if any
             if overlay_filters:

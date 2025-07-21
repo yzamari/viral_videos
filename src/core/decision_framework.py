@@ -422,19 +422,49 @@ class DecisionFramework:
         return strategy, personality, variety
     
     def _decide_visual_elements(self, visual_style: str, platform: Platform, ai_available: bool) -> tuple:
-        """Decide visual elements"""
-        if ai_available:
-            # AI would decide based on style and platform
-            color_palette = "vibrant" if visual_style == "dynamic" else "natural"
-            typography = "modern"
-            animation = "smooth"
-            self._record_decision('color_palette', color_palette, DecisionSource.AI_AGENT, 0.8, 
-                                f"AI decision: {visual_style} style")
+        """Decide visual elements using AI"""
+        if ai_available and hasattr(self, 'mission_agent') and self.mission_agent:
+            try:
+                prompt = f"""
+                Decide visual elements for this video:
+                
+                VISUAL STYLE: {visual_style}
+                PLATFORM: {platform.value}
+                
+                Consider platform aesthetics and style requirements.
+                
+                Return JSON:
+                {{
+                    "color_palette": "palette description",
+                    "typography": "typography style",
+                    "animation": "animation style",
+                    "reasoning": "why these choices"
+                }}
+                """
+                
+                response = self.mission_agent.model.generate_content(prompt)
+                result = self._parse_json_response(response.text)
+                
+                color_palette = result.get('color_palette', f'{visual_style} colors')
+                typography = result.get('typography', f'{platform.value} optimized')
+                animation = result.get('animation', f'{visual_style} transitions')
+                
+                self._record_decision('color_palette', color_palette, DecisionSource.AI_AGENT, 0.85, 
+                                    result.get('reasoning', f"AI decision for {visual_style} style"))
+                
+            except Exception as e:
+                logger.warning(f"AI visual elements failed: {e}")
+                # Dynamic fallback
+                color_palette = f"{visual_style} palette"
+                typography = f"{platform.value} optimized"
+                animation = f"{visual_style} transitions"
+                self._record_decision('color_palette', color_palette, DecisionSource.SYSTEM_DEFAULT, 0.6, "Dynamic fallback")
         else:
-            color_palette = "vibrant"
-            typography = "modern"
-            animation = "smooth"
-            self._record_decision('color_palette', color_palette, DecisionSource.SYSTEM_DEFAULT, 0.5, "Default visual")
+            # Dynamic fallback
+            color_palette = f"{visual_style} palette"
+            typography = f"{platform.value} style"
+            animation = f"{visual_style} motion"
+            self._record_decision('color_palette', color_palette, DecisionSource.SYSTEM_DEFAULT, 0.5, "Style-based fallback")
         
         return color_palette, typography, animation
     
@@ -452,6 +482,23 @@ class DecisionFramework:
             self._record_decision('background_music_style', music_style, DecisionSource.SYSTEM_DEFAULT, 0.5, "Default audio")
         
         return music_style, sound_effects
+    
+    def _parse_json_response(self, response_text: str) -> Dict[str, Any]:
+        """Parse JSON response from AI, handling markdown formatting"""
+        try:
+            # Clean up response
+            text = response_text.strip()
+            if text.startswith('```json'):
+                text = text[7:]
+            if text.startswith('```'):
+                text = text[3:]
+            if text.endswith('```'):
+                text = text[:-3]
+            
+            return json.loads(text.strip())
+        except json.JSONDecodeError:
+            logger.warning("Failed to parse AI JSON response")
+            return {}
     
     async def _decide_clip_structure_with_scores(self, duration: int, voice_strategy: str, ai_available: bool) -> Dict[str, Any]:
         """Decide clip structure using AI-based optimization with scores"""

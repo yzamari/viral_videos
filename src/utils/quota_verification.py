@@ -61,23 +61,23 @@ def get_real_google_quota_info(api_key: str) -> Dict[str, Any]:
             methods = getattr(model, 'supported_generation_methods', [])
 
             if 'veo' in model_name.lower():
-                veo_models.append(
+                veo_models.append({
                     'name': model_name,
                     'display_name': display_name,
                     'supported_methods': methods
-                )
+                })
             elif 'gemini' in model_name.lower():
-                gemini_models.append(
+                gemini_models.append({
                     'name': model_name,
                     'display_name': display_name,
                     'supported_methods': methods
-                )
+                })
             else:
-                other_models.append(
+                other_models.append({
                     'name': model_name,
                     'display_name': display_name,
                     'supported_methods': methods
-                )
+                })
 
         # Check if we can access the API (successful model listing means API works)
         if len(models) > 0:
@@ -188,14 +188,14 @@ def _check_veo_model_quota(api_key: str) -> Dict[str, Any]:
         veo_models = []
         for model in models:
             if 'veo' in model.name.lower():
-                veo_models.append(
+                veo_models.append({
                     'name': model.name,
                     'display_name': getattr(model, 'display_name', 'Unknown'),
                     'supported_generation_methods': getattr(
                         model,
                         'supported_generation_methods',
                         [])
-                )
+                })
 
         return {
             "veo_models_available": len(veo_models),

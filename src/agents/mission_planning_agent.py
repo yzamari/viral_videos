@@ -228,7 +228,21 @@ class MissionPlanningAgent:
             # Parse response
             json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
             if json_match:
-                result = json.loads(json_match.group())
+                try:
+                    raw_json = json_match.group()
+                    result = json.loads(raw_json)
+                except json.JSONDecodeError as json_error:
+                    logger.error(f"Mission detection JSON parsing error: {json_error}")
+                    logger.error(f"Raw AI response: {response.text[:500]}...")
+                    # Try to clean up common JSON issues
+                    cleaned_json = raw_json.replace('\n', ' ').replace('\r', ' ')
+                    cleaned_json = re.sub(r',\s*}', '}', cleaned_json)
+                    cleaned_json = re.sub(r',\s*]', ']', cleaned_json)
+                    try:
+                        result = json.loads(cleaned_json)
+                        logger.info("Successfully parsed mission detection JSON after cleanup")
+                    except:
+                        raise json_error
                 
                 mission_type_str = result.get('mission_type', 'inform')
                 is_strategic = result.get('is_strategic_mission', False)
@@ -370,7 +384,24 @@ Focus on creating a plan that actually accomplishes the mission, not just create
             # Parse AI response
             json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
             if json_match:
-                ai_plan = json.loads(json_match.group())
+                try:
+                    # Log the raw JSON for debugging
+                    raw_json = json_match.group()
+                    logger.debug(f"Raw JSON from AI: {raw_json[:500]}...")  # Log first 500 chars
+                    ai_plan = json.loads(raw_json)
+                except json.JSONDecodeError as json_error:
+                    logger.error(f"JSON parsing error: {json_error}")
+                    logger.error(f"Raw AI response: {response.text[:1000]}...")  # Log first 1000 chars
+                    # Try to clean up common JSON issues
+                    cleaned_json = raw_json.replace('\n', ' ').replace('\r', ' ')
+                    # Remove any trailing commas before closing braces/brackets
+                    cleaned_json = re.sub(r',\s*}', '}', cleaned_json)
+                    cleaned_json = re.sub(r',\s*]', ']', cleaned_json)
+                    try:
+                        ai_plan = json.loads(cleaned_json)
+                        logger.info("Successfully parsed JSON after cleanup")
+                    except:
+                        raise json_error
                 
                 # Perform credibility analysis
                 logger.info("🔍 Performing content credibility analysis...")
