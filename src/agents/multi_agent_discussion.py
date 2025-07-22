@@ -181,10 +181,11 @@ class MultiAgentDiscussionSystem:
             AgentRole.SCRIPT_WRITER: {
                 "name": "StoryWeaver",
                 "personality": ("Creative, narrative-focused, emphasizes storytelling "
-                                "and emotional connection"),
+                                "and emotional connection, expert in subtitle-friendly scripting"),
                 "expertise": ["storytelling", "narrative structure", "emotional hooks",
-                              "viral content patterns"],
-                "decision_style": "Creative with focus on narrative impact"
+                              "viral content patterns", "subtitle optimization (1-2 sentences per segment)",
+                              "speech pacing and natural breaks"],
+                "decision_style": "Creative with focus on narrative impact and subtitle readability"
             },
             AgentRole.DIRECTOR: {
                 "name": "VisionCraft",
@@ -700,6 +701,12 @@ PREVIOUS DISCUSSION:
 - Every second of the video must advance the mission objective
 - Do NOT create generic content - create mission-accomplishing content
 
+📝 SUBTITLE & SCRIPT REQUIREMENTS:
+- Each script segment MUST be 1-2 sentences MAXIMUM
+- Each sentence should be ~10-15 words for 2-line subtitle display
+- Natural speech breaks between segments for proper pacing
+- This ensures readable subtitles and clear audio segments
+
 Your task is to contribute expertise on how to strategically ACCOMPLISH the mission "{mission_or_topic}" through video content.
 
 Please respond in the following JSON format:
@@ -749,6 +756,12 @@ PREVIOUS DISCUSSION:
 - Consider the platform ({platform}) and duration ({duration}s) requirements
 - Provide specific, actionable advice for THIS topic only
 - Do NOT discuss generic topics or unrelated scenarios
+
+📝 SUBTITLE & SCRIPT REQUIREMENTS:
+- Each script segment MUST be 1-2 sentences MAXIMUM
+- Each sentence should be ~10-15 words for 2-line subtitle display
+- Natural speech breaks between segments for proper pacing
+- This ensures readable subtitles and clear audio segments
 
 Your task is to contribute to this discussion by providing your expert perspective on how to create the best possible video for the topic "{mission_or_topic}".
 

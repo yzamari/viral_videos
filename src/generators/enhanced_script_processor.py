@@ -125,10 +125,12 @@ REQUIREMENTS:
 1. DURATION CONTROL: If target duration is specified ({target_duration}s), ensure the script can be spoken in exactly that time
 2. TTS OPTIMIZATION: Use clear, pronounceable words
 3. NATURAL FLOW: Maintain conversational tone
-4. SEGMENT BREAKDOWN: Split into logical segments based on COMPLETE SENTENCES - NEVER break sentences in the middle
+4. SEGMENT BREAKDOWN: Split into logical segments of 1-2 SENTENCES MAXIMUM per segment
 5. TIMING CALCULATION: Estimate speaking time (average 2.5 words per second for natural pace)
 6. CONTRACTION AVOIDANCE: NEVER use contractions - always write full forms (use "do not" instead of "don't", "it is" instead of "it's", "let us" instead of "let's", etc.)
 7. SENTENCE INTEGRITY: Each segment must contain complete sentences with proper punctuation
+8. SUBTITLE CONSTRAINTS: Each segment MUST be 1-2 sentences only for proper 2-line subtitle display
+9. SENTENCE LENGTH: Each sentence should be ~10-15 words for optimal subtitle readability
 
 CRITICAL TTS RULES:
 - Replace ALL contractions with their full expanded forms

@@ -266,6 +266,12 @@ class Director:
                 - Success patterns: {patterns.get('success_factors', [])}
                 - CONTENT MUST BE CONCISE - fit the story within the time limit
 
+                CRITICAL SUBTITLE REQUIREMENTS:
+                - Each segment MUST be 1-2 sentences MAXIMUM
+                - Each sentence should be ~10-15 words for 2-line subtitle display
+                - NEVER create segments longer than 2 sentences
+                - Segments should be natural speech breaks (pause points)
+
                 {news_context}
 
                 Mission-Accomplishment Requirements:
@@ -274,9 +280,10 @@ class Director:
                 3. Build a strategic argument/case that accomplishes the mission
                 4. Each segment should move the audience closer to the desired outcome
                 5. Include ONLY spoken dialogue that serves the mission objective
-                6. No meta-discussion - dive straight into accomplishing the mission
-                7. Make the content compelling and actionable within the time limit
-                8. NEVER use contractions (don't, can't, it's, let's) - use full forms (do not, cannot, it is, let us)
+                6. Each segment MUST be 1-2 complete sentences MAXIMUM
+                7. No meta-discussion - dive straight into accomplishing the mission
+                8. Make the content compelling and actionable within the time limit
+                9. NEVER use contractions (don't, can't, it's, let's) - use full forms (do not, cannot, it is, let us)
 
                 Strategic Approach Examples:
                 - If mission is "convince X that Y is bad": Show consequences, provide evidence, emotional impact
@@ -304,6 +311,12 @@ class Director:
                 - Word limit: Approximately {duration * 3} words total (3 words per second speaking rate)
                 - Each segment: ~{duration // num_segments} seconds each
 
+                CRITICAL SUBTITLE REQUIREMENTS:
+                - Each segment MUST be 1-2 sentences MAXIMUM
+                - Each sentence should be ~10-15 words for 2-line subtitle display
+                - NEVER create segments longer than 2 sentences
+                - Segments should be natural speech breaks (pause points)
+
                 Successful content patterns:
                 - Themes: {patterns.get('themes', [])}
                 - Pacing: Fast cuts every 3-5 seconds
@@ -316,7 +329,8 @@ class Director:
                 2. Build on previous segment about "{topic}"
                 3. Maintain viewer attention with "{topic}" content
                 4. Include ONLY spoken dialogue content about "{topic}"
-                5. NEVER use contractions (don't, can't, it's, let's) - use full forms (do not, cannot, it is, let us)
+                5. Be 1-2 complete sentences MAXIMUM (for proper subtitles)
+                6. NEVER use contractions (don't, can't, it's, let's) - use full forms (do not, cannot, it is, let us)
 
                 Return JSON array:
                 [

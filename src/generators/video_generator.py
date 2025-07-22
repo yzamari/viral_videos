@@ -1069,10 +1069,8 @@ The last frame of this scene connects to the next.
                     style=style_decision.get('primary_style', 'dynamic')
                 )
                 
-                # Check content policy before sending to VEO-2
-                if self._violates_content_policy(enhanced_prompt):
-                    logger.warning(f"⚠️ Content policy violation detected in prompt, rephrasing for clip {i+1}")
-                    enhanced_prompt = self._rephrase_problematic_prompt(enhanced_prompt, config.topic, i+1)
+                # Remove preemptive policy checking - let VEO handle it
+                # Policy violations will be caught and handled if VEO rejects the prompt
                 
                 # CRITICAL: Save ALL VEO prompts to session for debugging
                 self._save_veo_prompt_to_session(session_context, i+1, {
@@ -1108,8 +1106,41 @@ The last frame of this scene connects to the next.
                             print(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1} - using fallback with reduced quality")
                             clip_path = None
                     except Exception as e:
-                        logger.error(f"❌ VEO generation error for clip {i+1}: {e}")
-                        clip_path = None
+                        error_str = str(e).lower()
+                        if 'policy' in error_str or 'content filter' in error_str or 'safety' in error_str:
+                            logger.warning(f"⚠️ VEO content policy violation for clip {i+1}, rephrasing prompt")
+                            # Rephrase with all original parameters preserved
+                            enhanced_prompt = self._rephrase_problematic_prompt(
+                                enhanced_prompt, 
+                                config.topic, 
+                                i+1,
+                                style=style_decision.get('primary_style'),
+                                tone=getattr(config, 'tone', None),
+                                visual_style=style_decision.get('visual_style', getattr(config, 'visual_style', None)),
+                                duration=clip_duration,
+                                continuous_mode=getattr(config, 'continuous_generation', False)
+                            )
+                            
+                            # Try again with rephrased prompt
+                            try:
+                                logger.info(f"🔄 Retrying VEO with rephrased prompt for clip {i+1}")
+                                clip_path = veo_client.generate_video(
+                                    prompt=enhanced_prompt,
+                                    duration=clip_duration,
+                                    clip_id=f"clip_{i+1}_rephrased",
+                                    aspect_ratio=self._get_platform_aspect_ratio(config.target_platform.value)
+                                )
+                                if clip_path and os.path.exists(clip_path):
+                                    logger.info(f"✅ Successfully generated clip {i+1} with rephrased prompt")
+                                else:
+                                    logger.error(f"❌ VEO generation still failed after rephrasing for clip {i+1}")
+                                    clip_path = None
+                            except Exception as retry_error:
+                                logger.error(f"❌ VEO retry failed for clip {i+1}: {retry_error}")
+                                clip_path = None
+                        else:
+                            logger.error(f"❌ VEO generation error for clip {i+1}: {e}")
+                            clip_path = None
                 
                 # If VEO failed, use fallback
                 if not clip_path:
@@ -2145,18 +2176,21 @@ The last frame of this scene connects to the next.
             
             # Distribute sentences across segments ensuring no sentence is cut
             segments = []
-            sentences_per_segment = max(1, len(complete_sentences) // audio_count)
+            # CRITICAL: Limit to maximum 2 sentences per segment for proper subtitles
+            sentences_per_segment = min(2, max(1, len(complete_sentences) // audio_count))
             
             sentence_index = 0
             for i in range(audio_count):
                 segment_sentences = []
                 
-                if i == audio_count - 1:
-                    # Last segment gets all remaining sentences
-                    segment_sentences = complete_sentences[sentence_index:]
+                if i == audio_count - 1 and sentence_index < len(complete_sentences):
+                    # Last segment: take up to 2 sentences, not all remaining
+                    remaining_sentences = complete_sentences[sentence_index:]
+                    segment_sentences = remaining_sentences[:2]  # Max 2 sentences for subtitles
+                    sentence_index += len(segment_sentences)
                 else:
-                    # Take calculated number of sentences
-                    end_index = min(sentence_index + sentences_per_segment, len(complete_sentences))
+                    # Take calculated number of sentences (max 2)
+                    end_index = min(sentence_index + min(2, sentences_per_segment), len(complete_sentences))
                     segment_sentences = complete_sentences[sentence_index:end_index]
                     sentence_index = end_index
                 
@@ -2226,8 +2260,28 @@ The last frame of this scene connects to the next.
             # Ensure we have exactly the required number of segments
             segments = segments[:audio_count]
             
-            logger.info(f"✅ Created {len(segments)} segments with complete sentence boundaries")
-            return segments
+            # CRITICAL: Final validation - ensure no segment has more than 2 sentences
+            validated_segments = []
+            for segment in segments:
+                if segment['sentence_count'] > 2:
+                    # Split oversized segments
+                    text = segment['text']
+                    sentences = [s.strip() for s in text.split('.') if s.strip()]
+                    
+                    # Take only first 2 sentences
+                    limited_sentences = sentences[:2]
+                    limited_text = '. '.join(limited_sentences) + '.' if limited_sentences else text
+                    
+                    segment['text'] = limited_text
+                    segment['sentence_count'] = min(2, len(limited_sentences))
+                    segment['word_count'] = len(limited_text.split())
+                    
+                    logger.warning(f"⚠️ Limited segment to 2 sentences: '{limited_text[:50]}...'")
+                
+                validated_segments.append(segment)
+            
+            logger.info(f"✅ Created {len(validated_segments)} segments with complete sentence boundaries (max 2 sentences each)")
+            return validated_segments
             
         except Exception as e:
             logger.error(f"❌ Failed to split script to audio segments: {e}")
@@ -2307,37 +2361,54 @@ The last frame of this scene connects to the next.
             
             current_time = 0.0
             
-            for i, sentence in enumerate(sentences):
-                words = len(sentence.split())
+            # Group sentences into 1-2 sentence segments
+            i = 0
+            while i < len(sentences):
+                # Take 1-2 sentences for this segment
+                segment_sentences = []
+                segment_words = 0
                 
-                # Calculate duration based on word count and complexity
-                base_duration = words / words_per_second
+                # Add first sentence
+                if i < len(sentences):
+                    segment_sentences.append(sentences[i])
+                    segment_words += len(sentences[i].split())
+                    i += 1
                 
-                # Add padding for complex sentences or important content
-                if any(keyword in sentence.lower() for keyword in ['meet', 'how', 'what', 'why', 'when', 'where']):
-                    # CRITICAL FIX: Remove duration multiplier to maintain exact target duration
-                    pass  # base_duration *= 1.2  # 20% longer for questions/introductions
+                # Add second sentence if available and not too long
+                if i < len(sentences) and segment_words < 20:  # Only add second sentence if first was short
+                    segment_sentences.append(sentences[i])
+                    segment_words += len(sentences[i].split())
+                    i += 1
+                
+                # Combine sentences for this segment
+                segment_text = '. '.join(segment_sentences).strip()
+                if not segment_text.endswith('.'):
+                    segment_text += '.'
+                
+                # Calculate duration based on total word count
+                base_duration = segment_words / words_per_second
                 
                 # Ensure minimum and maximum duration per segment
-                duration = max(1.5, min(6.0, base_duration))
+                duration = max(2.0, min(6.0, base_duration))
                 
                 # Adjust if we're running out of time
                 remaining_time = video_duration - current_time
-                if i == len(sentences) - 1:  # Last segment
+                if i >= len(sentences):  # Last segment
                     duration = min(duration, remaining_time)
                 elif current_time + duration > video_duration:
-                    duration = remaining_time * 0.8  # Leave some buffer
+                    duration = remaining_time * 0.9  # Leave some buffer
                 
-                # Format text for MoviePy subtitle display with proper line breaks and width constraints
+                # Format text for MoviePy subtitle display with proper line breaks
                 max_chars = min(10, int(video_width * 0.01))  # Very short lines to prevent cutting
-                formatted_text = self._format_subtitle_text(sentence.strip(), max_chars_per_line=max_chars)
+                formatted_text = self._format_subtitle_text(segment_text, max_chars_per_line=max_chars)
                 
                 segments.append({
                     'text': formatted_text,
                     'start': current_time,
                     'end': current_time + duration,
-                    'word_count': words,
-                    'estimated_duration': duration
+                    'word_count': segment_words,
+                    'estimated_duration': duration,
+                    'sentence_count': len(segment_sentences)
                 })
                 
                 current_time += duration
@@ -3306,20 +3377,23 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     import re
                     sentences = re.split(r'(?<=[.!?])\s+', segment_text)
                     
-                    # Create subtitle segments from sentences
+                    # Create subtitle segments from sentences - MAX 2 SENTENCES PER SUBTITLE
                     subtitle_start_time = segment_start_time
                     current_subtitle = []
                     current_word_count = 0
-                    target_words_per_subtitle = max(5, int(len(segment_words) * 2.5 / audio_duration))
                     
-                    for sentence in sentences:
+                    for j, sentence in enumerate(sentences):
                         sentence_words = sentence.split()
                         
-                        # If adding this sentence would make subtitle too long, create a subtitle
-                        if current_word_count > 0 and current_word_count + len(sentence_words) > target_words_per_subtitle * 1.5:
-                            # Create subtitle from current sentences
+                        # Add sentence to current subtitle
+                        current_subtitle.append(sentence)
+                        current_word_count += len(sentence_words)
+                        
+                        # Create subtitle if we have 2 sentences OR this is the last sentence
+                        if len(current_subtitle) >= 2 or j == len(sentences) - 1:
+                            # Create subtitle from current sentences (max 2)
                             subtitle_text = ' '.join(current_subtitle)
-                            words_ratio = current_word_count / len(segment_words)
+                            words_ratio = current_word_count / len(segment_words) if len(segment_words) > 0 else 1.0
                             subtitle_end_time = min(
                                 subtitle_start_time + (audio_duration * words_ratio),
                                 segment_end_time
@@ -3332,12 +3406,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
                             })
                             
                             subtitle_start_time = subtitle_end_time
-                            current_subtitle = [sentence]
-                            current_word_count = len(sentence_words)
-                        else:
-                            # Add sentence to current subtitle
-                            current_subtitle.append(sentence)
-                            current_word_count += len(sentence_words)
+                            current_subtitle = []
+                            current_word_count = 0
                     
                     # Add remaining sentences as final subtitle
                     if current_subtitle:
@@ -3746,7 +3816,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
         """Check if prompt violates Google's content policies"""
         # Convert to lowercase for easier matching
         prompt_lower = prompt.lower()
-        
+        return False
         # Keywords that typically violate content policies
         policy_violations = [
             # Violence
@@ -3810,7 +3880,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 Requirements:
                 1. Create a visual scene that represents the segment content
                 2. Make it appropriate for the mission context
-                3. Use animated/cartoon style for child-friendly content
+                3. Use animated/cartoon style for child-friendly content if child-friendly is true
                 4. Be specific about visual elements, colors, and atmosphere
                 5. Avoid any text overlays or words in the video
                 6. Focus on visual storytelling
@@ -3866,7 +3936,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 
                 Requirements:
                 1. Create an engaging visual scene related to the mission
-                2. Use animated/cartoon style appropriate for the content
+                2. Use animated/cartoon style appropriate for the content if child-friendly is true
                 3. Make each scene visually distinct
                 4. Be creative but safe for all audiences
                 5. No text overlays or words in the video
@@ -3903,51 +3973,70 @@ This is a placeholder file. In a full implementation, this would be a complete M
         logger.warning("⚠️ Using deprecated fallback method, this should not happen")
         return self._rephrase_problematic_prompt("Generic content", topic, scene_number)
 
-    def _rephrase_problematic_prompt(self, original_prompt: str, topic: str, scene_number: int) -> str:
-        """Intelligently rephrase a problematic prompt to preserve intent while being policy-safe"""
-        logger.info(f"🔄 Rephrasing problematic prompt: '{original_prompt[:100]}...'")
+    def _rephrase_problematic_prompt(self, original_prompt: str, topic: str, scene_number: int, 
+                                    style: str = None, tone: str = None, visual_style: str = None,
+                                    duration: float = None, continuous_mode: bool = False) -> str:
+        """Intelligently rephrase a problematic prompt to preserve ALL original parameters"""
+        logger.info(f"🔄 Rephrasing problematic prompt while preserving all parameters: '{original_prompt[:100]}...'")
+        
+        # Extract style/tone/visual from original prompt if not provided
+        if not style and "style:" in original_prompt.lower():
+            style_match = original_prompt.lower().split("style:")[1].split(",")[0].strip()
+            style = style_match
+        if not visual_style:
+            # Check for visual style keywords in prompt
+            for vs in ['realistic', 'cinematic', 'hyper-realistic', 'photorealistic', 'cartoon', 'animated']:
+                if vs in original_prompt.lower():
+                    visual_style = vs
+                    break
         
         try:
             # Use AI to intelligently rephrase the prompt
             if hasattr(self, 'positioning_agent') and self.positioning_agent:
                 ai_prompt = f"""
-                You are an expert at rephrasing video prompts to be policy-compliant while preserving same intent.
+                You are an expert at rephrasing video prompts to be policy-compliant while preserving ALL original parameters.
                 
                 ORIGINAL PROMPT: {original_prompt}
-                TOPIC CONTEXT: {topic}
+                TOPIC/MISSION: {topic}
                 SCENE NUMBER: {scene_number}
                 
-                The original prompt contains content that violates VEO policies. Your job is to:
+                CRITICAL PARAMETERS TO PRESERVE:
+                - Duration: {duration if duration else 'as specified'}
+                - Style: {style if style else 'as in original'}
+                - Tone: {tone if tone else 'as in original'}  
+                - Visual Style: {visual_style if visual_style else 'as in original'}
+                - Continuous Mode: {continuous_mode}
                 
-                1. PRESERVE THE VISUAL CONCEPT: Keep the core visual idea and value
-                2. REMOVE POLICY VIOLATIONS: Replace problematic elements with safe alternatives
-                3. MAINTAIN DOCUMENTARY STYLE: Keep it educational and informative
-                4. USE SAFE METAPHORS: Replace violent/controversial content with symbolic representations
+                The VEO system rejected this prompt due to policy violations. Your job is to:
                 
-                Examples of good rephrasing:
-                - "soldiers fighting" → "animated figures representing different sides in a historical conflict"
-                - "explosion" → "dramatic visual effects representing conflict intensity" 
-                - "war scene" → "historical documentary-style animation showing the impact of conflict"
-                - "violence" → "symbolic representation of conflict and its consequences"
-                - "battle" → "animated historical recreation showing opposing forces"
+                1. PRESERVE ALL ORIGINAL PARAMETERS: Keep exact same duration, style, tone, visual style
+                2. MAINTAIN THE MISSION/TOPIC: Keep the core objective unchanged
+                3. PRESERVE VISUAL CONTINUITY: If continuous mode, maintain flow between scenes
+                4. REMOVE ONLY THE VIOLATION: Replace only the problematic elements
+                5. KEEP SEGMENT CONTENT: Preserve the narrative/educational value
+                
+                CRITICAL RULES:
+                - NEVER change from realistic to cartoon or vice versa
+                - NEVER change the tone (if dramatic, keep dramatic)
+                - NEVER change the style (if cinematic, keep cinematic)
+                - NEVER change the mission or core topic
+                - NEVER alter the duration or pacing
+                - ONLY remove/rephrase the specific policy-violating content
+                
+                Examples of minimal changes:
+                - "soldiers fighting" → "military personnel in training exercise"
+                - "explosion damages building" → "special effects showing impact" 
+                - "violent conflict" → "intense dramatic scene"
+                - "person gets hurt" → "person faces challenge"
                 
                 Requirements:
-                - Maintain educational documentary feel
-                - PRESERVE THE ORIGINAL VISUAL STYLE (if realistic/cinematic, keep it realistic)
-                - Focus on historical/educational context instead of direct conflict
-                - Replace military terms with civilian equivalents (e.g., "volunteers", "aid workers")
-                - Be specific to the scene content
-                - Add "no text overlays" at the end
+                - Make MINIMAL changes - only what's needed for policy compliance
+                - Preserve ALL style/tone/visual indicators from original
+                - Keep the same energy and pacing
+                - Maintain narrative continuity
+                - Add "no text overlays" at the end if not present
                 
-                CRITICAL: If the original was realistic/cinematic, keep it realistic! Do NOT change to cartoon!
-                
-                CONTINUOUS MODE: If this is part of a continuous video, maintain visual continuity:
-                - Keep the same visual style throughout
-                - Ensure smooth transitions between scenes
-                - Maintain consistent character/object appearances
-                - Preserve the continuous flow narrative
-                
-                Return ONLY the rephrased prompt (one line):
+                Return ONLY the rephrased prompt (one line), preserving all original style/tone/visual markers:
                 """
                 
                 response = self.positioning_agent.model.generate_content(ai_prompt)
@@ -3976,8 +4065,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
             return self._basic_prompt_sanitization(original_prompt, topic, scene_number)
     
     def _basic_prompt_sanitization(self, original_prompt: str, topic: str, scene_number: int) -> str:
-        """Basic word replacement for prompt sanitization when AI is unavailable"""
-        sanitized = original_prompt.lower()
+        """Basic word replacement for prompt sanitization when AI is unavailable - PRESERVES ORIGINAL STYLE"""
+        # CRITICAL: Preserve original case and style
+        sanitized = original_prompt
         
         # Replace problematic words with safe alternatives
         replacements = {
@@ -4004,12 +4094,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
         for problematic, safe in replacements.items():
             sanitized = sanitized.replace(problematic, safe)
         
-        # Ensure it's educational and animated
-        if 'animated' not in sanitized:
-            sanitized = f"animated documentary-style {sanitized}"
-        
-        if 'historical' not in sanitized and 'educational' not in sanitized:
-            sanitized = f"educational {sanitized}"
+        # CRITICAL: DO NOT force style changes - preserve original style/tone
+        # Removed forced "animated" and "educational" prefixes to preserve user's choice
             
         # Add technical requirements
         if "no text overlays" not in sanitized:
