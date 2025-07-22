@@ -106,6 +106,8 @@ def test_auth():
 @click.option('--auto-post', is_flag=True, help='Automatically post to configured social media platforms')
 @click.option('--cheap/--no-cheap', default=True, help='Enable basic cheap mode (default: enabled)')
 @click.option('--cheap-mode', type=click.Choice(['full', 'audio', 'video']), default='full', help='Cheap mode level: full=text+gTTS, audio=gTTS only, video=fallback only (default: full)')
+@click.option('--style-template', help='Name or ID of style template to use')
+@click.option('--reference-style', type=click.Path(exists=True), help='Path to reference video for style extraction')
 def generate(**kwargs):
     """🎬 Generate viral video with optimized AI system"""
     try:
@@ -140,7 +142,9 @@ def generate(**kwargs):
             visual_style=kwargs.get('visual_style'),
             mode=kwargs.get('mode', 'enhanced'),
             cheap_mode=kwargs.get('cheap', True),
-            cheap_mode_level=kwargs.get('cheap_mode', 'full')
+            cheap_mode_level=kwargs.get('cheap_mode', 'full'),
+            style_template=kwargs.get('style_template'),
+            reference_style=kwargs.get('reference_style')
         )
         
         # Auto-post if requested
@@ -168,6 +172,10 @@ def generate(**kwargs):
 
 # Add social media commands
 add_social_commands(cli)
+
+# Add style reference commands
+from src.style_reference.cli_integration import add_style_commands
+add_style_commands(cli)
 
 if __name__ == '__main__':
     cli() 

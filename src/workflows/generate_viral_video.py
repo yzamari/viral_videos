@@ -30,7 +30,8 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
          session_id: Optional[str] = None, frame_continuity: str = "auto",
          continuous: bool = False, target_audience: Optional[str] = None, style: Optional[str] = None,
          tone: Optional[str] = None, visual_style: Optional[str] = None,
-         mode: str = "enhanced", cheap_mode: bool = True, cheap_mode_level: str = "full", **kwargs):
+         mode: str = "enhanced", cheap_mode: bool = True, cheap_mode_level: str = "full", 
+         style_template: Optional[str] = None, reference_style: Optional[str] = None, **kwargs):
     """
     Main video generation workflow
 
