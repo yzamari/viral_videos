@@ -1,0 +1,98 @@
+{
+  "reference_id": "style_documentary",
+  "name": "Documentary Style",
+  "reference_type": "template",
+  "template_id": "documentary_template",
+  "color_palette": {
+    "primary_color": "#37474F",
+    "secondary_color": "#ECEFF1",
+    "accent_color": "#FFC107",
+    "background_colors": ["#263238", "#455A64"],
+    "text_colors": ["#FFFFFF", "#CFD8DC"],
+    "saturation_level": 0.4,
+    "brightness_level": 0.5,
+    "contrast_ratio": 0.8,
+    "mood": "serious"
+  },
+  "typography": {
+    "primary_font_family": "Georgia",
+    "secondary_font_family": "Helvetica",
+    "title_size_ratio": 0.07,
+    "body_size_ratio": 0.04,
+    "font_weight": "regular",
+    "letter_spacing": 1.2,
+    "line_height": 1.5,
+    "has_shadow": true,
+    "has_outline": false,
+    "text_animation_style": "typewriter"
+  },
+  "composition": {
+    "rule_of_thirds_adherence": 0.85,
+    "symmetry_score": 0.6,
+    "primary_layout": "documentary-interview",
+    "text_placement_zones": ["lower-third", "side-panel"],
+    "margin_ratio": 0.08,
+    "padding_ratio": 0.04,
+    "focal_point_strategy": "subject-focused",
+    "depth_layers": 4
+  },
+  "motion_style": {
+    "camera_movement": "steady-pan",
+    "transition_style": "crossfade",
+    "average_shot_duration": 5.5,
+    "movement_intensity": 0.3,
+    "text_animation_type": "typewriter",
+    "element_animation_style": "subtle-fade",
+    "pacing": "measured",
+    "rhythm_pattern": "documentary-flow"
+  },
+  "visual_effects": [
+    {
+      "effect_type": "vignette",
+      "intensity": 0.4,
+      "apply_to": "full-frame",
+      "parameters": {
+        "radius": 0.7,
+        "softness": 0.5,
+        "opacity": 0.4
+      }
+    },
+    {
+      "effect_type": "film-look",
+      "intensity": 0.5,
+      "apply_to": "full-frame",
+      "parameters": {
+        "preset": "documentary",
+        "grain": 0.2,
+        "temperature": "neutral"
+      }
+    },
+    {
+      "effect_type": "depth-of-field",
+      "intensity": 0.3,
+      "apply_to": "background",
+      "parameters": {
+        "focus_distance": "medium",
+        "blur_amount": 0.3
+      }
+    }
+  ],
+  "technical_details": {
+    "aspect_ratio": "16:9",
+    "resolution": "1920x1080",
+    "frame_rate": 24
+  },
+  "metadata": {
+    "created_at": "2025-01-22T13:00:00Z",
+    "updated_at": "2025-01-22T13:00:00Z",
+    "tags": ["documentary", "serious", "professional", "journalistic", "informative"],
+    "description": "Professional documentary style with measured pacing and serious tone",
+    "confidence_scores": {
+      "color_palette": 0.85,
+      "composition": 0.9,
+      "motion_style": 0.85,
+      "typography": 0.8,
+      "effects": 0.8
+    }
+  }
+}

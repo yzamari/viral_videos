@@ -1,0 +1,96 @@
+{
+  "reference_id": "style_cinematic_example",
+  "name": "Cinematic Style",
+  "reference_type": "template",
+  "template_id": "cinematic_template",
+  "color_palette": {
+    "primary_color": "#1A237E",
+    "secondary_color": "#263238",
+    "accent_color": "#FF6F00",
+    "background_colors": ["#000000", "#0D1117"],
+    "text_colors": ["#FFFFFF", "#E0E0E0"],
+    "saturation_level": 0.6,
+    "brightness_level": 0.3,
+    "contrast_ratio": 0.95,
+    "mood": "dramatic"
+  },
+  "typography": {
+    "primary_font_family": "Bebas Neue",
+    "secondary_font_family": "Montserrat",
+    "title_size_ratio": 0.09,
+    "body_size_ratio": 0.04,
+    "font_weight": "bold",
+    "letter_spacing": 2.0,
+    "line_height": 1.2,
+    "has_shadow": true,
+    "has_outline": false,
+    "text_animation_style": "epic-reveal"
+  },
+  "composition": {
+    "rule_of_thirds_adherence": 0.9,
+    "symmetry_score": 0.7,
+    "primary_layout": "cinematic-widescreen",
+    "text_placement_zones": ["center", "lower-third"],
+    "margin_ratio": 0.1,
+    "padding_ratio": 0.05,
+    "focal_point_strategy": "dramatic-center",
+    "depth_layers": 6
+  },
+  "motion_style": {
+    "camera_movement": "slow-dolly",
+    "transition_style": "fade-to-black",
+    "average_shot_duration": 6.0,
+    "movement_intensity": 0.4,
+    "text_animation_type": "epic-reveal",
+    "element_animation_style": "parallax",
+    "pacing": "dramatic",
+    "rhythm_pattern": "cinematic-build"
+  },
+  "visual_effects": [
+    {
+      "effect_type": "letterbox",
+      "intensity": 1.0,
+      "apply_to": "full-frame",
+      "parameters": {
+        "aspect_ratio": "2.35:1",
+        "bar_opacity": 1.0
+      }
+    },
+    {
+      "effect_type": "color-grade",
+      "intensity": 0.7,
+      "apply_to": "full-frame",
+      "parameters": {
+        "preset": "teal-orange",
+        "contrast": 1.2
+      }
+    },
+    {
+      "effect_type": "film-grain",
+      "intensity": 0.3,
+      "apply_to": "full-frame",
+      "parameters": {
+        "grain_size": "fine",
+        "opacity": 0.3
+      }
+    }
+  ],
+  "technical_details": {
+    "aspect_ratio": "21:9",
+    "resolution": "3840x1634",
+    "frame_rate": 24
+  },
+  "metadata": {
+    "created_at": "2025-01-22T13:00:00Z",
+    "updated_at": "2025-01-22T13:00:00Z",
+    "tags": ["cinematic", "dramatic", "film", "epic", "widescreen"],
+    "description": "Cinematic style with dramatic color grading and widescreen aspect ratio",
+    "confidence_scores": {
+      "color_palette": 0.95,
+      "composition": 0.9,
+      "motion_style": 0.85,
+      "typography": 0.8,
+      "effects": 0.9
+    }
+  }
+}

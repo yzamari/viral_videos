@@ -26,6 +26,13 @@
 - Use proper error handling and logging
 - Maintain clean separation of concerns
 
+### 5. Configuration System (NEW!)
+- ALL hardcoded values must be moved to `src/config/video_config.py`
+- Use configuration methods instead of hardcoding values
+- Access configuration through the global `video_config` instance
+- Platform-aware configuration is automatically applied
+- Never hardcode: FPS, dimensions, font sizes, colors, text, durations
+
 ## Architecture Guidelines
 
 ### Decision Making Flow
@@ -45,6 +52,12 @@ CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All C
 - `SessionContext`: Manages session files and directories
 - `GeneratedVideoConfig`: Legacy config (being phased out)
 - `VeoClientFactory`: Manages video generation models
+- `VideoGenerationConfig`: Master configuration for all video parameters
+- `VideoEncodingConfig`: Platform-specific encoding settings
+- `TextOverlayConfig`: Text styling and appearance
+- `AnimationTimingConfig`: Animation and transition timings
+- `DefaultTextConfig`: Platform-specific default texts
+- `LayoutConfig`: Positioning and layout parameters
 
 ## Development Rules
 
@@ -72,6 +85,13 @@ CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All C
 - Maintain clear flow diagrams
 - Update README with new features
 
+### 5. Configuration Usage
+- Always use configuration system for parameters
+- Never hardcode values that could be configured
+- Use platform-aware methods like `get_fps()`, `get_font_size()`
+- Test configuration changes with all platforms
+- Document any new configuration parameters
+
 ## Implementation Guidelines
 
 ### Creating New Components
@@ -80,13 +100,17 @@ CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All C
 3. Track all operations in session
 4. Follow logging patterns
 5. Implement proper error handling
+6. Use `video_config` for all configurable parameters
+7. Never hardcode values - add to configuration instead
 
 ### Modifying Existing Components
 1. Check if component uses centralized decisions
-2. Remove any hardcoded defaults
+2. Remove any hardcoded defaults - move to configuration
 3. Ensure session tracking is implemented
 4. Update logging to match patterns
 5. Test with all generation modes
+6. Replace hardcoded values with configuration lookups
+7. Use platform-aware configuration methods
 
 ### Testing
 1. Use `--cheap full` mode for development
@@ -105,6 +129,9 @@ CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All C
 - Duration flow consistency
 - VEO-2/VEO-3 generation
 - Instagram auto-posting
+- Comprehensive configuration system (NO hardcoded values)
+- Platform-aware video encoding
+- Dynamic text sizing and positioning
 
 ### 🔄 In Progress
 - Testing centralized decision flow
@@ -116,8 +143,18 @@ CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All C
 - `SYSTEM_ARCHITECTURE.md` - Technical architecture
 - `CURRENT_FLOW.md` - Detailed system flow
 - `CLAUDE.md` - This file (system instructions)
+- `docs/CONFIGURATION_GUIDE.md` - Complete configuration documentation
+- `src/config/video_config.py` - Master configuration module
 
 ## Important Notes
+
+### Series Creation
+- Use consistent `--character` parameter for same face across episodes
+- Use consistent `--voice` parameter for same narrator
+- Use `--style-template` for visual consistency
+- Use `--theme` for branding consistency
+- Use meaningful `--session-id` for organization (e.g., "series_ep1", "series_ep2")
+- See [Series Creation Guide](docs/SERIES_CREATION_GUIDE.md) for detailed instructions
 
 ### Duration Management
 - Duration is decided once in `DecisionFramework`
@@ -152,5 +189,42 @@ outputs/session_YYYYMMDD_HHMMSS/
 - Maintain session integrity
 - Use proper error handling
 - Document architectural decisions
+- NO HARDCODED VALUES - use configuration system
+- Platform-aware code using configuration methods
 
-This system provides a robust, scalable, and maintainable architecture for AI-powered video generation with comprehensive social media integration.
+### Generation Segment Guidelines
+- Audio segment, subtitles segment should be of one sentence
+
+### Configuration Guidelines
+- Import configuration: `from src.config.video_config import video_config`
+- Get platform settings: `fps = video_config.get_fps(platform)`
+- Calculate font sizes: `size = video_config.get_font_size('title', width)`
+- Access default text: `hook = video_config.get_default_hook(platform)`
+- Modify settings: `video_config.encoding.fps_by_platform['youtube'] = 60`
+- Add new parameters to configuration instead of hardcoding
+
+### Configuration Best Practices
+1. **Never hardcode these values:**
+   - Frame rates (use `get_fps()`)
+   - Video dimensions (use `PlatformDimensions`)
+   - Font sizes (use `get_font_size()`)
+   - Colors (use configuration properties)
+   - Default text (use `get_default_hook()`, `get_default_cta()`)
+   - Timing values (use configuration properties)
+
+2. **Always use platform-aware methods:**
+   ```python
+   # Good
+   fps = video_config.get_fps(platform)
+   
+   # Bad
+   fps = 30
+   ```
+
+3. **Add new parameters to configuration:**
+   ```python
+   # If you need a new parameter, add it to the appropriate config class
+   # Don't hardcode it in the component
+   ```
+
+This system provides a robust, scalable, and maintainable architecture for AI-powered video generation with comprehensive social media integration and ZERO hardcoded values.

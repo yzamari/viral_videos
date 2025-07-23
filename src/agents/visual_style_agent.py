@@ -284,6 +284,8 @@ Return JSON:
                 
                 # Animation & Cartoon Styles
                 'cartoon': 'animated, colorful, playful cartoon style',
+                'family guy animation style': 'Family Guy cartoon style, Seth MacFarlane animation, distinctive character design, bold outlines, flat colors, adult animated comedy style',
+                'family guy': 'Family Guy cartoon style, Seth MacFarlane animation, distinctive character design, bold outlines, flat colors, adult animated comedy style',
                 'disney': 'Disney animation style, magical, family-friendly',
                 'pixar': 'Pixar 3D animation style, vibrant, heartwarming',
                 'anime': 'anime style, expressive, dramatic, Japanese animation',

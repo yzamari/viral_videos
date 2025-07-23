@@ -316,7 +316,7 @@ def get_real_google_quota_usage(api_key: str) -> Dict[str, Any]:
         Dictionary with real quota usage from Google
     """
     try:
-         import google.generativeai as genai
+        import google.generativeai as genai
         genai.configure(api_key=api_key)
 
         logger.info("🔍 Testing real Google AI Studio quota usage...")
@@ -516,7 +516,7 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
                     "results": test_results
                 },
                 "estimated_usage": {
-                    "note": "Cannot get exact usage from API - Google doesn't expose this",'
+                    "note": "Cannot get exact usage from API - Google doesn't expose this",
                     "rate_limit_status": "No immediate rate limit hit" if successful_tests >= 2 else "Rate limit detected",
                     "quota_status": "Available for generation"
                 }

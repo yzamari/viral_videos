@@ -41,6 +41,43 @@ class SessionContext:
             self.session_dir = os.path.join("outputs", session_id)
             os.makedirs(self.session_dir, exist_ok=True)
             logger.info(f"Using fallback session directory: {self.session_dir}")
+        
+        # Always ensure essential subdirectories exist
+        self._ensure_session_directories()
+
+    def _ensure_session_directories(self):
+        """Ensure all essential session subdirectories exist"""
+        essential_dirs = [
+            "metadata",
+            "agent_discussions", 
+            "audio",
+            "veo2_clips",
+            "comprehensive_logs",
+            "scripts",
+            "analysis",
+            "decisions",
+            "hashtags",
+            "final_output"
+        ]
+        
+        for subdir in essential_dirs:
+            dir_path = os.path.join(self.session_dir, subdir)
+            os.makedirs(dir_path, exist_ok=True)
+            
+        # Create session metadata file if it doesn't exist
+        metadata_file = os.path.join(self.session_dir, "metadata", "session_metadata.json")
+        if not os.path.exists(metadata_file):
+            import json
+            from datetime import datetime
+            metadata = {
+                "session_id": self.session_id,
+                "created": datetime.now().isoformat(),
+                "status": "active",
+                "session_dir": self.session_dir
+            }
+            with open(metadata_file, 'w') as f:
+                json.dump(metadata, f, indent=2)
+            logger.info(f"Created session metadata file for {self.session_id}")
 
     def _get_session_dir(self) -> str:
         """Get the session directory path with proper error handling"""

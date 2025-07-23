@@ -90,22 +90,22 @@ class ExistingScriptGenerationService(ScriptGenerationService):
         except Exception as e:
             print(f"Error generating script: {e}")
 
-            # Return minimal fallback script
+            # Return minimal fallback script using the mission text directly
             return {
                 "hook": {
-                    "text": f"Learn about {mission}",
+                    "text": f"{mission[:50]}",  # First 50 chars of mission
                     "type": "simple",
                     "duration_seconds": 3
                 },
                 "segments": [
                     {
-                        "text": f"Content about {mission}",
+                        "text": f"{mission}",  # Use full mission text
                         "type": "content",
                         "duration_seconds": duration_seconds - 6,
                         "order": 1
                     }
                 ],
-                "call_to_action": "Thanks for watching!",
+                "call_to_action": "Follow for more!",
                 "total_duration": duration_seconds,
                 "word_count": 10,
                 "style": "simple",

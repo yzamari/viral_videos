@@ -200,7 +200,7 @@ Respond in JSON format:
                 total_duration,
                 fallback_mode=True)
 
-    def analyze_image_timing_requirement(s(self,
+    def analyze_image_timing_requirements(self,
                                         prompts: List[Dict[str, Any]],
                                         platform: str,
                                         total_duration: float,
@@ -215,8 +215,8 @@ Respond in JSON format:
         # If average duration suggests fallback generation (>4 seconds per image), use fallback timing:
         if avg_duration_per_image >= 4.0:
             logger.info(
-                f"🎯 Detected fallback scenario (avg {avg_duration_per_image:.1f}s/image),"
-                using fallback timing")"
+                f"🎯 Detected fallback scenario (avg {avg_duration_per_image:.1f}s/image), "
+                f"using fallback timing")
             return self.analyze_fallback_timing_requirements(
                 prompts,
                 platform,
@@ -225,12 +225,10 @@ Respond in JSON format:
 
         # Otherwise use original timing logic
         logger.info(f"⏱️ TimingMaster analyzing standard timing for {len(prompts)} images")
-:
         try:
             # Create comprehensive analysis prompt
             analysis_prompt = """
 You are TimingMaster, an expert AI agent specializing in image display timing optimization for video content.
-:
 ANALYZE THESE IMAGE PROMPTS FOR OPTIMAL TIMING:
 Content Details:
 - Number of images: {len(prompts)}
@@ -347,11 +345,10 @@ Respond in JSON format:
             logger.error(f"TimingMaster analysis failed: {e}")
             return self._create_fallback_timing_analysis(prompts, platform, total_duration)
 
-    def _validate_fallback_timin(g(self,
-        analysis: Dict[str,
-        Any],
-        target_duration: float,
-        num_images: int) -> Dict[str, Any]:
+    def _validate_fallback_timing(self,
+                                   analysis: Dict[str, Any],
+                                   target_duration: float,
+                                   num_images: int) -> Dict[str, Any]:
         """Validate and enforce 5-10 second timing for fallback generation"""
 
         # Ensure image_timings exists:
@@ -369,20 +366,15 @@ Respond in JSON format:
             # Enforce 5-10 second range
             if duration < 5.0:
                 img_timing['duration'] = 5.0
-                img_timing['timing_rationale'] = f"Adjusted to minimum 5s for fallback generation. {img_timing.get("
-                    'timing_rationale',
-                    '')}":"
+                img_timing['timing_rationale'] = f"Adjusted to minimum 5s for fallback generation. {img_timing.get('timing_rationale', '')}"
             elif duration > 10.0:
                 img_timing['duration'] = 10.0
-                img_timing['timing_rationale'] = f"Adjusted to maximum 10s for fallback generation. {img_timing.get("
-                    'timing_rationale',
-                    '')}":"
+                img_timing['timing_rationale'] = f"Adjusted to maximum 10s for fallback generation. {img_timing.get('timing_rationale', '')}"
             else:
                 img_timing['duration'] = round(duration, 1)
 
-        # If we don't have enough images to fill duration, adjust proportionally'
+        # If we don't have enough images to fill duration, adjust proportionally
         total_from_timings = sum(img.get('duration', default_duration) for img in analysis['image_timings'])
-:
         if total_from_timings < target_duration and num_images > 0:
             # Distribute extra time across images, keeping within 5-10 second range
             extra_time = target_duration - total_from_timings
@@ -412,11 +404,10 @@ Respond in JSON format:
 
         return analysis
 
-    def _validate_timing_analysi(s(self,
-        analysis: Dict[str,
-        Any],
-        target_duration: float,
-        num_images: int) -> Dict[str, Any]:
+    def _validate_timing_analysis(self,
+                                   analysis: Dict[str, Any],
+                                   target_duration: float,
+                                   num_images: int) -> Dict[str, Any]:
         """Validate and adjust timing analysis to fit constraints"""
 
         # Ensure image_timings exists
@@ -428,8 +419,8 @@ Respond in JSON format:
 
         # If total is significantly different from target, adjust proportionally:
         if abs(total_from_timings - target_duration) > 2.0:  # More than 2 seconds difference
-            adjustment_factor = target_duration / total_from_timings if total_from_timings > 0 else 1.0:
-            logger.info(f"📊 Adjusting timing: {total_from_timings:.2f}s -> {target_duration:.2f}s (factor: {adjustment_factor:.2f)")
+            adjustment_factor = target_duration / total_from_timings if total_from_timings > 0 else 1.0
+            logger.info(f"📊 Adjusting timing: {total_from_timings:.2f}s -> {target_duration:.2f}s (factor: {adjustment_factor:.2f})")
 
             # Apply adjustment to each image
             for img_timing in analysis['image_timings']:
@@ -451,20 +442,19 @@ Respond in JSON format:
 
         return analysis
 
-    def _create_fallback_timing_analysi(s(self,
-        prompts: List[Dict[str,
-        Any]],
-        platform: str,
-        total_duration: float,
-        fallback_mode: bool = False) -> Dict[str, Any]:
+    def _create_fallback_timing_analysis(self,
+                                          prompts: List[Dict[str, Any]],
+                                          platform: str,
+                                          total_duration: float,
+                                          fallback_mode: bool = False) -> Dict[str, Any]:
         """Create fallback timing analysis when AI analysis fails"""
 
         if fallback_mode:
-            logger.info("🔄 Using fallback heuristics for FALLBACK image timing (5-10 seconds)"):
+            logger.info("🔄 Using fallback heuristics for FALLBACK image timing (5-10 seconds)")
         else:
             logger.info("🔄 Using fallback heuristics for standard image timing")
 
-        num_images = len(prompts):
+        num_images = len(prompts)
         if fallback_mode:
             # Fallback generation: use 5-10 second range
             target_avg = total_duration / num_images if num_images > 0 else 7.0
@@ -498,7 +488,7 @@ Respond in JSON format:
             base_duration = max(0.5, min(base_duration, 8.0))
 
         # Create timing for each image
-        image_timings = []:
+        image_timings = []
         for i, prompt in enumerate(prompts):
             if fallback_mode:
                 # Slight variation within 5-10 range
@@ -517,67 +507,63 @@ Respond in JSON format:
                 if i == 0 or i == len(prompts) - 1:
                     duration += 0.3
 
-            image_timings.append(
+            image_timings.append({
                 "image_index": i,
                 "duration": round(duration, 1),
                 "content_type": "mixed_content",
                 "complexity_level": "medium",
-                "reading_time_required": 1.0 if fallback_mode else 0.5,:
-                "processing_time_required": 1.0 if fallback_mode else 0.5,:
+                "reading_time_required": 1.0 if fallback_mode else 0.5,
+                "processing_time_required": 1.0 if fallback_mode else 0.5,
                 "attention_weight": "medium",
                 "timing_rationale": f"{'Fallback' if fallback_mode else 'Standard'} timing for {platform} platform"
-            )
+            })
 
         total_calculated = sum(img['duration'] for img in image_timings)
 
-        return {:
-            'timing_strategy': f'{"Fallback 5-10 second" if fallback_mode else "Standard"} platform-optimized timing for {platform}',:
+        return {
+            'timing_strategy': f'{"Fallback 5-10 second" if fallback_mode else "Standard"} platform-optimized timing for {platform}',
             'total_calculated_duration': total_calculated,
             'average_duration_per_image': total_calculated / num_images,
-            'platform_optimization': f'Optimized for {platform} user behavior',:
+            'platform_optimization': f'Optimized for {platform} user behavior',
             'image_timings': image_timings,
             'timing_adjustments': {
-                'first_image_bonus': 0.5 if fallback_mode else 0.3,:
-                'last_image_bonus': 0.5 if fallback_mode else 0.3,:
+                'first_image_bonus': 0.5 if fallback_mode else 0.3,
+                'last_image_bonus': 0.5 if fallback_mode else 0.3,
                 'complex_content_bonus': 0.0
             },
-            'user_experience_optimization': f'{"Extended timing for fallback generation" if fallback_mode else "Balanced timing for optimal engagement"}',:
-            'agent_name': f'TimingMaster ("Fallback" if fallback_mode else "Standard"} Heuristics)',:
+            'user_experience_optimization': f'{"Extended timing for fallback generation" if fallback_mode else "Balanced timing for optimal engagement"}',
+            'agent_name': f'TimingMaster ({"Fallback" if fallback_mode else "Standard"} Heuristics)',
             'analysis_timestamp': datetime.now().isoformat(),
             'total_images': num_images,
             'platform': platform,
             'generation_mode': 'fallback' if fallback_mode else 'standard'
         }
 
-    def get_timing_for_imag(e(self,
-        image_index: int,
-        timing_analysis: Dict[str,
-        Any]) -> float:
+    def get_timing_for_image(self,
+                              image_index: int,
+                              timing_analysis: Dict[str, Any]) -> float:
         """Get the timing for a specific image from the analysis"""
 
         image_timings = timing_analysis.get('image_timings', [])
-:
         if image_index < len(image_timings):
             return image_timings[image_index].get('duration', 1.5)
         else:
             # Fallback to average
             return timing_analysis.get('average_duration_per_image', 1.5)
 
-    def create_ffmpeg_timing_lis(t(self,
-        timing_analysis: Dict[str,
-        Any],
-        image_paths: List[str]) -> List[Dict[str, Any]]:
+    def create_ffmpeg_timing_list(self,
+                                   timing_analysis: Dict[str, Any],
+                                   image_paths: List[str]) -> List[Dict[str, Any]]:
         """Create a list of timing instructions for FFmpeg"""
 
         timing_list = []
-:
         for i, image_path in enumerate(image_paths):
             duration = self.get_timing_for_image(i, timing_analysis)
 
-            timing_list.append(
+            timing_list.append({
                 'image_path': image_path,
                 'duration': duration,
                 'image_index': i
-            )
+            })
 
         return timing_list

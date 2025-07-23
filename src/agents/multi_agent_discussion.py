@@ -118,7 +118,7 @@ class MultiAgentDiscussionSystem:
                 if (self.session_manager.current_session and 
                     self.session_manager.current_session == self.session_id):
                     # Perfect! Use the session manager
-                    self.discussions_dir = self.session_manager.get_session_path("discussions")
+                    self.discussions_dir = self.session_manager.get_session_path("agent_discussions")
                     session_managed = True
                     logger.info(f"✅ Session-managed discussions: {self.session_id}")
                 else:
@@ -129,22 +129,22 @@ class MultiAgentDiscussionSystem:
                         session_info = self.session_manager.get_session_info(self.session_id)
                         # Activate our session
                         self.session_manager.current_session = self.session_id
-                        self.discussions_dir = self.session_manager.get_session_path("discussions")
+                        self.discussions_dir = self.session_manager.get_session_path("agent_discussions")
                         session_managed = True
                         logger.info(f"✅ Activated session-managed discussions: {self.session_id}")
                     except ValueError:
                         # Our session doesn't exist in session manager, use manual path
                         logger.info(f"🎭 Session not in manager, using manual path: {self.session_id}")
-                        self.discussions_dir = os.path.join("outputs", self.session_id, "discussions")
+                        self.discussions_dir = os.path.join("outputs", self.session_id, "agent_discussions")
                         os.makedirs(self.discussions_dir, exist_ok=True)
             except Exception as e:
                 logger.warning(f"⚠️ Could not use session manager: {e}")
                 # Fallback to manual path creation
-                self.discussions_dir = os.path.join("outputs", self.session_id, "discussions")
+                self.discussions_dir = os.path.join("outputs", self.session_id, "agent_discussions")
                 os.makedirs(self.discussions_dir, exist_ok=True)
         else:
             # No session manager available, use manual path
-            self.discussions_dir = os.path.join("outputs", self.session_id, "discussions")
+            self.discussions_dir = os.path.join("outputs", self.session_id, "agent_discussions")
             os.makedirs(self.discussions_dir, exist_ok=True)
 
         # Initialize discussion visualizer with correct session directory

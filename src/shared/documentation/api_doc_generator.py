@@ -420,9 +420,7 @@ class APIDocumentationGenerator:
                     content += "**Parameters:**\n\n"
                     for param in method.parameters:
                         required = "required" if param.required else "optional"
-                        content += f"- `{param.name}` ("
-                            {param.type_hint},
-                            {required): {param.description}\n"
+                        content += f"- `{param.name}` ({param.type_hint}, {required}): {param.description}\n"
                     content += "\n"
 
                 # Return

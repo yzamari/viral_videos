@@ -1,0 +1,33 @@
+{
+  "series_name": "My News Network Daily",
+  "series_id": "mnn_daily",
+  "default_parameters": {
+    "platform": "youtube",
+    "duration": 90,
+    "theme": "my_news_network",
+    "style_template": "My News Network Visual Style",
+    "tone": "serious",
+    "style": "professional",
+    "visual_style": "cinematic",
+    "cheap": false,
+    "mode": "professional"
+  },
+  "anchor_template": "Tonight on My News Network, anchors Sarah Chen and Michael Roberts present: {TOPIC}",
+  "visual_consistency": {
+    "always_include": [
+      "News desk with two anchors",
+      "Video wall in background",
+      "Professional studio lighting",
+      "Lower thirds with anchor names",
+      "Network logo in corner"
+    ],
+    "color_scheme": "Navy blue, red, white",
+    "typography": "Helvetica Neue Bold for titles"
+  },
+  "episode_structure": {
+    "intro": "Network intro with logo animation",
+    "anchor_introduction": "Two-shot of both anchors",
+    "main_content": "Alternating between anchors with graphics",
+    "outro": "Both anchors sign off"
+  }
+}

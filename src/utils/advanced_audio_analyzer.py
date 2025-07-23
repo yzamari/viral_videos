@@ -342,7 +342,7 @@ class AdvancedAudioAnalyzer:
                 text_lower = text.lower()
                 if any(marker in text_lower for marker in ['?', '!', 'how', 'what', 'why']):
                     # CRITICAL FIX: Remove duration multiplier to maintain exact target duration
-            pass  # base_duration *= 1.2  # Questions and emphasis need more time
+                    pass  # base_duration *= 1.2  # Questions and emphasis need more time
                 elif any(marker in text_lower for marker in ['and', 'the', 'this', 'that']):
                     base_duration *= 0.9   # Simple connectors can be faster
                 
@@ -352,7 +352,7 @@ class AdvancedAudioAnalyzer:
                     if current_time <= emp_start < current_time + base_duration:
                         emphasis_level = 1.0
                         # CRITICAL FIX: Remove duration multiplier to maintain exact target duration
-            pass  # base_duration *= 1.15  # Emphasized speech is slightly slower
+                        pass  # base_duration *= 1.15  # Emphasized speech is slightly slower
                         break
                 
                 # 4. Volume level detection

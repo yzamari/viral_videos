@@ -50,7 +50,7 @@ class SessionManager:
             "video_clips",             # Individual video clips
             "images",                  # Generated images
             "ai_agents",               # AI agent decisions and logs
-            "discussions",             # Agent discussions
+            "agent_discussions",       # Agent discussions
             "final_output",            # Final composed video
             "metadata",                # Session metadata and configs
             "comprehensive_logs",      # Comprehensive logging data
@@ -223,11 +223,40 @@ class SessionManager:
 
                 return target_path
             else:
-                logger.warning(f"⚠️ File not found for tracking: {file_path}")
-                return file_path
+                # For log files, create an empty file if it doesn't exist yet
+                if file_type == "log":
+                    # Create the file in the session directory
+                    try:
+                        os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                        open(target_path, 'a').close()  # Create empty file
+                        
+                        # Track the file
+                        self.tracked_files[target_path] = {
+                            "type": file_type,
+                            "source": source,
+                            "timestamp": datetime.now().isoformat(),
+                            "original_path": file_path,
+                            "subdir": target_subdir
+                        }
+                        
+                        self.session_data["file_counts"][target_subdir] += 1
+                        self.session_data["total_files_created"] += 1
+                        
+                        logger.debug(f"📁 Created and tracked {file_type} file: {filename} -> {target_subdir}/")
+                        return target_path
+                    except Exception as create_error:
+                        logger.debug(f"Could not create log file: {create_error}")
+                        return file_path
+                else:
+                    logger.debug(f"⚠️ File not found for tracking: {file_path}")
+                    return file_path
 
         except Exception as e:
-            logger.error(f"❌ Failed to track file {file_path}: {e}")
+            # For log files, this is expected during initialization
+            if file_type == "log":
+                logger.debug(f"Log file not yet created: {file_path}")
+            else:
+                logger.error(f"❌ Failed to track file {file_path}: {e}")
             return file_path
 
     def log_ai_decision(self, agent_name: str, decision_data: Dict[str, Any]):
@@ -265,7 +294,7 @@ class SessionManager:
             return ""
 
         discussion_file = os.path.join(
-            self.get_session_path("discussions"),
+            self.get_session_path("agent_discussions"),
             f"discussion_{discussion_id}.json"
         )
 

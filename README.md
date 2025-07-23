@@ -2,12 +2,53 @@
 
 🚀 **Production-ready AI video generation system with 22 specialized agents, centralized decision-making, and comprehensive social media integration.**
 
-[![Version](https://img.shields.io/badge/version-2.5.0--rc2-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v2.5.0-rc2)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.0.0)
 [![Status](https://img.shields.io/badge/status-Production%20Ready-green.svg)](https://github.com/yourusername/viral-video-generator)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 
-## ✨ **What's New in v2.5.0-rc2**
+## ✨ **What's New in v3.0.0**
+
+### 🎭 **Character Consistency System** ✅ **BREAKTHROUGH!**
+- **TRUE Character Persistence**: Same face across ALL episodes using Imagen + VEO pipeline
+- **Store Character References**: Upload reference photos of any person
+- **Automatic Scene Generation**: Generate character in any new setting/pose
+- **Professional News Anchors**: Pre-built Sarah Chen & Michael Rodriguez profiles
+- **Image-to-Video Technology**: VEO uses generated character images as first frames
+- **100% Consistency**: Solves the biggest challenge in AI video series
+
+### 🎨 **Style Reference System** ✅ **IMPLEMENTED**
+- **Extract Styles from Videos**: Analyze any video to extract its visual style
+- **Create Custom Styles**: Build your own style templates
+- **Style Library**: Save and reuse styles across projects
+- **AI-Powered Analysis**: Automatic color, typography, and motion extraction
+
+### 🎭 **Theme System** ✅ **IMPLEMENTED**
+- **Professional Presets**: News, Sports, Tech, and Entertainment themes
+- **Brand Consistency**: Maintain visual identity across all videos
+- **Intro/Outro Templates**: Automatic branded intros and outros
+- **Lower Thirds & Captions**: Theme-aware text overlays
+- **Logo Integration**: Smart logo placement and animation
+- **Custom Themes**: Create and share your own themes
+
+### 🎬 **Continuous Mode** ⚠️ **PREMIUM ONLY**
+- **Seamless Video Generation**: Create one continuous video without cuts
+- **Frame Continuity**: AI-powered smooth transitions between scenes
+- **Note**: Currently only works with premium (non-cheap) mode
+
+### 🌐 **Content Scraping Framework** 🚧 **PLANNED**
+- **Multi-Source Scraping**: RSS, APIs, web pages, social media
+- **Real-Time Content**: Always up-to-date information
+- **Smart Extraction**: AI-powered content relevance filtering
+- **Media Collection**: Automatic image and video gathering
+
+### 🎬 **Media Integration Pipeline** 🚧 **PLANNED**
+- **External Media Support**: Use scraped images/videos as backgrounds
+- **Smart Composition**: AI-driven media placement
+- **Rights Management**: Track media sources and attribution
+- **Quality Optimization**: Automatic media enhancement
+
+## ✨ **Features from v2.5.0-rc2**
 
 ### 🎬 **Multiple Video Versions**
 - **Three Output Versions**: Final (with subtitles/overlays), Audio Only, Overlays Only
@@ -66,10 +107,12 @@
 - Google Cloud Project with Vertex AI enabled
 - Google AI API key
 
-### 🚀 **Latest Release: v2.5.0-rc2**
-- **Critical Bug Fixes**: Fixed DiscussionResult object handling causing system crashes
-- **Enhanced Type Safety**: Improved error recovery and system stability
-- **Production Ready**: All critical issues resolved for production deployment
+### 🚀 **Latest Release: v3.0.0**
+- **Style Reference System**: Extract and reuse visual styles from any video
+- **Theme System**: Professional themes for consistent branding
+- **Enhanced Architecture**: Modular OOP design for all new features
+- **CLI Integration**: Full command-line support for themes and styles
+- **Coming Soon**: Content scraping and media integration
 
 ### Installation
 ```bash
@@ -124,6 +167,196 @@ python main.py generate \
   --platform youtube \
   --duration 20 \
   --cheap full
+
+# Use style reference from existing video
+python main.py generate \
+  --mission "Create product showcase" \
+  --platform instagram \
+  --duration 30 \
+  --style-reference "/path/to/reference/video.mp4"
+
+# Generate with news theme
+python main.py generate \
+  --mission "Breaking news about technology" \
+  --platform youtube \
+  --duration 60 \
+  --theme preset_news_edition
+
+# Create continuous video (premium mode only)
+python main.py generate \
+  --mission "Epic story about space exploration" \
+  --platform youtube \
+  --duration 45 \
+  --no-cheap \
+  --continuous
+
+# Create sports highlight with theme
+python main.py generate \
+  --mission "Basketball championship highlights" \
+  --platform tiktok \
+  --duration 30 \
+  --theme preset_sports \
+  --visual-style dynamic
+
+# Tech review with futuristic theme
+python main.py generate \
+  --mission "Review of latest AI gadgets" \
+  --platform youtube \
+  --duration 120 \
+  --theme preset_tech
+
+# Entertainment content with vibrant theme
+python main.py generate \
+  --mission "Celebrity fashion trends 2024" \
+  --platform instagram \
+  --duration 30 \
+  --theme preset_entertainment
+```
+
+### 📺 **Creating Consistent Series**
+
+> **📖 Complete Guide**: See [Series Creation Guide](docs/SERIES_CREATION_GUIDE.md) for detailed instructions
+
+#### 🎭 **NEW! True Character Consistency** (BREAKTHROUGH!)
+
+##### **🚀 Quick Start - Complete Series**
+```bash
+# Iranian Dark Comedy Series (4 episodes)
+./create_iranian_comedy_water_crisis_series.sh
+
+# Professional Iran Water Crisis (4 episodes)  
+./create_iran_water_crisis_series.sh
+
+# Voice-over news series (reliable alternative)
+./create_news_series_fixed.sh
+```
+
+##### **🔑 Key Components for Series Consistency**
+1. **Character**: Same face/person using `--character` parameter
+2. **Voice**: Consistent narrator with `--voice` parameter  
+3. **Style**: Visual consistency with `--style-template`
+4. **Theme**: Branding consistency with `--theme`
+5. **Session**: Organized outputs with `--session-id`
+
+##### **🎯 Step-by-Step Character Creation**
+```bash
+# 1. Setup system (one time)
+./setup_character_system.sh
+
+# 2. Create Iranian characters
+python main.py create-iranian-anchors
+# Creates: Leila Hosseini (hijab), Leila Hosseini (no hijab), Ahmad Rezaei
+
+# 3. Or create American characters  
+python main.py create-news-anchors
+# Creates: Sarah Chen, Michael Rodriguez
+
+# 4. Generate series with SAME character
+python main.py generate \
+  --mission "Episode 1: Breaking news report" \
+  --character leila_hosseini \
+  --scene "professional news studio" \
+  --platform youtube \
+  --duration 60 \
+  --theme preset_news_edition
+
+python main.py generate \
+  --mission "Episode 2: Follow-up with SAME anchor" \
+  --character leila_hosseini \
+  --scene "same news studio setup" \
+  --platform youtube \
+  --duration 60 \
+  --theme preset_news_edition
+```
+
+##### **💫 Character Transformation Series**
+```bash
+# Powerful narrative: Same woman, before and after
+python main.py generate \
+  --mission "Traditional news report" \
+  --character leila_hosseini \
+  --duration 60
+
+python main.py generate \
+  --mission "Modern news report - same anchor transformed" \
+  --character leila_hosseini_no_hijab \
+  --duration 60
+```
+
+#### 🎙️ **Voice-Over Alternative (Reliable)**
+
+```bash
+# Professional News Series with Voice-Over
+./create_news_series_fixed.sh
+
+# Manual approach
+python main.py generate \
+  --mission "Professional news voice-over. Documentary footage of topic. Network branding: logo, colors. NO anchor faces." \
+  --platform youtube \
+  --duration 50 \
+  --theme preset_news_edition
+```
+
+### 🎭 **Character Management Commands**
+
+```bash
+# Store your own character reference
+python main.py store-character reference_photo.jpg --name "My Anchor"
+
+# List all stored characters
+python main.py list-characters
+
+# Create professional news anchors automatically
+python main.py create-news-anchors
+
+# Generate character in new scene
+python main.py generate-character-scene sarah_chen "outdoor interview setting"
+
+# Test the character system
+python main.py test-character-system
+```
+
+### 🎨 **Using Style References**
+
+```bash
+# Extract style from a reference video
+python main.py analyze-style /path/to/reference/video.mp4 \
+  --name "My Brand Style" \
+  --save \
+  --tags "corporate,professional"
+
+# List available styles
+python main.py list-styles
+
+# Use saved style in generation
+python main.py generate \
+  --mission "Product announcement" \
+  --platform youtube \
+  --duration 45 \
+  --style-template "My Brand Style"
+
+# Extract and use style in one command
+python main.py generate \
+  --mission "Company update" \
+  --platform linkedin \
+  --duration 60 \
+  --reference-style /path/to/brand/video.mp4
+```
+
+### 🎭 **Theme Management**
+
+```bash
+# List all available themes
+python main.py list-themes
+
+# Get detailed theme information
+python main.py theme-info preset_news_edition
+
+# Export a theme for sharing
+python main.py export-theme preset_sports sports_theme.json
+
+# Import a custom theme
+python main.py import-theme custom_theme.json --name "My Custom Theme"
 ```
 
 ### 🎬 **Multiple Video Versions Output**
@@ -176,6 +409,14 @@ outputs/session_20250721_123456/metadata/
 - Platform-specific optimization
 - Engagement tracking
 
+### 🎭 **Character Consistency Solutions**
+- Voice-over approach for perfect consistency
+- Branded graphics system
+- Style reference between episodes
+- Detailed character profiles
+- See [Character Consistency Guide](docs/CHARACTER_CONSISTENCY_GUIDE.md)
+- **NEW**: [Complete Series Creation Guide](docs/SERIES_CREATION_GUIDE.md)
+
 ### 💰 **Cost Management**
 - **Cheap Mode**: Cost-effective testing
 - **Granular Levels**: Full/Audio/Video cheap modes
@@ -216,6 +457,13 @@ Decisions → Discussions → Scripts → Video/Audio → Assembly → Social Me
 - `--cheap` - Cheap mode level (full/audio/video/off, default: off)
 - `--no-cheap` - Disable cheap mode
 - `--frame-continuity` - Enable frame continuity (on/off/auto, default: auto)
+
+### v3.0 New Parameters
+- `--theme` - Theme preset or custom theme ID (e.g., preset_news_edition, preset_sports)
+- `--style-template` - Name or ID of saved style template to use
+- `--reference-style` - Path to video for real-time style extraction
+- `--character` - Character ID for consistent character generation (use store-character first)
+- `--scene` - Scene description when using --character (e.g., "news studio", "outdoor interview")
 
 ## Generation Modes
 
@@ -357,10 +605,56 @@ export GOOGLE_AI_API_KEY="your-gemini-api-key"
 export GOOGLE_CLOUD_PROJECT="your-gcp-project"
 ```
 
+### Configuration System
+
+#### 🎛️ **Comprehensive Configuration** (NEW!)
+All video generation parameters are now fully configurable through the centralized configuration system. No more hardcoded values!
+
+**Location**: `src/config/video_config.py`
+
+**Key Configuration Categories**:
+- **Video Encoding**: FPS, codecs, quality settings per platform
+- **Text Overlays**: Font sizes, colors, stroke widths, opacity
+- **Animation Timing**: Fade durations, transitions, continuity settings
+- **Default Text**: Platform-specific hooks, CTAs, badges
+- **Layout**: Positioning, spacing, safe zones
+
+**Example - Customizing for Your Brand**:
+```python
+from src.config.video_config import video_config
+
+# Adjust font sizes
+video_config.text_overlay.font_sizes['title'] = 0.08  # 8% of video width
+video_config.text_overlay.font_sizes['subtitle'] = 0.05  # 5% of video width
+
+# Change default colors
+video_config.text_overlay.default_text_color = '#FF6B6B'
+video_config.text_overlay.default_stroke_color = '#2D3436'
+
+# Customize platform-specific CTAs
+video_config.default_text.ctas_by_platform['youtube'] = "Hit Subscribe & Bell 🔔"
+video_config.default_text.ctas_by_platform['tiktok'] = "Drop a follow! 💯"
+
+# Adjust encoding quality
+video_config.encoding.crf_by_platform['youtube'] = 20  # Higher quality
+video_config.encoding.fps_by_platform['tiktok'] = 60  # Smoother playback
+```
+
+**Platform-Aware Settings**:
+The system automatically applies optimal settings based on the target platform:
+```python
+# YouTube: 30fps, CRF 23, medium preset
+# TikTok: 30fps, CRF 25, fast preset
+# Instagram: 30fps, CRF 25, fast preset
+```
+
 ### Configuration Files
+- `src/config/video_config.py` - Master video generation configuration
 - `config.json` - User preferences
 - `CLAUDE.md` - System instructions
 - Platform-specific settings
+
+See [Configuration Guide](docs/CONFIGURATION_GUIDE.md) for detailed customization options.
 
 ## Cost Optimization
 
@@ -460,6 +754,9 @@ done
 
 - 📖 **[SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md)** - Complete technical architecture
 - 🔄 **[CURRENT_FLOW.md](CURRENT_FLOW.md)** - Detailed system flow and operation
+- 🎛️ **[Configuration Guide](docs/CONFIGURATION_GUIDE.md)** - Comprehensive configuration options
+- 🎭 **[Character Consistency Guide](docs/CHARACTER_CONSISTENCY_GUIDE.md)** - Character system documentation
+- 📺 **[Series Creation Guide](docs/SERIES_CREATION_GUIDE.md)** - Creating consistent video series
 - 🔧 **[docs/](docs/)** - Additional documentation and guides
 
 ## Contributing

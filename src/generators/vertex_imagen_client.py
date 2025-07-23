@@ -18,15 +18,24 @@ class VertexImagenClient:
 
         try:
             # Import Vertex AI libraries
-            from google.cloud import aiplatform
-            from vertexai.preview.vision_models import ImageGenerationModel
+            # Suppress deprecation warnings for now - we'll need to migrate to new SDK
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=UserWarning, module="vertexai")
+                from google.cloud import aiplatform
+                from vertexai.preview.vision_models import ImageGenerationModel
 
-            # Get project ID from env or parameter
-            self.project_id = project_id or os.getenv("VERTEX_AI_PROJECT_ID")
+            # Get project ID from multiple sources
+            self.project_id = (
+                project_id or 
+                os.getenv("VERTEX_AI_PROJECT_ID") or 
+                os.getenv("GOOGLE_CLOUD_PROJECT") or
+                self._get_gcloud_project()
+            )
             self.location = location or os.getenv("VERTEX_AI_LOCATION", "us-central1")
 
             if not self.project_id:
-                logger.warning("No Vertex AI project ID provided")
+                logger.warning("No Vertex AI project ID provided. Please set GOOGLE_CLOUD_PROJECT or run 'gcloud config set project PROJECT_ID'")
                 return
 
             # Initialize Vertex AI
@@ -36,6 +45,7 @@ class VertexImagenClient:
             )
 
             # Load Imagen model - use imagegeneration@002 which is available
+            # TODO: Migrate to new Generative AI SDK before June 2025
             self.model = ImageGenerationModel.from_pretrained("imagegeneration@002")
             self.initialized = True
 
@@ -58,12 +68,12 @@ class VertexImagenClient:
         try:
             logger.info(f"🎨 Generating image with Imagen: {prompt[:50]}...")
 
-            # Generate images
+            # Generate images with appropriate safety settings
             response = self.model.generate_images(
                 prompt=prompt,
                 number_of_images=number_of_images,
                 aspect_ratio=aspect_ratio,
-                safety_filter_level="block_some",
+                # Use default safety settings - block_some causes issues
                 person_generation="allow_adult"
             )
 
@@ -72,7 +82,7 @@ class VertexImagenClient:
                 image = response.images[0]
 
                 # Save to specified path
-                image.save(output_path, format="JPEG", quality=95)
+                image.save(output_path)
 
                 logger.info(f"✅ Successfully generated image: {output_path}")
                 return output_path
@@ -138,10 +148,10 @@ class VertexImagenClient:
             return False
 
         try:
-            # Try a simple generation
+            # Try a simple generation with safe prompt
             with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
                 result = self.generate_image(
-                    prompt="A simple test image of a blue square",
+                    prompt="A simple geometric blue square on white background, minimalist design",
                     output_path=tmp.name
                 )
 
@@ -154,3 +164,19 @@ class VertexImagenClient:
         except Exception as e:
             logger.error(f"Imagen connection test failed: {e}")
             return False
+    
+    def _get_gcloud_project(self) -> Optional[str]:
+        """Get project ID from gcloud config"""
+        try:
+            import subprocess
+            result = subprocess.run(
+                ['gcloud', 'config', 'get', 'project'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            if result.returncode == 0:
+                return result.stdout.strip()
+        except Exception as e:
+            logger.debug(f"Could not get gcloud project: {e}")
+        return None

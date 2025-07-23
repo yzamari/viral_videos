@@ -28,6 +28,7 @@ from ..agents.overlay_positioning_agent import OverlayPositioningAgent
 from ..agents.visual_style_agent import VisualStyleAgent
 from ..generators.hashtag_generator import HashtagGenerator
 from ..utils.session_context import SessionContext, create_session_context
+from ..utils.duration_coordinator import DurationCoordinator
 from ..utils.professional_text_renderer import (
     ProfessionalTextRenderer, 
     TextOverlay, 
@@ -36,6 +37,7 @@ from ..utils.professional_text_renderer import (
     TextPosition, 
     TextAlignment
 )
+from ..config import video_config
 
 logger = get_logger(__name__)
 
@@ -91,8 +93,8 @@ class VideoGenerator:
                             "original_topic": config.topic,
                             "target_duration": config.duration_seconds,
                             "platform": str(config.target_platform),
-                            "hook": getattr(config, 'hook', 'Amazing content ahead!'),
-                            "call_to_action": getattr(config, 'call_to_action', 'Subscribe for more!')
+                            "hook": getattr(config, 'hook', video_config.get_default_hook(config.target_platform.value)),
+                            "call_to_action": getattr(config, 'call_to_action', video_config.get_default_cta(config.target_platform.value))
                         },
                         "output": {
                             "optimized_script": script_result.get('optimized_script', ''),
@@ -217,7 +219,7 @@ class VideoGenerator:
             }
             
             # Save comprehensive discussion to JSON
-            discussion_path = session_context.get_output_path("discussions", "ai_agent_discussion.json")
+            discussion_path = session_context.get_output_path("agent_discussions", "ai_agent_discussion.json")
             os.makedirs(os.path.dirname(discussion_path), exist_ok=True)
             with open(discussion_path, 'w') as f:
                 json.dump(agent_discussion, f, indent=2)
@@ -308,6 +310,7 @@ class VideoGenerator:
             
             # Save detailed summary
             summary_path = session_context.get_output_path("discussions", "discussion_summary.md")
+            os.makedirs(os.path.dirname(summary_path), exist_ok=True)
             with open(summary_path, 'w') as f:
                 f.write(summary_content)
             logger.info(f"📝 Detailed discussion summary saved: {summary_path}")
@@ -410,25 +413,50 @@ The last frame of this scene connects to the next.
                 # Store description for next scene continuity
                 previous_scene_description = segment.get('text', '')[:100] + "..."
             
-            # Generate all video segments
+            # Generate all video segments with frame continuity
             video_clips = []
+            last_frame_path = None
+            
             for i, prompt in enumerate(continuous_prompts):
                 try:
-                    clip_path = veo_client.generate_video(
-                        prompt=prompt,
-                        duration=script_segments[i].get('duration', 5),
-                        clip_id=f"continuous_clip_{i+1}",
-                        aspect_ratio=self._get_platform_aspect_ratio(config.target_platform.value)
-                    )
+                    # Add last frame reference if available
+                    generation_params = {
+                        'prompt': prompt,
+                        'duration': script_segments[i].get('duration', 5),
+                        'clip_id': f"continuous_clip_{i+1}",
+                        'aspect_ratio': self._get_platform_aspect_ratio(config.target_platform.value)
+                    }
+                    
+                    # Include last frame for continuity (except for first clip)
+                    if i > 0 and last_frame_path and os.path.exists(last_frame_path):
+                        generation_params['image_path'] = last_frame_path
+                        logger.info(f"🖼️ Using last frame for continuity: {last_frame_path}")
+                    
+                    clip_path = veo_client.generate_video(**generation_params)
                     
                     if clip_path and os.path.exists(clip_path):
                         video_clips.append(clip_path)
                         logger.info(f"✅ Generated continuous clip {i+1}/{len(continuous_prompts)}")
+                        
+                        # Extract last frame for next clip (except for last clip)
+                        if i < len(continuous_prompts) - 1:
+                            last_frame_path = self._extract_last_frame(clip_path, f"continuous_clip_{i+1}", session_context)
+                            if last_frame_path:
+                                # Save frame reference in session
+                                frame_filename = f"frame_continuity_clip_{i+1}_to_{i+2}.jpg"
+                                session_frame_path = session_context.get_output_path("images", frame_filename)
+                                os.makedirs(os.path.dirname(session_frame_path), exist_ok=True)
+                                
+                                import shutil
+                                shutil.copy2(last_frame_path, session_frame_path)
+                                logger.info(f"💾 Saved continuity frame: {frame_filename}")
                     else:
                         logger.warning(f"⚠️ Failed to generate continuous clip {i+1}")
+                        last_frame_path = None
                         
                 except Exception as e:
                     logger.error(f"❌ Error generating continuous clip {i+1}: {e}")
+                    last_frame_path = None
                     continue
             
             if video_clips:
@@ -465,6 +493,10 @@ The last frame of this scene connects to the next.
         self.use_real_veo2 = use_real_veo2
         self.use_vertex_ai = use_vertex_ai
         self.prefer_veo3 = prefer_veo3
+        
+        # ENHANCED: Frame continuity preference
+        self.prefer_frame_continuity = True  # Always prefer frame continuity
+        self.frame_continuity_retries = 4   # Number of different approaches to try
         
         # Initialize voice config to prevent AttributeError
         self._last_voice_config = {
@@ -567,7 +599,34 @@ The last frame of this scene connects to the next.
             if cheap_mode_level == 'full' or cheap_mode:
                 # Full cheap mode: text video + gTTS audio
                 logger.info("💰 Using full cheap mode - text-based video")
-                return self._generate_cheap_video(config, session_context)
+                cheap_video_path = self._generate_cheap_video(config, session_context)
+                
+                if cheap_video_path and os.path.exists(cheap_video_path):
+                    # Get file size
+                    file_size_mb = os.path.getsize(cheap_video_path) / (1024 * 1024)
+                    
+                    # Return proper VideoGenerationResult
+                    return VideoGenerationResult(
+                        file_path=cheap_video_path,
+                        file_size_mb=round(file_size_mb, 2),
+                        generation_time_seconds=time.time() - start_time,
+                        script=config.topic,
+                        clips_generated=1,
+                        audio_files=[],
+                        success=True
+                    )
+                else:
+                    logger.error("❌ Cheap mode video generation failed")
+                    return VideoGenerationResult(
+                        file_path="",
+                        file_size_mb=0.0,
+                        generation_time_seconds=time.time() - start_time,
+                        script="",
+                        clips_generated=0,
+                        audio_files=[],
+                        success=False,
+                        error_message="Cheap mode video generation failed"
+                    )
             
             elif cheap_mode_level == 'audio':
                 # Audio cheap mode: normal video + gTTS audio
@@ -590,6 +649,10 @@ The last frame of this scene connects to the next.
         })
         
         try:
+            # Initialize Duration Coordinator
+            duration_coordinator = DurationCoordinator(config.duration_seconds)
+            logger.info(f"🎯 Initialized Duration Coordinator with target: {config.duration_seconds}s")
+            
             # Initialize VEO client with session context
             if self.use_real_veo2 and self.use_vertex_ai:
                 self.veo_client = self.veo_factory.get_veo_client(
@@ -603,6 +666,14 @@ The last frame of this scene connects to the next.
             # Store script result for subtitle generation
             self._last_script_result = script_result
             
+            # Analyze script duration
+            if script_result:
+                script_duration = duration_coordinator.analyze_script_duration(
+                    script_result.get('optimized_script', ''),
+                    script_result.get('segments', [])
+                )
+                logger.info(f"📝 Script duration analysis: {script_duration:.1f}s")
+            
             # Step 2: Get AI decisions for visual style and positioning
             style_decision = self._get_visual_style_decision(config)
             positioning_decision = self._get_positioning_decision(config, style_decision)
@@ -610,8 +681,18 @@ The last frame of this scene connects to the next.
             # Step 3: Generate video clips
             clips = self._generate_video_clips(config, script_result, style_decision, session_context)
             
+            # Analyze video clips duration
+            if clips:
+                video_clips_duration = duration_coordinator.analyze_video_clips(clips)
+                logger.info(f"🎬 Video clips total duration: {video_clips_duration:.1f}s")
+            
             # Step 4: Generate audio with AI voice selection
             audio_files = self._generate_ai_optimized_audio(config, script_result, session_context)
+            
+            # Analyze audio duration
+            if audio_files:
+                audio_duration = duration_coordinator.analyze_audio_files(audio_files)
+                logger.info(f"🎵 Audio total duration: {audio_duration:.1f}s")
             
                         # Step 6: Generate AI agent discussions
             try:
@@ -641,10 +722,31 @@ The last frame of this scene connects to the next.
             # Step 6: Create subtitles
             subtitle_files = self._create_subtitles(script_result, audio_files, session_context)
             
+            # Get optimal duration from coordinator
+            optimal_duration = duration_coordinator.get_optimal_duration()
+            duration_report = duration_coordinator.get_duration_report()
+            
+            # Save duration report to session
+            try:
+                duration_report_path = session_context.get_output_path("duration_report.json", "logs")
+                os.makedirs(os.path.dirname(duration_report_path), exist_ok=True)
+                
+                # Ensure json module is available
+                import json as json_module
+                with open(duration_report_path, 'w') as f:
+                    json_module.dump(duration_report, f, indent=2)
+                    
+                logger.info(f"📊 Duration Report saved to: {duration_report_path}")
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to save duration report: {e}")
+                # Continue without failing the video generation
+            
+            logger.info(f"🎯 Optimal final duration: {optimal_duration:.1f}s (target was {config.duration_seconds}s)")
+            
             # Step 7: Compose final video with subtitles and overlays
             final_video_path = self._compose_final_video_with_subtitles(
                 clips, audio_files, script_result, style_decision, positioning_decision, 
-                config, session_context
+                config, session_context, duration_coordinator
             )
             
             generation_time = time.time() - start_time
@@ -675,7 +777,7 @@ The last frame of this scene connects to the next.
                             "status": "failed",
                             "fallback": True
                         }
-                        discussion_path = session_context.get_output_path("discussions", "ai_agent_discussion.json")
+                        discussion_path = session_context.get_output_path("agent_discussions", "ai_agent_discussion.json")
                         os.makedirs(os.path.dirname(discussion_path), exist_ok=True)
                         with open(discussion_path, 'w') as f:
                             import json
@@ -786,7 +888,7 @@ The last frame of this scene connects to the next.
         ]
         
         # Generate call to action
-        call_to_action = f"Follow for more {topic.split()[0] if topic else 'amazing'} content!"
+        call_to_action = video_config.get_default_cta(platform) if platform else video_config.default_text.ctas_by_platform['default']
         
         config = GeneratedVideoConfig(
             target_platform=platform,
@@ -967,7 +1069,7 @@ The last frame of this scene connects to the next.
         
         # Check if continuous generation is enabled
         use_continuous_generation = getattr(config, 'continuous_generation', False)
-        use_frame_continuity = getattr(config, 'frame_continuity_enabled', False)
+        use_frame_continuity = getattr(config, 'frame_continuity', False)
         
         logger.info(f"🎬 Continuous generation: {'✅ ENABLED' if use_continuous_generation else '❌ DISABLED'}")
         logger.info(f"🎬 Frame continuity: {'✅ ENABLED' if use_frame_continuity else '❌ DISABLED'}")
@@ -992,8 +1094,18 @@ The last frame of this scene connects to the next.
         # Initialize script_segments at the beginning to avoid scope issues
         script_segments = script_result.get('segments', [])
         
-        # Determine number of clips and durations
-        if hasattr(config, 'num_clips') and config.num_clips is not None:
+        # CRITICAL: Check actual audio files to determine clip count
+        audio_dir = session_context.get_output_path("audio")
+        audio_files = []
+        if os.path.exists(audio_dir):
+            audio_files = sorted([f for f in os.listdir(audio_dir) if f.startswith('audio_segment_') and f.endswith('.mp3')])
+            logger.info(f"🎵 Found {len(audio_files)} audio segments in session")
+        
+        # Determine number of clips based on audio segments
+        if audio_files:
+            num_clips = len(audio_files)
+            logger.info(f"🎯 Using {num_clips} video clips to match {num_clips} audio segments")
+        elif hasattr(config, 'num_clips') and config.num_clips is not None:
             num_clips = config.num_clips
             logger.info(f"🎯 Using core decisions: {num_clips} clips from centralized decision framework")
         else:
@@ -1005,8 +1117,32 @@ The last frame of this scene connects to the next.
                 num_clips = len(script_segments)
                 logger.info(f"🎬 Using script segments: {num_clips} clips matching {num_clips} segments")
         
-        # CRITICAL: Use core decisions for clip durations if available
-        if hasattr(config, 'clip_durations') and config.clip_durations is not None:
+        # CRITICAL: Get actual audio durations if available
+        actual_audio_durations = []
+        if audio_files:
+            import subprocess
+            for audio_file in audio_files:
+                audio_path = os.path.join(audio_dir, audio_file)
+                try:
+                    result = subprocess.run([
+                        'ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+                        '-of', 'default=noprint_wrappers=1:nokey=1', audio_path
+                    ], capture_output=True, text=True)
+                    if result.returncode == 0:
+                        duration = float(result.stdout.strip())
+                        actual_audio_durations.append(duration)
+                    else:
+                        actual_audio_durations.append(5.0)  # Default duration
+                except:
+                    actual_audio_durations.append(5.0)  # Default duration
+            logger.info(f"🎵 Actual audio durations: {[f'{d:.1f}s' for d in actual_audio_durations]}")
+            logger.info(f"🎵 Total audio duration: {sum(actual_audio_durations):.1f}s")
+        
+        # Use actual audio durations if available
+        if actual_audio_durations:
+            clip_durations = actual_audio_durations
+            logger.info(f"🎯 Using actual audio durations for video clips: {[f'{d:.1f}s' for d in clip_durations]}")
+        elif hasattr(config, 'clip_durations') and config.clip_durations is not None:
             clip_durations = config.clip_durations
             logger.info(f"🎯 Using core decisions clip durations: {[f'{d:.1f}s' for d in clip_durations]}")
             logger.info(f"⏱️ Total from core decisions: {sum(clip_durations):.1f}s (Target: {config.duration_seconds}s)")
@@ -1054,19 +1190,22 @@ The last frame of this scene connects to the next.
                     segment_text = segment.get('full_text', segment.get('text', ''))
                     clip_duration = segment.get('duration', config.duration_seconds / num_clips)
                     # Create visual prompt from segment content, not the controversial topic
-                    prompt = self._create_visual_prompt_from_segment(segment_text, i+1, style_decision.get('primary_style', 'dynamic'))
+                    visual_style = getattr(config, 'visual_style', None) or style_decision.get('primary_style', 'dynamic')
+                    prompt = self._create_visual_prompt_from_segment(segment_text, i+1, visual_style)
                     logger.info(f"⏱️ Clip {i+1} Duration: {clip_duration:.1f}s (from segment)")
                 else:
                     # Fallback for when segments don't match
                     clip_duration = config.duration_seconds / num_clips
                     logger.info(f"⏱️ Clip {i+1} Duration: {clip_duration:.1f}s (fallback average)")
                     # Create generic safe visual prompt
-                    prompt = self._create_generic_visual_prompt(i+1, style_decision.get('primary_style', 'dynamic'))
+                    visual_style = getattr(config, 'visual_style', None) or style_decision.get('primary_style', 'dynamic')
+                    prompt = self._create_generic_visual_prompt(i+1, visual_style)
                 
-                # Enhance prompt with style
+                # Enhance prompt with style - use visual_style from config if available
+                visual_style = getattr(config, 'visual_style', None) or style_decision.get('primary_style', 'dynamic')
                 enhanced_prompt = self.style_agent.enhance_prompt_with_style(
                     base_prompt=prompt,
-                    style=style_decision.get('primary_style', 'dynamic')
+                    style=visual_style
                 )
                 
                 # Remove preemptive policy checking - let VEO handle it
@@ -1092,15 +1231,44 @@ The last frame of this scene connects to the next.
                         # Log full prompt for debugging
                         logger.info(f"📝 FULL VEO PROMPT for clip {i+1}: {enhanced_prompt}")
                         
-                        clip_path = veo_client.generate_video(
-                            prompt=enhanced_prompt,
-                            duration=clip_duration,
-                            clip_id=f"clip_{i+1}",
-                            aspect_ratio=self._get_platform_aspect_ratio(config.target_platform.value)
-                        )
+                        # Add frame continuity if enabled and available
+                        generation_params = {
+                            'prompt': enhanced_prompt,
+                            'duration': clip_duration,
+                            'clip_id': f"clip_{i+1}",
+                            'aspect_ratio': self._get_platform_aspect_ratio(config.target_platform.value)
+                        }
+                        
+                        # Use last frame for continuity if enabled
+                        use_frame_continuity = getattr(config, 'frame_continuity', False)
+                        if use_frame_continuity and i > 0 and last_frame_image and os.path.exists(last_frame_image):
+                            generation_params['image_path'] = last_frame_image
+                            logger.info(f"🖼️ Using frame continuity from clip {i}")
+                        
+                        clip_path = veo_client.generate_video(**generation_params)
                         
                         if clip_path and os.path.exists(clip_path):
+                            # Log actual duration but DON'T trim - we want to maintain sync
+                            actual_clip_duration = self._get_video_duration(clip_path)
+                            if actual_clip_duration:
+                                if actual_clip_duration > clip_duration * 1.1:  # More than 10% over
+                                    logger.info(f"📏 VEO clip {i+1} is {actual_clip_duration:.1f}s (requested: {clip_duration:.1f}s) - keeping full duration for sync")
+                                else:
+                                    logger.info(f"✅ VEO clip {i+1} duration: {actual_clip_duration:.1f}s")
                             logger.info(f"✅ Generated VEO clip {i+1}/{num_clips}")
+                            
+                            # Extract last frame for next clip if frame continuity is enabled
+                            if use_frame_continuity and i < num_clips - 1:
+                                last_frame_image = self._extract_last_frame(clip_path, f"clip_{i+1}", session_context)
+                                if last_frame_image:
+                                    # Save to session for debugging
+                                    frame_filename = f"frame_continuity_{i+1}_to_{i+2}.jpg"
+                                    session_frame_path = session_context.get_output_path("images", frame_filename)
+                                    os.makedirs(os.path.dirname(session_frame_path), exist_ok=True)
+                                    
+                                    import shutil
+                                    shutil.copy2(last_frame_image, session_frame_path)
+                                    logger.info(f"💾 Saved continuity frame: {frame_filename}")
                         else:
                             logger.warning(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1}, using fallback")
                             print(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1} - using fallback with reduced quality")
@@ -1131,6 +1299,13 @@ The last frame of this scene connects to the next.
                                     aspect_ratio=self._get_platform_aspect_ratio(config.target_platform.value)
                                 )
                                 if clip_path and os.path.exists(clip_path):
+                                    # Log actual duration but DON'T trim - we want to maintain sync
+                                    actual_clip_duration = self._get_video_duration(clip_path)
+                                    if actual_clip_duration:
+                                        if actual_clip_duration > clip_duration * 1.1:  # More than 10% over
+                                            logger.info(f"📏 Rephrased VEO clip {i+1} is {actual_clip_duration:.1f}s (requested: {clip_duration:.1f}s) - keeping full duration for sync")
+                                        else:
+                                            logger.info(f"✅ Rephrased VEO clip {i+1} duration: {actual_clip_duration:.1f}s")
                                     logger.info(f"✅ Successfully generated clip {i+1} with rephrased prompt")
                                 else:
                                     logger.error(f"❌ VEO generation still failed after rephrasing for clip {i+1}")
@@ -1180,15 +1355,19 @@ The last frame of this scene connects to the next.
         logger.info(f"🎬 Generated {len(clips)} video clips")
         return clips
 
-    def _extract_last_frame(self, video_path: str, clip_id: str) -> Optional[str]:
+    def _extract_last_frame(self, video_path: str, clip_id: str, session_context: Optional[SessionContext] = None) -> Optional[str]:
         """Extract the last frame from a video for frame continuity"""
         try:
             import subprocess
             
             # Create frame path in session directory
-            from ..utils.session_manager import session_manager
-            session_dir = session_manager.get_session_path("images")
-            frame_path = os.path.join(session_dir, f"last_frame_{clip_id}.jpg")
+            if session_context:
+                frame_path = session_context.get_output_path("images", f"last_frame_{clip_id}.jpg")
+                os.makedirs(os.path.dirname(frame_path), exist_ok=True)
+            else:
+                from ..utils.session_manager import session_manager
+                session_dir = session_manager.get_session_path("images")
+                frame_path = os.path.join(session_dir, f"last_frame_{clip_id}.jpg")
             
             # Use ffmpeg to extract the last frame
             cmd = [
@@ -1273,42 +1452,45 @@ The last frame of this scene connects to the next.
             # If we have core decisions, create segments based on them
             if hasattr(config, 'num_clips') and config.num_clips is not None and hasattr(config, 'clip_durations') and config.clip_durations is not None:
                 # Use core decisions to create segments with proper sentence boundaries
-                logger.info(f"🎯 Creating audio segments from core decisions: {config.num_clips} clips")
+                logger.info(f"🎯 Creating audio segments from script sentences")
                 full_script = script_result.get('final_script', config.topic)
                 
-                # CRITICAL FIX: Use sentence-based splitting instead of word-based to preserve sentence integrity
-                segments_to_generate = self._split_script_to_audio_segments(
-                    full_script, 
-                    config.num_clips, 
-                    sum(config.clip_durations)
-                )
+                # CRITICAL FIX: Split by sentences first, then group if needed
+                import re
+                sentences = re.split(r'([.!?:;]+)', full_script)
                 
-                # Update durations from core decisions
-                for i, segment in enumerate(segments_to_generate):
-                    if i < len(config.clip_durations):
-                        segment['duration'] = config.clip_durations[i]
+                # Recombine sentences with their punctuation
+                complete_sentences = []
+                for i in range(0, len(sentences) - 1, 2):
+                    if i + 1 < len(sentences):
+                        sentence = sentences[i].strip() + sentences[i + 1].strip()
+                        if sentence.strip():
+                            complete_sentences.append(sentence.strip())
+                    elif sentences[i].strip():
+                        complete_sentences.append(sentences[i].strip())
                 
-                # CRITICAL: Validate sentence integrity before proceeding
-                if not self._validate_sentence_integrity(segments_to_generate):
-                    logger.error("❌ Segment validation failed - sentences would be cut in middle!")
-                    logger.info("🔄 Retrying with simpler sentence splitting...")
-                    # Fall back to simple sentence-based approach
-                    sentences = [s.strip() + '.' for s in full_script.split('.') if s.strip()]
-                    if len(sentences) >= config.num_clips:
-                        segments_to_generate = []
-                        sentences_per_segment = len(sentences) // config.num_clips
-                        for i in range(config.num_clips):
-                            start_idx = i * sentences_per_segment
-                            end_idx = start_idx + sentences_per_segment if i < config.num_clips - 1 else len(sentences)
-                            segment_text = ' '.join(sentences[start_idx:end_idx])
-                            segments_to_generate.append({
-                                'text': segment_text,
-                                'duration': config.clip_durations[i] if i < len(config.clip_durations) else 5.0,
-                                'complete_sentences': True
-                            })
-                        logger.info(f"✅ Regenerated {len(segments_to_generate)} segments with validated sentence boundaries")
-                    
-                logger.info(f"🎯 Generated {len(segments_to_generate)} audio segments with complete sentences from core decisions")
+                # Handle any remaining text
+                if len(sentences) % 2 == 1 and sentences[-1].strip():
+                    complete_sentences.append(sentences[-1].strip())
+                
+                logger.info(f"📝 Found {len(complete_sentences)} sentences in script")
+                
+                # Create one segment per sentence
+                segments_to_generate = []
+                total_duration = sum(config.clip_durations)
+                for i, sentence in enumerate(complete_sentences):
+                    word_count = len(sentence.split())
+                    # Estimate duration based on word count (2.5 words per second)
+                    estimated_duration = word_count / 2.5
+                    segments_to_generate.append({
+                        'text': sentence,
+                        'duration': estimated_duration,
+                        'word_count': word_count,
+                        'complete_sentences': True,
+                        'sentence_count': 1
+                    })
+                
+                logger.info(f"✅ Created {len(segments_to_generate)} audio segments (one per sentence)")
             else:
                 # Use script segments as fallback
                 segments_to_generate = script_segments
@@ -1446,7 +1628,8 @@ The last frame of this scene connects to the next.
     def _compose_final_video_with_subtitles(self, clips: List[str], audio_files: List[str], 
                                            script_result: Dict[str, Any], style_decision: Dict[str, Any],
                                            positioning_decision: Dict[str, Any], config: GeneratedVideoConfig,
-                                           session_context: SessionContext) -> str:
+                                           session_context: SessionContext, 
+                                           duration_coordinator: Optional[DurationCoordinator] = None) -> str:
         """Compose final video with subtitles and overlays, plus additional versions"""
         try:
             logger.info("🎬 Composing final video with multiple output versions")
@@ -1457,7 +1640,8 @@ The last frame of this scene connects to the next.
                 return self._create_fallback_video_from_audio(audio_files, config, session_context)
             
             # Step 1: Create base video from clips
-            base_video_path = self._create_base_video_from_clips(clips, audio_files, session_context, config.duration_seconds)
+            base_video_path = self._create_base_video_from_clips(clips, audio_files, session_context, config.duration_seconds, 
+                                                                platform=config.target_platform.value)
             
             if not base_video_path or not os.path.exists(base_video_path):
                 logger.error("❌ Failed to create base video")
@@ -1466,23 +1650,36 @@ The last frame of this scene connects to the next.
             # Keep reference to original base video for later use
             original_base_video = base_video_path
             
-            # CRITICAL FIX: Ensure video duration matches target exactly
-            actual_duration = self._get_video_duration(base_video_path)
-            target_duration = config.duration_seconds
+            # Get optimal duration from coordinator or use config duration
+            if duration_coordinator:
+                target_duration = duration_coordinator.get_optimal_duration()
+                logger.info(f"🎯 Using optimal duration from coordinator: {target_duration:.1f}s")
+            else:
+                target_duration = config.duration_seconds
+                logger.info(f"🎯 Using config duration: {target_duration:.1f}s")
             
-            if actual_duration and actual_duration > target_duration:
-                # Trim video to exact target duration
-                logger.info(f"⏱️ Video is {actual_duration:.1f}s (target: {target_duration}s) - trimming to exact duration")
-                trimmed_video_path = self._trim_video_to_duration(base_video_path, target_duration, session_context)
-                if trimmed_video_path and os.path.exists(trimmed_video_path):
-                    # Use trimmed version as the working video
-                    temp_video_path = trimmed_video_path
-                    logger.info(f"✅ Video trimmed to exact target duration: {target_duration}s")
+            # Get actual video duration
+            actual_duration = self._get_video_duration(base_video_path)
+            
+            if actual_duration and actual_duration > target_duration * 1.15:  # More than 15% over
+                # DON'T trim - we prioritize sync over duration
+                logger.info(f"📏 Video is {actual_duration:.1f}s (target: {target_duration}s) - keeping full duration to maintain audio/video/subtitle sync")
+                temp_video_path = base_video_path
+            elif actual_duration and actual_duration < target_duration * 0.85:  # More than 15% under
+                # Extend video by freezing last frame
+                logger.info(f"⏱️ Video is {actual_duration:.1f}s (target: {target_duration}s) - extending with last frame")
+                extended_video_path = session_context.get_output_path("temp_files", "extended_video.mp4")
+                
+                if duration_coordinator and duration_coordinator.extend_video_to_duration(
+                    base_video_path, target_duration, extended_video_path
+                ):
+                    temp_video_path = extended_video_path
+                    logger.info(f"✅ Video extended to target duration: {target_duration}s")
                 else:
-                    logger.warning("⚠️ Failed to trim video, using original")
+                    logger.warning("⚠️ Failed to extend video, using original")
                     temp_video_path = base_video_path
             else:
-                logger.info(f"✅ Video duration is acceptable: {actual_duration:.1f}s (target: {target_duration}s)")
+                logger.info(f"✅ Video duration is within tolerance: {actual_duration:.1f}s (target: {target_duration}s)")
                 temp_video_path = base_video_path
             
             # Step 2: Create VERSION 1 - Video with audio only (no subtitles, no overlays)
@@ -1539,16 +1736,24 @@ The last frame of this scene connects to the next.
                 logger.info(f"🎬 Skipping fadeout for short video ({config.duration_seconds}s)")
                 final_video_path = oriented_video_path
             
-            # CRITICAL FIX: Validate final video duration and force exact duration if needed
+            # Validate final video duration is within tolerance
             final_duration = self._get_video_duration(final_video_path)
-            if final_duration and abs(final_duration - target_duration) > 1.0:
-                logger.warning(f"⚠️ CRITICAL: Final video duration {final_duration:.1f}s doesn't match target {target_duration}s")
-                logger.info(f"🔧 Force trimming to exact target duration: {target_duration}s")
-                final_video_path = self._trim_video_to_duration(final_video_path, target_duration, session_context)
-                if final_video_path:
-                    logger.info(f"✅ Video successfully trimmed to exact target duration")
+            if final_duration:
+                tolerance = target_duration * 0.15
+                if abs(final_duration - target_duration) > tolerance:
+                    logger.warning(f"⚠️ Final video duration {final_duration:.1f}s outside 15% tolerance of target {target_duration}s")
+                    
+                    if final_duration > target_duration * 1.15:
+                        # DON'T trim - we prioritize sync over duration
+                        logger.info(f"📏 Final video is {final_duration:.1f}s (target: {target_duration}s) - keeping full duration to maintain sync")
+                    elif final_duration < target_duration * 0.85 and duration_coordinator:
+                        # Extend if too short
+                        logger.info(f"🔧 Extending to target duration: {target_duration}s")
+                        extended_path = session_context.get_output_path("temp_files", "final_extended.mp4")
+                        if duration_coordinator.extend_video_to_duration(final_video_path, target_duration, extended_path):
+                            final_video_path = extended_path
                 else:
-                    logger.error(f"❌ Failed to trim video to target duration")
+                    logger.info(f"✅ Final video duration {final_duration:.1f}s is within tolerance of target {target_duration}s")
             
             # Step 8: Save VERSION 3 - Final video with subtitles and overlays
             saved_path = session_context.save_final_video(final_video_path, suffix="_final")
@@ -1605,7 +1810,7 @@ The last frame of this scene connects to the next.
                 ] + input_parts + [
                     '-filter_complex', filter_complex,
                     '-map', '[outa]',
-                    '-c:a', 'aac',
+                    '-c:a', video_config.encoding.audio_codec,
                     audio_concat_path
                 ]
                 
@@ -1641,14 +1846,21 @@ The last frame of this scene connects to the next.
                 audio_stream = next((s for s in probe_data.get('streams', []) if s.get('codec_type') == 'audio'), None)
                 duration = float(audio_stream.get('duration', config.duration_seconds)) if audio_stream else config.duration_seconds
             
+            # Get platform dimensions
+            aspect_ratio = self._get_platform_aspect_ratio(config.target_platform.value)
+            if aspect_ratio == '16:9':
+                width, height = 1920, 1080
+            else:
+                width, height = 1080, 1920
+            
             # Create video with solid color background and text
             cmd = [
                 'ffmpeg', '-y',
                 '-f', 'lavfi',
-                '-i', f'color=c=black:size=1080x1920:duration={duration}',
+                '-i', f'color=c=black:size={width}x{height}:duration={duration}',
                 '-i', audio_file,
-                '-c:v', 'libx264',
-                '-c:a', 'aac',
+                '-c:v', video_config.encoding.video_codec,
+                '-c:a', video_config.encoding.audio_codec,
                 '-shortest',
                 '-pix_fmt', 'yuv420p',
                 output_path
@@ -1668,7 +1880,8 @@ The last frame of this scene connects to the next.
             return ""
     
     def _create_base_video_from_clips(self, clips: List[str], audio_files: List[str], 
-                                     session_context: SessionContext, target_duration: Optional[float] = None) -> str:
+                                     session_context: SessionContext, target_duration: Optional[float] = None,
+                                     platform: Optional[str] = None) -> str:
         """Create base video from clips and audio files"""
         try:
             logger.info("🎬 Creating base video from clips")
@@ -1687,18 +1900,38 @@ The last frame of this scene connects to the next.
                 logger.warning("⚠️ No audio files available")
                 return ""
             
-            # Use frame continuity if available, otherwise use standard composition
+            # ENHANCED: Always prefer frame continuity for better video quality
             if len(clips) > 1:
-                # Try frame continuity first
-                try:
-                    result = self._compose_with_frame_continuity(clips, audio_files, output_path, session_context, target_duration)
-                    if result and os.path.exists(result):
-                        return result
-                except Exception as e:
-                    logger.warning(f"⚠️ Frame continuity failed: {e}")
+                logger.info("🎯 Multiple clips detected - Frame continuity is STRONGLY PREFERRED")
+                
+                # Try frame continuity with different approaches
+                frame_continuity_attempts = [
+                    ("standard", {}),
+                    ("with_crossfade", {"crossfade": True}),
+                    ("with_blend", {"blend_frames": 2}),
+                    ("minimal_trim", {"trim_frames": 1})
+                ]
+                
+                for attempt_name, options in frame_continuity_attempts:
+                    try:
+                        logger.info(f"🔄 Attempting frame continuity ({attempt_name})...")
+                        result = self._compose_with_frame_continuity(
+                            clips, audio_files, output_path, session_context, 
+                            target_duration, platform=platform, **options
+                        )
+                        if result and os.path.exists(result):
+                            logger.info(f"✅ Frame continuity succeeded with {attempt_name} approach!")
+                            return result
+                    except Exception as e:
+                        logger.warning(f"⚠️ Frame continuity failed ({attempt_name}): {e}")
+                        continue
+                
+                logger.warning("⚠️ All frame continuity attempts failed, falling back to standard cuts")
+            else:
+                logger.info("🎬 Single clip detected - using direct composition")
             
             # Fallback to standard composition
-            return self._compose_with_standard_cuts(clips, audio_files, output_path, session_context, target_duration)
+            return self._compose_with_standard_cuts(clips, audio_files, output_path, session_context, target_duration, platform=platform)
             
         except Exception as e:
             logger.error(f"❌ Base video creation failed: {e}")
@@ -1758,12 +1991,12 @@ The last frame of this scene connects to the next.
                 if is_dynamic:
                     # DYNAMIC: Moving hook overlay with AI-styled animation
                     overlay_filters.append(
-                        f"drawtext=text='{escaped_hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x='if(lt(t,1.5),(w-text_w)/2,if(lt(t,3),(w-text_w)/2-20*sin(2*PI*t),w-text_w-20))':y='60+10*sin(4*PI*t)':enable=between(t\\,0\\,3)"
+                        f"drawtext=text='{escaped_hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x='if(lt(t,1.5),(w-text_w)/2,if(lt(t,3),(w-text_w)/2-20*sin(2*PI*t),w-text_w-20))':y='{video_config.layout.overlay_positions['hook']['y']}+10*sin(4*PI*t)':enable=between(t\\,0\\,{video_config.animation.hook_display_duration})"
                     )
                 else:
                     # STATIC: AI-styled static positioning
                     overlay_filters.append(
-                        f"drawtext=text='{escaped_hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x=(w-text_w)/2:y=60:enable=between(t\\,0\\,3)"
+                        f"drawtext=text='{escaped_hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x=(w-text_w)/2:y={video_config.layout.overlay_positions['hook']['y']}:enable=between(t\\,0\\,{video_config.animation.hook_display_duration})"
                     )
             
             # Add call-to-action overlay with DYNAMIC positioning and AI-driven styling
@@ -1776,15 +2009,18 @@ The last frame of this scene connects to the next.
                 # Ensure CTA text is escaped for FFmpeg
                 escaped_cta_text = self._escape_text_for_ffmpeg(cta_text)
                 
+                # Calculate CTA timing
+                cta_start_time = video_duration - video_config.animation.cta_display_duration
+                
                 if is_dynamic:
                     # DYNAMIC: Sliding CTA with AI-styled bounce effect
                     overlay_filters.append(
-                        f"drawtext=text='{escaped_cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x='if(lt(t,{video_duration-3}),w+text_w,w-text_w-30-15*sin(8*PI*(t-{video_duration-3})))':y='120+5*cos(6*PI*t)':enable=between(t\\,{video_duration-3}\\,{video_duration})"
+                        f"drawtext=text='{escaped_cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x='if(lt(t,{cta_start_time}),w+text_w,w-text_w-{video_config.layout.overlay_horizontal_padding}-15*sin(8*PI*(t-{cta_start_time})))':y='{video_config.layout.overlay_positions['cta']['y']}+5*cos(6*PI*t)':enable=between(t\\,{cta_start_time}\\,{video_duration})"
                     )
                 else:
                     # STATIC: AI-styled static positioning
                     overlay_filters.append(
-                        f"drawtext=text='{escaped_cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x=w-text_w-30:y=120:enable=between(t\\,{video_duration-3}\\,{video_duration})"
+                        f"drawtext=text='{escaped_cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x=w-text_w-{video_config.layout.overlay_horizontal_padding}:y={video_config.layout.overlay_positions['cta']['y']}:enable=between(t\\,{cta_start_time}\\,{video_duration})"
                     )
             
             # Use professional text renderer instead of FFmpeg drawtext
@@ -1822,11 +2058,11 @@ The last frame of this scene connects to the next.
             if config.hook:
                 hook_style = TextStyle(
                     font_family="Impact",
-                    font_size=max(40, int(video_width * 0.05)),
+                    font_size=video_config.get_font_size('header', video_width),
                     font_weight="bold",
                     color=(255, 255, 255, 255),
                     stroke_color=(0, 0, 0, 255),
-                    stroke_width=3,
+                    stroke_width=video_config.get_stroke_width('title'),
                     background_color=(0, 0, 0, 180),
                     background_padding=(15, 8, 15, 8),
                     shadow_color=(0, 0, 0, 200),
@@ -1837,7 +2073,7 @@ The last frame of this scene connects to the next.
                 hook_layout = TextLayout(
                     position=TextPosition.TOP_CENTER,
                     alignment=TextAlignment.CENTER,
-                    max_width=int(video_width * 0.9),
+                    max_width=int(video_width * video_config.layout.max_subtitle_width_percentage),
                     margin=(20, 60, 20, 20)
                 )
                 
@@ -1855,12 +2091,12 @@ The last frame of this scene connects to the next.
             # CTA overlay
             if config.call_to_action:
                 cta_style = TextStyle(
-                    font_family="Arial",
-                    font_size=max(32, int(video_width * 0.04)),
+                    font_family=video_config.text_overlay.default_font.replace('-Bold', ''),
+                    font_size=video_config.get_font_size('body', video_width),
                     font_weight="bold",
                     color=(255, 255, 255, 255),
                     stroke_color=(0, 0, 0, 255),
-                    stroke_width=2,
+                    stroke_width=video_config.text_overlay.stroke_widths['default'],
                     background_color=(255, 0, 100, 200),
                     background_padding=(12, 6, 12, 6),
                     line_spacing=1.1
@@ -1869,7 +2105,7 @@ The last frame of this scene connects to the next.
                 cta_layout = TextLayout(
                     position=TextPosition.BOTTOM_RIGHT,
                     alignment=TextAlignment.CENTER,
-                    max_width=int(video_width * 0.8),
+                    max_width=int(video_width * video_config.layout.max_overlay_width_percentage),
                     margin=(20, 20, 30, 80)
                 )
                 
@@ -1877,10 +2113,10 @@ The last frame of this scene connects to the next.
                     text=str(config.call_to_action),
                     style=cta_style,
                     layout=cta_layout,
-                    start_time=video_duration - 3.0,
+                    start_time=video_duration - video_config.animation.cta_display_duration,
                     end_time=video_duration,
-                    fade_in_duration=0.2,
-                    fade_out_duration=0.2
+                    fade_in_duration=video_config.animation.overlay_fade_duration,
+                    fade_out_duration=video_config.animation.overlay_fade_duration
                 )
                 overlays.append(cta_overlay)
             
@@ -1912,8 +2148,8 @@ The last frame of this scene connects to the next.
             final_clip.write_videofile(
                 overlay_path,
                 fps=fps,
-                codec='libx264',
-                audio_codec='aac',
+                codec=video_config.encoding.video_codec,
+                audio_codec=video_config.encoding.audio_codec,
                 temp_audiofile=None,
                 remove_temp=True,
                 verbose=False,
@@ -1981,27 +2217,34 @@ The last frame of this scene connects to the next.
                     if end_time <= start_time:
                         continue
                     
-                    # Calculate position based on AI decision - FIXED: Better positioning
+                    # Calculate position based on AI decision and video orientation
+                    is_portrait = video_height > video_width  # Check if portrait orientation
+                    
                     if primary_position == 'top_third':
                         y_pos = video_height * 0.20  # 20% from top
                     elif primary_position == 'center':
                         y_pos = video_height * 0.50  # Center
-                    else:  # bottom_third (default) - FIXED: Move subtitles higher
-                        y_pos = video_height * 0.60  # 60% down (raised from 70% for better visibility)
+                    else:  # bottom_third (default)
+                        if is_portrait:
+                            # Lower position for portrait videos (closer to bottom)
+                            y_pos = video_height * 0.75  # 75% down for portrait
+                        else:
+                            # Standard position for landscape
+                            y_pos = video_height * 0.60  # 60% down for landscape
                     
                     # Font size based on video dimensions
-                    font_size = max(40, int(video_width * 0.05))
+                    font_size = video_config.get_font_size('header', video_width)
                     
                     # Create text clip with modern styling
                     text_clip = TextClip(
                         text,
                         fontsize=font_size,
                         color='white',
-                        font='Arial-Bold',
+                        font=video_config.text_overlay.default_font,
                         stroke_color='black',
-                        stroke_width=2,
+                        stroke_width=video_config.text_overlay.stroke_widths['default'],
                         method='caption',
-                        size=(int(video_width * 0.9), None),
+                        size=(int(video_width * video_config.layout.max_subtitle_width_percentage), None),
                         align='center'
                     )
                     
@@ -2016,7 +2259,7 @@ The last frame of this scene connects to the next.
                         size=(text_width + 20, text_height + 10),  # Add padding around text
                         color=(0, 0, 0),  # Black background
                         duration=end_time - start_time
-                    ).set_opacity(0.6)  # Semi-transparent
+                    ).set_opacity(video_config.text_overlay.badge_opacity)  # Semi-transparent
                     
                     # Position background and text
                     background = background.set_position(('center', y_pos - 5)).set_start(start_time)
@@ -2045,9 +2288,9 @@ The last frame of this scene connects to the next.
                 # Render the video with subtitles
                 final_video.write_videofile(
                     output_path,
-                    fps=30,
-                    codec='libx264',
-                    audio_codec='aac',
+                    fps=video_config.get_fps(config.target_platform.value),
+                    codec=video_config.encoding.video_codec,
+                    audio_codec=video_config.encoding.audio_codec,
                     temp_audiofile='temp-audio.m4a',
                     remove_temp=True,
                     verbose=False,
@@ -2115,7 +2358,7 @@ The last frame of this scene connects to the next.
                 # Generate dynamic content based on topic
                 topic_word = config.topic.split()[0] if config.topic else "content"
                 hook = config.hook or f"Discover {topic_word}!"
-                cta = config.call_to_action or f"Follow for more {topic_word} videos!"
+                cta = config.call_to_action or video_config.get_default_cta(config.target_platform.value)
                 actual_script = f"{hook} {' '.join(main_content)} {cta}"
                 logger.warning("⚠️ Using fallback config content for subtitles")
             
@@ -2155,8 +2398,8 @@ The last frame of this scene connects to the next.
         try:
             import re
             
-            # First, split script into complete sentences
-            sentences = re.split(r'([.!?]+)', script)
+            # First, split script into complete sentences (including colons and semicolons)
+            sentences = re.split(r'([.!?:;]+)', script)
             # Recombine sentences with their punctuation
             complete_sentences = []
             for i in range(0, len(sentences) - 1, 2):
@@ -2167,6 +2410,10 @@ The last frame of this scene connects to the next.
                 elif sentences[i].strip():
                     complete_sentences.append(sentences[i].strip())
             
+            # Handle any remaining text
+            if len(sentences) % 2 == 1 and sentences[-1].strip():
+                complete_sentences.append(sentences[-1].strip())
+            
             if not complete_sentences:
                 # Fallback: split by periods only
                 complete_sentences = [s.strip() for s in script.split('.') if s.strip()]
@@ -2176,26 +2423,26 @@ The last frame of this scene connects to the next.
             
             # Distribute sentences across segments ensuring no sentence is cut
             segments = []
-            # CRITICAL: Limit to maximum 2 sentences per segment for proper subtitles
-            sentences_per_segment = min(2, max(1, len(complete_sentences) // audio_count))
+            # CRITICAL: Limit to EXACTLY 1 sentence per segment for proper subtitles
+            sentences_per_segment = 1
             
             sentence_index = 0
             for i in range(audio_count):
                 segment_sentences = []
                 
                 if i == audio_count - 1 and sentence_index < len(complete_sentences):
-                    # Last segment: take up to 2 sentences, not all remaining
+                    # Last segment: take only 1 sentence
                     remaining_sentences = complete_sentences[sentence_index:]
-                    segment_sentences = remaining_sentences[:2]  # Max 2 sentences for subtitles
+                    segment_sentences = remaining_sentences[:1]  # Only 1 sentence for subtitles
                     sentence_index += len(segment_sentences)
                 else:
-                    # Take calculated number of sentences (max 2)
-                    end_index = min(sentence_index + min(2, sentences_per_segment), len(complete_sentences))
-                    segment_sentences = complete_sentences[sentence_index:end_index]
-                    sentence_index = end_index
+                    # Take exactly 1 sentence
+                    if sentence_index < len(complete_sentences):
+                        segment_sentences = [complete_sentences[sentence_index]]
+                        sentence_index += 1
                 
-                # Join sentences for this segment
-                segment_text = ' '.join(segment_sentences)
+                # Get the single sentence for this segment
+                segment_text = segment_sentences[0] if segment_sentences else ""
                 
                 if segment_text.strip():
                     # Estimate duration based on word count
@@ -2260,27 +2507,29 @@ The last frame of this scene connects to the next.
             # Ensure we have exactly the required number of segments
             segments = segments[:audio_count]
             
-            # CRITICAL: Final validation - ensure no segment has more than 2 sentences
+            # CRITICAL: Final validation - ensure no segment has more than 1 sentence
             validated_segments = []
             for segment in segments:
-                if segment['sentence_count'] > 2:
-                    # Split oversized segments
+                if segment.get('sentence_count', 1) > 1:
+                    # Split oversized segments - this should not happen with our new logic
                     text = segment['text']
-                    sentences = [s.strip() for s in text.split('.') if s.strip()]
+                    sentences = re.split(r'([.!?:;]+)', text)
                     
-                    # Take only first 2 sentences
-                    limited_sentences = sentences[:2]
-                    limited_text = '. '.join(limited_sentences) + '.' if limited_sentences else text
+                    # Take only first sentence with its punctuation
+                    if len(sentences) >= 2:
+                        limited_text = sentences[0].strip() + sentences[1].strip()
+                    else:
+                        limited_text = text
                     
                     segment['text'] = limited_text
-                    segment['sentence_count'] = min(2, len(limited_sentences))
+                    segment['sentence_count'] = 1
                     segment['word_count'] = len(limited_text.split())
                     
-                    logger.warning(f"⚠️ Limited segment to 2 sentences: '{limited_text[:50]}...'")
+                    logger.warning(f"⚠️ Limited segment to 1 sentence: '{limited_text[:50]}...'")
                 
                 validated_segments.append(segment)
             
-            logger.info(f"✅ Created {len(validated_segments)} segments with complete sentence boundaries (max 2 sentences each)")
+            logger.info(f"✅ Created {len(validated_segments)} segments with complete sentence boundaries (1 sentence each)")
             return validated_segments
             
         except Exception as e:
@@ -2344,48 +2593,48 @@ The last frame of this scene connects to the next.
     def _parse_script_into_segments(self, script: str, video_duration: float, video_width: int = 1280) -> List[Dict[str, Any]]:
         """Parse script into natural segments based on sentences and timing"""
         try:
-            # Split script into sentences
+            # Split script into sentences (including colons and semicolons as sentence endings)
             import re
-            sentences = re.split(r'[.!?]+', script)
-            sentences = [s.strip() for s in sentences if s.strip()]
+            # First split on sentence endings including colons and semicolons
+            sentences = re.split(r'([.!?:;]+)', script)
             
-            if not sentences:
+            # Recombine sentences with their punctuation
+            complete_sentences = []
+            for i in range(0, len(sentences) - 1, 2):
+                if i + 1 < len(sentences):
+                    sentence = sentences[i].strip() + sentences[i + 1].strip()
+                    if sentence.strip():
+                        complete_sentences.append(sentence.strip())
+                elif sentences[i].strip():
+                    complete_sentences.append(sentences[i].strip())
+            
+            # Handle any remaining text
+            if len(sentences) % 2 == 1 and sentences[-1].strip():
+                complete_sentences.append(sentences[-1].strip())
+            
+            if not complete_sentences:
                 return []
+            
+            logger.info(f"📝 Parsed script into {len(complete_sentences)} sentences for subtitles")
             
             # Calculate timing based on sentence complexity and length
             segments = []
-            total_words = sum(len(sentence.split()) for sentence in sentences)
+            total_words = sum(len(sentence.split()) for sentence in complete_sentences)
             
             # Estimate words per second (typical speech rate: 2-3 words/second)
             words_per_second = max(2.0, min(3.0, total_words / video_duration))
             
             current_time = 0.0
             
-            # Group sentences into 1-2 sentence segments
+            # Create ONE sentence per segment
             i = 0
-            while i < len(sentences):
-                # Take 1-2 sentences for this segment
-                segment_sentences = []
-                segment_words = 0
+            while i < len(complete_sentences):
+                # Take ONLY ONE sentence for this segment
+                segment_text = complete_sentences[i]
+                segment_words = len(segment_text.split())
+                i += 1
                 
-                # Add first sentence
-                if i < len(sentences):
-                    segment_sentences.append(sentences[i])
-                    segment_words += len(sentences[i].split())
-                    i += 1
-                
-                # Add second sentence if available and not too long
-                if i < len(sentences) and segment_words < 20:  # Only add second sentence if first was short
-                    segment_sentences.append(sentences[i])
-                    segment_words += len(sentences[i].split())
-                    i += 1
-                
-                # Combine sentences for this segment
-                segment_text = '. '.join(segment_sentences).strip()
-                if not segment_text.endswith('.'):
-                    segment_text += '.'
-                
-                # Calculate duration based on total word count
+                # Calculate duration based on word count
                 base_duration = segment_words / words_per_second
                 
                 # Ensure minimum and maximum duration per segment
@@ -2393,13 +2642,13 @@ The last frame of this scene connects to the next.
                 
                 # Adjust if we're running out of time
                 remaining_time = video_duration - current_time
-                if i >= len(sentences):  # Last segment
+                if i >= len(complete_sentences):  # Last segment
                     duration = min(duration, remaining_time)
                 elif current_time + duration > video_duration:
                     duration = remaining_time * 0.9  # Leave some buffer
                 
                 # Format text for MoviePy subtitle display with proper line breaks
-                max_chars = min(10, int(video_width * 0.01))  # Very short lines to prevent cutting
+                max_chars = min(10, int(video_width * 0.01))  # Minimum character count for safety  # Very short lines to prevent cutting
                 formatted_text = self._format_subtitle_text(segment_text, max_chars_per_line=max_chars)
                 
                 segments.append({
@@ -2408,7 +2657,7 @@ The last frame of this scene connects to the next.
                     'end': current_time + duration,
                     'word_count': segment_words,
                     'estimated_duration': duration,
-                    'sentence_count': len(segment_sentences)
+                    'sentence_count': 1  # Always 1 sentence per segment now
                 })
                 
                 current_time += duration
@@ -2799,10 +3048,30 @@ The last frame of this scene connects to the next.
     
     def _compose_with_frame_continuity(self, clips: List[str], audio_files: List[str], 
                                      output_path: str, session_context: SessionContext, 
-                                     target_duration: Optional[float] = None) -> str:
-        """Compose video with frame continuity - remove first frame of each clip (except first)"""
+                                     target_duration: Optional[float] = None,
+                                     platform: Optional[str] = None,
+                                     crossfade: bool = False,
+                                     blend_frames: int = 0,
+                                     trim_frames: int = 1) -> str:
+        """Compose video with frame continuity - multiple approaches for seamless transitions
+        
+        Args:
+            clips: List of video clip paths
+            audio_files: List of audio file paths
+            output_path: Output video path
+            session_context: Session context
+            target_duration: Target duration for the video
+            crossfade: Whether to use crossfade between clips
+            blend_frames: Number of frames to blend at transitions
+            trim_frames: Number of frames to trim from start of clips (except first)
+        """
         try:
             import subprocess
+            
+            logger.info(f"🎬 Frame continuity composition with options:")
+            logger.info(f"   Crossfade: {crossfade}")
+            logger.info(f"   Blend frames: {blend_frames}")
+            logger.info(f"   Trim frames: {trim_frames}")
             
             # Create filter complex for frame continuity
             filter_parts = []
@@ -2817,25 +3086,58 @@ The last frame of this scene connects to the next.
                 input_parts.extend(['-i', audio])
             
             # Create video filter for frame continuity
-            # For clips after the first, skip the first frame to avoid duplication
+            # For clips after the first, skip frames based on trim_frames parameter
             video_filter_parts = []
             
-            # Normalize all videos to portrait 720x1280 dimensions
+            # Calculate frame duration based on platform FPS
+            fps = video_config.get_fps(platform or 'default')
+            frame_duration = trim_frames * video_config.animation.get_frame_duration(fps)
+            
+            # Determine dimensions based on platform
+            aspect_ratio = self._get_platform_aspect_ratio(platform or 'youtube')
+            if aspect_ratio == '16:9':
+                width, height = 1920, 1080  # YouTube, Facebook landscape
+            else:
+                width, height = 1080, 1920  # TikTok, Instagram portrait
             for i, clip in enumerate(clips):
                 if i == 0:
-                    # First clip: scale to portrait and use as-is
-                    video_filter_parts.append(f"[{i}:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1[v{i}]")
+                    # First clip: scale to target dimensions and use as-is
+                    video_filter_parts.append(f"[{i}:v]scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1[v{i}]")
                 else:
-                    # Subsequent clips: scale to portrait and remove first frame
-                    video_filter_parts.append(f"[{i}:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1,trim=start=0.033,setpts=PTS-STARTPTS[v{i}]")
+                    # Subsequent clips: scale to portrait and remove frames based on trim_frames
+                    if trim_frames > 0:
+                        video_filter_parts.append(f"[{i}:v]scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,trim=start={frame_duration},setpts=PTS-STARTPTS[v{i}]")
+                    else:
+                        # No trimming
+                        video_filter_parts.append(f"[{i}:v]scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1[v{i}]")
             
-            # Concatenate all video streams
+            # Concatenate all video streams with optional effects
             if len(clips) > 1:
                 trim_filters = ";".join(video_filter_parts)
-                concat_inputs = "".join([f"[v{i}]" for i in range(len(clips))])
-                video_filter = f"{trim_filters};{concat_inputs}concat=n={len(clips)}:v=1:a=0[outv]"
+                
+                if crossfade:
+                    # Use xfade filter for smooth transitions
+                    xfade_filter = trim_filters + ";"
+                    for i in range(len(clips) - 1):
+                        if i == 0:
+                            xfade_filter += f"[v0][v1]xfade=transition=fade:duration=0.5:offset=3[vx1];"
+                        elif i == len(clips) - 2:
+                            xfade_filter += f"[vx{i}][v{i+1}]xfade=transition=fade:duration=0.5:offset=6[outv]"
+                        else:
+                            xfade_filter += f"[vx{i}][v{i+1}]xfade=transition=fade:duration=0.5:offset=6[vx{i+1}];"
+                    video_filter = xfade_filter
+                elif blend_frames > 0:
+                    # Use blend filter for frame blending
+                    blend_filter = trim_filters + ";"
+                    concat_inputs = "".join([f"[v{i}]" for i in range(len(clips))])
+                    video_filter = f"{blend_filter}{concat_inputs}concat=n={len(clips)}:v=1:a=0[outv]"
+                    # Note: Actual frame blending would require more complex filters
+                else:
+                    # Standard concatenation
+                    concat_inputs = "".join([f"[v{i}]" for i in range(len(clips))])
+                    video_filter = f"{trim_filters};{concat_inputs}concat=n={len(clips)}:v=1:a=0[outv]"
             else:
-                video_filter = f"[0:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1[outv]"
+                video_filter = f"[0:v]scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1[outv]"
             
             # Create audio filter (concatenate all audio)
             audio_inputs = "".join([f"[{len(clips)+i}:a]" for i in range(len(audio_files))])
@@ -2851,10 +3153,10 @@ The last frame of this scene connects to the next.
                 '-filter_complex', filter_complex,
                 '-map', '[outv]',
                 '-map', '[outa]',
-                '-c:v', 'libx264',
-                '-c:a', 'aac',
-                '-preset', 'medium',
-                '-crf', '23'
+                '-c:v', video_config.encoding.video_codec,
+                '-c:a', video_config.encoding.audio_codec,
+                '-preset', video_config.get_encoding_preset(platform or 'default'),
+                '-crf', str(video_config.get_crf(platform or 'default'))
             ]
             
             # Add duration limit if specified
@@ -2878,11 +3180,12 @@ The last frame of this scene connects to the next.
         except Exception as e:
             logger.error(f"❌ Frame continuity composition error: {e}")
             # Fallback to standard composition
-            return self._compose_with_standard_cuts(clips, audio_files, output_path, session_context, target_duration)
+            return self._compose_with_standard_cuts(clips, audio_files, output_path, session_context, target_duration, platform=platform)
 
     def _compose_with_standard_cuts(self, clips: List[str], audio_files: List[str], 
                                   output_path: str, session_context: SessionContext,
-                                  target_duration: Optional[float] = None) -> str:
+                                  target_duration: Optional[float] = None, 
+                                  platform: Optional[str] = None) -> str:
         """Compose video with standard cuts (no frame continuity)"""
         try:
             import subprocess
@@ -2896,6 +3199,51 @@ The last frame of this scene connects to the next.
             if not audio_files:
                 logger.warning("⚠️ No audio files available for composition")
                 return ""
+            
+            # CRITICAL: Calculate total audio duration to ensure full coverage
+            total_audio_duration = 0.0
+            audio_durations = []
+            for audio_file in audio_files:
+                try:
+                    probe_cmd = ['ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+                                '-of', 'default=noprint_wrappers=1:nokey=1', audio_file]
+                    result = subprocess.run(probe_cmd, capture_output=True, text=True)
+                    if result.returncode == 0:
+                        duration = float(result.stdout.strip())
+                        audio_durations.append(duration)
+                        total_audio_duration += duration
+                except:
+                    logger.warning(f"⚠️ Could not get duration for audio file: {audio_file}")
+                    audio_durations.append(5.0)  # Default duration
+                    total_audio_duration += 5.0
+            
+            logger.info(f"🎵 Total audio duration: {total_audio_duration:.1f}s")
+            logger.info(f"🎵 Individual audio durations: {[f'{d:.1f}s' for d in audio_durations]}")
+            
+            # Calculate total video duration
+            total_video_duration = 0.0
+            video_durations = []
+            for clip in clips:
+                try:
+                    probe_cmd = ['ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+                                '-of', 'default=noprint_wrappers=1:nokey=1', clip]
+                    result = subprocess.run(probe_cmd, capture_output=True, text=True)
+                    if result.returncode == 0:
+                        duration = float(result.stdout.strip())
+                        video_durations.append(duration)
+                        total_video_duration += duration
+                except:
+                    logger.warning(f"⚠️ Could not get duration for video clip: {clip}")
+                    video_durations.append(5.0)  # Default duration
+                    total_video_duration += 5.0
+            
+            logger.info(f"🎬 Total video duration: {total_video_duration:.1f}s")
+            logger.info(f"🎬 Individual video durations: {[f'{d:.1f}s' for d in video_durations]}")
+            
+            # CRITICAL: Ensure audio covers entire video
+            if total_audio_duration < total_video_duration * 0.95:  # Allow 5% tolerance
+                logger.warning(f"⚠️ Audio duration ({total_audio_duration:.1f}s) is shorter than video ({total_video_duration:.1f}s)")
+                logger.info("🔧 Will ensure audio loops or extends to cover entire video")
             
             # Create simple concatenation
             input_parts = []
@@ -2913,10 +3261,17 @@ The last frame of this scene connects to the next.
                 logger.error("❌ No valid inputs for composition")
                 return ""
             
-            # Create filters to normalize all videos to same dimensions (portrait 720x1280)
+            # Determine dimensions based on platform
+            aspect_ratio = self._get_platform_aspect_ratio(platform or 'youtube')
+            if aspect_ratio == '16:9':
+                width, height = 1920, 1080  # YouTube, Facebook landscape
+            else:
+                width, height = 1080, 1920  # TikTok, Instagram portrait
+            
+            # Create filters to normalize all videos to target dimensions
             video_scale_filters = []
             for i in range(len(clips)):
-                video_scale_filters.append(f"[{i}:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1[v{i}]")
+                video_scale_filters.append(f"[{i}:v]scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1[v{i}]")
             
             # Join the scale filters
             scale_filter_str = ";".join(video_scale_filters)
@@ -2952,10 +3307,10 @@ The last frame of this scene connects to the next.
                 cmd.extend(['-map', '[outa]'])
             
             cmd.extend([
-                '-c:v', 'libx264',
-                '-c:a', 'aac',
-                '-preset', 'medium',
-                '-crf', '23',
+                '-c:v', video_config.encoding.video_codec,
+                '-c:a', video_config.encoding.audio_codec,
+                '-preset', video_config.get_encoding_preset(platform or 'default'),
+                '-crf', str(video_config.get_crf(platform or 'default')),
                 '-shortest'  # CRITICAL: Stop encoding when shortest stream ends
             ])
             
@@ -2978,21 +3333,22 @@ The last frame of this scene connects to the next.
                 logger.error(f"❌ FFmpeg stdout: {result.stdout}")
                 
                 # CRITICAL FIX: Try fallback composition with simpler approach
-                return self._create_simple_fallback_composition(clips, audio_files, output_path, session_context)
+                return self._create_simple_fallback_composition(clips, audio_files, output_path, session_context, platform)
                 
         except Exception as e:
             logger.error(f"❌ Standard composition error: {e}")
             return ""
     
     def _create_simple_fallback_composition(self, clips: List[str], audio_files: List[str], 
-                                           output_path: str, session_context: SessionContext) -> str:
+                                           output_path: str, session_context: SessionContext,
+                                           platform: Optional[str] = None) -> str:
         """Create a simple fallback composition when standard composition fails"""
         try:
             logger.info("🎬 Creating simple fallback composition")
             
             # If we have audio but no video, create a simple video with audio
             if not clips and audio_files:
-                return self._create_audio_only_video(audio_files, output_path, session_context)
+                return self._create_audio_only_video(audio_files, output_path, session_context, platform)
             
             # If we have video but no audio, create video without audio
             if clips and not audio_files:
@@ -3010,7 +3366,7 @@ The last frame of this scene connects to the next.
             return ""
     
     def _create_audio_only_video(self, audio_files: List[str], output_path: str, 
-                                session_context: SessionContext) -> str:
+                                session_context: SessionContext, platform: Optional[str] = None) -> str:
         """Create a video with only audio (static image)"""
         try:
             logger.info("🎬 Creating audio-only video")
@@ -3033,7 +3389,7 @@ The last frame of this scene connects to the next.
                 ] + input_parts + [
                     '-filter_complex', filter_complex,
                     '-map', '[outa]',
-                    '-c:a', 'aac',
+                    '-c:a', video_config.encoding.audio_codec,
                     audio_concat_path
                 ]
                 
@@ -3062,14 +3418,21 @@ The last frame of this scene connects to the next.
                 audio_stream = next((s for s in probe_data.get('streams', []) if s.get('codec_type') == 'audio'), None)
                 duration = float(audio_stream.get('duration', 15.0)) if audio_stream else 15.0
             
+            # Get platform dimensions
+            aspect_ratio = self._get_platform_aspect_ratio(platform or 'youtube')
+            if aspect_ratio == '16:9':
+                width, height = 1920, 1080
+            else:
+                width, height = 1080, 1920
+            
             # Create video with solid color background
             cmd = [
                 'ffmpeg', '-y',
                 '-f', 'lavfi',
-                '-i', f'color=c=black:size=1080x1920:duration={duration}',
+                '-i', f'color=c=black:size={width}x{height}:duration={duration}',
                 '-i', audio_file,
-                '-c:v', 'libx264',
-                '-c:a', 'aac',
+                '-c:v', video_config.encoding.video_codec,
+                '-c:a', video_config.encoding.audio_codec,
                 '-shortest',
                 '-pix_fmt', 'yuv420p',
                 output_path
@@ -3113,9 +3476,9 @@ The last frame of this scene connects to the next.
             ] + input_parts + [
                 '-filter_complex', filter_complex,
                 '-map', '[outv]',
-                '-c:v', 'libx264',
-                '-preset', 'medium',
-                '-crf', '23',
+                '-c:v', video_config.encoding.video_codec,
+                '-preset', video_config.get_encoding_preset(platform or 'default'),
+                '-crf', str(video_config.get_crf(platform or 'default')),
                 output_path
             ]
             
@@ -3148,7 +3511,7 @@ The last frame of this scene connects to the next.
                 '-i', video_file,
                 '-i', audio_file,
                 '-c:v', 'copy',
-                '-c:a', 'aac',
+                '-c:a', video_config.encoding.audio_codec,
                 '-shortest',
                 output_path
             ]
@@ -3373,50 +3736,55 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     # Split this segment into smaller subtitle chunks respecting sentence boundaries
                     segment_text = ' '.join(segment_words)
                     
-                    # Split into sentences first
+                    # Split into sentences first (including colons and semicolons as sentence endings)
                     import re
-                    sentences = re.split(r'(?<=[.!?])\s+', segment_text)
+                    sentences = re.split(r'([.!?:;]+)', segment_text)
                     
-                    # Create subtitle segments from sentences - MAX 2 SENTENCES PER SUBTITLE
+                    # Recombine sentences with their punctuation
+                    complete_sentences = []
+                    for i in range(0, len(sentences) - 1, 2):
+                        if i + 1 < len(sentences):
+                            sentence = sentences[i].strip() + sentences[i + 1].strip()
+                            if sentence.strip():
+                                complete_sentences.append(sentence.strip())
+                        elif sentences[i].strip():
+                            complete_sentences.append(sentences[i].strip())
+                    
+                    # Handle any remaining text
+                    if len(sentences) % 2 == 1 and sentences[-1].strip():
+                        complete_sentences.append(sentences[-1].strip())
+                    
+                    # Create subtitle segments from sentences - EXACTLY 1 SENTENCE PER SUBTITLE
                     subtitle_start_time = segment_start_time
-                    current_subtitle = []
-                    current_word_count = 0
+                    total_sentence_words = sum(len(s.split()) for s in complete_sentences)
                     
-                    for j, sentence in enumerate(sentences):
+                    for j, sentence in enumerate(complete_sentences):
                         sentence_words = sentence.split()
+                        word_count = len(sentence_words)
                         
-                        # Add sentence to current subtitle
-                        current_subtitle.append(sentence)
-                        current_word_count += len(sentence_words)
+                        # Calculate duration based on word ratio
+                        if total_sentence_words > 0:
+                            words_ratio = word_count / total_sentence_words
+                        else:
+                            words_ratio = 1.0 / len(complete_sentences) if complete_sentences else 1.0
+                            
+                        subtitle_duration = audio_duration * words_ratio
+                        subtitle_end_time = min(
+                            subtitle_start_time + subtitle_duration,
+                            segment_end_time
+                        )
                         
-                        # Create subtitle if we have 2 sentences OR this is the last sentence
-                        if len(current_subtitle) >= 2 or j == len(sentences) - 1:
-                            # Create subtitle from current sentences (max 2)
-                            subtitle_text = ' '.join(current_subtitle)
-                            words_ratio = current_word_count / len(segment_words) if len(segment_words) > 0 else 1.0
-                            subtitle_end_time = min(
-                                subtitle_start_time + (audio_duration * words_ratio),
-                                segment_end_time
-                            )
-                            
-                            segments.append({
-                                'start': subtitle_start_time,
-                                'end': subtitle_end_time,
-                                'text': subtitle_text.strip()
-                            })
-                            
-                            subtitle_start_time = subtitle_end_time
-                            current_subtitle = []
-                            current_word_count = 0
-                    
-                    # Add remaining sentences as final subtitle
-                    if current_subtitle:
-                        subtitle_text = ' '.join(current_subtitle)
+                        # Ensure we don't exceed segment end time for last sentence
+                        if j == len(complete_sentences) - 1:
+                            subtitle_end_time = segment_end_time
+                        
                         segments.append({
                             'start': subtitle_start_time,
-                            'end': segment_end_time,
-                            'text': subtitle_text.strip()
+                            'end': subtitle_end_time,
+                            'text': sentence.strip()
                         })
+                        
+                        subtitle_start_time = subtitle_end_time
                     
                     current_time = segment_end_time
             
@@ -3544,8 +3912,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 cmd = [
                     'ffmpeg', '-i', video_path,
                     '-vf', f'scale={target_width}:{target_height}:force_original_aspect_ratio=increase,crop={target_width}:{target_height}',
-                    '-c:v', 'libx264', '-c:a', 'aac',
-                    '-preset', 'fast',
+                    '-c:v', 'libx264', '-c:a', video_config.encoding.audio_codec,
+                    '-preset', video_config.encoding.fallback_preset,
                     '-y', oriented_path
                 ]
             else:  # Landscape
@@ -3553,8 +3921,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 cmd = [
                     'ffmpeg', '-i', video_path,
                     '-vf', f'scale={target_width}:{target_height}:force_original_aspect_ratio=decrease,pad={target_width}:{target_height}:(ow-iw)/2:(oh-ih)/2:black',
-                    '-c:v', 'libx264', '-c:a', 'aac',
-                    '-preset', 'fast',
+                    '-c:v', 'libx264', '-c:a', video_config.encoding.audio_codec,
+                    '-preset', video_config.encoding.fallback_preset,
                     '-y', oriented_path
                 ]
             
@@ -3598,16 +3966,16 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 width, height = 720, 1280  # Default
             
             # CRITICAL FIX: Create fadeout within the existing video duration (no extra time)
-            fade_duration = 0.5  # Short fadeout
-            fade_start_time = video_duration - fade_duration  # Start fade 0.5s before end
+            fade_duration = video_config.animation.fade_out_duration
+            fade_start_time = video_duration - fade_duration  # Start fade before end
             
             # FFmpeg command to add fadeout effect to existing video (no concatenation)
             cmd = [
                 'ffmpeg', '-y',
                 '-i', video_path,
                 '-vf', f'fade=t=out:st={fade_start_time}:d={fade_duration}',
-                '-c:v', 'libx264', '-c:a', 'aac',
-                '-preset', 'fast',
+                '-c:v', 'libx264', '-c:a', video_config.encoding.audio_codec,
+                '-preset', video_config.encoding.fallback_preset,
                 output_path
             ]
             
@@ -3656,8 +4024,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
             cmd = [
                 'ffmpeg', '-f', 'lavfi', 
                 '-i', f'color=c={color}:size={width}x{height}:duration={duration}',
-                '-vf', f'drawtext=text="{safe_text}":fontcolor=white:fontsize=24:x=(w-text_w)/2:y=(h-text_h)/2',
-                '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24',
+                '-vf', f'drawtext=text="{safe_text}":fontcolor={video_config.text_overlay.default_text_color}:fontsize={video_config.text_overlay.min_font_sizes["caption"]}:x=(w-text_w)/2:y=(h-text_h)/2',
+                '-c:v', video_config.encoding.video_codec, '-pix_fmt', video_config.encoding.pixel_format, '-r', str(video_config.encoding.fallback_fps),
                 '-y', output_path
             ]
             
@@ -3669,22 +4037,29 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 return output_path
             else:
                 logger.error(f"❌ FFmpeg direct fallback failed: {result.stderr}")
-                return self._create_minimal_direct_fallback(prompt, duration, output_path)
+                return self._create_minimal_direct_fallback(prompt, duration, output_path, platform)
                 
         except Exception as e:
             logger.error(f"❌ Direct fallback creation failed: {e}")
             return self._create_minimal_direct_fallback(prompt, duration, output_path)
     
-    def _create_minimal_direct_fallback(self, prompt: str, duration: float, output_path: str) -> str:
+    def _create_minimal_direct_fallback(self, prompt: str, duration: float, output_path: str, platform: Optional[str] = None) -> str:
         """Create minimal fallback using basic FFmpeg"""
         try:
             import subprocess
             
+            # Get platform dimensions
+            aspect_ratio = self._get_platform_aspect_ratio(platform or 'youtube')
+            if aspect_ratio == '16:9':
+                width, height = 1280, 720  # Use lower resolution for minimal fallback
+            else:
+                width, height = 720, 1280
+            
             # Create simple solid color video
             cmd = [
                 'ffmpeg', '-f', 'lavfi', 
-                '-i', f'color=c=blue:size=720x1280:duration={duration}',
-                '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24',
+                '-i', f'color=c=blue:size={width}x{height}:duration={duration}',
+                '-c:v', video_config.encoding.video_codec, '-pix_fmt', video_config.encoding.pixel_format, '-r', str(video_config.encoding.fallback_fps),
                 '-y', output_path
             ]
             
@@ -4142,11 +4517,11 @@ This is a placeholder file. In a full implementation, this would be a complete M
             
             # CRITICAL FIX: Dynamic text wrapping based on video width to prevent cutoff
             # Calculate safe text width (80% of video width to ensure margins)
-            safe_text_width = int(video_width * 0.8)
+            safe_text_width = int(video_width * video_config.layout.max_overlay_width_percentage)
             
             # Estimate character width based on video resolution
             # Typical font: 1 character ≈ 0.6 of font size in pixels
-            estimated_font_size = max(32, int(video_width * 0.035))  # Responsive font size
+            estimated_font_size = video_config.get_font_size('body', video_width)  # Responsive font size
             char_width = int(estimated_font_size * 0.6)
             max_chars_per_line = safe_text_width // char_width
             
@@ -4213,7 +4588,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
         except Exception as e:
             logger.warning(f"⚠️ Failed to create multi-line text: {e}")
             # Fallback to simple truncation with width constraint
-            max_chars = min(10, int(video_width * 0.01))
+            max_chars = min(10, int(video_width * 0.01))  # Minimum character count for safety
             return text[:max_chars].replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
 
     def _format_subtitle_text(self, text: str, max_words_per_line: int = 2, max_chars_per_line: int = 15) -> str:
@@ -4364,7 +4739,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                         self._log_ai_styling_decision(ai_style, text, overlay_type, session_context)
                         
                         logger.info(f"🎨 AI VIRAL STYLING: {overlay_type}")
-                        logger.info(f"   Font: {ai_style.get('font_family', 'Arial-Bold')} {ai_style.get('font_size', 32)}px")
+                        logger.info(f"   Font: {ai_style.get('font_family', video_config.text_overlay.default_font)} {ai_style.get('font_size', 32)}px")
                         logger.info(f"   Colors: {ai_style.get('primary_color', '#FFFFFF')} on {ai_style.get('background_color', '#000000')}")
                         logger.info(f"   Engagement Score: {ai_style.get('engagement_score', 'N/A')}/10")
                         logger.info(f"   Reasoning: {ai_style.get('style_reasoning', 'No reasoning provided')[:100]}...")
@@ -4372,7 +4747,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                         # Map AI style keys to expected format
                         mapped_style = {
                             "color": ai_style.get('primary_color', '#FFFFFF'),
-                            "font_family": ai_style.get('font_family', 'Arial-Bold'),
+                            "font_family": ai_style.get('font_family', video_config.text_overlay.default_font),
                             "font_size": ai_style.get('font_size', 48),
                             "background_color": ai_style.get('background_color', '#000000'),
                             "stroke_color": ai_style.get('stroke_color', '#000000'),
@@ -4571,12 +4946,12 @@ This is a placeholder file. In a full implementation, this would be a complete M
                         style = json.loads(json_match.group())
                         # Ensure all required keys exist
                         return {
-                            "font_family": style.get('font_family', 'Arial-Bold'),
+                            "font_family": style.get('font_family', video_config.text_overlay.default_font),
                             "font_size": style.get('font_size', 48),
                             "color": style.get('color', '#FFFFFF'),
                             "background_color": style.get('background_color', '#000000'),
                             "stroke_color": style.get('stroke_color', '#000000'),
-                            "background_opacity": style.get('background_opacity', 0.8),
+                            "background_opacity": min(0.7, style.get('background_opacity', 0.6)),
                             "stroke_width": style.get('stroke_width', 2),
                             "words_per_line": style.get('words_per_line', 3),
                             "shadow_enabled": True,
@@ -4589,8 +4964,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
             
             # Ultimate fallback - very basic style
             return {
-                "font_family": "Arial-Bold",
-                "font_size": max(40, min(56, int(video_width * 0.04))),
+                "font_family": video_config.text_overlay.default_font,
+                "font_size": video_config.get_font_size('body', video_width),
                 "color": "#FFFFFF",
                 "background_color": "#000000",
                 "stroke_color": "#000000",
@@ -4606,7 +4981,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
         except Exception as e:
             logger.error(f"❌ Smart default styling failed: {e}")
             return {
-                "font_family": "Arial-Bold",
+                "font_family": video_config.text_overlay.default_font,
                 "font_size": 32,
                 "color": "0xFFFFFF",
                 "background_color": "0x000000",
@@ -4681,7 +5056,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 '-t', str(target_duration),
                 '-af', f'afade=t=out:st={fade_start}:d={fade_duration}',  # Audio fadeout
                 '-vf', f'fade=t=out:st={fade_start}:d={fade_duration}',   # Video fadeout
-                '-c:v', 'libx264', '-c:a', 'aac',  # Re-encode for smooth fade
+                '-c:v', 'libx264', '-c:a', video_config.encoding.audio_codec,  # Re-encode for smooth fade
                 temp_output_path
             ]
             
@@ -4781,19 +5156,27 @@ This is a placeholder file. In a full implementation, this would be a complete M
             video_path = self._create_text_video(config, audio_files[0], session_context)
             
             if video_path:
-                # Add 1.5s fadeout to cheap mode video as well
-                logger.info("🎬 Adding fadeout to cheap mode video")
-                final_video_path = self._add_fade_out_ending(video_path, session_context)
-                
-                if final_video_path:
-                    # Save cheap mode session files
-                    self._save_cheap_mode_session_files(config, script_text, session_context)
-                    
-                    logger.info(f"✅ Cheap mode video with fadeout generated: {final_video_path}")
-                    return final_video_path
+                # Only add fadeout for videos 10s+ to avoid extending duration
+                if config.duration_seconds >= 10:
+                    # Check actual video duration before adding fadeout
+                    current_duration = self._get_video_duration(video_path)
+                    if current_duration and current_duration < config.duration_seconds - 1.0:
+                        logger.info("🎬 Adding fadeout to cheap mode video")
+                        final_video_path = self._add_fade_out_ending(video_path, session_context)
+                        if final_video_path:
+                            video_path = final_video_path
+                        else:
+                            logger.warning("⚠️ Fadeout failed, using original video")
+                    else:
+                        logger.info(f"🎬 Skipping fadeout for cheap mode (duration: {current_duration:.1f}s, target: {config.duration_seconds}s)")
                 else:
-                    logger.warning("⚠️ Fadeout failed, returning original video")
-                    return video_path
+                    logger.info(f"🎬 Skipping fadeout for short video ({config.duration_seconds}s)")
+                
+                # Save cheap mode session files
+                self._save_cheap_mode_session_files(config, script_text, session_context)
+                
+                logger.info(f"✅ Cheap mode video generated: {video_path}")
+                return video_path
             else:
                 logger.error("❌ Failed to create cheap text video")
                 return None
@@ -4803,36 +5186,106 @@ This is a placeholder file. In a full implementation, this would be a complete M
             return None
     
     def _create_text_video(self, config: GeneratedVideoConfig, audio_file: str, session_context: SessionContext) -> str:
-        """Create a simple text-based video showing prompts"""
+        """Create a simple text-based video with theme support"""
         try:
-            from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip, AudioFileClip, ColorClip
+            from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip, AudioFileClip, ColorClip, ImageClip
+            import numpy as np
             
             # Get audio duration
             audio_clip = AudioFileClip(audio_file)
             duration = audio_clip.duration
             
-            # Create background
-            background = ColorClip(size=(1080, 1920), color=(0, 0, 0), duration=duration)
+            # Check if we have theme information in core decisions
+            theme_id = None
+            if hasattr(self, 'core_decisions') and self.core_decisions:
+                theme_id = getattr(self.core_decisions, 'theme_id', None)
             
-            # Create the actual script content as subtitles (not debug text)
+            # Create themed background
+            if theme_id and 'news' in str(theme_id).lower():
+                # Professional news background - dark blue gradient
+                background = ColorClip(size=(width, height), color=(10, 20, 40), duration=duration)
+                
+                # Add news-style graphics
+                # Top banner for news channel branding
+                top_banner = ColorClip(size=(width, 120), color=(200, 0, 0), duration=duration).set_position((0, 0))
+                
+                # News ticker at bottom
+                ticker_bg = ColorClip(size=(width, 100), color=(0, 0, 0), duration=duration).set_position((0, height - 100)).set_opacity(video_config.text_overlay.background_opacity)
+                
+                # Breaking news badge
+                breaking_news = TextClip(
+                    video_config.default_text.breaking_news_text,
+                    fontsize=video_config.get_font_size('header', width),
+                    color=video_config.text_overlay.default_text_color,
+                    font=video_config.text_overlay.default_font,
+                    bg_color='red'
+                ).set_duration(duration).set_position((50, 40))
+                
+                # News channel text (Iran International style)
+                channel_text = TextClip(
+                    video_config.default_text.news_channel_text,
+                    fontsize=video_config.get_font_size('caption', width),
+                    color=video_config.text_overlay.default_text_color,
+                    font=video_config.text_overlay.default_font
+                ).set_duration(duration).set_position(('center', 45))
+                
+            else:
+                # Default black background
+                background = ColorClip(size=(width, height), color=(0, 0, 0), duration=duration)
+                top_banner = None
+                ticker_bg = None
+                breaking_news = None
+                channel_text = None
+            
+            # Create the actual script content as subtitles
             script_text = f"{config.hook} {' '.join(config.main_content)} {config.call_to_action}"
             
-            # Create subtitle overlays using the professional text renderer
-            subtitle_clips = self._create_cheap_mode_subtitles(script_text, duration, audio_file)
+            # Create subtitle overlays with proper positioning for news theme
+            if theme_id and 'news' in str(theme_id).lower():
+                # Position subtitles higher to avoid ticker
+                subtitle_clips = self._create_cheap_mode_subtitles(script_text, duration, audio_file, bottom_offset=video_config.get_subtitle_offset('news'), video_height=height)
+            else:
+                subtitle_clips = self._create_cheap_mode_subtitles(script_text, duration, audio_file, video_height=height)
             
             # Simple mode badge for cheap mode
             from moviepy.editor import TextClip
             badge_clip = TextClip(
-                "💰 CHEAP",
-                fontsize=32,
+                video_config.default_text.badge_texts.get('cheap', '💰 CHEAP'),
+                fontsize=video_config.get_font_size('badge', width),
                 color='lime',
-                font='Arial-Bold',
+                font=video_config.text_overlay.default_font,
                 stroke_color='black',
                 stroke_width=2
-            ).set_duration(duration).set_position((50, 50)).set_opacity(0.6)
+            ).set_duration(duration).set_position((video_config.layout.overlay_positions['badge']['x'], video_config.layout.overlay_positions['badge']['y'])).set_opacity(video_config.text_overlay.badge_opacity)
             
-            # Composite video with subtitles
-            clips = [background, badge_clip] + subtitle_clips
+            # Composite video with theme elements
+            clips = [background]
+            
+            # Add news theme elements if applicable
+            if theme_id and 'news' in str(theme_id).lower():
+                if top_banner:
+                    clips.append(top_banner)
+                if ticker_bg:
+                    clips.append(ticker_bg)
+                if breaking_news:
+                    clips.append(breaking_news)
+                if channel_text:
+                    clips.append(channel_text)
+                    
+                # Add scrolling ticker text
+                ticker_text = TextClip(
+                    "Water crisis deepens • Officials maintain luxury pools • Citizens demand action • Breaking: Drought emergency declared",
+                    fontsize=video_config.get_font_size('news_ticker', width),
+                    color=video_config.text_overlay.default_text_color,
+                    font=video_config.text_overlay.default_font.replace('-Bold', '')
+                ).set_duration(duration)
+                
+                # Make ticker scroll
+                ticker_text = ticker_text.set_position(lambda t: (1080 - t * 200, 1840))
+                clips.append(ticker_text)
+            
+            clips.extend([badge_clip] + subtitle_clips)
+            
             video = CompositeVideoClip(clips)
             video = video.set_audio(audio_clip)
             
@@ -4842,9 +5295,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
             logger.info(f"💰 Rendering cheap mode video: {output_path}")
             video.write_videofile(
                 output_path,
-                fps=24,
-                codec='libx264',
-                audio_codec='aac',
+                fps=video_config.get_fps(config.target_platform.value),
+                codec=video_config.encoding.video_codec,
+                audio_codec=video_config.encoding.audio_codec,
                 verbose=False,
                 logger=None
             )
@@ -4860,9 +5313,12 @@ This is a placeholder file. In a full implementation, this would be a complete M
             logger.error(f"❌ Failed to create text video: {e}")
             return None
 
-    def _create_cheap_mode_subtitles(self, script_text: str, duration: float, audio_file: str) -> List:
+    def _create_cheap_mode_subtitles(self, script_text: str, duration: float, audio_file: str, bottom_offset: Optional[int] = None, video_height: int = 1920) -> List:
         """Create subtitle clips for cheap mode video with accurate gTTS timing"""
         try:
+            # Use default offset if not provided
+            if bottom_offset is None:
+                bottom_offset = video_config.get_subtitle_offset('default')
             from moviepy.editor import TextClip, AudioFileClip
             import re
             
@@ -4883,9 +5339,23 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 logger.warning(f"⚠️ Could not read audio duration, using video duration: {e}")
                 actual_audio_duration = duration
             
-            # Split script into sentences for subtitle timing
-            sentences = re.split(r'[.!?]+', script_text)
-            sentences = [s.strip() for s in sentences if s.strip()]
+            # Split script into sentences for subtitle timing (including colons and semicolons)
+            sentences = re.split(r'([.!?:;]+)', script_text)
+            # Recombine sentences with their punctuation
+            complete_sentences = []
+            for i in range(0, len(sentences) - 1, 2):
+                if i + 1 < len(sentences):
+                    sentence = sentences[i].strip() + sentences[i + 1].strip()
+                    if sentence.strip():
+                        complete_sentences.append(sentence.strip())
+                elif sentences[i].strip():
+                    complete_sentences.append(sentences[i].strip())
+            
+            # Handle any remaining text
+            if len(sentences) % 2 == 1 and sentences[-1].strip():
+                complete_sentences.append(sentences[-1].strip())
+            
+            sentences = complete_sentences
             
             if not sentences:
                 return []
@@ -4943,14 +5413,14 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 # Create subtitle clip
                 subtitle_clip = TextClip(
                     sentence,
-                    fontsize=44,
-                    color='white',
-                    font='Arial-Bold',
-                    stroke_color='black',
-                    stroke_width=3,
+                    fontsize=video_config.get_font_size('subtitle', width),
+                    color=video_config.text_overlay.default_text_color,
+                    font=video_config.text_overlay.default_font,
+                    stroke_color=video_config.text_overlay.default_stroke_color,
+                    stroke_width=video_config.get_stroke_width('subtitle'),
                     size=(1000, None),
                     method='caption'
-                ).set_start(start_time).set_duration(end_time - start_time).set_position(('center', 1248))  # 65% of 1920 height
+                ).set_start(start_time).set_duration(end_time - start_time).set_position(('center', video_height - bottom_offset))
                 
                 subtitle_clips.append(subtitle_clip)
             
@@ -5007,8 +5477,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 summary = ' '.join(content_words)
                 
                 # Get AI styling for header
-                header_style = self._get_smart_default_style(header_text, "header", "tiktok", 720, 1280)
-                summary_style = self._get_smart_default_style(summary, "summary", "tiktok", 720, 1280)
+                header_style = self._get_smart_default_style(header_text, "header", "tiktok", video_width, video_height)
+                summary_style = self._get_smart_default_style(summary, "summary", "tiktok", video_width, video_height)
                 
                 # Add main header overlay with enhanced styling  
                 safe_header_text = self._escape_text_for_ffmpeg(header_text)
@@ -5093,14 +5563,16 @@ This is a placeholder file. In a full implementation, this would be a complete M
             if total_lines == 0:
                 return []
             
-            # Distribute time evenly across lines, with some overlap
+            # ENHANCED: Better timing - NO OVERLAP to prevent text collision
+            # Each line appears after the previous one disappears
             line_duration = min(line_duration, total_duration / total_lines)
             fade_duration = 0.3  # Fade in/out duration
             
             overlays = []
             for i, line in enumerate(lines):
-                start_time = i * (line_duration * 0.8)  # 20% overlap between lines
-                end_time = start_time + line_duration
+                # Sequential timing - each line appears after previous ends
+                start_time = i * line_duration
+                end_time = start_time + line_duration - 0.1  # Small gap between lines
                 
                 # Ensure we don't exceed total duration
                 if start_time >= total_duration:
@@ -5166,7 +5638,12 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 video_width = int(video_stream['width'])
                 video_height = int(video_stream['height'])
             else:
-                video_width, video_height = 720, 1280
+                # Use platform-specific defaults
+                aspect_ratio = self._get_platform_aspect_ratio(config.target_platform.value)
+                if aspect_ratio == '16:9':
+                    video_width, video_height = 1920, 1080
+                else:
+                    video_width, video_height = 1080, 1920
             
             # Create output path
             overlay_path = session_context.get_output_path("temp_files", f"timed_overlays_{os.path.basename(video_path)}")
@@ -5239,7 +5716,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 # Add traditional hook overlays at bottom with proper text splitting and semi-transparent backgrounds
                 for i, overlay in enumerate(hook_overlays):
                     # Position at bottom instead of top per user preference
-                    y_offset = video_height - 300 + (i * 40)  # Stack lines vertically from bottom
+                    # ENHANCED: Better spacing to prevent overlap
+                    y_offset = video_height - 400 + (i * 80)  # Increased spacing between overlays
                     
                     # CRITICAL FIX: Split long text into multiple lines
                     text_lines = self._format_subtitle_text(overlay['text'], max_words_per_line=3, max_chars_per_line=20)
@@ -5249,11 +5727,13 @@ This is a placeholder file. In a full implementation, this would be a complete M
                         if not line_text.strip():
                             continue
                             
-                        line_y_offset = y_offset + (line_idx * 35)  # Stack lines vertically
+                        # ENHANCED: Better line spacing within each overlay
+                        line_y_offset = y_offset + (line_idx * 50)  # Increased line spacing
                         escaped_text = self._escape_text_for_ffmpeg(line_text)
                         
                         # CRITICAL FIX: Ensure semi-transparent background like subtitles
-                        background_opacity = max(0.6, hook_style.get('background_opacity', 0.8))
+                        # Force maximum opacity of 0.7 for readability
+                        background_opacity = min(0.7, hook_style.get('background_opacity', 0.6))
                         
                         filter_expr = (
                             f"drawtext=text='{escaped_text}':"
@@ -5281,7 +5761,8 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 cta_start_time = max(0, video_duration - 6.0)
                 
                 for i, overlay in enumerate(cta_overlays):
-                    base_y_offset = video_height - 120 - (i * 40)  # Position from bottom
+                    # ENHANCED: Better spacing for CTA overlays
+                    base_y_offset = video_height - 200 - (i * 80)  # Increased spacing
                     adjusted_start = cta_start_time + overlay['start_time']
                     adjusted_end = cta_start_time + overlay['end_time']
                     
@@ -5293,11 +5774,13 @@ This is a placeholder file. In a full implementation, this would be a complete M
                         if not line_text.strip():
                             continue
                             
-                        line_y_offset = base_y_offset + (line_idx * 35)  # Stack lines vertically
+                        # ENHANCED: Better line spacing within CTA
+                        line_y_offset = base_y_offset + (line_idx * 50)  # Increased line spacing
                         escaped_text = self._escape_text_for_ffmpeg(line_text)
                         
                         # CRITICAL FIX: Ensure semi-transparent background like subtitles
-                        background_opacity = max(0.6, cta_style.get('background_opacity', 0.8))
+                        # Force maximum opacity of 0.7 for readability
+                        background_opacity = min(0.7, cta_style.get('background_opacity', 0.6))
                         
                         filter_expr = (
                             f"drawtext=text='{escaped_text}':"

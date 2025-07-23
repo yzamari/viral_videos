@@ -60,6 +60,7 @@ class CoreDecisions:
     
     # Technical decisions (no defaults)
     frame_continuity: bool
+    continuous_generation: bool
     mode: str
     cheap_mode: bool
     cheap_mode_level: str
@@ -86,6 +87,15 @@ class CoreDecisions:
     # Generation decisions (no defaults)
     num_clips: int
     clip_durations: List[float]
+    
+    # Theme and style reference (optional)
+    theme_id: Optional[str] = None
+    style_reference_id: Optional[str] = None
+    
+    # Character consistency system (optional)
+    character_id: Optional[str] = None
+    character_scene: Optional[str] = None
+    character_image_path: Optional[str] = None
     
     # Original string values for AI agents to interpret (with defaults)
     category_string: str = ""
@@ -156,8 +166,16 @@ class DecisionFramework:
         tone = self._decide_tone(cli_args, user_config, ai_agents_available)
         visual_style = self._decide_visual_style(cli_args, user_config, ai_agents_available)
         
+        # 2.5. Theme and style reference decisions
+        theme_id = self._decide_theme(cli_args, user_config)
+        style_reference_id = self._decide_style_reference(cli_args, user_config)
+        
+        # 2.6. Character consistency decisions
+        character_id, character_scene, character_image_path = self._decide_character_consistency(cli_args, user_config)
+        
         # 3. Technical decisions
         frame_continuity = self._decide_frame_continuity(duration_seconds, platform, ai_agents_available)
+        continuous_generation = self._decide_continuous_generation(cli_args, duration_seconds, platform, ai_agents_available)
         mode = self._decide_mode(cli_args, user_config)
         cheap_mode = self._decide_cheap_mode(cli_args, user_config)
         cheap_mode_level = self._decide_cheap_mode_level(cli_args, user_config)
@@ -203,6 +221,7 @@ class DecisionFramework:
             tone_string=tone,
             visual_style_string=visual_style,
             frame_continuity=frame_continuity,
+            continuous_generation=continuous_generation,
             mode=mode,
             cheap_mode=cheap_mode,
             cheap_mode_level=cheap_mode_level,
@@ -219,6 +238,11 @@ class DecisionFramework:
             sound_effects_enabled=sound_effects_enabled,
             num_clips=num_clips,
             clip_durations=clip_durations,
+            theme_id=theme_id,
+            style_reference_id=style_reference_id,
+            character_id=character_id,
+            character_scene=character_scene,
+            character_image_path=character_image_path,
             cost_efficiency_score=clip_structure.get('cost_efficiency_score', 0.0),
             content_quality_score=clip_structure.get('content_quality_score', 0.0),
             optimal_balance_score=clip_structure.get('optimal_balance_score', 0.0),
@@ -347,19 +371,43 @@ class DecisionFramework:
         return visual_style
     
     def _decide_frame_continuity(self, duration: int, platform: Platform, ai_available: bool) -> bool:
-        """Decide frame continuity"""
-        # AI decision based on duration and platform
+        """Decide frame continuity - ENHANCED to prefer continuity"""
+        # ENHANCED: Always prefer frame continuity for better quality
+        # Only disable for very long videos (>120s) where cuts might be needed
         if ai_available:
-            # Short videos benefit from continuity
-            continuity = duration <= 20
-            self._record_decision('frame_continuity', continuity, DecisionSource.AI_AGENT, 0.9, 
-                                f"AI decision: {duration}s duration on {platform.value}")
+            # Frame continuity is preferred for all durations up to 2 minutes
+            continuity = duration <= 120  # Changed from 20 to 120 seconds
+            self._record_decision('frame_continuity', continuity, DecisionSource.AI_AGENT, 0.95, 
+                                f"AI decision: {duration}s duration on {platform.value} - continuity preferred for quality")
             return continuity
         
-        # Default
+        # Default: Always enable frame continuity
         continuity = True
-        self._record_decision('frame_continuity', continuity, DecisionSource.SYSTEM_DEFAULT, 0.5, "System default")
+        self._record_decision('frame_continuity', continuity, DecisionSource.SYSTEM_DEFAULT, 0.9, "System default - frame continuity preferred")
         return continuity
+    
+    def _decide_continuous_generation(self, cli_args: Dict[str, Any], duration: int, platform: Platform, ai_available: bool) -> bool:
+        """Decide continuous generation mode"""
+        # First check if explicitly set in CLI
+        if 'continuous' in cli_args:
+            continuous = cli_args.get('continuous', False)
+            self._record_decision('continuous_generation', continuous, DecisionSource.USER_CLI, 1.0, 
+                                f"User specified continuous: {continuous}")
+            return continuous
+        
+        # Otherwise let AI decide based on content
+        if ai_available:
+            # Continuous generation is good for longer narrative content
+            continuous = duration >= 30 and platform in [Platform.YOUTUBE, Platform.INSTAGRAM]
+            self._record_decision('continuous_generation', continuous, DecisionSource.AI_AGENT, 0.85, 
+                                f"AI decision: {duration}s on {platform.value} - continuous={'enabled' if continuous else 'disabled'}")
+            return continuous
+        
+        # Default: Disable continuous generation
+        continuous = False
+        self._record_decision('continuous_generation', continuous, DecisionSource.SYSTEM_DEFAULT, 0.7, 
+                            "System default - continuous generation disabled")
+        return continuous
     
     def _decide_mode(self, cli_args: Dict[str, Any], user_config: Dict[str, Any]) -> str:
         """Decide orchestrator mode"""
@@ -941,6 +989,77 @@ Provide your decision in this exact JSON format:
         
         # Fallback to heuristic
         return self._heuristic_optimize_clip_structure(duration, voice_strategy, min_clips_needed)
+    
+    def _decide_theme(self, cli_args: Dict[str, Any], user_config: Dict[str, Any]) -> Optional[str]:
+        """Decide which theme to use if any"""
+        # Check CLI args first
+        if cli_args.get('theme'):
+            self._record_decision("theme_id", cli_args['theme'], DecisionSource.USER_CLI, 
+                                confidence=1.0, reasoning=f"Theme specified by user: {cli_args['theme']}")
+            return cli_args['theme']
+        
+        # Check user config
+        if user_config and user_config.get('theme'):
+            self._record_decision("theme_id", user_config['theme'], DecisionSource.USER_CONFIG,
+                                confidence=1.0, reasoning=f"Theme from user config: {user_config['theme']}")
+            return user_config['theme']
+        
+        # No theme specified
+        self._record_decision("theme_id", None, DecisionSource.SYSTEM_DEFAULT, 
+                            confidence=1.0, reasoning="No theme specified")
+        return None
+    
+    def _decide_style_reference(self, cli_args: Dict[str, Any], user_config: Dict[str, Any]) -> Optional[str]:
+        """Decide which style reference to use if any"""
+        # Check CLI args first
+        if cli_args.get('style_reference'):
+            self._record_decision("style_reference_id", cli_args['style_reference'], DecisionSource.USER_CLI,
+                                confidence=1.0, reasoning=f"Style reference specified by user: {cli_args['style_reference']}")
+            return cli_args['style_reference']
+        
+        # Check user config
+        if user_config and user_config.get('style_reference'):
+            self._record_decision("style_reference_id", user_config['style_reference'], DecisionSource.USER_CONFIG,
+                                confidence=1.0, reasoning=f"Style reference from user config: {user_config['style_reference']}")
+            return user_config['style_reference']
+        
+        # No style reference specified
+        self._record_decision("style_reference_id", None, DecisionSource.SYSTEM_DEFAULT, 
+                            confidence=1.0, reasoning="No style reference specified")
+        return None
+    
+    def _decide_character_consistency(self, cli_args: Dict[str, Any], user_config: Dict[str, Any]) -> tuple[Optional[str], Optional[str], Optional[str]]:
+        """Decide character consistency parameters"""
+        character_id = None
+        character_scene = None
+        character_image_path = None
+        
+        # Check CLI args for character
+        if cli_args.get('character'):
+            character_id = cli_args['character']
+            character_scene = cli_args.get('scene', 'professional setting')
+            
+            self._record_decision("character_id", character_id, DecisionSource.USER_CLI,
+                                confidence=1.0, reasoning=f"Character specified by user: {character_id}")
+            self._record_decision("character_scene", character_scene, DecisionSource.USER_CLI,
+                                confidence=1.0, reasoning=f"Character scene: {character_scene}")
+            
+            # Generate character image for this scene
+            try:
+                from ..utils.character_reference_manager import CharacterReferenceManager
+                char_manager = CharacterReferenceManager()
+                character_image_path = char_manager.get_character_for_mission(character_id, character_scene)
+                
+                if character_image_path:
+                    self._record_decision("character_image_path", character_image_path, DecisionSource.SYSTEM_DEFAULT,
+                                        confidence=0.9, reasoning="Generated character scene image for video consistency")
+                else:
+                    logger.warning(f"Failed to generate character scene for {character_id}")
+                    
+            except Exception as e:
+                logger.error(f"Character image generation failed: {e}")
+        
+        return character_id, character_scene, character_image_path
     
     def _save_decisions_to_session(self):
         """Save all decisions to session"""

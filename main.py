@@ -8,6 +8,10 @@ import click
 from pathlib import Path
 import traceback
 
+# Suppress Vertex AI deprecation warnings globally
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="vertexai")
+
 # Add src to Python path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
@@ -106,8 +110,11 @@ def test_auth():
 @click.option('--auto-post', is_flag=True, help='Automatically post to configured social media platforms')
 @click.option('--cheap/--no-cheap', default=True, help='Enable basic cheap mode (default: enabled)')
 @click.option('--cheap-mode', type=click.Choice(['full', 'audio', 'video']), default='full', help='Cheap mode level: full=text+gTTS, audio=gTTS only, video=fallback only (default: full)')
+@click.option('--theme', help='Theme preset or custom theme ID (e.g., "preset_news_edition", "preset_sports")')
 @click.option('--style-template', help='Name or ID of style template to use')
 @click.option('--reference-style', type=click.Path(exists=True), help='Path to reference video for style extraction')
+@click.option('--character', help='Character ID for consistent character generation (use store-character first)')
+@click.option('--scene', help='Scene description when using --character (e.g., "news studio", "outdoor interview")')
 def generate(**kwargs):
     """🎬 Generate viral video with optimized AI system"""
     try:
@@ -143,8 +150,11 @@ def generate(**kwargs):
             mode=kwargs.get('mode', 'enhanced'),
             cheap_mode=kwargs.get('cheap', True),
             cheap_mode_level=kwargs.get('cheap_mode', 'full'),
+            theme=kwargs.get('theme'),
             style_template=kwargs.get('style_template'),
-            reference_style=kwargs.get('reference_style')
+            reference_style=kwargs.get('reference_style'),
+            character=kwargs.get('character'),
+            scene=kwargs.get('scene')
         )
         
         # Auto-post if requested
@@ -176,6 +186,14 @@ add_social_commands(cli)
 # Add style reference commands
 from src.style_reference.cli_integration import add_style_commands
 add_style_commands(cli)
+
+# Add theme commands
+from src.themes.cli_integration import add_theme_commands
+add_theme_commands(cli)
+
+# Add character reference commands
+from src.cli.character_commands import add_character_commands
+add_character_commands(cli)
 
 if __name__ == '__main__':
     cli() 

@@ -1,0 +1,107 @@
+{
+  "reference_id": "style_my_news_network",
+  "name": "My News Network Visual Style",
+  "reference_type": "template",
+  "template_id": "my_news_network_template",
+  "color_palette": {
+    "primary_color": "#003366",
+    "secondary_color": "#CC0000",
+    "accent_color": "#FFFFFF",
+    "background_colors": ["#FFFFFF", "#F0F0F0", "#E8E8E8"],
+    "text_colors": ["#000000", "#333333", "#FFFFFF"],
+    "saturation_level": 0.6,
+    "brightness_level": 0.8,
+    "contrast_ratio": 0.85,
+    "mood": "professional"
+  },
+  "typography": {
+    "primary_font_family": "Helvetica Neue Bold",
+    "secondary_font_family": "Arial",
+    "title_size_ratio": 0.08,
+    "body_size_ratio": 0.04,
+    "font_weight": "bold",
+    "letter_spacing": 1.2,
+    "line_height": 1.4,
+    "has_shadow": true,
+    "has_outline": false,
+    "text_animation_style": "slide-in"
+  },
+  "composition": {
+    "rule_of_thirds_adherence": 0.9,
+    "symmetry_score": 0.8,
+    "primary_layout": "news-desk-two-shot",
+    "text_placement_zones": ["lower-third", "ticker", "breaking-banner"],
+    "margin_ratio": 0.05,
+    "padding_ratio": 0.03,
+    "focal_point_strategy": "center-anchors",
+    "depth_layers": 4,
+    "custom_composition": {
+      "anchor_positions": {
+        "two_shot": "centered with desk",
+        "single_left": "left third with graphic right",
+        "single_right": "right third with graphic left"
+      },
+      "background_elements": ["video wall", "news graphics", "world map"],
+      "foreground_elements": ["glass desk", "tablets", "papers"]
+    }
+  },
+  "motion_style": {
+    "camera_movement": "steady-professional",
+    "transition_style": "cut",
+    "average_shot_duration": 4.5,
+    "movement_intensity": 0.2,
+    "text_animation_type": "slide-reveal",
+    "element_animation_style": "subtle-fade",
+    "pacing": "measured",
+    "rhythm_pattern": "news-broadcast"
+  },
+  "visual_effects": [
+    {
+      "effect_type": "depth-of-field",
+      "intensity": 0.3,
+      "apply_to": "background",
+      "parameters": {
+        "focus_point": "anchors",
+        "blur_amount": 3,
+        "bokeh_style": "professional"
+      }
+    },
+    {
+      "effect_type": "color-correction",
+      "intensity": 0.5,
+      "apply_to": "full-frame",
+      "parameters": {
+        "temperature": "neutral",
+        "tint": "slight-cool",
+        "saturation": 0.9
+      }
+    },
+    {
+      "effect_type": "vignette",
+      "intensity": 0.2,
+      "apply_to": "full-frame",
+      "parameters": {
+        "radius": 0.9,
+        "softness": 0.8,
+        "opacity": 0.2
+      }
+    }
+  ],
+  "technical_details": {
+    "aspect_ratio": "16:9",
+    "resolution": "1920x1080",
+    "frame_rate": 30
+  },
+  "metadata": {
+    "created_at": "2025-01-22T15:00:00Z",
+    "updated_at": "2025-01-22T15:00:00Z",
+    "tags": ["news", "professional", "broadcast", "consistent", "anchors"],
+    "description": "Professional news broadcast style with consistent anchor setup",
+    "anchor_continuity": {
+      "enabled": true,
+      "primary_anchor": "Sarah Chen",
+      "secondary_anchor": "Michael Roberts",
+      "consistency_notes": "Maintain same anchor descriptions and positions across all episodes"
+    }
+  }
+}

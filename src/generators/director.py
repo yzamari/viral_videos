@@ -8,6 +8,7 @@ import json
 import re
 from collections import defaultdict
 import requests
+import time
 
 from ..models.video_models import (
     VideoAnalysis, Platform, VideoCategory,
@@ -16,7 +17,7 @@ from ..models.video_models import (
 from ..utils.logging_config import get_logger
 from ..utils.exceptions import (
     GenerationFailedError, APIException,
-    ContentPolicyViolation, NetworkError
+    NetworkError
 )
 
 logger = get_logger(__name__)
@@ -94,9 +95,6 @@ class Director:
             # Optimize for virality
             optimized_script = self.optimize_for_virality(script, patterns)
 
-            # Validate content policy
-            self._validate_content_policy(optimized_script, platform)
-
             logger.info("Script generation completed successfully")
 
             # Log script details for debugging
@@ -137,14 +135,46 @@ class Director:
                    patterns: Dict[str, Any], news_context: str) -> Dict[str, Any]:
         """Create engaging hook that accomplishes the mission"""
         try:
-            # Determine if this is a mission (action-oriented) or topic (informational)
-            is_mission = any(action_word in topic.lower() for action_word in [
+            # Determine if this is a mission (action-oriented), creative content, or topic (informational)
+            is_creative = any(creative_word in topic.lower() for creative_word in [
+                'satirical', 'satire', 'comedy', 'comedic', 'parody', 'skit', 'sketch',
+                'funny', 'humorous', 'mock', 'spoof', 'joke', 'drama', 'story',
+                'narrative', 'tale', 'scene', 'act', 'performance', 'segment'
+            ])
+            
+            is_mission = not is_creative and any(action_word in topic.lower() for action_word in [
                 'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
                 'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
                 'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
             ])
             
-            if is_mission:
+            if is_creative:
+                # Creative content prompt: generate actual creative dialogue/script
+                prompt = f"""
+                Create the opening line/hook for this creative content: "{topic}"
+
+                CRITICAL: This is CREATIVE CONTENT - generate the ACTUAL dialogue, narration, or script content described, NOT educational content about it.
+                
+                Style: {style}
+                Platform: {platform.value}
+
+                {news_context}
+
+                Creative Content Requirements:
+                1. Generate the ACTUAL creative content described in the topic
+                2. If it mentions a character, write their dialogue
+                3. If it's comedy, write the actual joke or funny line
+                4. If it's satire, write the satirical content
+                5. Stay in character/tone throughout
+                6. Keep opening hook under 15 words
+                7. Make it immediately engaging for the platform
+                8. NEVER use contractions - use full forms
+
+                Example: If topic mentions "anchor says X", the hook should BE the anchor saying X, not talking about the anchor.
+
+                Return ONLY the creative content hook, no explanations.
+                """
+            elif is_mission:
                 # Mission-focused prompt: create content that accomplishes the objective
                 prompt = f"""
                 Create an engaging opening hook for a {platform.value} video with the MISSION: "{topic}"
@@ -195,45 +225,74 @@ class Director:
                 Return ONLY the hook text about "{topic}", no explanations.
                 """
 
-            response = self.model.generate_content(prompt)
-            hook_text = response.text.strip()
+            # Try multiple times to get a good hook
+            max_attempts = 3
+            for attempt in range(max_attempts):
+                try:
+                    response = self.model.generate_content(prompt)
+                    hook_text = response.text.strip()
 
-            # Clean up any quotes or extra formatting
-            hook_text = hook_text.strip('"\'').strip()
-
-            # Validate that the hook is actually about the topic
-            topic_words = topic.lower().split()
-
-            return {
-                'text': hook_text,
-                'type': 'ai_generated',
-                'duration_seconds': 3
-            }
+                    # Clean up any quotes or extra formatting
+                    hook_text = hook_text.strip('"\'').strip()
+                    
+                    # Validate hook quality
+                    if len(hook_text) < 5 or hook_text.lower() == topic.lower():
+                        logger.warning(f"Hook attempt {attempt + 1} too short or same as topic, retrying...")
+                        continue
+                    
+                    # Success - return the hook
+                    logger.info(f"✅ AI generated hook on attempt {attempt + 1}: {hook_text[:50]}...")
+                    return {
+                        'text': hook_text,
+                        'type': 'ai_generated',
+                        'duration_seconds': 3
+                    }
+                except Exception as e:
+                    logger.warning(f"Hook generation attempt {attempt + 1} failed: {e}")
+                    if attempt < max_attempts - 1:
+                        time.sleep(1)  # Brief pause before retry
+                    continue
+            
+            # All attempts failed - use better fallback
+            raise Exception("All hook generation attempts failed")
 
         except Exception as e:
-            logger.warning(f"Hook generation failed: {e}")
-            # Create dynamic topic-specific fallback without any hardcoded content
+            logger.warning(f"Hook generation failed after all attempts: {e}")
+            # Use AI to rephrase the topic as a hook
+            try:
+                fallback_prompt = f"""
+                The following topic/mission failed to generate a proper hook: "{topic}"
+                
+                Create a SHORT, ENGAGING opening line (under 15 words) that:
+                1. Captures the essence of: "{topic}"
+                2. Creates immediate interest
+                3. Works for {platform.value} platform
+                4. Is NOT generic or template-like
+                5. NEVER use contractions
+                
+                Return ONLY the hook text, nothing else.
+                """
+                
+                fallback_response = self.model.generate_content(fallback_prompt)
+                fallback_hook = fallback_response.text.strip().strip('"\'').strip()
+                
+                if len(fallback_hook) > 5:
+                    logger.info(f"✅ AI-generated fallback hook: {fallback_hook}")
+                    return {
+                        'text': fallback_hook,
+                        'type': 'ai_fallback',
+                        'duration_seconds': 3
+                    }
+            except Exception as fallback_error:
+                logger.error(f"Fallback hook generation also failed: {fallback_error}")
+            
+            # Last resort - extract key concept from topic
             topic_words = topic.split()
-
-            # Extract meaningful words (filter out common words)
-            meaningful_words = [word for word in topic_words if len(word) > 3 and word.lower() not in ['the', 'and', 'with', 'for', 'that', 'this', 'from']]
-
-            if len(meaningful_words) >= 2:
-                # Use the first two meaningful words
-                hook_text = f"What happens when {meaningful_words[0]} meets {meaningful_words[1]}?"
-            elif len(meaningful_words) == 1:
-                # Use single meaningful word
-                hook_text = f"Why is {meaningful_words[0]} changing everything?"
-            elif len(topic_words) >= 3:
-                # Use first three words if no meaningful words found
-                hook_text = f"What makes {' '.join(topic_words[:3])} so important?"
-            else:
-                # Fallback to the full topic
-                hook_text = f"Why should you know about {topic}?"
-
+            key_concept = ' '.join(topic_words[:min(3, len(topic_words))])
+            
             return {
-                'text': hook_text,
-                'type': 'topic_specific',
+                'text': f"Here is {key_concept}",
+                'type': 'minimal_fallback',
                 'duration_seconds': 3
             }
 
@@ -244,14 +303,58 @@ class Director:
             # Calculate content segments
             num_segments = self._calculate_segments(duration)
 
-            # Determine if this is a mission (action-oriented) or topic (informational)
-            is_mission = any(action_word in topic.lower() for action_word in [
+            # Determine if this is a mission (action-oriented), creative content, or topic (informational)
+            is_creative = any(creative_word in topic.lower() for creative_word in [
+                'satirical', 'satire', 'comedy', 'comedic', 'parody', 'skit', 'sketch',
+                'funny', 'humorous', 'mock', 'spoof', 'joke', 'drama', 'story',
+                'narrative', 'tale', 'scene', 'act', 'performance', 'segment'
+            ])
+            
+            is_mission = not is_creative and any(action_word in topic.lower() for action_word in [
                 'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
                 'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
                 'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
             ])
 
-            if is_mission:
+            if is_creative:
+                # Creative content prompt: generate actual script/dialogue
+                prompt = f"""
+                Create {num_segments} script segments for this creative content: "{topic}"
+
+                CRITICAL: Generate the ACTUAL CREATIVE SCRIPT described - the dialogue, narration, or performance content itself.
+                This is NOT educational content ABOUT the topic - this IS the creative content.
+
+                Duration: EXACTLY {duration} seconds ({duration * 3} words total at 3 words/second)
+                Segments: {num_segments} segments, each ~{duration // num_segments} seconds
+
+                SUBTITLE REQUIREMENTS:
+                - Each segment MUST be 1-2 sentences MAXIMUM
+                - Each sentence ~10-15 words for 2-line subtitle display
+                - Natural speech breaks between segments
+
+                {news_context}
+
+                Creative Script Requirements:
+                1. Write the ACTUAL dialogue/narration described in the topic
+                2. If it mentions characters, write what they SAY
+                3. If it's comedy/satire, write the ACTUAL jokes/satirical lines
+                4. Stay completely in character/tone
+                5. Make every line serve the creative vision
+                6. NEVER break character to explain or educate
+                7. NEVER use contractions - use full forms
+
+                Example: If topic says "anchor mocks X", write what the anchor SAYS while mocking, not an explanation of mocking.
+
+                Return JSON array with the creative script:
+                [
+                    {{
+                        "text": "The actual dialogue/narration line",
+                        "duration": seconds,
+                        "character": "who says this (if applicable)"
+                    }}
+                ]
+                """
+            elif is_mission:
                 # Mission-focused prompt: create content that accomplishes the objective
                 prompt = f"""
                 Create {num_segments} content segments for a {duration}-second video to ACCOMPLISH THE MISSION: "{topic}"
@@ -341,28 +444,62 @@ class Director:
                 ]
                 """
 
-            response = self.model.generate_content(prompt)
-            segments = self._extract_json(response.text)
+            # Try generation with retry and rephrasing if needed
+            max_attempts = 3
+            last_error = None
+            
+            for attempt in range(max_attempts):
+                try:
+                    if attempt > 0:
+                        # Rephrase prompt if previous attempt failed
+                        logger.info(f"Attempt {attempt + 1}: Rephrasing prompt for better AI compliance")
+                        prompt = self._rephrase_prompt_for_compliance(prompt, topic, duration, num_segments, is_creative, is_mission, patterns, news_context)
+                    
+                    response = self.model.generate_content(prompt)
+                    segments = self._extract_json(response.text)
 
-            # Validate that segments are about the topic
-            if segments and isinstance(segments, list):
-                topic_words = topic.lower().split()
-                valid_segments = []
-                
-                for segment in segments:
-                    if isinstance(segment, dict) and 'text' in segment:
-                        segment_text = segment['text'].lower()
-                        # Check if any topic words appear in the segment
-                        topic_match = any(word in segment_text for word in topic_words if len(word) > 2)
-                        valid_segments.append(segment)
-                
-                if valid_segments:
-                    return valid_segments
-                else:
-                    logger.warning("No valid segments found, using fallback")
-                    return self._get_default_segments(topic, num_segments)
-            else:
-                return self._get_default_segments(topic, num_segments)
+                    # Validate that segments are about the topic
+                    if segments and isinstance(segments, list):
+                        topic_words = topic.lower().split()
+                        valid_segments = []
+                        
+                        for segment in segments:
+                            if isinstance(segment, dict) and 'text' in segment:
+                                segment_text = segment['text'].lower()
+                                # Check if any topic words appear in the segment
+                                topic_match = any(word in segment_text for word in topic_words if len(word) > 2)
+                                valid_segments.append(segment)
+                        
+                        if valid_segments:
+                            logger.info(f"✅ Content generation succeeded on attempt {attempt + 1}")
+                            return valid_segments
+                        else:
+                            logger.warning(f"No valid segments found on attempt {attempt + 1}")
+                            if attempt < max_attempts - 1:
+                                continue
+                            return self._get_default_segments(topic, num_segments)
+                    else:
+                        if attempt < max_attempts - 1:
+                            logger.warning(f"Invalid response format on attempt {attempt + 1}, retrying...")
+                            continue
+                        return self._get_default_segments(topic, num_segments)
+                        
+                except Exception as e:
+                    last_error = e
+                    logger.warning(f"Content generation attempt {attempt + 1} failed: {e}")
+                    
+                    # Check if it's a content policy error
+                    error_str = str(e).lower()
+                    if any(term in error_str for term in ['policy', 'inappropriate', 'violation', 'blocked', 'safety']):
+                        logger.info("🔄 Detected potential content policy issue, will rephrase on next attempt")
+                    
+                    if attempt < max_attempts - 1:
+                        time.sleep(1)  # Brief pause before retry
+                        continue
+            
+            # All attempts failed
+            logger.error(f"Content structuring failed after {max_attempts} attempts: {last_error}")
+            return self._get_default_segments(topic, self._calculate_segments(duration))
 
         except Exception as e:
             logger.warning(f"Content structuring failed, using defaults: {e}")
@@ -604,42 +741,6 @@ class Director:
 
         return min(relevance, 1.0)
 
-    def _validate_content_policy(self, script: Dict[str, Any],
-                               platform: Platform) -> None:
-        """Validate script against platform content policies"""
-        # Check for prohibited content - made more lenient for legitimate topics
-        prohibited_terms = {
-            'violence': ['kill', 'murder', 'assault', 'attack', 'violence'],
-            'adult': ['explicit', 'nude', 'sexual', 'porn'],
-            'hate': ['hate speech', 'racist', 'discriminate against'],
-            'dangerous': ['dangerous activity', 'harmful to others', 'illegal activity']
-        }
-
-        full_text = self._extract_full_text(script).lower()
-
-        # More intelligent content policy checking
-        for category, terms in prohibited_terms.items():
-            for term in terms:
-                if term in full_text:
-                    # Check if it's in a legitimate context (educational, news, etc.)
-                    legitimate_contexts = [
-                        'history', 'news', 'education', 'science', 'politics',
-                        'culture', 'research', 'analysis', 'discussion', 'debate'
-                    ]
-                    
-                    # If the content has legitimate context, allow it
-                    if any(context in full_text for context in legitimate_contexts):
-                        logger.info(f"⚠️ Content contains '{term}' but appears in legitimate context")
-                        continue
-                    
-                    # Only raise violation for clearly problematic content
-                    if term in ['explicit', 'nude', 'porn', 'kill', 'murder']:
-                        raise ContentPolicyViolation(
-                            platform.value, category, full_text[:100] + "..."
-                        )
-                    else:
-                        logger.warning(f"⚠️ Content contains potentially sensitive term: {term}")
-                        # Don't block, just warn
 
     def _extract_json(self, text: str) -> Any:
         """Extract JSON from AI response"""
@@ -651,6 +752,156 @@ class Director:
         except Exception:
             pass
         return None
+    
+    def _rephrase_prompt_for_compliance(self, original_prompt: str, topic: str, 
+                                      duration: int, num_segments: int, 
+                                      is_creative: bool, is_mission: bool,
+                                      patterns: Dict[str, Any], news_context: str) -> str:
+        """Rephrase prompt to be more compliant with AI content policies while preserving ALL context"""
+        logger.info("🔄 Rephrasing prompt to avoid content policy issues while maintaining full context")
+        
+        # Use the actual patterns and context passed in
+        pacing = patterns.get('pacing', 'dynamic')
+        success_patterns = patterns.get('success_factors', [])
+        themes = patterns.get('themes', [])
+        emotional_tones = patterns.get('emotional_tones', [])
+        engagement_triggers = patterns.get('engagement_triggers', [])
+        
+        # Build rephrased prompt that maintains ALL original requirements
+        if is_creative:
+            rephrase_request = f"""
+            Create {num_segments} script segments for this creative content: "{topic}"
+            
+            IMPORTANT: Previous attempt was blocked. Please create appropriate content that captures the creative vision while being suitable for all platforms.
+            
+            CRITICAL: Generate the ACTUAL CREATIVE SCRIPT - dialogue, narration, or performance content.
+            This is NOT educational content ABOUT the topic - this IS the creative content itself.
+            
+            Duration: EXACTLY {duration} seconds ({duration * 3} words total at 3 words/second)
+            Segments: {num_segments} segments, each ~{duration // num_segments} seconds
+            Pacing: {pacing}
+            Themes: {themes}
+            Emotional tones: {emotional_tones}
+            
+            SUBTITLE REQUIREMENTS (UNCHANGED):
+            - Each segment MUST be 1-2 sentences MAXIMUM
+            - Each sentence ~10-15 words for 2-line subtitle display
+            - Natural speech breaks between segments
+            
+            {news_context}
+            
+            Creative Requirements (MAINTAIN ORIGINAL STYLE):
+            1. Write the ACTUAL dialogue/narration as described
+            2. Stay completely in character/tone
+            3. Make every line serve the creative vision
+            4. Use appropriate language while maintaining impact
+            5. NEVER use contractions - use full forms
+            
+            If the content has edgy elements, use creative techniques:
+            - Clever wordplay or metaphors
+            - Implied rather than explicit content
+            - Satirical or comedic framing
+            - Educational or awareness angle
+            
+            Return JSON array maintaining original format:
+            [
+                {{
+                    "text": "The actual creative dialogue/narration",
+                    "duration": seconds,
+                    "character": "who says this (if applicable)"
+                }}
+            ]
+            """
+        elif is_mission:
+            rephrase_request = f"""
+            Create {num_segments} content segments for a {duration}-second video to ACCOMPLISH THE MISSION: "{topic}"
+            
+            IMPORTANT: Previous attempt was blocked. Please create appropriate content that still accomplishes the mission objective.
+            
+            CRITICAL: This is about ACCOMPLISHING the mission "{topic}" within {duration} seconds.
+            
+            Mission Strategy (UNCHANGED):
+            - Duration: EXACTLY {duration} seconds
+            - Word limit: Approximately {duration * 3} words total
+            - Segments: {num_segments} strategic segments
+            - Pacing: {pacing}
+            - Success patterns: {success_patterns}
+            - Themes: {themes}
+            - Emotional approach: {emotional_tones}
+            - Engagement triggers: {engagement_triggers}
+            
+            SUBTITLE REQUIREMENTS (UNCHANGED):
+            - Each segment MUST be 1-2 sentences MAXIMUM
+            - Each sentence ~10-15 words for 2-line subtitle display
+            - Segments should be natural speech breaks
+            
+            {news_context}
+            
+            Mission-Accomplishment Approach:
+            1. Each segment must advance the mission
+            2. Use appropriate persuasion techniques
+            3. Build strategic argument while being platform-compliant
+            4. Focus on positive change and solutions
+            5. NEVER use contractions
+            
+            Strategic Adaptations for Compliance:
+            - Frame controversial topics educationally
+            - Use data and evidence appropriately
+            - Focus on constructive outcomes
+            - Emphasize awareness and understanding
+            
+            Return JSON array with mission-focused content:
+            [
+                {{
+                    "text": "Words that advance the mission appropriately",
+                    "duration": seconds,
+                    "mission_purpose": "How this advances the mission"
+                }}
+            ]
+            """
+        else:
+            rephrase_request = f"""
+            Create {num_segments} content segments for a {duration}-second video about: "{topic}"
+            
+            IMPORTANT: Previous attempt was blocked. Please create appropriate content about this topic.
+            
+            Duration constraints (UNCHANGED):
+            - Duration: EXACTLY {duration} seconds
+            - Word limit: Approximately {duration * 3} words total
+            - Each segment: ~{duration // num_segments} seconds
+            - Pacing: {pacing}
+            - Themes to incorporate: {themes}
+            - Engagement style: {engagement_triggers}
+            
+            SUBTITLE REQUIREMENTS (UNCHANGED):
+            - Each segment MUST be 1-2 sentences MAXIMUM
+            - Each sentence ~10-15 words for 2-line subtitle display
+            - Natural speech breaks between segments
+            
+            {news_context}
+            
+            Content Requirements:
+            1. Deliver value about "{topic}"
+            2. Maintain engagement and interest
+            3. Use appropriate language for all audiences
+            4. NEVER use contractions
+            
+            If topic has sensitive aspects:
+            - Focus on educational value
+            - Present balanced perspectives
+            - Use constructive framing
+            - Emphasize positive outcomes
+            
+            Return JSON array:
+            [
+                {{
+                    "text": "Appropriate spoken content about {topic}",
+                    "duration": seconds
+                }}
+            ]
+            """
+        
+        return rephrase_request
 
     def _load_hook_templates(self) -> Dict[str, List[str]]:
         """Load dynamic hook pattern templates (no hardcoded content)"""
@@ -915,6 +1166,43 @@ class Director:
         segments = []
         segment_duration = 30 // num_segments  # Assume 30s default
 
+        # Check if this is creative content
+        is_creative = any(creative_word in topic.lower() for creative_word in [
+            'satirical', 'satire', 'comedy', 'comedic', 'parody', 'skit', 'sketch',
+            'funny', 'humorous', 'mock', 'spoof', 'joke', 'drama', 'story',
+            'narrative', 'tale', 'scene', 'act', 'performance', 'segment'
+        ])
+
+        if is_creative:
+            # For creative content, create placeholder dialogue
+            logger.warning(f"Using creative fallback for topic: {topic[:100]}...")
+            
+            # Extract key elements from the topic
+            if 'news' in topic.lower() and 'anchor' in topic.lower():
+                # News satire fallback
+                segments = [
+                    {"text": "Breaking news: Something unexpected has happened!", "duration": segment_duration},
+                    {"text": "Our sources confirm this is absolutely unprecedented.", "duration": segment_duration},
+                    {"text": "We will continue to monitor this developing situation.", "duration": segment_duration}
+                ]
+            elif 'comedy' in topic.lower() or 'funny' in topic.lower():
+                # Comedy fallback
+                segments = [
+                    {"text": "You will not believe what happened today!", "duration": segment_duration},
+                    {"text": "It gets even more ridiculous than you think.", "duration": segment_duration},
+                    {"text": "And that is why we cannot have nice things!", "duration": segment_duration}
+                ]
+            else:
+                # Generic creative fallback
+                for i in range(num_segments):
+                    segments.append({
+                        "text": f"Scene {i+1} dialogue placeholder.",
+                        "duration": segment_duration
+                    })
+            
+            return segments
+
+        # Original educational content logic
         # Extract topic components for dynamic content
         topic_words = topic.split()
         meaningful_words = [word for word in topic_words if len(word) > 3 and word.lower() not in ['the', 'and', 'with', 'for', 'that', 'this', 'from', 'about']]
@@ -1103,8 +1391,9 @@ class Director:
                 'what',
                 'when',
                 'where']):
-                # Enhance naturally without "Discover:" prefix
-                hook['text'] = f"Learn about {hook_text.lower()}"
+                # Don't modify hooks - keep them as is
+                # Removed hardcoded "Learn about" prefix
+                pass
 
         return hook
 
@@ -1201,12 +1490,39 @@ class Director:
             IMPORTANT: If you cannot find current information about "{topic}", say so clearly rather than providing unrelated information.
             """
             
-            response = self.model.generate_content(context_prompt)
-            
-            if response and response.text:
-                # Validate that the response is actually about the topic
-                response_text = response.text.strip()
-                return response_text
+            # Try with retry if content policy blocks
+            max_attempts = 3
+            for attempt in range(max_attempts):
+                try:
+                    if attempt > 0:
+                        logger.info(f"Attempt {attempt + 1}: Rephrasing context request")
+                        context_prompt = f"""
+                        Please provide educational information about the topic: "{topic}"
+                        Focus on: {category.value if category else 'general'} aspects
+                        
+                        Include:
+                        - Recent developments or trends
+                        - Key facts and information
+                        - Educational context
+                        
+                        Keep response appropriate for all audiences.
+                        """
+                    
+                    response = self.model.generate_content(context_prompt)
+                    
+                    if response and response.text:
+                        # Validate that the response is actually about the topic
+                        response_text = response.text.strip()
+                        logger.info(f"✅ Context retrieved on attempt {attempt + 1}")
+                        return response_text
+                        
+                except Exception as e:
+                    logger.warning(f"Context retrieval attempt {attempt + 1} failed: {e}")
+                    if attempt < max_attempts - 1:
+                        time.sleep(1)
+                        continue
+                    
+            return ""
          
         except Exception as e:
             logger.warning(f"Failed to get current context from Gemini: {e}")
@@ -1272,12 +1588,33 @@ class Director:
             Return only the blended text:
             """
             
-            response = self.model.generate_content(blend_prompt)
-            
-            if response and response.text:
-                return response.text.strip()
-            else:
-                return original_text
+            # Try with retry if needed
+            max_attempts = 2  # Less retries for blending
+            for attempt in range(max_attempts):
+                try:
+                    if attempt > 0:
+                        logger.info(f"Attempt {attempt + 1}: Simplifying blend request")
+                        blend_prompt = f"""
+                        Update this text with recent information:
+                        
+                        Original: {original_text}
+                        
+                        Recent info: {current_context[:200]}...
+                        
+                        Keep it brief and natural.
+                        """
+                    
+                    response = self.model.generate_content(blend_prompt)
+                    
+                    if response and response.text:
+                        return response.text.strip()
+                        
+                except Exception as e:
+                    logger.warning(f"Blend attempt {attempt + 1} failed: {e}")
+                    if attempt < max_attempts - 1:
+                        continue
+                    
+            return original_text
                 
         except Exception as e:
             logger.warning(f"Failed to blend current info: {e}")

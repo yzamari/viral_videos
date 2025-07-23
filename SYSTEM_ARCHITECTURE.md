@@ -192,14 +192,23 @@ Final Video → Hashtag Generation → Auto-posting
 - `DecisionFramework` - Central decision system
 - `CoreDecisions` - Decision data structure
 
+**Configuration Layer:** (NEW!)
+- `VideoGenerationConfig` - Master configuration class
+- `VideoEncodingConfig` - Encoding parameters
+- `TextOverlayConfig` - Text styling configuration
+- `AnimationTimingConfig` - Animation and timing settings
+- `DefaultTextConfig` - Default text templates
+- `LayoutConfig` - Layout and positioning
+
 **Orchestration Layer:**
 - `WorkingOrchestrator` - Main coordination
 - `MultiAgentDiscussion` - Agent collaboration
 
 **Generation Layer:**
-- `VideoGenerator` - Video creation orchestration
+- `VideoGenerator` - Video creation orchestration (uses VideoGenerationConfig)
 - `VeoClientFactory` - Model selection and management
 - `EnhancedMultilingualTTS` - Audio generation
+- `EnhancedScriptProcessor` - Script processing with configuration awareness
 
 **Platform Layer:**
 - `InstagramAutoPoster` - Social media integration
@@ -226,6 +235,64 @@ Every operation is tracked in a session with:
 
 ## Configuration
 
+### 🎛️ **Centralized Video Configuration System** (NEW!)
+
+The system now features a comprehensive configuration module that eliminates ALL hardcoded values. Every aspect of video generation is configurable through a centralized system.
+
+**Configuration Module:** `src/config/video_config.py`
+
+#### Configuration Categories:
+
+**1. Video Encoding Configuration (`VideoEncodingConfig`):**
+- Platform-specific FPS settings (YouTube: 30fps, TikTok: 30fps, etc.)
+- Video/audio codec settings (libx264, aac)
+- Quality presets per platform (medium for YouTube, fast for TikTok)
+- CRF values for quality control (23 for YouTube, 25 for TikTok)
+- Fallback encoding settings for cheap mode
+
+**2. Text Overlay Configuration (`TextOverlayConfig`):**
+- Dynamic font sizing based on video dimensions (6% for titles, 4% for body)
+- Minimum font sizes to ensure readability
+- Stroke widths for text outlines
+- Default colors and opacity settings
+- Semi-transparent backgrounds (0.8 opacity)
+
+**3. Animation Timing Configuration (`AnimationTimingConfig`):**
+- Fade in/out durations (0.5s default)
+- Display durations for hooks and CTAs (3.0s)
+- Subtitle and overlay fade timings
+- Frame continuity settings for seamless transitions
+- Crossfade and transition durations
+
+**4. Default Text Configuration (`DefaultTextConfig`):**
+- Platform-specific hook texts
+- Platform-specific CTA messages
+- Badge texts for overlays
+- News channel branding text
+
+**5. Layout Configuration (`LayoutConfig`):**
+- Subtitle positioning with theme awareness
+- Overlay positioning and animations
+- Safe zone calculations (5% margins)
+- Text wrapping limits (90% for subtitles, 80% for overlays)
+- Vertical spacing between elements (80px)
+
+#### Configuration Usage:
+
+```python
+from src.config.video_config import video_config
+
+# Get platform-specific settings
+fps = video_config.get_fps('youtube')  # Returns 30
+crf = video_config.get_crf('tiktok')   # Returns 25
+
+# Calculate dynamic font sizes
+font_size = video_config.get_font_size('title', 1920)  # Returns 115px for 1920 width
+
+# Get platform-specific text
+hook = video_config.get_default_hook('instagram')  # Returns "You won't believe this!"
+```
+
 ### Environment Variables
 - `GOOGLE_AI_API_KEY` - Gemini API key
 - `GOOGLE_CLOUD_PROJECT` - GCP project ID
@@ -239,8 +306,14 @@ Every operation is tracked in a session with:
 - `--cheap` - Cost-saving mode
 - `--style` - Content style
 - `--tone` - Content tone
+- `--theme` - Theme preset (news, sports, tech, entertainment)
+- `--style-template` - Saved style template name
+- `--reference-style` - Path to reference video for style extraction
+- `--character` - Character ID for consistent character generation
+- `--scene` - Scene description when using character
 
 ### User Configuration
+- `src/config/video_config.py` - Master video configuration
 - Config files for default settings
 - User preference overrides
 - Platform-specific configurations

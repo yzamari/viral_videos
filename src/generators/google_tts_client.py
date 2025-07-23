@@ -73,7 +73,7 @@ class GoogleTTSClient:
                 "excited": {
                     "voice": GoogleVoiceType.EN_US_JOURNEY_F,
                     "pitch": 2.0,   # Slightly higher pitch for excitement
-                    "speed": 1.1,   # Slightly faster for energy
+                    "speed": 1.1,   # Limited to 1.2x max (was 1.1, keeping as is)
                     "volume": 2.0   # Slightly louder
                 },
                 "serious": {
@@ -103,7 +103,7 @@ class GoogleTTSClient:
                 "energetic": {
                     "voice": GoogleVoiceType.EN_US_JOURNEY_F,
                     "pitch": 1.0,   # Slightly higher pitch
-                    "speed": 1.05,  # Slightly faster
+                    "speed": 1.05,  # Limited to 1.2x max (was 1.05, keeping as is)
                     "volume": 1.0   # Slightly louder
                 }
             }
@@ -113,6 +113,13 @@ class GoogleTTSClient:
         except Exception as e:
             logger.error(f"❌ Failed to initialize Google TTS client: {e}")
             raise
+
+    def _validate_speed(self, speed: float) -> float:
+        """Ensure speed never exceeds 1.2x"""
+        if speed > 1.2:
+            logger.warning(f"Speed {speed} exceeds maximum 1.2x, capping to 1.2")
+            return 1.2
+        return speed
 
     def generate_speech(self, text: str, feeling: str = "neutral",
                        narrative: str = "neutral", duration_target: float = 30,
@@ -157,7 +164,7 @@ class GoogleTTSClient:
                 # Configure audio with optimal settings for Journey voices
                 audio_config = texttospeech.AudioConfig(
                     audio_encoding=texttospeech.AudioEncoding.MP3,
-                    speaking_rate=voice_config["speed"],
+                    speaking_rate=self._validate_speed(voice_config["speed"]),
                     # No pitch control for Journey voices - they're naturally expressive'
                     sample_rate_hertz=24000,
                     effects_profile_id=["headphone-class-device"],
@@ -174,7 +181,7 @@ class GoogleTTSClient:
                         # Studio voices don't support pitch attributes
                         ssml_text = f"""
                         <speak>
-                            <prosody rate="{voice_config['speed']}" volume="{voice_config['volume']}dB">
+                            <prosody rate="{self._validate_speed(voice_config['speed'])}" volume="{voice_config['volume']}dB">
                                 {text}
                             </prosody>
                         </speak>
@@ -183,7 +190,7 @@ class GoogleTTSClient:
                         # Neural2/Wavenet/Standard voices support pitch
                         ssml_text = f"""
                         <speak>
-                            <prosody rate="{voice_config['speed']}" pitch="{voice_config['pitch']}st" volume="{voice_config['volume']}dB">
+                            <prosody rate="{self._validate_speed(voice_config['speed'])}" pitch="{voice_config['pitch']}st" volume="{voice_config['volume']}dB">
                                 {text}
                             </prosody>
                         </speak>

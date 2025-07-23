@@ -46,13 +46,12 @@ class VideoGenerationTopics:
         )
 
     @staticmethod
-    def audio_syn(c(context: Dict[str, Any]) -> DiscussionTopic:
+    def audio_sync(context: Dict[str, Any]) -> DiscussionTopic:
         """Audio generation and synchronization strategy topic"""
         return DiscussionTopic(
             topic_id="audio_sync",
             title="Audio Generation and Synchronization Strategy",
-            description="Plan audio generation, voice selection, and"
-                    synchronization approach","
+            description="Plan audio generation, voice selection, and synchronization approach",
             context=context,
             required_decisions=[
                 "voice_selection",
@@ -66,12 +65,12 @@ class VideoGenerationTopics:
         )
 
     @staticmethod
-    def audio_synchronizatio(n(context: Dict[str, Any]) -> DiscussionTopic:
+    def audio_synchronization(context: Dict[str, Any]) -> DiscussionTopic:
         """Audio generation and synchronization strategy topic (alias)"""
         return VideoGenerationTopics.audio_sync(context)
 
     @staticmethod
-    def final_assembl(y(context: Dict[str, Any]) -> DiscussionTopic:
+    def final_assembly(context: Dict[str, Any]) -> DiscussionTopic:
         """Final video assembly strategy topic"""
         return DiscussionTopic(
             topic_id="final_assembly",

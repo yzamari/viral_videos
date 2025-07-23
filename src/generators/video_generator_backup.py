@@ -14,7 +14,8 @@ from ..generators.veo_client_factory import VeoClientFactory
 from ..agents.voice_director_agent import VoiceDirectorAgent
 from ..agents.overlay_positioning_agent import OverlayPositioningAgent
 from ..utils.session_context import SessionContext
-from ..utils.exceptionsimport (VideoGenerationError,
+from ..utils.exceptions import (
+    VideoGenerationError,
     AudioGenerationError,
     SubtitleGenerationError
 )
@@ -23,7 +24,11 @@ from ..generators.director import Director
 logger = get_logger(__name__)
 
 class VideoGenerator:
-    """Enhanced video generator with AI-powered features"""def __init(self, api_key: str, credentials_path: Optional[str] = None): """Initialize the video generator with API credentials"""self.api_key = api_key
+    """Enhanced video generator with AI-powered features"""
+    
+    def __init__(self, api_key: str, credentials_path: Optional[str] = None):
+        """Initialize the video generator with API credentials"""
+        self.api_key = api_key
         self.credentials_path = credentials_path
 
         # Initialize VEO client factory with proper project credentials
@@ -45,8 +50,11 @@ class VideoGenerator:
         and final composition with subtitles.
         """
         logger.info("🎬 Starting AI-optimized video generation")
+       
         logger.info(f"📊 Config: {config.topic[:50]}...")
+       
         logger.info(f"🎯 Target: {config.target_platform.value}")
+       
         logger.info(f"⏱️ Duration: {config.duration_seconds}s")
 
         try:
@@ -59,30 +67,38 @@ class VideoGenerator:
             )
 
             # If no video clips were generated, create a fallback
-            if not video_clips: logger.warning("⚠️ No video clips generated, creating fallback from audio.")
-                return self._create_fallback_video_from_audio(audio_files, config, session_context
-                )
+            if not video_clips:
+                logger.warning("⚠️ No video clips generated, creating fallback from audio.")
+                return self._create_fallback_video_from_audio(audio_files, config, session_context)
 
             # 3. Add professional subtitles
             final_video_path = self._add_professional_subtitles(video_clips,
                     audio_files, script_result, config, session_context
             )
 
-            if not final_video_path or not os.path.exists(final_video_path): raise VideoGenerationError("Final video path not found or invalid.")
- logger.info(f"✅ Video generation successful: {final_video_path}")
+            if not final_video_path or not os.path.exists(final_video_path):
+                raise VideoGenerationError("Final video path not found or invalid.")
+            
+           
+        logger.info(f"✅ Video generation successful: {final_video_path}")
             return final_video_path
 
         except (VideoGenerationError,
-            AudioGenerationError,
-            SubtitleGenerationError) as e: logger.error(f"❌ Video generation failed: {e}")
+                AudioGenerationError,
+                SubtitleGenerationError) as e:
+            logger.error(f"❌ Video generation failed: {e}")
             raise
-        except Exception as e: logger.error(f"❌ An unexpected error occurred: {e}", exc_info=True) raise VideoGenerationError(f"An unexpected error occurred: {e}")
+        except Exception as e:
+            logger.error(f"❌ An unexpected error occurred: {e}", exc_info=True)
+            raise VideoGenerationError(f"An unexpected error occurred: {e}")
 
     def _generate_ai_optimized_audio(self,
         config: GeneratedVideoConfig,
         script_result: Dict[str, Any],
         session_context: SessionContext
-    ) -> List[str]: """Generate multiple audio clips with AI-selected voices"""logger.info("🎤 Generating AI-optimized audio")
+    ) -> List[str]:
+        """Generate multiple audio clips with AI-selected voices"""
+        logger.info("🎤 Generating AI-optimized audio")
 
         # Get AI voice strategy
         voice_strategy_result = self.voice_director.decide_voice_strategy(topic=config.topic,
@@ -90,7 +106,9 @@ class VideoGenerator:
             duration=config.duration_seconds,
             num_clips=4
         )
-        voice_strategy = voice_strategy_result.get('voices', []) logger.info(f"🎯 Voice strategy: {len(voice_strategy)} voices selected")
+        voice_strategy = voice_strategy_result.get('voices', [])
+       
+        logger.info(f"🎯 Voice strategy: {len(voice_strategy)} voices selected")
 
         # Segment script for audio generation
         script_segments = self._segment_script_for_audio(script_result)
@@ -99,7 +117,9 @@ class VideoGenerator:
         try:
             from ..generators.enhanced_multilang_tts import EnhancedMultilingualTTSClient
             tts_client = EnhancedMultilingualTTSClient(self.api_key)
-        except ImportError: logger.error("❌ Failed to import EnhancedMultilingualTTSClient") raise AudioGenerationError("TTS client could not be initialized.")
+        except ImportError:
+            logger.error("❌ Failed to import EnhancedMultilingualTTSClient")
+            raise AudioGenerationError("TTS client could not be initialized.")
 
         audio_files = []
         for i, segment in enumerate(script_segments):
@@ -108,35 +128,70 @@ class VideoGenerator:
                 voice_config = voice_strategy[-1]
             else:
                 voice_config = voice_strategy[i]
- # CRITICAL FIX: Do not send pitch for Studio voices if "studio" in voice_config.get('voice_name', '').lower(): if 'pitch' in voice_config: del voice_config['pitch']
-                    logger.info( f"🎤 Removed pitch for Studio voice: { voice_config.get('voice_name')}") logger.info(f"🎵 Generating audio segment {i + 1}/{len(script_segments)}") logger.info(f"🎤 Voice: {voice_config.get('voice_name')}")
+            
+            # CRITICAL FIX: Do not send pitch for Studio voices
+            if "studio" in voice_config.get('voice_name', '').lower():
+                if 'pitch' in voice_config:
+                    del voice_config['pitch']
+                   
+        logger.info(f"🎤 Removed pitch for Studio voice: {voice_config.get('voice_name')}")
+            
+            logger.info(f"🎵 Generating audio segment {i + 1}/{len(script_segments)}")
+           
+        logger.info(f"🎤 Voice: {voice_config.get('voice_name')}")
 
             try:
-                audio_path = tts_client.generate_intelligent_voice(text=segment, language_code="en-US", output_dir=session_context.get_output_path("audio"), clip_id=f"audio_segment_{i}", voice_name=voice_config.get('voice_name'), speaking_rate=voice_config.get('speed'), pitch=voice_config.get('pitch', 0),  # Use default if missing emotion=voice_config.get('emotion')
+                audio_path = tts_client.generate_intelligent_voice(
+                    text=segment,
+                    language_code="en-US",
+                    output_dir=session_context.get_output_path("audio"),
+                    clip_id=f"audio_segment_{i}",
+                    voice_name=voice_config.get('voice_name'),
+                    speaking_rate=voice_config.get('speed'),
+                    pitch=voice_config.get('pitch', 0),  # Use default if missing
+                    emotion=voice_config.get('emotion')
                 )
-                if audio_path and os.path.exists(audio_path): audio_files.append(audio_path) logger.info(f"✅ Generated audio for clip {i}: {voice_config.get('voice_name')}")
-                else: logger.warning(f"⚠️ Failed to generate audio for clip {i}")
+                if audio_path and os.path.exists(audio_path):
+                    audio_files.append(audio_path)
+                   
+        logger.info(f"✅ Generated audio for clip {i}: {voice_config.get('voice_name')}")
+                else:
+                    logger.warning(f"⚠️ Failed to generate audio for clip {i}")
 
-            except Exception as e: logger.error(f"❌ Error generating audio for clip {i}: {e}")
+            except Exception as e:
+                logger.error(f"❌ Error generating audio for clip {i}: {e}")
                 continue
 
-        if not audio_files: raise AudioGenerationError("No audio segments were successfully generated.")
- logger.info(f"🎵 Audio generation complete: {len(audio_files)} segments created")
+        if not audio_files:
+            raise AudioGenerationError("No audio segments were successfully generated.")
+        
+       
+        logger.info(f"🎵 Audio generation complete: {len(audio_files)} segments created")
 
         # Save audio generation metadata
-        audio_metadata = { "total_segments": len(script_segments), "successful_segments": len(audio_files), "voice_strategy": voice_strategy, "script_segments": script_segments
+        audio_metadata = {
+            "total_segments": len(script_segments),
+            "successful_segments": len(audio_files),
+            "voice_strategy": voice_strategy,
+            "script_segments": script_segments
         }
 
-        metadata_path = os.path.join( session_context.get_output_path("metadata"), "audio_generation.json")
-        try: with open(metadata_path, 'w') as f:
+        metadata_path = os.path.join(
+            session_context.get_output_path("metadata"),
+            "audio_generation.json")
+        try:
+            with open(metadata_path, 'w') as f:
                 json.dump(audio_metadata, f, indent=2)
-        except Exception as e: logger.warning(f"Could not save audio metadata: {e}")
+        except Exception as e:
+            logger.warning(f"Could not save audio metadata: {e}")
 
         return audio_files
 
     def _generate_video_clips(self, config: GeneratedVideoConfig,
                               script_result: Dict[str, Any],
-                              session_context: SessionContext) -> List[str]: """Generate video clips using VEO clients with optional frame continuity"""logger.info("🎥 Generating video clips")
+                              session_context: SessionContext) -> List[str]: 
+        """Generate video clips using VEO clients with optional frame continuity"""
+        logger.info("🎥 Generating video clips")
 
         # Get best VEO client
         veo_client = self.veo_factory.get_best_available_client( output_dir=session_context.get_output_path("video_clips")
@@ -144,7 +199,8 @@ class VideoGenerator:
 
         if not veo_client: logger.error("❌ No VEO client available")
             return []
- logger.info(f"🤖 Using VEO client: {veo_client.__class__.__name__}")
+
+        logger.info(f"🤖 Using VEO client: {veo_client.__class__.__name__}")
 
         # Check if Director decided to use frame continuity
         from ..generators.director import Director
@@ -156,7 +212,8 @@ class VideoGenerator:
             duration=config.duration_seconds,
             platform=config.target_platform
         )
- use_continuity = continuity_decision.get('use_frame_continuity', False) logger.info(f"🎬 Frame continuity decision: {use_continuity}")
+ use_continuity = continuity_decision.get('use_frame_continuity', False)
+        logger.info(f"🎬 Frame continuity decision: {use_continuity}")
 
         if use_continuity:
             # Use continuous video generation for seamless flow
@@ -172,7 +229,9 @@ class VideoGenerator:
         veo_client, config: GeneratedVideoConfig,
                                          script_result: Dict[str, Any],
                                          session_context: SessionContext,
-                                         continuity_decision: Dict[str, Any]) -> List[str]: """Generate continuous video clips with frame continuity"""logger.info("🎬 Generating continuous video with frame continuity")
+                                         continuity_decision: Dict[str, Any]) -> List[str]: 
+        """Generate continuous video clips with frame continuity"""
+        logger.info("🎬 Generating continuous video with frame continuity")
 
         # Get script text for continuous generation
         if isinstance(script_result, dict): script_text = script_result.get('final_script', '')
@@ -191,7 +250,8 @@ class VideoGenerator:
                 num_clips=num_clips,
                 clip_duration=clip_duration, base_clip_id="continuous_main")
 
-            if continuous_video_path and os.path.exists(continuous_video_path): logger.info(f"✅ Generated continuous video: {continuous_video_path}")
+            if continuous_video_path and os.path.exists(continuous_video_path):
+        logger.info(f"✅ Generated continuous video: {continuous_video_path}")
                 return [continuous_video_path]  # Return as single continuous clip
             else:
                 logger.warning( "⚠️ Continuous generation failed,"
@@ -206,7 +266,9 @@ class VideoGenerator:
     def _generate_individual_video_clips(self,
         veo_client, config: GeneratedVideoConfig,
                                          script_result: Dict[str, Any],
-                                         session_context: SessionContext) -> List[str]: """Generate individual video clips (standard mode)"""logger.info("🎥 Generating individual video clips")
+                                         session_context: SessionContext) -> List[str]: 
+        """Generate individual video clips (standard mode)"""
+        logger.info("🎥 Generating individual video clips")
 
         # Prepare script segments
         script_segments = self._segment_script_for_video(script_result, config.duration_seconds
@@ -216,7 +278,8 @@ class VideoGenerator:
             return []
 
         video_clips = []
-        for i, segment in enumerate(script_segments): logger.info(f"🎬 Generating video clip {i + 1}/{len(script_segments)}")
+        for i, segment in enumerate(script_segments):
+        logger.info(f"🎬 Generating video clip {i + 1}/{len(script_segments)}")
 
             try:
                 # Generate video clip
@@ -224,7 +287,8 @@ class VideoGenerator:
                     duration=config.duration_seconds // len(script_segments), clip_id=f"clip_{i}")
 
                 if clip_path and os.path.exists(clip_path):
-                    video_clips.append(clip_path) logger.info(f"✅ Generated clip {i}: {clip_path}")
+                    video_clips.append(clip_path)
+        logger.info(f"✅ Generated clip {i}: {clip_path}")
                 else: logger.warning(f"⚠️ Failed to generate clip {i}")
 
             except Exception as e: logger.error(f"❌ Error generating clip {i}: {str(e)}")
@@ -314,7 +378,8 @@ class VideoGenerator:
                         total_audio_duration += duration
 
             sync_result.update( "total_video_duration": total_video_duration, "total_audio_duration": total_audio_duration, "sync_success": abs(total_video_duration - total_audio_duration) < 1.0
-            ) logger.info(f"📊 Video duration: {total_video_duration:.2f}s") logger.info(f"📊 Audio duration: {total_audio_duration:.2f}s") logger.info(f"✅ Sync success: {sync_result['sync_success']}")
+            )
+        logger.info(f"📊 Video duration: {total_video_duration:.2f}s")        logger.info(f"📊 Audio duration: {total_audio_duration:.2f}s")        logger.info(f"✅ Sync success: {sync_result['sync_success']}")
 
         except Exception: logger.warning("⚠️ Could not calculate duration sync")
 
@@ -427,7 +492,8 @@ class VideoGenerator:
 
                         synchronized_segments.append(synchronized_segment)
                         current_time += actual_duration
- logger.info(f"📝 Synchronized segment {i}: "f"{current_time - actual_duration:.1f}-{current_time:.1f}s")
+
+        logger.info(f"📝 Synchronized segment {i}: "f"{current_time - actual_duration:.1f}-{current_time:.1f}s")
 
                 except Exception:
                     # Fallback to original timing
@@ -456,7 +522,8 @@ class VideoGenerator:
 
             result = subprocess.run(cmd, capture_output=True, text=True)
 
-            if result.returncode == 0: logger.info("✅ Video clips concatenated successfully")
+            if result.returncode == 0:
+        logger.info("✅ Video clips concatenated successfully")
                 return temp_video.name
             else: logger.error(f"❌ Concatenation failed: {result.stderr}") raise VideoGenerationError(f"Video concatenation failed: {result.stderr}")
 
@@ -478,7 +545,8 @@ class VideoGenerator:
             for i, segment in enumerate(segments): # Escape text for ffmpeg text = segment['text'].replace("'", "\\'").replace('"', '\\"') start_time = segment['start_time'] end_time = segment['end_time']
 
                 # Create subtitle filter with professional styling subtitle_filter = ( f"drawtext=text='{text}'"":fontfile=/System/Library/Fonts/Arial.tt"":fontsize=24:fontcolor=white"":x=(w-text_w)/2:y=h-100"f":enable='between(t,{start_time},{end_time)'"":box=1:boxcolor=black@0.5:boxborderw=5")
-                subtitle_filters.append(subtitle_filter) logger.info(f"📝 Added subtitle: '{text[:30]}...' at "f"{start_time:.1f}-{end_time:.1f}s")
+                subtitle_filters.append(subtitle_filter)
+        logger.info(f"📝 Added subtitle: '{text[:30]}...' at "f"{start_time:.1f}-{end_time:.1f}s")
 
             # Combine all subtitle filters
             if subtitle_filters: filter_complex = ','.join(subtitle_filters)
@@ -488,7 +556,8 @@ class VideoGenerator:
 
             result = subprocess.run(cmd, capture_output=True, text=True)
 
-            if result.returncode == 0: logger.info(f"✅ Subtitles applied successfully: {output_path}")
+            if result.returncode == 0:
+        logger.info(f"✅ Subtitles applied successfully: {output_path}")
                 return str(output_path)
             else: logger.error(f"❌ Subtitle application failed: {result.stderr}")
                 # Return original video if subtitle application fails
@@ -547,6 +616,7 @@ class VideoGenerator:
 
             subprocess.run(video_cmd, capture_output=True, text=True, check=True)
 
-            if os.path.exists(output_path): logger.info(f"✅ Fallback video created: {output_path}")
+            if os.path.exists(output_path):
+        logger.info(f"✅ Fallback video created: {output_path}")
                 return output_path
             else: logger.error("❌ Failed to create fallback video") return ""except Exception as e: logger.error(f"❌ Error creating fallback video: {e}") return ""

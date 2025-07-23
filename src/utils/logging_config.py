@@ -63,8 +63,19 @@ def get_logger(name: str) -> logging.Logger:
     try:
         from .session_manager import session_manager
         if session_manager.current_session:
+            # The log file is in the main logs directory, not the session directory
             log_file_path = os.path.join(log_dir, session_aware_filename)
-            session_manager.track_file(log_file_path, "log", "SystemLogging")
+            # Ensure the log file exists before tracking
+            # Force creation by writing an initial log entry
+            logger.debug("Initializing log file for session tracking")
+            # Now track the file - it will be copied to the session directory
+            # Don't track if file doesn't exist yet (it will be created by the first log write)
+            if os.path.exists(log_file_path):
+                try:
+                    session_manager.track_file(log_file_path, "log", "SystemLogging")
+                except Exception as track_error:
+                    # Log tracking failed, but don't break the logging system
+                    logger.debug(f"Could not track log file: {track_error}")
     except (ImportError, AttributeError):
         # Session manager not available or no active session
         pass

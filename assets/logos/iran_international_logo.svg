@@ -1,0 +1,8 @@
+<svg width="200" height="80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Iran International Logo Placeholder -->
+  <rect width="200" height="80" fill="#C8102E"/>
+  <text x="100" y="30" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="white">IRAN</text>
+  <text x="100" y="55" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="white">INTERNATIONAL</text>
+  <!-- Persian text -->
+  <text x="100" y="75" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="white">ایران اینترنشنال</text>
+</svg>

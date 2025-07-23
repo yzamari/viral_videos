@@ -117,20 +117,21 @@ ORIGINAL SCRIPT:
 {script_content}
 
 TARGET LANGUAGE: {language_value}
-TARGET DURATION: {target_duration} seconds (if specified)
+TARGET DURATION: {target_duration} seconds (MANDATORY - MUST FILL ENTIRE DURATION!)
 
-TASK: Optimize this script for Text-to-Speech generation with perfect duration control and sentence integrity.
+TASK: EXPAND and optimize this script to FILL THE ENTIRE {target_duration} seconds with engaging content.
 
 REQUIREMENTS:
-1. DURATION CONTROL: If target duration is specified ({target_duration}s), ensure the script can be spoken in exactly that time
+1. DURATION CONTROL: Target is {target_duration}s - EXPAND the script to AT LEAST {int(target_duration * 2.5)} words
 2. TTS OPTIMIZATION: Use clear, pronounceable words
 3. NATURAL FLOW: Maintain conversational tone
-4. SEGMENT BREAKDOWN: Split into logical segments of 1-2 SENTENCES MAXIMUM per segment
+4. SEGMENT BREAKDOWN: Split into segments of EXACTLY 1 SENTENCE per segment - NEVER combine sentences
 5. TIMING CALCULATION: Estimate speaking time (average 2.5 words per second for natural pace)
 6. CONTRACTION AVOIDANCE: NEVER use contractions - always write full forms (use "do not" instead of "don't", "it is" instead of "it's", "let us" instead of "let's", etc.)
-7. SENTENCE INTEGRITY: Each segment must contain complete sentences with proper punctuation
-8. SUBTITLE CONSTRAINTS: Each segment MUST be 1-2 sentences only for proper 2-line subtitle display
-9. SENTENCE LENGTH: Each sentence should be ~10-15 words for optimal subtitle readability
+7. SENTENCE INTEGRITY: Each segment must contain exactly ONE complete sentence with proper punctuation
+8. SUBTITLE CONSTRAINTS: Each segment MUST be exactly 1 sentence for proper subtitle display
+9. SENTENCE LENGTH: Each sentence should be ~10-20 words for optimal subtitle readability
+10. CRITICAL RULE: NEVER put two sentences in one segment - always split them into separate segments
 
 CRITICAL TTS RULES:
 - Replace ALL contractions with their full expanded forms
@@ -147,7 +148,8 @@ CRITICAL TTS RULES:
 DURATION CALCULATION AND STRATEGY:
 - PRIORITY: Create concise, impactful scripts that fit naturally within the duration
 - Average speaking speed: 2.5 words per second (comfortable pace)
-- Target words for {target_duration}s: {int(target_duration * 2.5) if target_duration else 'Not specified'}
+- MINIMUM words required for {target_duration}s: {int(target_duration * 2.5) if target_duration else 'Not specified'}
+- EXPAND the content to reach this word count!
 - IMPORTANT: Account for contraction expansion when calculating word count (e.g., "don't" becomes "do not" = 2 words)
 - STRATEGY: Focus on shorter, punchy content rather than fast delivery
 - Remove unnecessary words, filler phrases, and redundant information
@@ -237,6 +239,19 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 
         except Exception as e:
             logger.error(f"Script processing failed: {e}")
+            logger.error(f"Error type: {type(e).__name__}")
+            logger.error(f"Script content preview: {script_content[:100]}...")
+            
+            # Log specific error types
+            if "API" in str(e) or "api" in str(e):
+                logger.error("🔑 Possible API key or authentication issue")
+            elif "Network" in str(e) or "connection" in str(e).lower():
+                logger.error("🌐 Network connection issue")
+            elif "rate" in str(e).lower() or "quota" in str(e).lower():
+                logger.error("⏱️ Rate limiting or quota exceeded")
+            else:
+                logger.error(f"❌ Unknown error - check logs for details")
+                
             return self._create_fallback_result(script_content, language, target_duration)
 
 
@@ -283,24 +298,18 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 optimized_text = script_content
                 logger.info(f"📏 Keeping original script: {len(words)} words (target: {target_words})")
             
-            # Create segments
-            segment_count = max(1, min(4, target_duration // 3))  # 1-4 segments based on duration
-            words_per_segment = len(optimized_text.split()) // segment_count
-            
+            # Create segments - ENFORCE ONE SENTENCE PER SEGMENT
+            sentences = self._split_into_sentences(optimized_text, language)
             segments = []
-            words = optimized_text.split()
             
-            for i in range(segment_count):
-                start_idx = i * words_per_segment
-                end_idx = (i + 1) * words_per_segment if i < segment_count - 1 else len(words)
-                
-                segment_text = ' '.join(words[start_idx:end_idx])
-                segment_duration = len(segment_text.split()) / 2.5  # 2.5 words per second (matching prompt)
+            for sentence in sentences:
+                sentence_words = len(sentence.split())
+                sentence_duration = sentence_words / 2.5  # 2.5 words per second
                 
                 segments.append({
-                    "text": segment_text,
-                    "duration": segment_duration,
-                    "word_count": len(segment_text.split()),
+                    "text": sentence,
+                    "duration": sentence_duration,
+                    "word_count": sentence_words,
                     "voice_suggestion": "storyteller"
                 })
             
@@ -364,20 +373,41 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 word_count = target_words
                 estimated_duration = target_duration
             
-            return {
-                "optimized_script": optimized_script,
-                "final_script": optimized_script,
-                "segments": [{
+            # Split into sentences for segments
+            sentences = self._split_into_sentences(optimized_script, language)
+            segments = []
+            total_words = 0
+            
+            for sentence in sentences:
+                sentence_words = len(sentence.split())
+                sentence_duration = sentence_words / 2.5
+                segments.append({
+                    "text": sentence,
+                    "duration": sentence_duration,
+                    "word_count": sentence_words,
+                    "voice_suggestion": "storyteller"
+                })
+                total_words += sentence_words
+            
+            # If no valid sentences, create single segment
+            if not segments:
+                segments = [{
                     "text": optimized_script,
                     "duration": estimated_duration,
                     "word_count": word_count,
                     "voice_suggestion": "storyteller"
-                }],
-                "total_estimated_duration": estimated_duration,
-                "total_word_count": word_count,
-                "optimization_notes": "Manual parsing applied due to JSON error",
+                }]
+                total_words = word_count
+            
+            return {
+                "optimized_script": optimized_script,
+                "final_script": optimized_script,
+                "segments": segments,
+                "total_estimated_duration": sum(seg['duration'] for seg in segments),
+                "total_word_count": total_words,
+                "optimization_notes": "Manual parsing with single-sentence segments",
                 "duration_match": "manual",
-                "tts_optimizations": ["Manual parsing recovery"],
+                "tts_optimizations": ["Manual parsing recovery", "Single sentence per segment enforced"],
                 "language": language_value,
                 "processing_timestamp": datetime.now().isoformat(),
                 "target_duration": target_duration
@@ -386,6 +416,37 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
         except Exception as e:
             logger.error(f"Manual parsing failed: {e}")
             return None
+
+    def _split_into_sentences(self, text: str, language=None) -> List[str]:
+        """Split text into individual sentences
+        
+        Args:
+            text: Text to split
+            language: Optional language parameter (not used currently)
+            
+        Returns:
+            List of sentences
+        """
+        import re
+        # Split on sentence endings including colons and semicolons
+        sentences = re.split(r'([.!?:;]+)', text)
+        
+        # Recombine sentences with their punctuation
+        complete_sentences = []
+        for i in range(0, len(sentences) - 1, 2):
+            if i + 1 < len(sentences):
+                sentence = sentences[i].strip() + sentences[i + 1].strip()
+                if sentence.strip():
+                    complete_sentences.append(sentence.strip())
+            elif sentences[i].strip():
+                complete_sentences.append(sentences[i].strip())
+        
+        # Handle any remaining text
+        if len(sentences) % 2 == 1 and sentences[-1].strip():
+            complete_sentences.append(sentences[-1].strip())
+        
+        # Filter out empty sentences
+        return [s for s in complete_sentences if s.strip()]
 
     def _create_fallback_result(self, script_content: str, language, target_duration: float = None) -> Dict[str, Any]:
         """Create fallback result when AI processing fails"""
@@ -402,31 +463,50 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
             # Assume it's already an enum
             language_value = language.value if hasattr(language, 'value') else str(language)
             
-        words = script_content.split()
-        word_count = len(words)
-        estimated_duration = word_count / 2.5  # 2.5 words per second (matching prompt)
+        # Split into sentences - ENFORCE ONE SENTENCE PER SEGMENT
+        sentences = self._split_into_sentences(script_content, language)
         
-        # If target duration specified, trim to fit
-        if target_duration and estimated_duration > target_duration:
-            target_words = int(target_duration * 3)
-            script_content = ' '.join(words[:target_words])
-            word_count = target_words
-            estimated_duration = target_duration
+        # Create segments with exactly one sentence each
+        segments = []
+        total_words = 0
         
-        return {
-            "optimized_script": script_content,
-            "final_script": script_content,  # Add this key for compatibility
-            "segments": [{
+        for sentence in sentences:
+            sentence_words = len(sentence.split())
+            sentence_duration = sentence_words / 2.5  # 2.5 words per second
+            
+            segments.append({
+                "text": sentence,
+                "duration": sentence_duration,
+                "word_count": sentence_words,
+                "voice_suggestion": "storyteller"
+            })
+            total_words += sentence_words
+        
+        total_duration = sum(seg['duration'] for seg in segments)
+        
+        # If no valid sentences, create single segment
+        if not segments:
+            words = script_content.split()
+            word_count = len(words)
+            estimated_duration = word_count / 2.5
+            segments = [{
                 "text": script_content,
                 "duration": estimated_duration,
                 "word_count": word_count,
                 "voice_suggestion": "storyteller"
-            }],
-            "total_estimated_duration": estimated_duration,
-            "total_word_count": word_count,
-            "optimization_notes": "Fallback processing applied",
+            }]
+            total_words = word_count
+            total_duration = estimated_duration
+        
+        return {
+            "optimized_script": script_content,
+            "final_script": script_content,  # Add this key for compatibility
+            "segments": segments,
+            "total_estimated_duration": total_duration,
+            "total_word_count": total_words,
+            "optimization_notes": "Fallback processing with single-sentence segments",
             "duration_match": "fallback",
-            "tts_optimizations": ["Basic fallback processing"],
+            "tts_optimizations": ["Single sentence per segment enforced"],
             "language": language_value,
             "processing_timestamp": datetime.now().isoformat(),
             "target_duration": target_duration
@@ -512,7 +592,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
         endings_pattern = "|".join(re.escape(ending) for ending in endings)
 
         # Split on sentence endings followed by space or end of string
-        sentences = re.split(f'(endings_pattern)\\s*', text)
+        sentences = re.split(f'({endings_pattern})\\s*', text)
 
         # Reconstruct sentences with their endings
         result = []

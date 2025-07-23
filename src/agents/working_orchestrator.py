@@ -1301,6 +1301,10 @@ class WorkingOrchestrator:
                 use_vertex_ai=False   # Always disable Vertex AI in cheap modes
             )
             
+            # Pass core decisions to video generator for theme support
+            if self.core_decisions:
+                video_generator.core_decisions = self.core_decisions
+            
             # Create config based on cheap mode level
             cheap_config = GeneratedVideoConfig(
                 topic=self.mission,

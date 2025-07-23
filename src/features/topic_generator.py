@@ -94,7 +94,7 @@ Focus on creating content that is persuasive but ethical, engaging but responsib
         except Exception as e:
             logger.error(f"❌ Topic generation failed for {self.role}: {e}")
             return {
-                "topic": f"Content about {idea}",
+                "topic": f"{idea}",
                 "reasoning": f"Fallback topic due to error: {e}",
                 "target_emotion": "Interest",
                 "key_message": "General content",

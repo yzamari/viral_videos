@@ -130,9 +130,14 @@ class EnhancedMultilingualTTS:
                 if clip_index < len(voice_config["clip_voices"]):
                     clip_voices = [voice_config["clip_voices"][clip_index]]
                 else:
-                    logger.warning(f"⚠️ Clip index {clip_index} out of range (max: {len(voice_config['clip_voices'])-1}), using fallback")
-                    logger.info("🔄 Using basic fallback audio generation")
-                    return [self._generate_fallback_audio(script, language)]
+                    # Use modulo to cycle through available voices when there are more segments than voice configs
+                    wrapped_index = clip_index % len(voice_config["clip_voices"]) if voice_config["clip_voices"] else 0
+                    logger.info(f"🔄 Clip index {clip_index} > available voices ({len(voice_config['clip_voices'])}), using voice from index {wrapped_index}")
+                    if wrapped_index < len(voice_config["clip_voices"]):
+                        clip_voices = [voice_config["clip_voices"][wrapped_index]]
+                    else:
+                        logger.warning(f"⚠️ Fallback needed: no voice config available")
+                        return [self._generate_fallback_audio(script, language)]
             else:
                 # Generate for all clips
                 clip_voices = voice_config["clip_voices"]

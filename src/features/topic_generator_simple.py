@@ -76,7 +76,7 @@ Focus on creating content that is persuasive but ethical, engaging but responsib
                 return result
             except json.JSONDecodeError:
                 # Fallback if JSON parsing fails
-                return {:
+                return {
                     "topic": f"Engaging content about {idea}",
                     "reasoning": response.text[:200],
                     "target_emotion": "Interest",
@@ -90,7 +90,7 @@ Focus on creating content that is persuasive but ethical, engaging but responsib
         except Exception as e:
             logger.error(f"❌ Topic generation failed for {self.role}: {e}")
             return {
-                "topic": f"Content about {idea}",
+                "topic": f"{idea}",
                 "reasoning": f"Fallback topic due to error: {e}",
                 "target_emotion": "Interest",
                 "key_message": "General content",
@@ -103,8 +103,7 @@ Focus on creating content that is persuasive but ethical, engaging but responsib
 
 class TopicGeneratorSystem:
     """AI-powered topic generation system with multi-agent discussions"""
-:
-    def __init(self, api_key: str, output_dir: str = "outputs"):
+    def __init__(self, api_key: str, output_dir: str = "outputs"):
         self.api_key = api_key
         self.output_dir = output_dir
         self.session_id = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{str(uuid.uuid4())[:8]}"
@@ -142,7 +141,7 @@ class TopicGeneratorSystem:
 
         logger.info(f"🤖 TopicGenerator initialized with {len(self.agents)} specialized agents")
 
-    def generate_topi(c(self,
+    def generate_topic(self,
         idea: str,
         context: Optional[Dict[str,
         Any]] = None) -> Dict[str, Any]:
@@ -189,7 +188,7 @@ class TopicGeneratorSystem:
             logger.info("🗣️ Starting multi-agent discussion for consensus...")
 
             # Prepare discussion context
-            discussion_context = {:
+            discussion_context = {
                 "original_idea": idea,
                 "context": context,
                 "agent_suggestions": agent_suggestions,
@@ -199,7 +198,7 @@ class TopicGeneratorSystem:
             # Conduct discussion using simplified consensus
             discussion_result = self._conduct_consensus_discussion(
                 discussion_context,
-                session_dir):
+                session_dir)
             # Phase 3: Generate final topic with context
             final_topic = self._finalize_topic(
                 discussion_result,
@@ -207,7 +206,7 @@ class TopicGeneratorSystem:
                 context)
 
             # Save complete results
-            results = {:
+            results = {
                 "session_id": self.session_id,
                 "original_idea": idea,
                 "input_context": context,
@@ -247,7 +246,7 @@ class TopicGeneratorSystem:
                 "error": str(e)
             }
 
-    def _conduct_consensus_discussio(n(self,
+    def _conduct_consensus_discussion(self,
         context: Dict[str,
         Any],
         session_dir: str) -> Dict[str, Any]:
@@ -283,7 +282,7 @@ Focus on specificity, actionability, and viral potential.
             # Use simplified discussion system
             consensus_agents = ['ContentStrategist', 'PsychologyExpert', 'EthicsAdvisor', 'TrendAnalyst']
 
-            discussion_result = {:
+            discussion_result = {
                 "consensus_topic": None,
                 "reasoning": "",
                 "participants": consensus_agents,
@@ -308,7 +307,7 @@ RESPONSE FORMAT:
 }}
 """
 
-                response = model.generate_content(consensus_prompt):
+                response = model.generate_content(consensus_prompt)
                 try:
                     consensus_result = json.loads(response.text.strip())
                     discussion_result["consensus_topic"] = consensus_result
@@ -348,11 +347,10 @@ RESPONSE FORMAT:
             logger.error(f"Discussion failed: {e}")
             return {"error": str(e), "consensus_topic": None}
 
-    def _finalize_topi(c(self, discussion_result: Dict[str, Any],
+    def _finalize_topic(self, discussion_result: Dict[str, Any],
                        agent_suggestions: List[Dict[str, Any]],
                        context: Dict[str, Any]) -> Dict[str, Any]:
         """Finalize the topic with context for other AI agents"""
-:
         try:
             if discussion_result.get("consensus_topic"):
                 consensus = discussion_result["consensus_topic"]
@@ -391,15 +389,14 @@ This topic is designed to be compelling, shareable, and ethically responsible.
                 "context_for_agents": agent_context,
                 "viral_potential": consensus.get(
                     "expected_engagement",
-                    "Medium") if discussion_result.get("consensus_topic") else "Medium",:
-                "ethical_considerations": "; ".join(consensus.get("ethical_safeguards", [])) if discussion_result.get("consensus_topic") else "Standard guidelines",:
+                    "Medium") if discussion_result.get("consensus_topic") else "Medium",
+                "ethical_considerations": "; ".join(consensus.get("ethical_safeguards", [])) if discussion_result.get("consensus_topic") else "Standard guidelines",
                 "platform_optimization": consensus.get(
                     "platform_optimization",
-                    "Standard") if discussion_result.get("consensus_topic") else "Standard",:
+                    "Standard") if discussion_result.get("consensus_topic") else "Standard",
                 "generation_method": "multi_agent_consensus",
                 "confidence": "High" if discussion_result.get("consensus_topic") else "Medium"
             }
-:
         except Exception as e:
             logger.error(f"Topic finalization failed: {e}")
             return {

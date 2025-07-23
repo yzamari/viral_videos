@@ -65,4 +65,4 @@ class TrendAnalystAgent:
         return trends
 
     def _get_mock_data(self, topic):
-        return {"topic": topic, "related_keywords": ["viral", "video", "trends"], "source": "Mock Data"}"
+        return {"topic": topic, "related_keywords": ["viral", "video", "trends"], "source": "Mock Data"}

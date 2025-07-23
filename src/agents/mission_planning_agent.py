@@ -132,7 +132,8 @@ class MissionPlanningAgent:
                        duration: int,
                        platform: Platform,
                        category: VideoCategory,
-                       target_audience: str = "general audience") -> MissionPlan:
+                       target_audience: str = "general audience",
+                       min_clips: int = None) -> MissionPlan:
         """
         Analyze mission and create strategic work plan
         

@@ -31,7 +31,9 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
          continuous: bool = False, target_audience: Optional[str] = None, style: Optional[str] = None,
          tone: Optional[str] = None, visual_style: Optional[str] = None,
          mode: str = "enhanced", cheap_mode: bool = True, cheap_mode_level: str = "full", 
-         style_template: Optional[str] = None, reference_style: Optional[str] = None, **kwargs):
+         theme: Optional[str] = None, style_template: Optional[str] = None, 
+         reference_style: Optional[str] = None, character: Optional[str] = None,
+         scene: Optional[str] = None, **kwargs):
     """
     Main video generation workflow
 
@@ -143,7 +145,13 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             'visual_style': visual_style,
             'mode': mode,
             'cheap_mode': cheap_mode,
-            'cheap_mode_level': cheap_mode_level
+            'cheap_mode_level': cheap_mode_level,
+            'theme': theme,
+            'style_reference': style_template or reference_style,
+            'continuous': continuous,
+            'frame_continuity': frame_continuity,
+            'character': character,
+            'scene': scene
         }
         
         # CRITICAL: Make all decisions before any generation
