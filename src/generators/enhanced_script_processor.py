@@ -117,16 +117,16 @@ ORIGINAL SCRIPT:
 {script_content}
 
 TARGET LANGUAGE: {language_value}
-TARGET DURATION: {target_duration} seconds (MANDATORY - MUST FILL ENTIRE DURATION!)
+TARGET DURATION: {target_duration} seconds (STRICT LIMIT - DO NOT EXCEED!)
 
-TASK: EXPAND and optimize this script to FILL THE ENTIRE {target_duration} seconds with engaging content.
+TASK: Optimize this script to FIT EXACTLY {target_duration} seconds - no more, no less.
 
 REQUIREMENTS:
-1. DURATION CONTROL: Target is {target_duration}s - EXPAND the script to AT LEAST {int(target_duration * 2.5)} words
+1. DURATION CONTROL: Target is EXACTLY {target_duration}s - aim for {int(target_duration * 2.3)} to {int(target_duration * 2.5)} words MAXIMUM
 2. TTS OPTIMIZATION: Use clear, pronounceable words
 3. NATURAL FLOW: Maintain conversational tone
 4. SEGMENT BREAKDOWN: Split into segments of EXACTLY 1 SENTENCE per segment - NEVER combine sentences
-5. TIMING CALCULATION: Estimate speaking time (average 2.5 words per second for natural pace)
+5. TIMING CALCULATION: Estimate speaking time (average 2.3-2.5 words per second for natural pace)
 6. CONTRACTION AVOIDANCE: NEVER use contractions - always write full forms (use "do not" instead of "don't", "it is" instead of "it's", "let us" instead of "let's", etc.)
 7. SENTENCE INTEGRITY: Each segment must contain exactly ONE complete sentence with proper punctuation
 8. SUBTITLE CONSTRAINTS: Each segment MUST be exactly 1 sentence for proper subtitle display
@@ -146,16 +146,16 @@ CRITICAL TTS RULES:
 - This prevents TTS from pronouncing contractions as separate letters (like "I S N T")
 
 DURATION CALCULATION AND STRATEGY:
-- PRIORITY: Create concise, impactful scripts that fit naturally within the duration
-- Average speaking speed: 2.5 words per second (comfortable pace)
-- MINIMUM words required for {target_duration}s: {int(target_duration * 2.5) if target_duration else 'Not specified'}
-- EXPAND the content to reach this word count!
+- PRIORITY: Create scripts that fit EXACTLY within the duration - NOT MORE!
+- Average speaking speed: 2.3-2.5 words per second (comfortable pace)
+- TARGET word count for {target_duration}s: {int(target_duration * 2.3)} to {int(target_duration * 2.5)} words MAXIMUM
+- DO NOT EXCEED this word count!
 - IMPORTANT: Account for contraction expansion when calculating word count (e.g., "don't" becomes "do not" = 2 words)
-- STRATEGY: Focus on shorter, punchy content rather than fast delivery
-- Remove unnecessary words, filler phrases, and redundant information
+- STRATEGY: Be concise and impactful - quality over quantity
+- Remove any filler or redundant content
 - Use active voice and direct statements
-- Prioritize impact over comprehensiveness
-- AIM FOR SLIGHTLY FEWER WORDS to account for contraction expansion
+- Each sentence should deliver value
+- NEVER pad content just to fill time
 
 Please return a JSON response with the following structure:
 {{

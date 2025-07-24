@@ -100,8 +100,8 @@ def test_auth():
 @click.option('--discussions', type=click.Choice(['off', 'light', 'standard', 'deep', 'streamlined', 'enhanced']), default='enhanced', help='AI agent mode (default: enhanced with discussions for best viral content)')
 @click.option('--discussion-log', is_flag=True, help='Show detailed discussion logs')
 @click.option('--session-id', help='Custom session ID')
-@click.option('--frame-continuity', type=click.Choice(['auto', 'on', 'off']), default='auto', help='Frame continuity mode: auto (AI decides), on (always enabled), off (disabled)')
-@click.option('--continuous', is_flag=True, help='Enable continuous generation mode for one long seamless video')
+@click.option('--visual-continuity/--no-visual-continuity', default=True, help='Visual continuity between clips (default: enabled)')
+@click.option('--content-continuity/--no-content-continuity', default=True, help='Content/narrative continuity for seamless storytelling (default: enabled)')
 @click.option('--target-audience', help='Target audience (e.g., "young adults", "professionals")')
 @click.option('--style', help='Content style (e.g., "viral", "educational", "professional")')
 @click.option('--tone', help='Content tone (e.g., "engaging", "professional", "humorous")')
@@ -141,8 +141,8 @@ def generate(**kwargs):
             discussions=kwargs.get('discussions', 'enhanced'),
             discussion_log=kwargs.get('discussion_log', False),
             session_id=kwargs.get('session_id'),
-            frame_continuity=kwargs.get('frame_continuity', 'on'),
-            continuous=kwargs.get('continuous', False),
+            visual_continuity=kwargs.get('visual_continuity', True),
+            content_continuity=kwargs.get('content_continuity', True),
             target_audience=kwargs.get('target_audience'),
             style=kwargs.get('style'),
             tone=kwargs.get('tone'),

@@ -139,7 +139,9 @@ class Director:
             is_creative = any(creative_word in topic.lower() for creative_word in [
                 'satirical', 'satire', 'comedy', 'comedic', 'parody', 'skit', 'sketch',
                 'funny', 'humorous', 'mock', 'spoof', 'joke', 'drama', 'story',
-                'narrative', 'tale', 'scene', 'act', 'performance', 'segment'
+                'narrative', 'tale', 'scene', 'act', 'performance', 'segment',
+                'hilarious', 'first-person', 'pov', 'perspective', 'inner monologue',
+                'thoughts', 'create a', 'show'
             ])
             
             is_mission = not is_creative and any(action_word in topic.lower() for action_word in [
@@ -307,7 +309,9 @@ class Director:
             is_creative = any(creative_word in topic.lower() for creative_word in [
                 'satirical', 'satire', 'comedy', 'comedic', 'parody', 'skit', 'sketch',
                 'funny', 'humorous', 'mock', 'spoof', 'joke', 'drama', 'story',
-                'narrative', 'tale', 'scene', 'act', 'performance', 'segment'
+                'narrative', 'tale', 'scene', 'act', 'performance', 'segment',
+                'hilarious', 'first-person', 'pov', 'perspective', 'inner monologue',
+                'thoughts', 'create a', 'show'
             ])
             
             is_mission = not is_creative and any(action_word in topic.lower() for action_word in [
@@ -363,7 +367,8 @@ class Director:
 
                 Mission Strategy:
                 - Duration: EXACTLY {duration} seconds (HARD CONSTRAINT - content MUST fit this time limit)
-                - Word limit: Approximately {duration * 3} words total (3 words per second speaking rate)
+                - Word limit: {int(duration * 2.3)} to {int(duration * 2.5)} words MAXIMUM (2.3-2.5 words per second)
+                - DO NOT EXCEED {int(duration * 2.5)} words!
                 - Segments: {num_segments} strategic segments that build toward mission completion
                 - Pacing: {patterns.get('pacing', 'fast')} to maximize persuasive impact
                 - Success patterns: {patterns.get('success_factors', [])}
@@ -411,7 +416,8 @@ class Director:
 
                 Duration constraints:
                 - Duration: EXACTLY {duration} seconds (HARD CONSTRAINT - content MUST fit this time limit)
-                - Word limit: Approximately {duration * 3} words total (3 words per second speaking rate)
+                - Word limit: {int(duration * 2.3)} to {int(duration * 2.5)} words MAXIMUM (2.3-2.5 words per second)
+                - DO NOT EXCEED {int(duration * 2.5)} words!
                 - Each segment: ~{duration // num_segments} seconds each
 
                 CRITICAL SUBTITLE REQUIREMENTS:
@@ -822,7 +828,8 @@ class Director:
             
             Mission Strategy (UNCHANGED):
             - Duration: EXACTLY {duration} seconds
-            - Word limit: Approximately {duration * 3} words total
+            - Word limit: {int(duration * 2.3)} to {int(duration * 2.5)} words MAXIMUM
+            - DO NOT EXCEED word limit!
             - Segments: {num_segments} strategic segments
             - Pacing: {pacing}
             - Success patterns: {success_patterns}
@@ -867,7 +874,8 @@ class Director:
             
             Duration constraints (UNCHANGED):
             - Duration: EXACTLY {duration} seconds
-            - Word limit: Approximately {duration * 3} words total
+            - Word limit: {int(duration * 2.3)} to {int(duration * 2.5)} words MAXIMUM
+            - DO NOT EXCEED word limit!
             - Each segment: ~{duration // num_segments} seconds
             - Pacing: {pacing}
             - Themes to incorporate: {themes}
@@ -1170,7 +1178,9 @@ class Director:
         is_creative = any(creative_word in topic.lower() for creative_word in [
             'satirical', 'satire', 'comedy', 'comedic', 'parody', 'skit', 'sketch',
             'funny', 'humorous', 'mock', 'spoof', 'joke', 'drama', 'story',
-            'narrative', 'tale', 'scene', 'act', 'performance', 'segment'
+            'narrative', 'tale', 'scene', 'act', 'performance', 'segment',
+            'hilarious', 'first-person', 'pov', 'perspective', 'inner monologue',
+            'thoughts', 'create a', 'show'
         ])
 
         if is_creative:

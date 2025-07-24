@@ -357,6 +357,15 @@ class VertexAIVeo2Client(BaseVeoClient):
                 elif 'gcsUri' in video_info:
                     return video_info['gcsUri']
             
+            # Check for content filtering first
+            if 'raiMediaFilteredCount' in response and response['raiMediaFilteredCount'] > 0:
+                filter_reasons = response.get('raiMediaFilteredReasons', ['Content filtered by safety policies'])
+                error_message = f"Content filter policy violation: {filter_reasons[0]}"
+                logger.error(f"❌ {error_message}")
+                logger.error(f"🔍 Full filter response: {json.dumps(response, indent=2)}")
+                # Raise exception to trigger retry with rephrasing in video_generator.py
+                raise Exception(error_message)
+            
             # Fallback to previous logic for other response structures
             predictions = response.get('predictions', [])
             if not predictions:

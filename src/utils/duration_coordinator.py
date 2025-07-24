@@ -20,9 +20,9 @@ class DurationInfo:
     
 
 class DurationCoordinator:
-    """Coordinates duration across script, audio, and video components with 30% flexibility."""
+    """Coordinates duration across script, audio, and video components with 5% flexibility."""
     
-    TOLERANCE_PERCENT = 0.30  # 30% tolerance
+    TOLERANCE_PERCENT = 0.05  # 5% tolerance
     
     def __init__(self, target_duration: float):
         """Initialize with target duration.

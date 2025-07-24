@@ -341,7 +341,13 @@ class WorkingOrchestrator:
             if self.mode != OrchestratorMode.SIMPLE and not self.cheap_mode:
                 self._conduct_agent_discussions(config)
             elif self.cheap_mode:
-                logger.info("💰 Skipping AI agent discussions in cheap mode")
+                logger.info("💰 Skipping full AI agent discussions in cheap mode")
+                # CRITICAL: Still need duration validation even in cheap mode
+                self._conduct_duration_validation_only(config)
+            else:
+                # Simple mode - still need duration validation
+                logger.info("🚀 Simple mode - conducting duration validation only")
+                self._conduct_duration_validation_only(config)
             
             # Phase 4: Script Generation with AI Enhancement
             try:
@@ -537,6 +543,57 @@ class WorkingOrchestrator:
             self._conduct_advanced_discussions(config)
         elif self.mode == OrchestratorMode.MULTILINGUAL:
             self._conduct_multilingual_discussions(config)
+    
+    def _conduct_duration_validation_only(self, config: Dict[str, Any]):
+        """Conduct ONLY duration validation discussion for simple/cheap modes"""
+        logger.info("⏱️ Conducting mandatory duration validation...")
+        
+        if not self.discussion_system:
+            # Initialize minimal discussion system for duration validation
+            from .multi_agent_discussion import MultiAgentDiscussionSystem
+            self.discussion_system = MultiAgentDiscussionSystem(
+                self.api_key,
+                self.session_id,
+                enable_visualization=False  # Minimal mode
+            )
+        
+        # Import required classes
+        from .multi_agent_discussion import DiscussionTopic, AgentRole
+        
+        # Duration validation discussion
+        duration_topic = DiscussionTopic(
+            topic_id="duration_validation",
+            title="Duration & Timing Validation",
+            description=f"CRITICAL: Ensure ALL content fits EXACTLY within {self.duration} seconds ±5%",
+            context={
+                'target_duration': self.duration,
+                'max_duration': self.duration * 1.05,  # 5% tolerance
+                'min_duration': self.duration * 0.95,  # 5% tolerance
+                'words_per_second': 2.3,  # Speaking rate
+                'max_words': int(self.duration * 2.5),
+                'platform': self.platform.value,
+                'num_segments': max(1, self.duration // 8),  # Approximate segments
+                'mode': self.mode.value,
+                'cheap_mode': self.cheap_mode
+            },
+            required_decisions=["duration_compliance", "word_count_limit", "segment_timing"],
+            max_rounds=3  # Quick validation
+        )
+        
+        # CRITICAL: AudioMaster, Editor and Orchestrator for duration control
+        duration_result = self.discussion_system.start_discussion(
+            duration_topic,
+            [AgentRole.SOUNDMAN, AgentRole.EDITOR, AgentRole.ORCHESTRATOR]
+        )
+        
+        if not hasattr(self, 'discussion_results'):
+            self.discussion_results = {}
+        
+        self.discussion_results['duration_validation'] = duration_result
+        logger.info(f"✅ Duration validation completed: {duration_result.decision}")
+        
+        # Apply duration constraints globally
+        self.duration_constraints = duration_result.decision
 
     def _conduct_enhanced_discussions(self, config: Dict[str, Any]):
         """Enhanced 7-agent discussions"""
@@ -544,6 +601,30 @@ class WorkingOrchestrator:
         if not self.discussion_system:
             logger.warning("Discussion system not available, skipping discussions")
             return
+
+        # CRITICAL: Add duration validation discussion first
+        duration_topic = DiscussionTopic(
+            topic_id="duration_validation",
+            title="Duration & Timing Validation",
+            description=f"Ensure all content fits EXACTLY within {self.duration} seconds ±5%",
+            context={
+                'target_duration': self.duration,
+                'max_duration': self.duration * 1.05,  # 5% tolerance
+                'min_duration': self.duration * 0.95,  # 5% tolerance
+                'words_per_second': 2.3,  # Speaking rate
+                'max_words': int(self.duration * 2.5),
+                'platform': self.platform.value,
+                'num_segments': max(1, self.duration // 8)  # Approximate segments
+            },
+            required_decisions=["duration_compliance", "word_count_limit", "segment_timing"]
+        )
+        
+        # CRITICAL: AudioMaster is MANDATORY for duration validation
+        duration_result = self.discussion_system.start_discussion(
+            duration_topic,
+            [AgentRole.SOUNDMAN, AgentRole.EDITOR, AgentRole.ORCHESTRATOR]
+        )
+        self.discussion_results['duration_validation'] = duration_result
 
         # Discussion 1: Script Strategy & Viral Optimization
         script_topic = DiscussionTopic( topic_id="script_strategy", title="Script Strategy & Viral Optimization", description=f"Create the most engaging script for mission: {self.mission}",
@@ -555,13 +636,14 @@ class WorkingOrchestrator:
                 'style': self.style,
                 'tone': self.tone,
                 'target_audience': self.target_audience,
-                'trending_insights': self.trending_insights
+                'trending_insights': self.trending_insights,
+                'duration_constraints': duration_result.decision  # Pass duration constraints
             }, required_decisions=["script_structure", "viral_hooks", "engagement_strategy"]
         )
 
         script_result = self.discussion_system.start_discussion(
             script_topic,
-            [AgentRole.SCRIPT_WRITER, AgentRole.DIRECTOR]
+            [AgentRole.SCRIPT_WRITER, AgentRole.DIRECTOR, AgentRole.SOUNDMAN]  # Add SOUNDMAN for duration awareness
         )
         self.discussion_results['script_strategy'] = script_result
         
@@ -572,29 +654,35 @@ class WorkingOrchestrator:
                 'platform': self.platform.value,
                 'visual_style': self.visual_style,
                 'force_generation': config.get('force_generation', 'auto'),
-                'trending_insights': self.trending_insights
-            }, required_decisions=["visual_style", "technical_approach", "generation_mode"]
+                'trending_insights': self.trending_insights,
+                'duration': self.duration,
+                'duration_constraints': duration_result.decision
+            }, required_decisions=["visual_style", "technical_approach", "generation_mode", "clip_durations"]
         )
 
         visual_result = self.discussion_system.start_discussion(
             visual_topic,
-            [AgentRole.VIDEO_GENERATOR, AgentRole.EDITOR]
+            [AgentRole.VIDEO_GENERATOR, AgentRole.EDITOR, AgentRole.SOUNDMAN]  # Add SOUNDMAN for sync
         )
         self.discussion_results['visual_strategy'] = visual_result
         
         # Discussion 3: Audio & Production Strategy
-        audio_topic = DiscussionTopic( topic_id="audio_strategy", title="Audio Production & Voice Strategy", description="Optimal audio approach for maximum engagement",
+        audio_topic = DiscussionTopic( topic_id="audio_strategy", title="Audio Production & Voice Strategy", description=f"CRITICAL: Audio MUST be EXACTLY {self.duration}s ±5%. Ensure perfect sync!",
             context={
                 'mission': self.mission,
                 'duration': self.duration,
                 'platform': self.platform.value,
-                'target_audience': self.target_audience
-            }, required_decisions=["voice_style", "audio_approach", "sound_design"]
+                'target_audience': self.target_audience,
+                'duration_constraints': duration_result.decision,
+                'script_duration': script_result.decision.get('estimated_duration', self.duration),
+                'max_audio_duration': self.duration * 1.05,  # 5% tolerance
+                'min_audio_duration': self.duration * 0.95   # 5% tolerance
+            }, required_decisions=["voice_style", "audio_approach", "sound_design", "audio_duration_compliance"]
         )
 
         audio_result = self.discussion_system.start_discussion(
             audio_topic,
-            [AgentRole.SOUNDMAN, AgentRole.EDITOR]
+            [AgentRole.SOUNDMAN, AgentRole.EDITOR, AgentRole.ORCHESTRATOR]  # Add ORCHESTRATOR for sync
         )
         self.discussion_results['audio_strategy'] = audio_result
         
@@ -731,6 +819,13 @@ class WorkingOrchestrator:
         """Generate script with AI enhancement and processing"""
         logger.info("📝 Generating enhanced script...")
 
+        # CRITICAL: Pass duration constraints to director
+        duration_constraints = {}
+        if hasattr(self, 'duration_constraints'):
+            duration_constraints = self.duration_constraints
+        elif self.discussion_results and 'duration_validation' in self.discussion_results:
+            duration_constraints = self.discussion_results['duration_validation'].decision
+        
         # Use Director to create base script
         script_data = self.director.write_script(
             topic=self.mission,
@@ -741,7 +836,10 @@ class WorkingOrchestrator:
             patterns={
                 'hooks': self.trending_insights.get('viral_hooks', []),
                 'themes': [self.tone],
-                'success_factors': [self.style, 'engaging']
+                'success_factors': [self.style, 'engaging'],
+                'duration_constraints': duration_constraints,
+                'max_words': int(self.duration * 2.5),  # Enforce word limit
+                'tolerance_percent': 0.05  # 5% tolerance
             }
         )
 

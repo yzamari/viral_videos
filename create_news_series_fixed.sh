@@ -24,7 +24,6 @@ Content: Iran faces 50-year worst water crisis. Major cities experiencing severe
   --style professional \
   --visual-style documentary \
   --no-cheap \
-  --continuous \
   --mode enhanced \
   --session-id "gnn_water_ep1"
 

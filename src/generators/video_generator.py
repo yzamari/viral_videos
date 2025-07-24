@@ -23,6 +23,7 @@ from ..generators.veo_client_factory import VeoClientFactory, VeoModel
 from ..generators.gemini_image_client import GeminiImageClient
 from ..generators.enhanced_multilang_tts import EnhancedMultilingualTTS
 from ..generators.enhanced_script_processor import EnhancedScriptProcessor
+from ..generators.director import Director
 from ..agents.voice_director_agent import VoiceDirectorAgent
 from ..agents.overlay_positioning_agent import OverlayPositioningAgent
 from ..agents.visual_style_agent import VisualStyleAgent
@@ -518,6 +519,7 @@ The last frame of this scene connects to the next.
         )
         
         # Initialize AI agents
+        self.director = Director(api_key)
         self.voice_director = VoiceDirectorAgent(api_key)
         self.positioning_agent = OverlayPositioningAgent(api_key)
         self.style_agent = VisualStyleAgent(api_key)
@@ -728,7 +730,7 @@ The last frame of this scene connects to the next.
             
             # Save duration report to session
             try:
-                duration_report_path = session_context.get_output_path("duration_report.json", "logs")
+                duration_report_path = session_context.get_output_path("logs", "duration_report.json")
                 os.makedirs(os.path.dirname(duration_report_path), exist_ok=True)
                 
                 # Ensure json module is available
@@ -919,31 +921,83 @@ The last frame of this scene connects to the next.
         """Process script using AI script processor"""
         logger.info("📝 Processing script with AI")
         
-        # Create script from config - FIX: Use actual mission content
-        script_parts = []
-        
-        # Add hook if provided
-        if config.hook:
-            script_parts.append(config.hook)
-        
-        # Add main content - FIX: Use the actual topic/mission
-        if config.main_content:
-            script_parts.extend(config.main_content)
-        else:
-            # Use the topic as main content if no main_content provided
-            script_parts.append(config.topic)
-        
-        # Add call to action if provided
-        if config.call_to_action:
-            script_parts.append(config.call_to_action)
-        
-        # Join all parts
-        script = " ".join(script_parts)
+        # First, use Director to generate a proper narrative script from the topic/mission
+        try:
+            logger.info(f"🎬 Director generating narrative script for: {config.topic[:100]}...")
+            
+            # Get patterns for the Director (empty dict if not available)
+            patterns = {}
+            
+            # Generate the narrative script
+            director_result = self.director.write_script(
+                topic=config.topic,
+                style=getattr(config, 'visual_style', 'dynamic'),
+                duration=config.duration_seconds,
+                platform=config.target_platform,
+                category=config.category,
+                patterns=patterns,
+                incorporate_news=False  # Can be made configurable later
+            )
+            
+            # Extract the script content from Director's output
+            if isinstance(director_result, dict):
+                # Handle different possible formats from Director
+                if 'segments' in director_result:
+                    # Join all segment texts
+                    script_parts = []
+                    for segment in director_result['segments']:
+                        if 'text' in segment:
+                            script_parts.append(segment['text'])
+                    script = " ".join(script_parts)
+                elif 'script' in director_result:
+                    script = director_result['script']
+                elif 'hook' in director_result and 'main_content' in director_result:
+                    # Assemble from components
+                    script_parts = []
+                    if 'text' in director_result['hook']:
+                        script_parts.append(director_result['hook']['text'])
+                    if isinstance(director_result['main_content'], list):
+                        for content in director_result['main_content']:
+                            if 'text' in content:
+                                script_parts.append(content['text'])
+                    if 'cta' in director_result and 'text' in director_result['cta']:
+                        script_parts.append(director_result['cta']['text'])
+                    script = " ".join(script_parts)
+                else:
+                    # Fallback to string representation
+                    script = str(director_result)
+            else:
+                script = str(director_result)
+                
+            logger.info(f"✅ Director generated narrative script: {script[:200]}...")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Director script generation failed: {e}, falling back to simple approach")
+            # Fallback to original simple approach
+            script_parts = []
+            
+            # Add hook if provided
+            if config.hook:
+                script_parts.append(config.hook)
+            
+            # Add main content - FIX: Use the actual topic/mission
+            if config.main_content:
+                script_parts.extend(config.main_content)
+            else:
+                # Use the topic as main content if no main_content provided
+                script_parts.append(config.topic)
+            
+            # Add call to action if provided
+            if config.call_to_action:
+                script_parts.append(config.call_to_action)
+            
+            # Join all parts
+            script = " ".join(script_parts)
         
         # Log the actual script being processed
-        logger.info(f"📝 Original script: {script[:100]}...")
+        logger.info(f"📝 Script to process: {script[:100]}...")
         
-        # Process with AI
+        # Process with AI script processor for TTS optimization
         from ..models.video_models import Language
         result = await self.script_processor.process_script_for_tts(
             script_content=script,
@@ -1475,13 +1529,43 @@ The last frame of this scene connects to the next.
                 
                 logger.info(f"📝 Found {len(complete_sentences)} sentences in script")
                 
-                # Create one segment per sentence
+                # CRITICAL: Pre-calculate segments to fit within target duration
                 segments_to_generate = []
-                total_duration = sum(config.clip_durations)
+                words_per_second = 2.5  # Standard speech rate
+                
+                # Define target_duration from config
+                target_duration = config.duration_seconds
+                
+                # Calculate how much of the script we can actually use
+                max_words = int(target_duration * words_per_second)
+                total_words = sum(len(s.split()) for s in complete_sentences)
+                
+                if total_words > max_words:
+                    logger.warning(f"⚠️ Script has {total_words} words but target duration ({target_duration}s) only allows {max_words} words")
+                    logger.info(f"📏 Trimming script to fit duration")
+                    
+                    # Build script up to word limit
+                    current_words = 0
+                    trimmed_sentences = []
+                    
+                    for sentence in complete_sentences:
+                        sentence_words = len(sentence.split())
+                        if current_words + sentence_words <= max_words:
+                            trimmed_sentences.append(sentence)
+                            current_words += sentence_words
+                        else:
+                            # This sentence would exceed limit
+                            logger.info(f"✂️ Stopping at {len(trimmed_sentences)} sentences ({current_words} words)")
+                            break
+                    
+                    complete_sentences = trimmed_sentences
+                    logger.info(f"📝 Using {len(complete_sentences)} sentences that fit within duration")
+                
+                # Now create segments from the duration-appropriate sentences
                 for i, sentence in enumerate(complete_sentences):
                     word_count = len(sentence.split())
-                    # Estimate duration based on word count (2.5 words per second)
-                    estimated_duration = word_count / 2.5
+                    # Calculate precise duration for this segment
+                    estimated_duration = word_count / words_per_second
                     segments_to_generate.append({
                         'text': sentence,
                         'duration': estimated_duration,
@@ -1490,17 +1574,36 @@ The last frame of this scene connects to the next.
                         'sentence_count': 1
                     })
                 
-                logger.info(f"✅ Created {len(segments_to_generate)} audio segments (one per sentence)")
+                # Log total expected duration
+                total_expected_duration = sum(s['duration'] for s in segments_to_generate)
+                logger.info(f"✅ Created {len(segments_to_generate)} audio segments")
+                logger.info(f"📊 Total expected duration: {total_expected_duration:.1f}s (target: {target_duration}s)")
             else:
                 # Use script segments as fallback
                 segments_to_generate = script_segments
                 logger.info(f"🎤 Using {len(segments_to_generate)} script segments for audio generation")
             
+            # CRITICAL: Track total audio duration to prevent exceeding target
+            total_audio_duration = 0.0
+            target_duration = config.duration_seconds
+            max_duration = target_duration * 1.05  # 5% tolerance
+            
             # Generate audio for each segment
             for i, segment in enumerate(segments_to_generate):
+                # Check if we're approaching the duration limit
+                if total_audio_duration >= max_duration:
+                    logger.warning(f"⚠️ Stopping audio generation at segment {i+1} - already at {total_audio_duration:.1f}s (max: {max_duration:.1f}s)")
+                    break
+                    
                 # Use full_text for TTS if available (avoid truncated text), otherwise use text
                 segment_text = segment.get('full_text', segment.get('text', ''))
                 segment_duration = segment.get('duration', 5.0)
+                
+                # Adjust segment duration if it would exceed total
+                remaining_duration = max_duration - total_audio_duration
+                if segment_duration > remaining_duration:
+                    segment_duration = remaining_duration
+                    logger.info(f"📏 Adjusted segment {i+1} duration to {segment_duration:.1f}s to fit within target")
                 
                 logger.info(f"🎵 Generating audio for segment {i+1}/{len(segments_to_generate)}: '{segment_text[:50]}...' (duration: {segment_duration:.1f}s)")
                 
@@ -1519,12 +1622,25 @@ The last frame of this scene connects to the next.
                 
                 if segment_audio_files and len(segment_audio_files) > 0:
                     temp_audio_files.append(segment_audio_files[0])
+                    
+                    # CRITICAL: Track actual audio duration
+                    try:
+                        from moviepy.editor import AudioFileClip
+                        audio_clip = AudioFileClip(segment_audio_files[0])
+                        actual_segment_duration = audio_clip.duration
+                        audio_clip.close()
+                        total_audio_duration += actual_segment_duration
+                        logger.info(f"✅ Generated audio segment {i+1}: {actual_segment_duration:.1f}s (total: {total_audio_duration:.1f}s)")
+                    except:
+                        # Fallback estimate
+                        total_audio_duration += segment_duration
                 else:
                     logger.warning(f"⚠️ Failed to generate audio for segment {i+1}")
                     # Create a fallback for this segment
                     fallback_audio = self._create_fallback_audio_segment(segment_text, segment_duration, config, session_context)
                     if fallback_audio:
                         temp_audio_files.append(fallback_audio)
+                        total_audio_duration += segment_duration
             
             # Save audio files to session directory
             audio_files = []
@@ -1559,6 +1675,34 @@ The last frame of this scene connects to the next.
                 fallback_audio = self._create_fallback_audio(config, session_context)
                 if fallback_audio:
                     audio_files.append(fallback_audio)
+            
+            # CRITICAL: Final validation of total audio duration
+            if audio_files:
+                actual_total_duration = 0.0
+                try:
+                    from moviepy.editor import AudioFileClip
+                    for audio_file in audio_files:
+                        if os.path.exists(audio_file):
+                            audio_clip = AudioFileClip(audio_file)
+                            actual_total_duration += audio_clip.duration
+                            audio_clip.close()
+                    
+                    logger.info(f"📊 Final audio validation:")
+                    logger.info(f"   Target duration: {target_duration}s")
+                    logger.info(f"   Actual total duration: {actual_total_duration:.1f}s")
+                    logger.info(f"   Difference: {actual_total_duration - target_duration:.1f}s ({((actual_total_duration - target_duration) / target_duration * 100):.1f}%)")
+                    
+                    if actual_total_duration > max_duration:
+                        logger.warning(f"⚠️ Total audio duration {actual_total_duration:.1f}s exceeds maximum {max_duration:.1f}s")
+                        logger.warning(f"⚠️ Consider reducing script content or adjusting speech rate")
+                    elif actual_total_duration < target_duration * 0.95:
+                        logger.warning(f"⚠️ Total audio duration {actual_total_duration:.1f}s is below minimum {target_duration * 0.95:.1f}s")
+                        logger.warning(f"⚠️ Consider adding more content or adjusting speech rate")
+                    else:
+                        logger.info(f"✅ Audio duration is within acceptable range")
+                        
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not validate final audio duration: {e}")
             
             logger.info(f"🎵 Generated {len(audio_files)} audio files")
             return audio_files
@@ -1661,11 +1805,29 @@ The last frame of this scene connects to the next.
             # Get actual video duration
             actual_duration = self._get_video_duration(base_video_path)
             
-            if actual_duration and actual_duration > target_duration * 1.15:  # More than 15% over
-                # DON'T trim - we prioritize sync over duration
-                logger.info(f"📏 Video is {actual_duration:.1f}s (target: {target_duration}s) - keeping full duration to maintain audio/video/subtitle sync")
-                temp_video_path = base_video_path
-            elif actual_duration and actual_duration < target_duration * 0.85:  # More than 15% under
+            if actual_duration and actual_duration > target_duration * 1.05:  # More than 5% over
+                # CRITICAL FIX: Trim to target duration to prevent extended videos
+                logger.info(f"📏 Video is {actual_duration:.1f}s (target: {target_duration}s) - trimming to target duration")
+                trimmed_path = session_context.get_output_path("temp_files", "trimmed_video.mp4")
+                
+                # Use ffmpeg to trim video to exact duration
+                import subprocess
+                cmd = [
+                    'ffmpeg', '-y',
+                    '-i', base_video_path,
+                    '-t', str(target_duration),
+                    '-c', 'copy',
+                    trimmed_path
+                ]
+                
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                if result.returncode == 0 and os.path.exists(trimmed_path):
+                    temp_video_path = trimmed_path
+                    logger.info(f"✅ Video trimmed to target duration: {target_duration}s")
+                else:
+                    logger.warning(f"⚠️ Failed to trim video: {result.stderr}")
+                    temp_video_path = base_video_path
+            elif actual_duration and actual_duration < target_duration * 0.95:  # More than 5% under
                 # Extend video by freezing last frame
                 logger.info(f"⏱️ Video is {actual_duration:.1f}s (target: {target_duration}s) - extending with last frame")
                 extended_video_path = session_context.get_output_path("temp_files", "extended_video.mp4")
@@ -1739,14 +1901,31 @@ The last frame of this scene connects to the next.
             # Validate final video duration is within tolerance
             final_duration = self._get_video_duration(final_video_path)
             if final_duration:
-                tolerance = target_duration * 0.15
+                tolerance = target_duration * 0.05
                 if abs(final_duration - target_duration) > tolerance:
-                    logger.warning(f"⚠️ Final video duration {final_duration:.1f}s outside 15% tolerance of target {target_duration}s")
+                    logger.warning(f"⚠️ Final video duration {final_duration:.1f}s outside 5% tolerance of target {target_duration}s")
                     
-                    if final_duration > target_duration * 1.15:
-                        # DON'T trim - we prioritize sync over duration
-                        logger.info(f"📏 Final video is {final_duration:.1f}s (target: {target_duration}s) - keeping full duration to maintain sync")
-                    elif final_duration < target_duration * 0.85 and duration_coordinator:
+                    if final_duration > target_duration * 1.05:
+                        # CRITICAL FIX: Trim to target duration
+                        logger.info(f"📏 Final video is {final_duration:.1f}s (target: {target_duration}s) - trimming to target")
+                        trimmed_final_path = session_context.get_output_path("temp_files", "final_trimmed.mp4")
+                        
+                        import subprocess
+                        cmd = [
+                            'ffmpeg', '-y',
+                            '-i', final_video_path,
+                            '-t', str(target_duration),
+                            '-c', 'copy',
+                            trimmed_final_path
+                        ]
+                        
+                        result = subprocess.run(cmd, capture_output=True, text=True)
+                        if result.returncode == 0 and os.path.exists(trimmed_final_path):
+                            final_video_path = trimmed_final_path
+                            logger.info(f"✅ Final video trimmed to target duration: {target_duration}s")
+                        else:
+                            logger.warning(f"⚠️ Failed to trim final video: {result.stderr}")
+                    elif final_duration < target_duration * 0.95 and duration_coordinator:
                         # Extend if too short
                         logger.info(f"🔧 Extending to target duration: {target_duration}s")
                         extended_path = session_context.get_output_path("temp_files", "final_extended.mp4")
@@ -1984,7 +2163,14 @@ The last frame of this scene connects to the next.
                 hook_style = self._get_ai_overlay_style(str(config.hook), "hook", config.target_platform, video_width, video_height, session_context)
                 
                 # Create smart multi-line hook text with width constraints
-                hook_text = self._create_short_multi_line_text(str(config.hook), max_words_per_line=hook_style.get('words_per_line', 4), video_width=video_width)
+                # Ensure words_per_line is an integer
+                hook_words = hook_style.get('words_per_line', 4)
+                if isinstance(hook_words, str):
+                    try:
+                        hook_words = int(hook_words)
+                    except:
+                        hook_words = 4
+                hook_text = self._create_short_multi_line_text(str(config.hook), max_words_per_line=hook_words, video_width=video_width)
                 # Ensure hook text is escaped for FFmpeg
                 escaped_hook_text = self._escape_text_for_ffmpeg(hook_text)
                 
@@ -2005,7 +2191,14 @@ The last frame of this scene connects to the next.
                 cta_style = self._get_ai_overlay_style(str(config.call_to_action), "cta", config.target_platform, video_width, video_height, session_context)
                 
                 # Create smart multi-line CTA text with width constraints
-                cta_text = self._create_short_multi_line_text(str(config.call_to_action), max_words_per_line=cta_style.get('words_per_line', 4), video_width=video_width)
+                # Ensure words_per_line is an integer
+                cta_words = cta_style.get('words_per_line', 4)
+                if isinstance(cta_words, str):
+                    try:
+                        cta_words = int(cta_words)
+                    except:
+                        cta_words = 4
+                cta_text = self._create_short_multi_line_text(str(config.call_to_action), max_words_per_line=cta_words, video_width=video_width)
                 # Ensure CTA text is escaped for FFmpeg
                 escaped_cta_text = self._escape_text_for_ffmpeg(cta_text)
                 
@@ -3156,13 +3349,18 @@ The last frame of this scene connects to the next.
                 '-c:v', video_config.encoding.video_codec,
                 '-c:a', video_config.encoding.audio_codec,
                 '-preset', video_config.get_encoding_preset(platform or 'default'),
-                '-crf', str(video_config.get_crf(platform or 'default'))
+                '-crf', str(video_config.get_crf(platform or 'default')),
+                '-shortest'  # CRITICAL: Stop encoding when shortest stream ends
             ]
             
-            # Add duration limit if specified
+            # CRITICAL: Add duration limit to prevent extending beyond target
             if target_duration:
                 cmd.extend(['-t', str(target_duration)])
                 logger.info(f"⏱️ Enforcing exact duration during composition: {target_duration}s")
+            else:
+                # Even without explicit target, cap to configured duration
+                # Note: duration should be passed as a parameter, not stored on self
+                logger.info("⏱️ No explicit target duration provided for composition")
             
             cmd.append(output_path)
             
@@ -3314,10 +3512,14 @@ The last frame of this scene connects to the next.
                 '-shortest'  # CRITICAL: Stop encoding when shortest stream ends
             ])
             
-            # Add duration limit if specified
+            # CRITICAL: Add duration limit to prevent extending beyond target
             if target_duration:
                 cmd.extend(['-t', str(target_duration)])
                 logger.info(f"⏱️ Enforcing exact duration during composition: {target_duration}s")
+            else:
+                # Even without explicit target, cap to configured duration
+                # Note: duration should be passed as a parameter, not stored on self
+                logger.info("⏱️ No explicit target duration provided for composition")
             
             cmd.append(output_path)
             
@@ -3788,6 +3990,21 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     
                     current_time = segment_end_time
             
+            # CRITICAL FIX: Cap subtitles to the target video duration
+            # Get the target duration from the total audio duration
+            target_duration = current_time  # This is the total audio duration from all segments
+            if target_duration and segments:
+                # Ensure no subtitle extends beyond the target duration
+                for segment in segments:
+                    if segment['end'] > target_duration:
+                        segment['end'] = target_duration
+                        logger.warning(f"⚠️ Capped subtitle end time from {segment['end']:.2f}s to {target_duration}s")
+                
+                # Remove any segments that start after the target duration
+                segments = [s for s in segments if s['start'] < target_duration]
+                
+                logger.info(f"📝 Capped subtitles to target duration: {target_duration}s")
+            
             # Create subtitle files
             subtitle_files = {}
             
@@ -3829,9 +4046,11 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Create subtitle metadata
             metadata = {
                 'total_segments': len(segments),
-                'total_duration': segments[-1]['end'] if segments else 0,
+                'total_duration': min(segments[-1]['end'], target_duration) if segments and target_duration else segments[-1]['end'] if segments else 0,
                 'script_content': script_content,
-                'audio_files_used': audio_files
+                'audio_files_used': audio_files,
+                'target_duration': target_duration,
+                'capped_to_target': target_duration and segments and segments[-1]['end'] > target_duration
             }
             
             metadata_path = session_context.get_output_path("subtitles", "subtitle_metadata.json")
@@ -4735,6 +4954,31 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     if json_match:
                         ai_style = json.loads(json_match.group())
                         
+                        # Convert numeric string values to proper types
+                        if 'words_per_line' in ai_style and isinstance(ai_style['words_per_line'], str):
+                            try:
+                                ai_style['words_per_line'] = int(ai_style['words_per_line'])
+                            except:
+                                ai_style['words_per_line'] = 3
+                        
+                        if 'font_size' in ai_style and isinstance(ai_style['font_size'], str):
+                            try:
+                                ai_style['font_size'] = int(ai_style['font_size'])
+                            except:
+                                ai_style['font_size'] = 32
+                        
+                        if 'stroke_width' in ai_style and isinstance(ai_style['stroke_width'], str):
+                            try:
+                                ai_style['stroke_width'] = int(ai_style['stroke_width'])
+                            except:
+                                ai_style['stroke_width'] = 2
+                        
+                        if 'background_opacity' in ai_style and isinstance(ai_style['background_opacity'], str):
+                            try:
+                                ai_style['background_opacity'] = float(ai_style['background_opacity'])
+                            except:
+                                ai_style['background_opacity'] = 0.8
+                        
                         # Enhanced logging to session
                         self._log_ai_styling_decision(ai_style, text, overlay_type, session_context)
                         
@@ -5195,6 +5439,13 @@ This is a placeholder file. In a full implementation, this would be a complete M
             audio_clip = AudioFileClip(audio_file)
             duration = audio_clip.duration
             
+            # Get platform dimensions
+            aspect_ratio = self._get_platform_aspect_ratio(config.target_platform.value)
+            if aspect_ratio == '16:9':
+                width, height = 1920, 1080
+            else:
+                width, height = 1080, 1920
+            
             # Check if we have theme information in core decisions
             theme_id = None
             if hasattr(self, 'core_decisions') and self.core_decisions:
@@ -5280,8 +5531,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     font=video_config.text_overlay.default_font.replace('-Bold', '')
                 ).set_duration(duration)
                 
-                # Make ticker scroll
-                ticker_text = ticker_text.set_position(lambda t: (1080 - t * 200, 1840))
+                # Make ticker scroll (position at bottom of screen)
+                ticker_y = height - 80  # Position ticker 80 pixels from bottom
+                ticker_text = ticker_text.set_position(lambda t: (width - t * 200, ticker_y))
                 clips.append(ticker_text)
             
             clips.extend([badge_clip] + subtitle_clips)
@@ -5669,9 +5921,17 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 )
                 
                 # Add traditional hook overlays as well
+                # Ensure words_per_line is an integer
+                words_per_line = hook_style.get('words_per_line', 3)
+                if isinstance(words_per_line, str):
+                    try:
+                        words_per_line = int(words_per_line)
+                    except:
+                        words_per_line = 3
+                
                 hook_overlays = self._create_timed_line_overlays(
                     str(config.hook), 
-                    max_words_per_line=hook_style.get('words_per_line', 3),
+                    max_words_per_line=words_per_line,
                     line_duration=1.5,
                     total_duration=min(8.0, video_duration)
                 )
@@ -5750,9 +6010,17 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Add call-to-action overlay with line-by-line timing
             if config.call_to_action:
                 cta_style = self._get_ai_overlay_style(str(config.call_to_action), "cta", config.target_platform, video_width, video_height, session_context)
+                # Ensure words_per_line is an integer
+                cta_words_per_line = cta_style.get('words_per_line', 3)
+                if isinstance(cta_words_per_line, str):
+                    try:
+                        cta_words_per_line = int(cta_words_per_line)
+                    except:
+                        cta_words_per_line = 3
+                
                 cta_overlays = self._create_timed_line_overlays(
                     str(config.call_to_action),
-                    max_words_per_line=cta_style.get('words_per_line', 3),
+                    max_words_per_line=cta_words_per_line,
                     line_duration=1.5,
                     total_duration=min(8.0, video_duration)
                 )

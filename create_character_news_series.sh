@@ -42,7 +42,6 @@ python main.py generate \
   --style professional \
   --visual-style documentary \
   --no-cheap \
-  --continuous \
   --mode enhanced \
   --session-id "character_news_ep1"
 

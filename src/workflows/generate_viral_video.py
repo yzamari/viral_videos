@@ -27,8 +27,8 @@ logger = get_logger(__name__)
 async def async_main(mission: str, category: str = "Comedy", platform: str = "youtube",
          duration: int = 20, image_only: bool = False, fallback_only: bool = False,
          force: bool = False, discussions: str = "enhanced", discussion_log: bool = False,
-         session_id: Optional[str] = None, frame_continuity: str = "auto",
-         continuous: bool = False, target_audience: Optional[str] = None, style: Optional[str] = None,
+         session_id: Optional[str] = None, visual_continuity: bool = True,
+         content_continuity: bool = True, target_audience: Optional[str] = None, style: Optional[str] = None,
          tone: Optional[str] = None, visual_style: Optional[str] = None,
          mode: str = "enhanced", cheap_mode: bool = True, cheap_mode_level: str = "full", 
          theme: Optional[str] = None, style_template: Optional[str] = None, 
@@ -48,7 +48,8 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
         discussions: AI agent discussion mode
         discussion_log: Show detailed discussion logs
         session_id: Custom session ID
-        frame_continuity: Frame continuity mode
+        visual_continuity: Visual continuity between clips (default: True)
+        content_continuity: Content/narrative continuity (default: True)
         target_audience: Target audience
         style: Content style
         tone: Content tone
@@ -62,7 +63,8 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
     logger.info(f"📱 Platform: {platform}")
     logger.info(f"⏱️ Duration: {duration} seconds")
     logger.info(f"🎭 Mode: {mode} ({_get_agent_count(mode)} agents with discussions)")
-    logger.info(f"🎬 Frame Continuity: {_get_frame_continuity_emoji(frame_continuity)} {frame_continuity.title()}")
+    logger.info(f"🎬 Visual Continuity: {'✅' if visual_continuity else '❌'} {'Enabled' if visual_continuity else 'Disabled'}")
+    logger.info(f"📝 Content Continuity: {'✅' if content_continuity else '❌'} {'Enabled' if content_continuity else 'Disabled'}")
     logger.info(f"🤖 AI System: 🎯 {discussions.title()} ({_get_agent_count(mode)} agents with discussions, best viral content)")
     
     # Cost-saving mode information
@@ -84,8 +86,8 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             "target_audience": target_audience or "general audience",
             "visual_style": visual_style,  # Don't override user's visual style choice
             "use_subtitle_overlays": True,
-            "frame_continuity": frame_continuity == "on" or (frame_continuity == "auto"),
-            "continuous_generation": continuous,
+            "frame_continuity": visual_continuity,
+            "continuous_generation": content_continuity,
             "cheap_mode": cheap_mode
         }
 
@@ -148,8 +150,8 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             'cheap_mode_level': cheap_mode_level,
             'theme': theme,
             'style_reference': style_template or reference_style,
-            'continuous': continuous,
-            'frame_continuity': frame_continuity,
+            'continuous': content_continuity,
+            'frame_continuity': visual_continuity,
             'character': character,
             'scene': scene
         }
@@ -220,14 +222,6 @@ def _get_agent_count(mode: str) -> int:
     }
     return agent_counts.get(mode, 7)
 
-def _get_frame_continuity_emoji(mode: str) -> str:
-    """Get emoji for frame continuity mode"""
-    emojis = {
-        "auto": "🤖 AI Agent Decision",
-        "on": "✅ ENABLED",
-        "of": "❌ DISABLED"
-    }
-    return emojis.get(mode, "🤖 AI Agent Decision")
 
 def main(*args, **kwargs):
     """Synchronous wrapper for async_main"""

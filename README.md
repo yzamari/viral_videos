@@ -187,8 +187,7 @@ python main.py generate \
   --mission "Epic story about space exploration" \
   --platform youtube \
   --duration 45 \
-  --no-cheap \
-  --continuous
+  --no-cheap
 
 # Create sports highlight with theme
 python main.py generate \
@@ -456,7 +455,8 @@ Decisions → Discussions → Scripts → Video/Audio → Assembly → Social Me
 - `--target-audience` - Target audience description
 - `--cheap` - Cheap mode level (full/audio/video/off, default: off)
 - `--no-cheap` - Disable cheap mode
-- `--frame-continuity` - Enable frame continuity (on/off/auto, default: auto)
+- `--visual-continuity` / `--no-visual-continuity` - Visual continuity between clips (default: enabled)
+- `--content-continuity` / `--no-content-continuity` - Content/narrative continuity (default: enabled)
 
 ### v3.0 New Parameters
 - `--theme` - Theme preset or custom theme ID (e.g., preset_news_edition, preset_sports)
