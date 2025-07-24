@@ -563,9 +563,11 @@ The last frame of this scene connects to the next.
         """
         start_time = time.time()
         
-        # CRITICAL: Store mission context for VEO prompt generation
+        # CRITICAL: Store mission context and platform for VEO prompt generation
         self._current_mission = config.mission
+        self._current_platform = config.target_platform.value if hasattr(config.target_platform, 'value') else str(config.target_platform)
         logger.info(f"🎯 Stored mission context: {self._current_mission}")
+        logger.info(f"📱 Stored platform context: {self._current_platform}")
         
         from ..utils.session_manager import session_manager
         
@@ -1273,10 +1275,33 @@ The last frame of this scene connects to the next.
                 
                 # Enhance prompt with style - use visual_style from config if available
                 visual_style = getattr(config, 'visual_style', None) or style_decision.get('primary_style', 'dynamic')
-                enhanced_prompt = self.style_agent.enhance_prompt_with_style(
-                    base_prompt=prompt,
-                    style=visual_style
-                )
+                
+                # CRITICAL FIX: Ensure character descriptions remain at the beginning of the prompt
+                # Check if prompt starts with a character description
+                import re
+                character_pattern = r'^([A-Za-z\s\-]+(?:with|wearing|in|having|featuring)[^,]+),?\s*(.*)$'
+                match = re.match(character_pattern, prompt)
+                
+                if match:
+                    # Prompt starts with character description - preserve it at the beginning
+                    character_part = match.group(1)
+                    scene_part = match.group(2)
+                    
+                    # Enhance only the scene part with style
+                    enhanced_scene = self.style_agent.enhance_prompt_with_style(
+                        base_prompt=scene_part,
+                        style=visual_style
+                    )
+                    
+                    # Reconstruct with character description first
+                    enhanced_prompt = f"{character_part}, {enhanced_scene}"
+                    logger.info(f"🎭 Preserved character description at start of prompt")
+                else:
+                    # No character description at start - enhance normally
+                    enhanced_prompt = self.style_agent.enhance_prompt_with_style(
+                        base_prompt=prompt,
+                        style=visual_style
+                    )
                 
                 # Remove preemptive policy checking - let VEO handle it
                 # Policy violations will be caught and handled if VEO rejects the prompt
@@ -1451,21 +1476,49 @@ The last frame of this scene connects to the next.
                 session_dir = session_manager.get_session_path("images")
                 frame_path = os.path.join(session_dir, f"last_frame_{clip_id}.jpg")
             
-            # Use ffmpeg to extract the last frame
-            cmd = [
-                'ffmpeg', '-y',
-                '-sseof', '-1',  # Seek to 1 second before end
-                '-i', video_path,
-                '-vframes', '1',
-                '-q:v', '1',
-                '-an',
-                frame_path
-            ]
+            # CRITICAL FIX: Extract the ACTUAL last frame, not 1 second before
+            # First, get the exact duration of the video
+            duration = self._get_video_duration(video_path)
+            if not duration:
+                logger.warning("Could not determine video duration, using fallback method")
+                # Fallback: Use sseof with minimal offset
+                cmd = [
+                    'ffmpeg', '-y',
+                    '-sseof', '-0.04',  # 40ms before end (approximately 1 frame at 25fps)
+                    '-i', video_path,
+                    '-vframes', '1',
+                    '-q:v', '1',
+                    '-an',
+                    frame_path
+                ]
+            else:
+                # Use exact timestamp to get the last frame
+                # Get FPS from configuration based on platform
+                from ..config.video_config import video_config
+                platform = getattr(self, '_current_platform', 'instagram')  # Default to instagram
+                fps = video_config.get_fps(platform)
+                
+                # Go back by the number of frames specified in config
+                frames_to_trim = video_config.animation_timing.frame_continuity_trim_frames
+                frame_time = duration - (frames_to_trim / fps)  # Go back exactly N frames
+                
+                cmd = [
+                    'ffmpeg', '-y',
+                    '-ss', str(max(0, frame_time)),  # Seek to exact timestamp
+                    '-i', video_path,
+                    '-vframes', '1',
+                    '-q:v', '1',
+                    '-an',
+                    frame_path
+                ]
             
             result = subprocess.run(cmd, capture_output=True, text=True)
             
             if result.returncode == 0 and os.path.exists(frame_path):
                 logger.info(f"🖼️ Extracted last frame for continuity: {frame_path}")
+                # Log the exact frame time for debugging
+                if duration:
+                    logger.debug(f"📍 Extracted frame from timestamp: {max(0, frame_time):.3f}s (duration: {duration:.3f}s)")
                 return frame_path
             else:
                 logger.warning(f"Failed to extract last frame: {result.stderr}")
@@ -4490,17 +4543,50 @@ This is a placeholder file. In a full implementation, this would be a complete M
         
         character_descriptions = {}
         
-        # Pattern to match character descriptions in parentheses
-        # Example: "David Ben-Gurion (with his iconic white Einstein-like hair, round face, and distinctive appearance)"
-        pattern = r'([A-Za-z\s\-]+?)\s*\(([^)]+appearance[^)]*|[^)]+hair[^)]*|[^)]+face[^)]*|[^)]+look[^)]*|[^)]+like the real[^)]*)\)'
+        # Multiple patterns to catch different description formats
+        patterns = [
+            # Pattern 1: Name (description)
+            r'([A-Za-z\s\-]+?)\s*\(([^)]+(?:appearance|hair|face|look|like the real|wearing|dressed|with)[^)]*)\)',
+            # Pattern 2: Name with description after colon or dash
+            r'([A-Za-z\s\-]+?)\s*[:-]\s*([^.]+(?:hair|face|appearance|wearing|dressed|look)[^.]*)\.', 
+            # Pattern 3: "Name looks like..."
+            r'([A-Za-z\s\-]+?)\s+(?:looks like|appears as|portrayed as|depicted as)\s+([^.]+)\.'
+        ]
         
-        matches = re.findall(pattern, mission_text, re.IGNORECASE)
+        for pattern in patterns:
+            matches = re.findall(pattern, mission_text, re.IGNORECASE)
+            
+            for match in matches:
+                character_name = match[0].strip()
+                description = match[1].strip()
+                # Avoid overwriting with less detailed descriptions
+                if character_name.lower() not in character_descriptions or len(description) > len(character_descriptions.get(character_name.lower(), '')):
+                    character_descriptions[character_name.lower()] = f"{character_name}: {description}"
+                    logger.info(f"📝 Extracted character description - {character_name}: {description}")
         
-        for match in matches:
-            character_name = match[0].strip()
-            description = match[1].strip()
-            character_descriptions[character_name.lower()] = f"{character_name}: {description}"
-            logger.info(f"📝 Extracted character description - {character_name}: {description}")
+        # Also check for common historical figures mentioned without explicit descriptions
+        # and add their historically accurate descriptions
+        historical_figures = {
+            'david ben-gurion': 'David Ben-Gurion: elderly statesman with distinctive white Einstein-like hair styled outward, round face, often in dark suit',
+            'ben-gurion': 'Ben-Gurion: elderly statesman with distinctive white Einstein-like hair styled outward, round face, often in dark suit',
+            'golda meir': 'Golda Meir: elderly woman with pulled-back gray hair in a bun, strong facial features, often in dark clothing',
+            'yitzhak rabin': 'Yitzhak Rabin: middle-aged man with receding dark hairline, serious expression, military or formal attire',
+            'levi eshkol': 'Levi Eshkol: older man with glasses, balding with white hair on sides, thoughtful expression',
+            'menachem begin': 'Menachem Begin: older man with thick glasses, balding with white side hair, formal dark suit',
+            'yitzhak shamir': 'Yitzhak Shamir: short elderly man with white hair, stern expression, formal attire',
+            'shimon peres': 'Shimon Peres: distinguished elderly man with white hair, warm smile, formal suit',
+            'ehud barak': 'Ehud Barak: middle-aged man with glasses, short dark hair, military bearing',
+            'ariel sharon': 'Ariel Sharon: heavyset man with white hair, round face, strong presence',
+            'ehud olmert': 'Ehud Olmert: man with glasses, receding hairline, business suit',
+            'benjamin netanyahu': 'Benjamin Netanyahu: man with gray hair, strong jawline, confident demeanor'
+        }
+        
+        # Check if any historical figures are mentioned but not described
+        mission_lower = mission_text.lower()
+        for name, desc in historical_figures.items():
+            if name in mission_lower and name not in character_descriptions:
+                character_descriptions[name] = desc
+                logger.info(f"📝 Added historical figure description - {desc}")
         
         return character_descriptions
     
@@ -4544,22 +4630,15 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 2. Make it appropriate for the mission context
                 3. Use animated/cartoon style for child-friendly content if child-friendly is true
                 4. Be specific about visual elements, colors, and atmosphere
-                5. Character descriptions from the mission (use these EXACTLY):
+                5. CRITICAL - Character descriptions from the mission (MUST use these EXACTLY as provided):
 {character_desc_section}
-                6. Additional historical figure references (use only if not in mission):
-                   - David Ben-Gurion: elderly man with distinctive white hair styled outward, round face, often in suit
-                   - Golda Meir: elderly woman with pulled-back gray hair, strong facial features, often in dark clothing
-                   - Yitzhak Rabin: middle-aged man with receding hairline, serious expression, military or formal attire
-                   - Levi Eshkol: older man with glasses, balding, thoughtful expression
-                   - Menachem Begin: older man with glasses, balding with side hair, formal suit
-                   - Yitzhak Shamir: short man with white hair, stern expression
-                   - Shimon Peres: distinguished man with white hair, warm smile
-                   - Ehud Barak: middle-aged man with glasses, short hair
-                   - Ariel Sharon: heavyset man with white hair, round face
-                   - Ehud Olmert: man with glasses, receding hairline
-                   - Benjamin Netanyahu: man with gray hair, strong jawline
-                7. Avoid any text overlays or words in the video
-                8. Focus on visual storytelling with historically accurate character depictions
+                6. IMPORTANT: Start the prompt by establishing WHO is in the scene using the exact character descriptions above
+                7. For any historical figures, they MUST look like their real-world counterparts as described
+                8. Avoid any text overlays or words in the video
+                9. Focus on visual storytelling with historically accurate character depictions
+                10. The prompt should begin with character establishment, e.g. "David Ben-Gurion with his distinctive white Einstein-like hair..."
+                
+                Example format: "[Character with their exact description] is [doing action] in [setting], [additional scene details]"
                 
                 Return ONLY the VEO prompt text (one line, no JSON):
                 """
@@ -4576,6 +4655,14 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     visual_prompt += ", no text overlays"
                     
                 logger.info(f"🎯 AI-generated visual prompt: '{visual_prompt}'")
+                
+                # CRITICAL: Log if character descriptions were properly included
+                if character_descriptions:
+                    for name, desc in character_descriptions.items():
+                        if name in visual_prompt.lower() or any(part in visual_prompt.lower() for part in desc.lower().split(':')):
+                            logger.info(f"✅ Character '{name}' included in prompt")
+                        else:
+                            logger.warning(f"⚠️ Character '{name}' NOT found in generated prompt")
                 return visual_prompt
                 
             else:
