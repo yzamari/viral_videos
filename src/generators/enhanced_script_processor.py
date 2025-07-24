@@ -13,6 +13,7 @@ from ..models.video_models import Language, Platform, VideoCategory
 from ..utils.json_fixer import JSONFixer
 from ..ai.manager import AIServiceManager
 from ..ai.interfaces.text_generation import TextGenerationRequest
+from ..config.tts_config import tts_config
 
 logger = get_logger(__name__)
 
@@ -132,7 +133,7 @@ TARGET SEGMENTS: {target_segment_count if target_segment_count else 'Auto (1 sen
 TASK: Optimize this script to FIT EXACTLY {target_duration} seconds - no more, no less.
 
 REQUIREMENTS:
-1. DURATION CONTROL: Target is EXACTLY {target_duration}s - aim for {int(target_duration * 2.3)} to {int(target_duration * 2.5)} words MAXIMUM
+1. DURATION CONTROL: Target is EXACTLY {target_duration}s - aim for {int(tts_config.get_target_word_range(target_duration)[0])} to {int(tts_config.get_target_word_range(target_duration)[1])} words MAXIMUM
 2. TTS OPTIMIZATION: Use clear, pronounceable words
 3. NATURAL FLOW: Maintain conversational tone
 4. CONTENT EXPANSION: If the script is too short, expand it by:
@@ -147,7 +148,7 @@ REQUIREMENTS:
    - Condensing verbose phrases
    - Keeping only the most impactful moments
 4. {segment_instruction}
-5. TIMING CALCULATION: Estimate speaking time (average 2.3-2.5 words per second for natural pace)
+5. TIMING CALCULATION: Estimate speaking time (average 2.7-2.9 words per second for natural pace)
 6. CONTRACTION AVOIDANCE: NEVER use contractions - always write full forms (use "do not" instead of "don't", "it is" instead of "it's", "let us" instead of "let's", etc.)
 7. SENTENCE INTEGRITY: Each segment must contain complete sentences with proper punctuation
 8. SUBTITLE CONSTRAINTS: {sentences_per_segment}
@@ -168,8 +169,8 @@ CRITICAL TTS RULES:
 
 DURATION CALCULATION AND STRATEGY:
 - PRIORITY: Create scripts that fit EXACTLY within the duration - NOT MORE!
-- Average speaking speed: 2.3-2.5 words per second (comfortable pace)
-- TARGET word count for {target_duration}s: {int(target_duration * 2.3)} to {int(target_duration * 2.5)} words MAXIMUM
+- Average speaking speed: 2.7-2.9 words per second (comfortable pace)
+- TARGET word count for {target_duration}s: {int(tts_config.get_target_word_range(target_duration)[0])} to {int(tts_config.get_target_word_range(target_duration)[1])} words MAXIMUM
 - DO NOT EXCEED this word count!
 - IMPORTANT: Account for contraction expansion when calculating word count (e.g., "don't" becomes "do not" = 2 words)
 - STRATEGY: Be concise and impactful - quality over quantity
@@ -288,7 +289,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 # Assume it's already an enum
                 language_value = language.value if hasattr(language, 'value') else str(language)
                 
-            target_words = int(target_duration * 2.5)  # 2.5 words per second (matching prompt)
+            target_words = tts_config.calculate_word_count(target_duration)
             
             # Simple word-based trimming/expansion
             words = script_content.split()
@@ -327,7 +328,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
             
             for sentence in sentences:
                 sentence_words = len(sentence.split())
-                sentence_duration = sentence_words / 2.5  # 2.5 words per second
+                sentence_duration = tts_config.calculate_duration(sentence_words)
                 
                 segments.append({
                     "text": sentence,
@@ -387,7 +388,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
             # Calculate basic metrics
             words = optimized_script.split()
             word_count = len(words)
-            estimated_duration = word_count / 2.5  # 2.5 words per second (matching prompt)
+            estimated_duration = tts_config.calculate_duration(word_count)
             
             # If target duration specified, trim to fit
             if target_duration and estimated_duration > target_duration:
@@ -495,7 +496,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
         
         for sentence in sentences:
             sentence_words = len(sentence.split())
-            sentence_duration = sentence_words / 2.5  # 2.5 words per second
+            sentence_duration = sentence_words / 2.8  # 2.8 words per second
             
             segments.append({
                 "text": sentence,

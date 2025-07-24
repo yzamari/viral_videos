@@ -14,6 +14,7 @@ from datetime import datetime
 import json
 import subprocess
 from ..config.ai_model_config import DEFAULT_AI_MODEL
+from ..config.tts_config import tts_config
 
 # Suppress pkg_resources deprecation warnings from imageio_ffmpeg
 warnings.filterwarnings("ignore", category=UserWarning, module="imageio_ffmpeg")
@@ -1156,21 +1157,35 @@ The last frame of this scene connects to the next.
             audio_files = sorted([f for f in os.listdir(audio_dir) if f.startswith('audio_segment_') and f.endswith('.mp3')])
             logger.info(f"🎵 Found {len(audio_files)} audio segments in session")
         
-        # Determine number of clips based on audio segments
+        # CRITICAL: Determine number of clips based on actual segments that will generate audio
+        # Priority: audio segments > script segments > core decisions > fallback
         if audio_files:
             num_clips = len(audio_files)
             logger.info(f"🎯 Using {num_clips} video clips to match {num_clips} audio segments")
+        elif script_segments:
+            # Count actual segments that will generate audio (one per sentence)
+            if isinstance(script_segments, list) and len(script_segments) > 0:
+                # If segments have been processed for audio, use that count
+                if script_segments[0].get('text'):
+                    num_clips = len(script_segments)
+                    logger.info(f"🎬 Using {num_clips} video clips to match {num_clips} script segments")
+                else:
+                    # Count sentences in the script for more accurate prediction
+                    full_script = ' '.join([s.get('text', '') for s in script_segments])
+                    import re
+                    sentences = [s.strip() for s in re.split(r'[.!?]+', full_script) if s.strip()]
+                    num_clips = len(sentences)
+                    logger.info(f"📝 Detected {num_clips} sentences, will generate {num_clips} video clips")
+            else:
+                num_clips = len(script_segments)
+                logger.info(f"🎬 Using script segments: {num_clips} clips")
         elif hasattr(config, 'num_clips') and config.num_clips is not None:
             num_clips = config.num_clips
             logger.info(f"🎯 Using core decisions: {num_clips} clips from centralized decision framework")
         else:
-            if not script_segments:
-                # Fallback to duration-based calculation
-                num_clips = max(3, int(config.duration_seconds / 5))
-                logger.warning(f"⚠️ No script segments found, using duration-based clips: {num_clips}")
-            else:
-                num_clips = len(script_segments)
-                logger.info(f"🎬 Using script segments: {num_clips} clips matching {num_clips} segments")
+            # Fallback to duration-based calculation
+            num_clips = max(3, int(config.duration_seconds / 5))
+            logger.warning(f"⚠️ No script segments found, using duration-based clips: {num_clips}")
         
         # CRITICAL: Get actual audio durations if available
         actual_audio_durations = []
@@ -1544,7 +1559,7 @@ The last frame of this scene connects to the next.
                 
                 # CRITICAL: Pre-calculate segments to fit within target duration
                 segments_to_generate = []
-                words_per_second = 2.5  # Standard speech rate
+                words_per_second = tts_config.WORDS_PER_SECOND  # Use centralized TTS config
                 
                 # Define target_duration from config
                 target_duration = config.duration_seconds
