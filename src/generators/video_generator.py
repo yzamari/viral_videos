@@ -4545,12 +4545,12 @@ This is a placeholder file. In a full implementation, this would be a complete M
         
         # Multiple patterns to catch different description formats
         patterns = [
-            # Pattern 1: Name (description)
-            r'([A-Za-z\s\-]+?)\s*\(([^)]+(?:appearance|hair|face|look|like the real|wearing|dressed|with)[^)]*)\)',
-            # Pattern 2: Name with description after colon or dash
-            r'([A-Za-z\s\-]+?)\s*[:-]\s*([^.]+(?:hair|face|appearance|wearing|dressed|look)[^.]*)\.', 
-            # Pattern 3: "Name looks like..."
-            r'([A-Za-z\s\-]+?)\s+(?:looks like|appears as|portrayed as|depicted as)\s+([^.]+)\.'
+            # Pattern 1: Name (description with appearance keywords)
+            r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*\(([^)]+(?:appearance|hair|face|look|like the real|wearing|dressed|with his|with her|elderly|young|middle-aged|man|woman)[^)]*)\)',
+            # Pattern 2: Name with description after colon or dash (but not general text)
+            r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*[:-]\s*([^.]+(?:hair|face|appearance|wearing|dressed|elderly|young|man|woman)[^.]*)(?=\.)(?!\s*[A-Z])', 
+            # Pattern 3: "Name looks like..." (more specific)
+            r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:looks like|appears as|portrayed as|depicted as)\s+([^.]+)(?=\.)'
         ]
         
         for pattern in patterns:
@@ -4559,6 +4559,19 @@ This is a placeholder file. In a full implementation, this would be a complete M
             for match in matches:
                 character_name = match[0].strip()
                 description = match[1].strip()
+                
+                # Skip if name is too short or common words
+                if len(character_name) < 3 or character_name.lower() in [
+                    'the', 'and', 'with', 'from', 'marvel', 'style', 'scene', 
+                    'sequence', 'effect', 'montage', 'dramatic', 'epic', 'comic',
+                    'tragedy', 'comedy', 'action', 'thriller', 'horror'
+                ]:
+                    continue
+                
+                # Skip if it doesn't look like a proper name (at least one capital letter)
+                if not any(c.isupper() for c in character_name):
+                    continue
+                    
                 # Avoid overwriting with less detailed descriptions
                 if character_name.lower() not in character_descriptions or len(description) > len(character_descriptions.get(character_name.lower(), '')):
                     character_descriptions[character_name.lower()] = f"{character_name}: {description}"
@@ -4659,10 +4672,29 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 # CRITICAL: Log if character descriptions were properly included
                 if character_descriptions:
                     for name, desc in character_descriptions.items():
-                        if name in visual_prompt.lower() or any(part in visual_prompt.lower() for part in desc.lower().split(':')):
-                            logger.info(f"✅ Character '{name}' included in prompt")
+                        # Extract the actual character name from the description
+                        actual_name = desc.split(':')[0].strip() if ':' in desc else name
+                        
+                        # Check multiple variations of the name
+                        name_variations = [
+                            name.lower(),
+                            actual_name.lower(),
+                            actual_name.split()[-1].lower() if ' ' in actual_name else actual_name.lower()  # Last name
+                        ]
+                        
+                        # Check if any variation of the name or key descriptors are in the prompt
+                        found = any(var in visual_prompt.lower() for var in name_variations)
+                        
+                        # Also check for key appearance descriptors
+                        if not found and ':' in desc:
+                            key_descriptors = ['hair', 'face', 'appearance', 'elderly', 'young', 'man', 'woman']
+                            desc_parts = desc.split(':')[1].lower().split()
+                            found = any(word in visual_prompt.lower() for word in desc_parts if word in key_descriptors)
+                        
+                        if found:
+                            logger.info(f"✅ Character '{actual_name}' included in prompt")
                         else:
-                            logger.warning(f"⚠️ Character '{name}' NOT found in generated prompt")
+                            logger.debug(f"⚠️ Character '{actual_name}' may not be explicitly mentioned in prompt")
                 return visual_prompt
                 
             else:
