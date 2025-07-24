@@ -12,12 +12,13 @@ from ..models.video_models import TrendingVideo, VideoAnalysis, Platform
 from ..utils.logging_config import get_logger
 from ..scrapers.youtube_scraper import YouTubeScraper
 
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 logger = get_logger(__name__)
 
 class VideoAnalyzer:
     """Analyze trending videos using Gemini AI"""
 
-    def __init__(self, api_key: str, model_name: str = "gemini-2.5-flash"):
+    def __init__(self, api_key: str, model_name: str = None):
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model_name)
         self.youtube_scraper = None  # Will be initialized if needed

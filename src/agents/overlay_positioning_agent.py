@@ -11,6 +11,7 @@ from .gemini_helper import GeminiModelHelper, ensure_api_key
 import json
 import re
 
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 logger = get_logger(__name__)
 
 class OverlayPositioningAgent:
@@ -19,15 +20,15 @@ class OverlayPositioningAgent:
     def __init__(self, api_key: str):
         """Initialize the positioning agent"""
         self.api_key = ensure_api_key(api_key)
-        self.model = GeminiModelHelper.get_configured_model(self.api_key, 'gemini-2.5-flash')
+        self.model = GeminiModelHelper.get_configured_model(self.api_key)
 
         logger.info("🎯 OverlayPositioningAgent initialized with colorful hooks support")
 
-    def analyze_optimal_positioning(self, topic: str, video_style: str, platform: str,
+    def analyze_optimal_positioning(self, mission: str, video_style: str, platform: str,
                                   duration: float, subtitle_count: int) -> Dict[str, Any]:
         """Analyze optimal positioning for subtitles and colorful text overlays"""
 
-        logger.info(f"🎯 Analyzing optimal positioning for: {topic}")
+        logger.info(f"🎯 Analyzing optimal positioning for: {mission}")
         logger.info(
             f"📱 Platform: {platform}, "
             f"Style: {video_style}, "
@@ -36,7 +37,7 @@ class OverlayPositioningAgent:
         try:
             # Optimized concise prompt for faster processing
             positioning_prompt = f"""
-Overlay positioning for: "{topic}"
+Overlay positioning for: "{mission}"
 Platform: {platform}, Style: {video_style}, Duration: {duration}s
 
 Rules:

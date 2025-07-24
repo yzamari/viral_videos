@@ -909,9 +909,10 @@ class DecisionFramework:
         """Basic AI optimization without Mission Planning Agent"""
         try:
             import google.generativeai as genai
+            from ..config.ai_model_config import DEFAULT_AI_MODEL
             
             # Configure AI model
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel(DEFAULT_AI_MODEL)
             
             # Simple AI prompt for clip structure optimization
             prompt = f"""
@@ -1048,13 +1049,23 @@ Provide your decision in this exact JSON format:
             try:
                 from ..utils.character_reference_manager import CharacterReferenceManager
                 char_manager = CharacterReferenceManager()
-                character_image_path = char_manager.get_character_for_mission(character_id, character_scene)
                 
-                if character_image_path:
-                    self._record_decision("character_image_path", character_image_path, DecisionSource.SYSTEM_DEFAULT,
-                                        confidence=0.9, reasoning="Generated character scene image for video consistency")
+                # Check if character_id is an existing stored character or a description
+                if character_id in char_manager.characters:
+                    # It's a stored character ID, use the existing system
+                    character_image_path = char_manager.get_character_for_mission(character_id, character_scene)
+                    
+                    if character_image_path:
+                        self._record_decision("character_image_path", character_image_path, DecisionSource.SYSTEM_DEFAULT,
+                                            confidence=0.9, reasoning="Generated character scene image for video consistency")
+                    else:
+                        logger.warning(f"Failed to generate character scene for stored character {character_id}")
                 else:
-                    logger.warning(f"Failed to generate character scene for {character_id}")
+                    # It's a character description, not a stored ID
+                    # Log info instead of warning since this is expected behavior
+                    logger.info(f"Character description provided instead of stored ID: {character_id[:50]}...")
+                    logger.info("Character consistency will be handled by video generation prompts")
+                    # Don't generate image for descriptions, let the video generator handle it
                     
             except Exception as e:
                 logger.error(f"Character image generation failed: {e}")

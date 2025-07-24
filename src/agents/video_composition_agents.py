@@ -16,6 +16,7 @@ from datetime import datetime
 import json
 import re
 from ..utils.json_fixer import create_json_fixer
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class VideoStructureAgent:
     def __init__(self, api_key: str):
         self.api_key = api_key
         if genai_available and GenerativeModel:
-            self.model = GenerativeModel('gemini-2.5-flash')
+            self.model = GenerativeModel(DEFAULT_AI_MODEL)
         else:
             logger.warning("Google Generative AI is not available. Structure analysis will be limited.")
             self.model = None
@@ -49,7 +50,7 @@ class VideoStructureAgent:
         }
 
     def analyze_video_structure(self,
-                                topic: str,
+                                mission: str,
                                 category: str,
                                 platform: str,
                                 total_duration: int,
@@ -59,7 +60,7 @@ class VideoStructureAgent:
         Analyze and decide optimal video structure with mixed continuity approaches
         """
         logger.info(
-            f"🏗️ StructureMaster analyzing video structure for: {topic}")
+            f"🏗️ StructureMaster analyzing video structure for: {mission}")
 
         try:
             analysis_prompt = """
@@ -67,7 +68,7 @@ You are StructureMaster, an expert AI agent specializing in video structure and
         composition strategy.
 
 ANALYZE THIS VIDEO CONTENT:
-- Topic: {topic}
+- Mission: {mission}
 - Category: {category}
 - Platform: {platform}
 - Total Duration: {total_duration} seconds
@@ -132,7 +133,15 @@ Respond in JSON format:
                 logger.warning("⚠️ AI model not available, using fallback structure")
                 return self._create_fallback_structure(total_duration)
 
-            response = self.model.generate_content(analysis_prompt)
+            response = self.model.generate_content(
+                analysis_prompt.format(
+                    mission=mission,
+                    category=category,
+                    platform=platform,
+                    total_duration=total_duration,
+                    style=style
+                )
+            )
 
             # Use centralized JSON fixer to handle parsing
             expected_structure = {
@@ -151,7 +160,7 @@ Respond in JSON format:
                     'agent_name': 'StructureMaster',
                     'analysis_timestamp': datetime.now().isoformat(),
                     'input_parameters': {
-                        'topic': topic,
+                        'mission': mission,
                         'category': category,
                         'platform': platform,
                         'total_duration': total_duration,
@@ -264,7 +273,7 @@ class ClipTimingAgent:
     def __init__(self, api_key: str):
         self.api_key = api_key
         if genai_available and GenerativeModel:
-            self.model = GenerativeModel('gemini-2.5-flash')
+            self.model = GenerativeModel(DEFAULT_AI_MODEL)
         else:
             logger.warning("Google Generative AI is not available. Timing analysis will be limited.")
             self.model = None
@@ -435,7 +444,7 @@ class VisualElementsAgent:
     def __init__(self, api_key: str):
         self.api_key = api_key
         if genai_available and GenerativeModel:
-            self.model = GenerativeModel('gemini-2.5-flash')
+            self.model = GenerativeModel(DEFAULT_AI_MODEL)
         else:
             logger.warning("Google Generative AI is not available. Visual design analysis will be limited.")
             self.model = None
@@ -601,7 +610,7 @@ class MediaTypeAgent:
     def __init__(self, api_key: str):
         self.api_key = api_key
         if genai_available and GenerativeModel:
-            self.model = GenerativeModel('gemini-2.5-flash')
+            self.model = GenerativeModel(DEFAULT_AI_MODEL)
         else:
             logger.warning("Google Generative AI is not available. Media type analysis will be limited.")
             self.model = None

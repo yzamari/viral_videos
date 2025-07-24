@@ -4,6 +4,7 @@ import google.generativeai as genai
 from config.config import settings
 import json
 import re
+from src.config.ai_model_config import DEFAULT_AI_MODEL
 
 class ScriptWriterAgent:
     def __init__(self, session_id):
@@ -13,7 +14,7 @@ class ScriptWriterAgent:
         self.gemini_model = None
         if settings.google_api_key:
             genai.configure(api_key=settings.google_api_key)
-            self.gemini_model = genai.GenerativeModel('gemini-2.5-flash')
+            self.gemini_model = genai.GenerativeModel(DEFAULT_AI_MODEL)
 
     def write_script(self, trends, sentiment, style):
         self.monitoring_service.log(

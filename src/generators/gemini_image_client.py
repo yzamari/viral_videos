@@ -18,6 +18,7 @@ from PIL  import Image, ImageDraw, ImageFont, ImageFilter
 from io import BytesIO
 
 from ..utils.logging_config import get_logger
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = get_logger(__name__)
 
@@ -48,7 +49,7 @@ class GeminiImageClient:
         genai.configure(api_key=api_key)
 
         # Use the correct image generation model
-        self.model = genai.GenerativeModel('gemini-2.0-flash-preview-image-generation')
+        self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
 
         # Supported image styles
         self.style_keywords = {

@@ -17,6 +17,7 @@ from ..agents.voice_director_agent import VoiceDirectorAgent
 from ..generators.enhanced_script_processor import EnhancedScriptProcessor
 from ..generators.rtl_validator import RTLValidator
 from ..generators.enhanced_multilang_tts import EnhancedMultilingualTTS
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = get_logger(__name__)
 
@@ -281,7 +282,7 @@ class IntegratedMultilingualGenerator:
             # Simple translation using Gemini (could be enhanced)
             import google.generativeai as genai
             genai.configure(api_key=self.api_key)
-            model = genai.GenerativeModel('gemini-2.5-flash')
+            model = genai.GenerativeModel(DEFAULT_AI_MODEL)
 
             language_names = {
                 Language.HEBREW: "Hebrew (עברית)",

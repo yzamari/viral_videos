@@ -8,6 +8,7 @@ from typing import Dict, Any, Optional
 from ..utils.logging_config import get_logger
 from .gemini_helper import GeminiModelHelper, ensure_api_key
 
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 try:
     import google.generativeai as genai
 except ImportError:
@@ -23,19 +24,19 @@ class VisualStyleAgent:
         self.api_key = ensure_api_key(api_key)
         
         if genai:
-            self.model = GeminiModelHelper.get_configured_model(self.api_key, 'gemini-2.5-flash')
+            self.model = GeminiModelHelper.get_configured_model(self.api_key)
         else:
             self.model = None
             
         logger.info("🎨 VisualStyleAgent initialized")
     
-    def analyze_optimal_style(self, topic: str, target_audience: str, platform: str, 
+    def analyze_optimal_style(self, mission: str, target_audience: str, platform: str, 
                             content_type: str = "general", humor_level: str = "medium") -> Dict[str, Any]:
         """
         Analyze and determine optimal visual style for content
         
         Args:
-            topic: Content topic/subject
+            mission: Content mission/subject
             target_audience: Target audience description
             platform: Target platform (tiktok, youtube, instagram, etc.)
             content_type: Type of content (educational, entertainment, etc.)
@@ -45,12 +46,12 @@ class VisualStyleAgent:
             Dictionary with style decision and reasoning
         """
         try:
-            logger.info(f"🎨 Analyzing optimal visual style for: {topic}")
+            logger.info(f"🎨 Analyzing optimal visual style for: {mission}")
             logger.info(f"👥 Audience: {target_audience}, Platform: {platform}")
             
             # Optimized concise prompt for faster processing
             style_prompt = f"""
-Analyze visual style for: "{topic}"
+Analyze visual style for: "{mission}"
 Platform: {platform}
 Audience: {target_audience}
 
@@ -75,7 +76,7 @@ Return JSON:
             # Check if response is valid
             if not response or not response.text:
                 logger.warning("⚠️ Empty response from Visual Style API")
-                return self._get_fallback_style(topic, target_audience, platform)
+                return self._get_fallback_style(mission, target_audience, platform)
 
             # Parse the response
             try:
@@ -84,7 +85,7 @@ Return JSON:
                 # Check if response is empty
                 if not response_text:
                     logger.warning("⚠️ Empty response text from Visual Style API")
-                    return self._get_fallback_style(topic, target_audience, platform)
+                    return self._get_fallback_style(mission, target_audience, platform)
 
                 json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
                 if json_match:
@@ -98,23 +99,23 @@ Return JSON:
                     return style_decision
                 else:
                     logger.warning("⚠️ No JSON found in Visual Style response")
-                    return self._get_fallback_style(topic, target_audience, platform)
+                    return self._get_fallback_style(mission, target_audience, platform)
                     
             except json.JSONDecodeError as e:
                 logger.warning(f"⚠️ Could not parse style decision: {e}")
-                return self._get_fallback_style(topic, target_audience, platform)
+                return self._get_fallback_style(mission, target_audience, platform)
             except Exception as e:
                 logger.error(f"❌ Style analysis failed: {e}")
-                return self._get_fallback_style(topic, target_audience, platform)
+                return self._get_fallback_style(mission, target_audience, platform)
                 
         except Exception as e:
             logger.error(f"❌ Visual style analysis failed: {e}")
-            return self._get_fallback_style(topic, target_audience, platform)
+            return self._get_fallback_style(mission, target_audience, platform)
 
-    def _get_fallback_style(self, topic: str, target_audience: str, platform: str) -> Dict[str, Any]:
-        """Fallback style decision based on topic and audience with improved typography and colors"""
+    def _get_fallback_style(self, mission: str, target_audience: str, platform: str) -> Dict[str, Any]:
+        """Fallback style decision based on mission and audience with improved typography and colors"""
 
-        topic_lower = topic.lower()
+        mission_lower = mission.lower()
         platform_lower = platform.lower()
         audience_lower = target_audience.lower()
 
@@ -148,15 +149,15 @@ Return JSON:
         educational_keywords = ['education', 'tutorial', 'how to', 'learn', 'fact', 'knowledge', 'science']
         humor_keywords = ['funny', 'comedy', 'humor', 'meme', 'joke', 'laugh']
         
-        if any(word in topic_lower for word in serious_keywords):
+        if any(word in mission_lower for word in serious_keywords):
             primary_style = 'realistic'
             color_palette = 'muted'
             engagement_prediction = 'medium'
-        elif any(word in topic_lower for word in educational_keywords):
+        elif any(word in mission_lower for word in educational_keywords):
             primary_style = 'realistic'
             color_palette = 'natural'
             engagement_prediction = 'medium'
-        elif any(word in topic_lower for word in humor_keywords):
+        elif any(word in mission_lower for word in humor_keywords):
             primary_style = 'cartoon'
             color_palette = 'vibrant'
             engagement_prediction = 'high'

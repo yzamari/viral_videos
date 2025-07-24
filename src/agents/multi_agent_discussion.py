@@ -18,6 +18,7 @@ except ImportError:
 
 from .discussion_visualizer import DiscussionVisualizer
 from ..services.monitoring_service import MonitoringService
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 from ..utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -101,7 +102,7 @@ class MultiAgentDiscussionSystem:
         # Initialize Gemini client
         if genai:
             genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
+            self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
         else:
             self.model = None
             logger.warning("Google Generative AI not available")

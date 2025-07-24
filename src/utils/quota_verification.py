@@ -13,6 +13,7 @@ import os
 from datetime import datetime, timedelta
 from typing import Dict, Tuple, Any, Optional
 from ..utils.logging_config import get_logger
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = get_logger(__name__)
 
@@ -324,7 +325,7 @@ def get_real_google_quota_usage(api_key: str) -> Dict[str, Any]:
         # Try to make a small test request to check quota status
         try:
             # Use a simple text generation request to test quota
-            _model = genai.GenerativeModel('gemini-2.5-flash')
+            _model = genai.GenerativeModel(DEFAULT_AI_MODEL)
 
             # If we get here, quota is available
             return {

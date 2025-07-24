@@ -78,7 +78,7 @@ class EnhancedMultilingualTTS:
     def generate_intelligent_voice_audio(self,
                                        script: str,
                                        language: Language,
-                                       topic: str,
+                                       mission: str,
                                        platform: Any,
                                        category: Any,
                                        duration_seconds: int,
@@ -101,7 +101,7 @@ class EnhancedMultilingualTTS:
             
             # Get AI voice selection strategy
             voice_strategy = self.voice_director.analyze_content_and_select_voices(
-                topic=topic,
+                mission=mission,
                 script=script,
                 language=language,
                 platform=platform,
@@ -645,7 +645,7 @@ class EnhancedMultilingualTTS:
             return None
 
     def get_voice_strategy_summary(self,
-                                 topic: str,
+                                 mission: str,
                                  language: Language,
                                  platform: Any,
                                  category: Any,
@@ -655,7 +655,7 @@ class EnhancedMultilingualTTS:
 
         try:
             voice_strategy = self.voice_director.analyze_content_and_select_voices(
-                topic=topic,
+                mission=mission,
                 script="Sample script for analysis",
                 language=language,
                 platform=platform,

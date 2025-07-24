@@ -132,9 +132,14 @@ CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All C
 - Comprehensive configuration system (NO hardcoded values)
 - Platform-aware video encoding
 - Dynamic text sizing and positioning
+- AI model configuration (gemini-2.5-flash-lite default)
+- Mission-based system (replaced all "topic" references)
+- Character description extraction from missions
+- Enhanced script processing without duplication
+- Content and visual continuity flags
 
 ### 🔄 In Progress
-- Testing centralized decision flow
+- Testing full Israeli PM series generation
 - Performance optimization
 - Enhanced error handling
 

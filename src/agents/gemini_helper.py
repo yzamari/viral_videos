@@ -8,6 +8,7 @@ from ..ai.manager import AIServiceManager
 from ..ai.config import AIConfiguration, AIProvider
 from ..ai.factory import AIServiceType
 from ..utils.logging_config import get_logger
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = get_logger(__name__)
 
@@ -16,19 +17,23 @@ class GeminiModelHelper:
     """Helper class for consistent Gemini model initialization"""
     
     @staticmethod
-    def get_configured_model(api_key: str, model_name: str = "gemini-2.5-flash") -> genai.GenerativeModel:
+    def get_configured_model(api_key: str, model_name: str = None) -> genai.GenerativeModel:
         """
         Get a configured Gemini model with proper API key handling
         
         Args:
             api_key: The API key to use
-            model_name: The model name (default: gemini-2.5-flash)
+            model_name: The model name (default: from ai_model_config.DEFAULT_AI_MODEL)
             
         Returns:
             Configured GenerativeModel instance
         """
         if not api_key:
             raise ValueError("API key is required for Gemini model")
+        
+        # Use default model if not specified
+        if model_name is None:
+            model_name = DEFAULT_AI_MODEL
         
         # Configure genai with the API key
         genai.configure(api_key=api_key)

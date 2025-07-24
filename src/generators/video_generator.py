@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import json
 import subprocess
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 # Suppress pkg_resources deprecation warnings from imageio_ffmpeg
 warnings.filterwarnings("ignore", category=UserWarning, module="imageio_ffmpeg")
@@ -893,10 +894,10 @@ The last frame of this scene connects to the next.
         call_to_action = video_config.get_default_cta(platform) if platform else video_config.default_text.ctas_by_platform['default']
         
         config = GeneratedVideoConfig(
+            mission=mission,  # mission must be first
+            duration_seconds=duration_seconds if duration_seconds is not None else 30,  # Use provided duration or default to 30s
             target_platform=platform,
             category=category,
-            duration_seconds=duration_seconds if duration_seconds is not None else 30,  # Use provided duration or default to 30s
-            mission=mission,
             style="viral",
             tone="engaging",
             target_audience=(user_config or {}).get('target_audience', 'general audience'),
@@ -923,7 +924,7 @@ The last frame of this scene connects to the next.
         
         # First, use Director to generate a proper narrative script from the mission
         try:
-            logger.info(f"🎬 Director generating narrative script for: {config.mission[:100]}..."
+            logger.info(f"🎬 Director generating narrative script for: {config.mission[:100]}...")
             
             # Get patterns for the Director (empty dict if not available)
             patterns = {}
@@ -1408,6 +1409,18 @@ The last frame of this scene connects to the next.
         
         logger.info(f"🎬 Generated {len(clips)} video clips")
         return clips
+    
+    def _calculate_expected_clip_count(self, duration: float) -> int:
+        """Calculate expected video clip count based on duration"""
+        # Match the logic used in video clip generation
+        if duration <= 10:
+            return max(1, int(duration / 3))
+        elif duration <= 30:
+            return max(3, int(duration / 5))
+        elif duration <= 60:
+            return max(5, int(duration / 7))
+        else:
+            return max(7, int(duration / 10))
 
     def _extract_last_frame(self, video_path: str, clip_id: str, session_context: Optional[SessionContext] = None) -> Optional[str]:
         """Extract the last frame from a video for frame continuity"""
@@ -3384,7 +3397,7 @@ The last frame of this scene connects to the next.
                                   output_path: str, session_context: SessionContext,
                                   target_duration: Optional[float] = None, 
                                   platform: Optional[str] = None) -> str:
-        """Compose video with standard cuts (no frame continuity)"""
+        """Compose video with standard cuts - concatenate video clips, then add audio segments sequentially"""
         try:
             import subprocess
             
@@ -3397,6 +3410,8 @@ The last frame of this scene connects to the next.
             if not audio_files:
                 logger.warning("⚠️ No audio files available for composition")
                 return ""
+            
+            logger.info(f"🎬 Composing video with {len(clips)} video clips and {len(audio_files)} audio segments")
             
             # CRITICAL: Calculate total audio duration to ensure full coverage
             total_audio_duration = 0.0
@@ -3416,7 +3431,7 @@ The last frame of this scene connects to the next.
                     total_audio_duration += 5.0
             
             logger.info(f"🎵 Total audio duration: {total_audio_duration:.1f}s")
-            logger.info(f"🎵 Individual audio durations: {[f'{d:.1f}s' for d in audio_durations]}")
+            logger.info(f"🎵 Audio segments ({len(audio_files)}): {[f'{d:.1f}s' for d in audio_durations]}")
             
             # Calculate total video duration
             total_video_duration = 0.0
@@ -3436,12 +3451,15 @@ The last frame of this scene connects to the next.
                     total_video_duration += 5.0
             
             logger.info(f"🎬 Total video duration: {total_video_duration:.1f}s")
-            logger.info(f"🎬 Individual video durations: {[f'{d:.1f}s' for d in video_durations]}")
+            logger.info(f"🎬 Video clips ({len(clips)}): {[f'{d:.1f}s' for d in video_durations]}")
             
             # CRITICAL: Ensure audio covers entire video
             if total_audio_duration < total_video_duration * 0.95:  # Allow 5% tolerance
                 logger.warning(f"⚠️ Audio duration ({total_audio_duration:.1f}s) is shorter than video ({total_video_duration:.1f}s)")
                 logger.info("🔧 Will ensure audio loops or extends to cover entire video")
+            
+            # NEW APPROACH: First concatenate all video clips, then add audio sequentially
+            logger.info("🎬 NEW APPROACH: Concatenating video clips first, then adding audio segments sequentially")
             
             # Create simple concatenation
             input_parts = []
@@ -3474,12 +3492,16 @@ The last frame of this scene connects to the next.
             # Join the scale filters
             scale_filter_str = ";".join(video_scale_filters)
             
-            # Create concatenation inputs
+            # Create concatenation inputs for video ONLY
             video_concat_inputs = "".join([f"[v{i}]" for i in range(len(clips))])
+            
+            # Concatenate audio files sequentially (one per sentence)
             audio_inputs = "".join([f"[{len(clips)+i}:a]" for i in range(len(audio_files))])
             
-            # CRITICAL FIX: Ensure filter complex is valid with scaling
+            # CRITICAL FIX: New filter complex - concatenate video clips, then add audio segments
             if len(clips) > 0 and len(audio_files) > 0:
+                # First concatenate all video clips into one continuous video
+                # Then concatenate all audio segments sequentially
                 filter_complex = f"{scale_filter_str};{video_concat_inputs}concat=n={len(clips)}:v=1:a=0[outv];{audio_inputs}concat=n={len(audio_files)}:v=0:a=1[outa]"
             elif len(clips) > 0:
                 # Only video, no audio
@@ -4447,6 +4469,26 @@ This is a placeholder file. In a full implementation, this would be a complete M
         
         return False
 
+    def _extract_character_descriptions_from_mission(self, mission_text: str) -> Dict[str, str]:
+        """Extract character descriptions from mission text"""
+        import re
+        
+        character_descriptions = {}
+        
+        # Pattern to match character descriptions in parentheses
+        # Example: "David Ben-Gurion (with his iconic white Einstein-like hair, round face, and distinctive appearance)"
+        pattern = r'([A-Za-z\s\-]+?)\s*\(([^)]+appearance[^)]*|[^)]+hair[^)]*|[^)]+face[^)]*|[^)]+look[^)]*|[^)]+like the real[^)]*)\)'
+        
+        matches = re.findall(pattern, mission_text, re.IGNORECASE)
+        
+        for match in matches:
+            character_name = match[0].strip()
+            description = match[1].strip()
+            character_descriptions[character_name.lower()] = f"{character_name}: {description}"
+            logger.info(f"📝 Extracted character description - {character_name}: {description}")
+        
+        return character_descriptions
+    
     def _create_visual_prompt_from_segment(self, segment_text: str, scene_number: int, style: str = "dynamic") -> str:
         """Transform segment text into a safe visual prompt for VEO"""
         logger.info(f"🎨 Creating visual prompt from segment: '{segment_text[:100]}...'")
@@ -4460,9 +4502,20 @@ This is a placeholder file. In a full implementation, this would be a complete M
         # Get mission context
         mission_context = getattr(self, '_current_mission', '')
         
+        # Extract character descriptions from mission
+        character_descriptions = self._extract_character_descriptions_from_mission(mission_context)
+        
         try:
             # Use AI to generate appropriate visual prompt
             if hasattr(self, 'positioning_agent') and self.positioning_agent:
+                # Build character descriptions section first
+                character_desc_section = ""
+                if character_descriptions:
+                    for desc in character_descriptions.values():
+                        character_desc_section += f"                   - {desc}\n"
+                else:
+                    character_desc_section = "                   - Use generic character descriptions\n"
+                
                 ai_prompt = f"""
                 Generate a VEO video generation prompt based on this content:
                 
@@ -4476,8 +4529,22 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 2. Make it appropriate for the mission context
                 3. Use animated/cartoon style for child-friendly content if child-friendly is true
                 4. Be specific about visual elements, colors, and atmosphere
-                5. Avoid any text overlays or words in the video
-                6. Focus on visual storytelling
+                5. Character descriptions from the mission (use these EXACTLY):
+{character_desc_section}
+                6. Additional historical figure references (use only if not in mission):
+                   - David Ben-Gurion: elderly man with distinctive white hair styled outward, round face, often in suit
+                   - Golda Meir: elderly woman with pulled-back gray hair, strong facial features, often in dark clothing
+                   - Yitzhak Rabin: middle-aged man with receding hairline, serious expression, military or formal attire
+                   - Levi Eshkol: older man with glasses, balding, thoughtful expression
+                   - Menachem Begin: older man with glasses, balding with side hair, formal suit
+                   - Yitzhak Shamir: short man with white hair, stern expression
+                   - Shimon Peres: distinguished man with white hair, warm smile
+                   - Ehud Barak: middle-aged man with glasses, short hair
+                   - Ariel Sharon: heavyset man with white hair, round face
+                   - Ehud Olmert: man with glasses, receding hairline
+                   - Benjamin Netanyahu: man with gray hair, strong jawline
+                7. Avoid any text overlays or words in the video
+                8. Focus on visual storytelling with historically accurate character depictions
                 
                 Return ONLY the VEO prompt text (one line, no JSON):
                 """
@@ -4533,7 +4600,13 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 2. Use animated/cartoon style appropriate for the content if child-friendly is true
                 3. Make each scene visually distinct
                 4. Be creative but safe for all audiences
-                5. No text overlays or words in the video
+                5. If the mission context mentions historical figures, ensure accurate character depictions:
+                   - David Ben-Gurion: elderly man with distinctive white hair styled outward, round face
+                   - Golda Meir: elderly woman with pulled-back gray hair, strong facial features
+                   - Yitzhak Rabin: middle-aged man with receding hairline, serious expression
+                   - Levi Eshkol: older man with glasses, balding, thoughtful expression
+                   - Any other historical figures should match their real appearance
+                6. No text overlays or words in the video
                 
                 Return ONLY the VEO prompt text (one line, no JSON):
                 """
@@ -4945,7 +5018,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 
                 try:
                     import google.generativeai as genai
-                    model = genai.GenerativeModel('gemini-2.5-flash')
+                    model = genai.GenerativeModel(DEFAULT_AI_MODEL)
                     response = model.generate_content(style_prompt)
                     
                     import json
@@ -5180,7 +5253,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 
                 try:
                     import google.generativeai as genai
-                    model = genai.GenerativeModel('gemini-2.5-flash')
+                    model = genai.GenerativeModel(DEFAULT_AI_MODEL)
                     response = model.generate_content(simple_prompt)
                     
                     import json

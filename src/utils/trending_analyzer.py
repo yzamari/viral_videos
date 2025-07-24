@@ -7,6 +7,7 @@ import os
 from typing import Dict, List, Any
 import google.generativeai as genai
 from ..utils.logging_config import get_logger
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = get_logger(__name__)
 
@@ -19,7 +20,7 @@ class TrendingAnalyzer:
 
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
+            self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
         else:
             self.model = None
             logger.warning("No API key provided for TrendingAnalyzer")

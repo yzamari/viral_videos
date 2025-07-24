@@ -28,6 +28,7 @@ except ImportError:
 
 from ..utils.logging_config import get_logger
 from ..utils.json_fixer import create_json_fixer
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = get_logger(__name__)
 
@@ -79,7 +80,7 @@ class InternetFactCheckerAgent:
         
         if GEMINI_AVAILABLE and api_key:
             genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
+            self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
         else:
             self.model = None
             logger.warning("⚠️ Gemini not available. Fact checking will be limited.")

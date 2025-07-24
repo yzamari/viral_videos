@@ -484,7 +484,7 @@ class WorkingOrchestrator:
         else:
             # Auto mode - use AI agent to decide
             decision = self.continuity_agent.analyze_frame_continuity_need(
-                topic=self.mission,
+                mission=self.mission,
                 category=self.category.value,
                 platform=self.platform.value,
                 duration=self.duration,
@@ -566,6 +566,7 @@ class WorkingOrchestrator:
             title="Duration & Timing Validation",
             description=f"CRITICAL: Ensure ALL content fits EXACTLY within {self.duration} seconds ±5%",
             context={
+                'mission': self.mission,  # Add mission to context
                 'target_duration': self.duration,
                 'max_duration': self.duration * 1.05,  # 5% tolerance
                 'min_duration': self.duration * 0.95,  # 5% tolerance
@@ -608,6 +609,7 @@ class WorkingOrchestrator:
             title="Duration & Timing Validation",
             description=f"Ensure all content fits EXACTLY within {self.duration} seconds ±5%",
             context={
+                'mission': self.mission,  # Add mission to context
                 'target_duration': self.duration,
                 'max_duration': self.duration * 1.05,  # 5% tolerance
                 'min_duration': self.duration * 0.95,  # 5% tolerance
@@ -828,7 +830,7 @@ class WorkingOrchestrator:
         
         # Use Director to create base script
         script_data = self.director.write_script(
-            topic=self.mission,
+            mission=self.mission,
             style=self.style,
             duration=self.duration,
             platform=self.platform,
@@ -883,7 +885,7 @@ class WorkingOrchestrator:
         # Voice decisions with safe defaults
         voice_decision = self.voice_agent.analyze_content_and_select_voices(
             script=str(script_data),
-            topic=self.mission,
+            mission=self.mission,
             language=Language.ENGLISH_US,
             platform=self.platform,
             category=self.category,
@@ -1000,7 +1002,7 @@ class WorkingOrchestrator:
             # Structure Analysis
             if self.structure_agent:
                 structure_analysis = self.structure_agent.analyze_video_structure(
-                    topic=self.mission,
+                    mission=self.mission,
                     category=self.category.value,
                     platform=self.platform.value,
                     total_duration=self.duration
@@ -1258,10 +1260,10 @@ class WorkingOrchestrator:
 
         # Enhanced configuration with platform and category for AI timing
         enhanced_config = GeneratedVideoConfig(
+            mission=mission,  # mission must be first parameter
+            duration_seconds=duration_seconds,
             target_platform=platform,
             category=category,
-            duration_seconds=duration_seconds,
-            topic=mission,
             session_id=self.session_id,  # CRITICAL: Pass the session ID from orchestrator
             style=style,
             tone=tone,
@@ -1405,7 +1407,7 @@ class WorkingOrchestrator:
             
             # Create config based on cheap mode level
             cheap_config = GeneratedVideoConfig(
-                topic=self.mission,
+                mission=self.mission,
                 duration_seconds=self.duration,
                 target_platform=self.platform,
                 category=self.category,

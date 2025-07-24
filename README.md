@@ -107,12 +107,14 @@
 - Google Cloud Project with Vertex AI enabled
 - Google AI API key
 
-### 🚀 **Latest Release: v3.0.0**
-- **Style Reference System**: Extract and reuse visual styles from any video
-- **Theme System**: Professional themes for consistent branding
-- **Enhanced Architecture**: Modular OOP design for all new features
-- **CLI Integration**: Full command-line support for themes and styles
-- **Coming Soon**: Content scraping and media integration
+### 🚀 **Latest Release: v3.1.0**
+- **Zero Hardcoding**: Complete configuration system - all values configurable
+- **AI Model Flexibility**: Easy switching between AI models (gemini-2.5-flash-lite default)
+- **Enhanced Continuity**: Improved content and visual continuity flags
+- **Mission-Based System**: Replaced "topic" with "mission" throughout codebase
+- **Character Extraction**: Automatic character description extraction from missions
+- **Script Processing**: Fixed duplication issues in script generation
+- **Previous v3.0.0**: Style references, themes, modular architecture
 
 ### Installation
 ```bash
@@ -143,7 +145,17 @@ python main.py generate \
   --duration 30 \
   --style viral \
   --tone engaging \
-  --visual-style cinematic
+  --visual-style cinematic \
+  --no-cheap  # Use premium features
+
+# Use continuity flags for coherent storytelling
+python main.py generate \
+  --mission "Tell the story of climate change" \
+  --platform youtube \
+  --duration 60 \
+  --content-continuity \
+  --visual-continuity \
+  --mode enhanced
 
 # Use artistic visual styles
 python main.py generate \

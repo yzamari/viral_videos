@@ -10,6 +10,7 @@ from typing import Dict, Any, List
 import json
 import logging
 from datetime import datetime
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = logging.getLogger(__name__)
 class ImageTimingAgent:
@@ -22,7 +23,7 @@ class ImageTimingAgent:
         """Initialize the Image Timing Agent"""
         self.api_key = api_key
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
 
         # Agent personality and expertise
         self.agent_profile = {

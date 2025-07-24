@@ -9,6 +9,7 @@ from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
 import hashlib
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 try:
     import google.generativeai as genai
@@ -55,7 +56,7 @@ class ContentCredibilitySystem:
         self.api_key = api_key
         if genai:
             genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-2.5-flash')
+            self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
         else:
             self.model = None
             

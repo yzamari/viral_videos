@@ -10,6 +10,7 @@ import json
 import re
 import os
 from ..utils.logging_config import get_logger
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = get_logger(__name__)
 
@@ -19,7 +20,7 @@ class HashtagGenerator:
     def __init__(self, api_key: str):
         """Initialize the hashtag generator"""
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
         logger.info("🏷️ HashtagGenerator initialized")
 
     def generate_trending_hashtags(self, 

@@ -22,6 +22,7 @@ import google.generativeai as genai
 
 from ..utils.logging_config import get_logger
 from ..utils.session_manager import SessionManager
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = get_logger(__name__)
 
@@ -32,7 +33,7 @@ class TopicGenerationAgent:
         self.role = role
         self.expertise = expertise
         self.api_key = api_key
-        self.model = genai.GenerativeModel("gemini-2.5-flash")
+        self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
 
     def discuss_topic(self, idea: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Generate topic suggestion based on idea and context"""
@@ -300,7 +301,7 @@ Focus on specificity, actionability, and viral potential.
 
             # Get consensus from primary agents
             try:
-                model = genai.GenerativeModel("gemini-2.5-flash")
+                model = genai.GenerativeModel(DEFAULT_AI_MODEL)
                 consensus_prompt = """
 {discussion_prompt}
 

@@ -14,6 +14,7 @@ from typing import Dict, Any
 import logging
 from datetime import datetime
 from ..utils.json_fixer import create_json_fixer
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class ContinuityDecisionAgent:
         """Initialize the Continuity Decision Agent"""
         self.api_key = api_key
         if genai_available and GenerativeModel:
-            self.model = GenerativeModel('gemini-2.5-flash')
+            self.model = GenerativeModel(DEFAULT_AI_MODEL)
         else:
             logger.warning("Google Generative AI is not available. Continuity decisions will be limited.")
             self.model = None
@@ -56,7 +57,7 @@ class ContinuityDecisionAgent:
         }
 
     def analyze_frame_continuity_need(self,
-                                      topic: str,
+                                      mission: str,
                                       category: str,
                                       platform: str,
                                       duration: int,
@@ -65,7 +66,7 @@ class ContinuityDecisionAgent:
         Analyze whether frame continuity would enhance the video
 
         Args:
-            topic: Video topic/content
+            mission: Video mission/content
             category: Video category (Comedy, Educational, etc.)
             platform: Target platform (youtube, tiktok, etc.)
             duration: Video duration in seconds
@@ -76,7 +77,7 @@ class ContinuityDecisionAgent:
         """
 
         logger.info(
-            f"🎬 VisualFlow Agent analyzing frame continuity for: {topic}"
+            f"🎬 VisualFlow Agent analyzing frame continuity for: {mission}"
         )
 
         try:
@@ -86,7 +87,7 @@ You are VisualFlow, an expert AI agent specializing in frame continuity and
 visual storytelling flow.
 
 ANALYZE THIS VIDEO CONTENT:
-- Topic: {topic}
+- Mission: {mission}
 - Category: {category}
 - Platform: {platform}
 - Duration: {duration} seconds
@@ -144,14 +145,22 @@ Respond in JSON format:
             # Get AI analysis
             if not self.model:
                 logger.warning("⚠️ AI model not available, using fallback decision")
-                return self._make_fallback_decision(topic, category, platform, duration)
+                return self._make_fallback_decision(mission, category, platform, duration)
 
-            response = self.model.generate_content(analysis_prompt)
+            response = self.model.generate_content(
+                analysis_prompt.format(
+                    mission=mission,
+                    category=category,
+                    platform=platform,
+                    duration=duration,
+                    style=style
+                )
+            )
 
             # Check if response is valid
             if not response or not response.text:
                 logger.warning("⚠️ Empty response from VisualFlow API")
-                return self._make_fallback_decision(topic, category, platform, duration)
+                return self._make_fallback_decision(mission, category, platform, duration)
 
             # Use centralized JSON fixer to handle parsing
             expected_structure = {
@@ -173,7 +182,7 @@ Respond in JSON format:
                     'agent_name': 'VisualFlow',
                     'analysis_timestamp': datetime.now().isoformat(),
                     'input_parameters': {
-                        'topic': topic,
+                        'mission': mission,
                         'category': category,
                         'platform': platform,
                         'duration': duration,
@@ -200,16 +209,16 @@ Respond in JSON format:
                 return decision_data
             else:
                 logger.warning("⚠️ JSON fixer could not parse VisualFlow response")
-                return self._make_fallback_decision(topic, category, platform, duration)
+                return self._make_fallback_decision(mission, category, platform, duration)
 
         except Exception as e:
             logger.error(f"VisualFlow analysis failed: {e}")
             return self._make_fallback_decision(
-                topic, category, platform, duration
+                mission, category, platform, duration
             )
 
     def _make_fallback_decision(
-        self, topic: str, category: str, platform: str, duration: int
+        self, mission: str, category: str, platform: str, duration: int
     ) -> Dict[str, Any]:
         """
         Make a fallback decision using heuristics when AI analysis fails

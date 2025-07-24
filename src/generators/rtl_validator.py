@@ -8,6 +8,7 @@ import google.generativeai as genai
 
 from ..utils.logging_config import get_logger
 from ..models.video_models import Language
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = get_logger(__name__)
 
@@ -17,7 +18,7 @@ class RTLValidator:
     def __init__(self, api_key: str):
         self.api_key = api_key
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
 
         # RTL languages supported
         self.rtl_languages = {

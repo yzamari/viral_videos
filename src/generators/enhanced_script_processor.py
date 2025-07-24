@@ -87,7 +87,8 @@ class EnhancedScriptProcessor:
         logger.info("✅ Enhanced Script Processor initialized")
 
     async def process_script_for_tts(self, script_content: str, language,
-                             target_duration: float = None) -> Dict[str, Any]:
+                             target_duration: float = None, 
+                             target_segment_count: int = None) -> Dict[str, Any]:
         """Process script with AI optimization for exact duration matching"""
         try:
             # Handle both string and enum inputs for language
@@ -110,6 +111,14 @@ class EnhancedScriptProcessor:
                 logger.info(f"🎯 Target duration: {target_duration} seconds")
 
             # Enhanced prompt for duration-aware script processing
+            # Determine segmentation strategy
+            if target_segment_count and target_segment_count > 0:
+                segment_instruction = f"SEGMENT BREAKDOWN: Create EXACTLY {target_segment_count} segments. Group multiple sentences per segment as needed to match this count."
+                sentences_per_segment = "Group sentences naturally to create {target_segment_count} segments"
+            else:
+                segment_instruction = "SEGMENT BREAKDOWN: Split into segments of EXACTLY 1 SENTENCE per segment - NEVER combine sentences"
+                sentences_per_segment = "Each segment MUST be exactly 1 sentence for proper subtitle display"
+            
             processing_prompt = f"""
 You are an expert script processor specializing in TTS optimization and duration control.
 
@@ -118,6 +127,7 @@ ORIGINAL SCRIPT:
 
 TARGET LANGUAGE: {language_value}
 TARGET DURATION: {target_duration} seconds (STRICT LIMIT - DO NOT EXCEED!)
+TARGET SEGMENTS: {target_segment_count if target_segment_count else 'Auto (1 sentence per segment)'}
 
 TASK: Optimize this script to FIT EXACTLY {target_duration} seconds - no more, no less.
 
@@ -125,11 +135,22 @@ REQUIREMENTS:
 1. DURATION CONTROL: Target is EXACTLY {target_duration}s - aim for {int(target_duration * 2.3)} to {int(target_duration * 2.5)} words MAXIMUM
 2. TTS OPTIMIZATION: Use clear, pronounceable words
 3. NATURAL FLOW: Maintain conversational tone
-4. SEGMENT BREAKDOWN: Split into segments of EXACTLY 1 SENTENCE per segment - NEVER combine sentences
+4. CONTENT EXPANSION: If the script is too short, expand it by:
+   - Adding descriptive details to existing scenes
+   - Elaborating on actions and emotions
+   - Including atmospheric descriptions
+   - Adding dramatic pauses and emphasis
+   - NEVER duplicate or repeat content
+   - NEVER add new plot points not in the original
+5. CONTENT REDUCTION: If the script is too long, reduce it by:
+   - Removing redundant descriptions
+   - Condensing verbose phrases
+   - Keeping only the most impactful moments
+4. {segment_instruction}
 5. TIMING CALCULATION: Estimate speaking time (average 2.3-2.5 words per second for natural pace)
 6. CONTRACTION AVOIDANCE: NEVER use contractions - always write full forms (use "do not" instead of "don't", "it is" instead of "it's", "let us" instead of "let's", etc.)
-7. SENTENCE INTEGRITY: Each segment must contain exactly ONE complete sentence with proper punctuation
-8. SUBTITLE CONSTRAINTS: Each segment MUST be exactly 1 sentence for proper subtitle display
+7. SENTENCE INTEGRITY: Each segment must contain complete sentences with proper punctuation
+8. SUBTITLE CONSTRAINTS: {sentences_per_segment}
 9. SENTENCE LENGTH: Each sentence should be ~10-20 words for optimal subtitle readability
 10. CRITICAL RULE: NEVER put two sentences in one segment - always split them into separate segments
 
@@ -155,7 +176,9 @@ DURATION CALCULATION AND STRATEGY:
 - Remove any filler or redundant content
 - Use active voice and direct statements
 - Each sentence should deliver value
-- NEVER pad content just to fill time
+- If expanding: Add vivid descriptions and emotions, not repetition
+- If reducing: Keep the core narrative intact
+- CRITICAL: NEVER duplicate sentences or repeat the same content
 
 Please return a JSON response with the following structure:
 {{

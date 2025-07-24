@@ -18,6 +18,7 @@ from ..frameworks.content_credibility_system import ContentCredibilitySystem, Cr
 from ..frameworks.audience_intelligence_system import AudienceIntelligenceSystem, AudienceIntelligence
 from ..frameworks.ethical_optimization_system import EthicalOptimizationSystem, EthicalOptimization
 
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 logger = get_logger(__name__)
 
 
@@ -74,7 +75,7 @@ class MissionPlanningAgent:
     mission accomplishment.
     """
     
-    def __init__(self, api_key: str = None, model_name: str = "gemini-1.5-flash", ai_manager: AIServiceManager = None):
+    def __init__(self, api_key: str = None, model_name: str = None, ai_manager: AIServiceManager = None):
         """Initialize Mission Planning Agent"""
         if ai_manager:
             self.ai_manager = ai_manager

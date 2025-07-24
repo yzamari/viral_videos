@@ -8,6 +8,7 @@ import random
 from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
 
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 try:
     from google.generativeai.generative_models import GenerativeModel
     genai_available = True
@@ -46,7 +47,7 @@ class VoiceDirectorAgent:
     def __init__(self, api_key: str):
         self.api_key = ensure_api_key(api_key)
         if genai_available and GenerativeModel:
-            self.model = GeminiModelHelper.get_configured_model(self.api_key, 'gemini-2.5-flash')
+            self.model = GeminiModelHelper.get_configured_model(self.api_key)
         else:
             logger.warning("Google Generative AI is not available. Voice selection will be limited.")
             self.model = None

@@ -14,6 +14,7 @@ from typing import Dict, List, Optional, Any, Tuple
 import google.generativeai as genai
 from dataclasses  import dataclass
 from enum import Enum
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 try:
     from ..utils.logging_config import get_logger
     from ..models.video_models import GeneratedVideoConfig
@@ -67,7 +68,7 @@ class SuperMasterAgent:
 
         # Initialize Gemini model with special configuration
         genai.configure(api_key=api_key)
-        self.supermaster_model = genai.GenerativeModel('gemini-2.5-flash')
+        self.supermaster_model = genai.GenerativeModel(DEFAULT_AI_MODEL)
 
         # SuperMaster personality and capabilities
         self.agent_profile = {

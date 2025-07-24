@@ -8,6 +8,7 @@ import re
 import logging
 from typing import Dict, Any, Optional, Union
 from google.generativeai.generative_models import GenerativeModel
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class JSONFixer:
             api_key: Google AI API key for fixing corrupted JSON
         """
         self.api_key = api_key
-        self.model = GenerativeModel('gemini-1.5-flash')
+        self.model = GenerativeModel(DEFAULT_AI_MODEL)
         
     def fix_json(self, raw_response: str, expected_structure: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
         """

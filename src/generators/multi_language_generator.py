@@ -19,6 +19,7 @@ from ..models.video_models import (
 )
 from ..utils.logging_config import get_logger
 from .video_generator import VideoGenerator
+from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = get_logger(__name__)
 
@@ -28,7 +29,7 @@ class MultiLanguageVideoGenerator:
     def __init__(self, api_key: str, output_dir: str = "outputs"):
         self.api_key = api_key
         self.output_dir = output_dir
-        self.translation_model = genai.GenerativeModel('gemini-2.5-pro')
+        self.translation_model = genai.GenerativeModel(DEFAULT_AI_MODEL)
         genai.configure(api_key=api_key)
 
         # Enhanced language configuration with proper display names
