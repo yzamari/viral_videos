@@ -133,6 +133,10 @@ class GeneratedVideoConfig:
     voiceover_style: Optional[str] = None  # AI-generated, no hardcoded default
     sound_effects: Optional[List[str]] = None
 
+    # Character and scene settings
+    character: Optional[str] = None  # Character ID or description for consistent appearance
+    scene: Optional[str] = None  # Scene description for character placement
+
     # Inspiration and scoring
     inspired_by_videos: Optional[List[str]] = None
 

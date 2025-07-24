@@ -566,6 +566,7 @@ The last frame of this scene connects to the next.
         # CRITICAL: Store mission context and platform for VEO prompt generation
         self._current_mission = config.mission
         self._current_platform = config.target_platform.value if hasattr(config.target_platform, 'value') else str(config.target_platform)
+        self._current_config = config  # Store entire config for access in methods
         logger.info(f"🎯 Stored mission context: {self._current_mission}")
         logger.info(f"📱 Stored platform context: {self._current_platform}")
         
@@ -4616,8 +4617,23 @@ This is a placeholder file. In a full implementation, this would be a complete M
         # Get mission context
         mission_context = getattr(self, '_current_mission', '')
         
-        # Extract character descriptions from mission
-        character_descriptions = self._extract_character_descriptions_from_mission(mission_context)
+        # Use character from config if available, otherwise extract from mission
+        config = getattr(self, '_current_config', None)
+        if config and hasattr(config, 'character') and config.character:
+            # Character provided via --character flag
+            character_descriptions = {}
+            if ':' in config.character:
+                # Format: "Name: description"
+                parts = config.character.split(':', 1)
+                name = parts[0].strip().lower()
+                character_descriptions[name] = config.character
+            else:
+                # Just a character ID or name
+                character_descriptions[config.character.lower()] = config.character
+            logger.info(f"🎭 Using character from config: {config.character}")
+        else:
+            # Extract character descriptions from mission
+            character_descriptions = self._extract_character_descriptions_from_mission(mission_context)
         
         try:
             # Use AI to generate appropriate visual prompt

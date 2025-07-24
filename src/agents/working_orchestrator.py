@@ -1275,6 +1275,8 @@ class WorkingOrchestrator:
             background_music_style=background_music_style,
             voiceover_style=decisions.get('voice', {}).get('voice_style', 'energetic'),
             frame_continuity=frame_continuity,
+            character=config.get('character'),  # Add character from config
+            scene=config.get('scene'),  # Add scene from config
             use_real_veo2=config.get('force_generation') != 'force_image_gen',
             num_clips=num_clips,
             clip_durations=clip_durations
@@ -1422,6 +1424,8 @@ class WorkingOrchestrator:
                 color_scheme=["#000000", "#FFFFFF"] if cheap_mode else None,
                 text_overlays=[],
                 transitions=["none"] if cheap_mode else None,
+                character=config.get('character'),  # Add character from config
+                scene=config.get('scene'),  # Add scene from config
                 background_music_style="none" if cheap_mode else "upbeat",
                 voiceover_style="simple",
                 sound_effects=[],
