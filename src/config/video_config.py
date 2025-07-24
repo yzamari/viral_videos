@@ -114,7 +114,7 @@ class AnimationTimingConfig:
     """Animation and timing parameters"""
     # Fade settings
     fade_in_duration: float = 0.5
-    fade_out_duration: float = 0.5
+    fade_out_duration: float = 2.0
     
     # Display durations
     hook_display_duration: float = 3.0
