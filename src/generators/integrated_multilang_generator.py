@@ -188,7 +188,7 @@ class IntegratedMultilingualGenerator:
                 rtl_result = self.rtl_validator.validate_and_correct_rtl_text(
                     text=final_script,
                     language=language,
-                    context=f"Video about: {config.topic}"
+                    context=f"Video about: {config.mission}"
                 )
 
                 if rtl_result.get("corrections_made"):
@@ -237,7 +237,7 @@ class IntegratedMultilingualGenerator:
             logger.info(f"⏱️ Multilang Voice: Duration {config.duration_seconds}s → {num_clips} clips")
 
             result = self.voice_director.analyze_content_and_select_voices(
-                topic=config.topic,
+                mission=config.mission,
                 script=script,
                 language=language,
                 platform=config.target_platform,
@@ -348,7 +348,7 @@ class IntegratedMultilingualGenerator:
             audio_files = self.multilang_tts.generate_intelligent_voice_audio(
                 script=script,
                 language=language,
-                topic=config.topic,
+                mission=config.mission,
                 platform=config.target_platform,
                 category=config.category,
                 duration_seconds=config.duration_seconds,
@@ -385,7 +385,7 @@ class IntegratedMultilingualGenerator:
                 "clip_path": f"placeholder_clip_{i}.mp4",
                 "duration": clip_duration,
                 "scene_index": i,
-                "prompt": f"Scene {i + 1} of {config.topic}",
+                "prompt": f"Scene {i + 1} of {config.mission}",
                 "success": True
             })
 

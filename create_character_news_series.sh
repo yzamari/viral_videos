@@ -68,7 +68,7 @@ if [ $? -eq 0 ]; then
       --style professional \
       --visual-style documentary \
       --no-cheap \
-      --continuous \
+      --content-continuity \
       --mode enhanced \
       --session-id "character_news_ep2"
     

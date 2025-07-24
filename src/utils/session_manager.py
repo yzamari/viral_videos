@@ -29,7 +29,7 @@ class SessionManager:
 
     def create_session(
         self,
-        topic: str,
+        mission: str,
         platform: str,
         duration: int,
         category: str) -> str:
@@ -75,7 +75,7 @@ class SessionManager:
         self.session_data = {
             "session_id": session_id,
             "timestamp": timestamp,
-            "topic": topic,
+            "mission": mission,
             "platform": platform,
             "duration": duration,
             "category": category,
@@ -640,7 +640,7 @@ class SessionManager:
         if session_id == self.current_session and self.session_data:
             session_info = {
                 "session_id": session_id,
-                "topic": self.session_data.get("topic", ""),
+                "mission": self.session_data.get("mission", ""),
                 "platform": self.session_data.get("platform", ""),
                 "duration": self.session_data.get("duration", 0),
                 "category": self.session_data.get("category", ""),
@@ -679,7 +679,7 @@ class SessionManager:
             "total_files": total_files,
             "created_at": session_id.split("_")[-1] if "_" in session_id else "unknown",
             "is_active": False,
-            "topic": "Unknown",
+            "mission": "Unknown",
             "platform": "Unknown",
             "duration": 0,
             "category": "Unknown",

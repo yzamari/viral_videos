@@ -99,7 +99,7 @@ class TrendingVideo(BaseModel):
 
 @dataclass
 class GeneratedVideoConfig:
-    topic: str
+    mission: str
     duration_seconds: int
     target_platform: Platform
     category: VideoCategory

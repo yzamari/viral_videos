@@ -48,8 +48,8 @@ if [ $? -eq 0 ]; then
       --scene "Family Guy style animated news studio, Iran International branding, news desk, map of Iran in background" \
       --tone darkly_humorous \
       --style animated_comedy \
-      --continuous \
-      --frame-continuity \
+      --content-continuity \
+      --visual-continuity \
       --mode enhanced \
       --session-id "iran_fg_water_ep2"
     
@@ -71,8 +71,8 @@ if [ $? -eq 0 ]; then
           --character "animated news anchor: Maryam - Family Guy style Persian woman, oversized hijab, huge eyes, Lois Griffin body type but Persian features" \
           --tone darkly_humorous \
           --style animated_comedy \
-          --continuous \
-          --frame-continuity \
+          --content-continuity \
+          --visual-continuity \
           --mode enhanced \
           --session-id "iran_fg_water_ep3"
         
@@ -94,8 +94,8 @@ if [ $? -eq 0 ]; then
               --character "animated news anchor: Maryam - Family Guy style Persian woman, oversized hijab, huge eyes, Lois Griffin body type but Persian features" \
               --tone darkly_humorous \
               --style animated_comedy \
-              --continuous \
-              --frame-continuity \
+              --content-continuity \
+              --visual-continuity \
               --mode enhanced \
               --session-id "iran_fg_water_ep4"
             
@@ -118,8 +118,8 @@ if [ $? -eq 0 ]; then
                   --scene "Family Guy style animated news studio in chaos, Iran International branding damaged, news desk with papers scattered, apocalyptic background" \
                   --tone darkly_humorous \
                   --style animated_comedy \
-                  --continuous \
-                  --frame-continuity on \
+                  --content-continuity \
+                  --visual-continuity \
                   --no-cheap \
                   --mode enhanced \
                   --session-id "iran_fg_water_ep5"

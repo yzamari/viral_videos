@@ -287,7 +287,7 @@ class HashtagGenerator:
             text_path = session_context.get_output_path("hashtags", "hashtags_text.txt")
             with open(text_path, 'w', encoding='utf-8') as f:
                 f.write("# Trending Hashtags\n\n")
-                f.write(f"Generated for: {hashtag_data.get('generation_metadata', {}).get('topic', 'Unknown')}\n")
+                f.write(f"Generated for: {hashtag_data.get('generation_metadata', {}).get('mission', hashtag_data.get('generation_metadata', {}).get('topic', 'Unknown'))}\n")
                 f.write(f"Platform: {hashtag_data.get('generation_metadata', {}).get('platform', 'Unknown')}\n")
                 f.write(f"Generated at: {hashtag_data.get('generation_metadata', {}).get('generated_at', 'Unknown')}\n\n")
                 

@@ -284,7 +284,7 @@ Return JSON:
                 
                 # Animation & Cartoon Styles
                 'cartoon': 'animated, colorful, playful cartoon style',
-                'family guy animation style': 'Family Guy cartoon style, Seth MacFarlane animation, distinctive character design, bold outlines, flat colors, adult animated comedy style',
+                'family guy animation': 'Family Guy cartoon style, Seth MacFarlane animation, distinctive character design, bold outlines, flat colors, adult animated comedy style',
                 'family guy': 'Family Guy cartoon style, Seth MacFarlane animation, distinctive character design, bold outlines, flat colors, adult animated comedy style',
                 'disney': 'Disney animation style, magical, family-friendly',
                 'pixar': 'Pixar 3D animation style, vibrant, heartwarming',
@@ -426,12 +426,26 @@ Return JSON:
                 'schematic': 'schematic style, technical diagrams, instructional'
             }
             
-            style_description = style_mappings.get(style.lower())
+            style_lower = style.lower()
+            
+            # Try exact match first
+            style_description = style_mappings.get(style_lower)
+            
+            # If no exact match, try partial matches
+            if not style_description:
+                for key, value in style_mappings.items():
+                    if style_lower in key or key in style_lower:
+                        style_description = value
+                        logger.info(f"🎨 Found partial style match: '{style}' → '{key}'")
+                        break
+            
+            # If we have a style description, use it
             if style_description:
                 return f"{base_prompt}, {style_description}"
             else:
-                logger.warning(f"⚠️ Unknown style: {style}")
-                return base_prompt
+                # For unknown styles, just append the style as-is (it's a valid string)
+                logger.info(f"🎨 Using custom style: {style}")
+                return f"{base_prompt}, {style} style"
                 
         except Exception as e:
             logger.error(f"❌ Simple style enhancement failed: {e}")

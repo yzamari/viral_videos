@@ -77,7 +77,7 @@ class VideoGenerator:
             # Create comprehensive agent discussion with detailed analysis
             agent_discussion = {
                 "session_id": config.session_id,
-                "topic": config.topic,
+                "mission": config.mission,
                 "timestamp": datetime.now().isoformat(),
                 "generation_metadata": {
                     "platform": str(config.target_platform),
@@ -91,7 +91,7 @@ class VideoGenerator:
                         "agent_name": "EnhancedScriptProcessor",
                         "role": "Script optimization and TTS preparation",
                         "input": {
-                            "original_topic": config.topic,
+                            "original_mission": config.mission,
                             "target_duration": config.duration_seconds,
                             "platform": str(config.target_platform),
                             "hook": getattr(config, 'hook', video_config.get_default_hook(config.target_platform.value)),
@@ -116,7 +116,7 @@ class VideoGenerator:
                         "agent_name": "VisualStyleAgent",
                         "role": "Visual aesthetics and engagement optimization",
                         "input": {
-                            "topic": config.topic,
+                            "mission": config.mission,
                             "audience": getattr(config, 'target_audience', 'general'),
                             "platform": str(config.target_platform),
                             "content_type": str(config.category)
@@ -139,7 +139,7 @@ class VideoGenerator:
                         "agent_name": "OverlayPositioningAgent",
                         "role": "Subtitle and overlay positioning optimization",
                         "input": {
-                            "topic": config.topic,
+                            "mission": config.mission,
                             "style": style_decision.get('primary_style', 'dynamic'),
                             "platform": str(config.target_platform),
                             "duration": config.duration_seconds
@@ -161,7 +161,7 @@ class VideoGenerator:
                         "agent_name": "VoiceDirectorAgent",
                         "role": "Voice selection and audio strategy optimization",
                         "input": {
-                            "topic": config.topic,
+                            "mission": config.mission,
                             "script": script_result.get('optimized_script', ''),
                             "platform": str(config.target_platform),
                             "duration": config.duration_seconds
@@ -206,12 +206,12 @@ class VideoGenerator:
                 },
                 "generation_insights": {
                     "content_analysis": {
-                        "topic_relevance": "high",
+                        "mission_relevance": "high",
                         "viral_potential": "optimized",
                         "engagement_factors": ["visual_appeal", "audio_quality", "script_optimization", "platform_targeting"]
                     },
                     "optimization_summary": {
-                        "script_enhancement": f"Optimized from basic topic to {script_result.get('total_word_count', 0)} words",
+                        "script_enhancement": f"Optimized from basic mission to {script_result.get('total_word_count', 0)} words",
                         "duration_matching": f"Achieved {script_result.get('duration_match', 'unknown')} duration alignment",
                         "style_optimization": f"Selected {style_decision.get('primary_style', 'dynamic')} style for maximum engagement",
                         "voice_optimization": f"Configured {voice_config.get('strategy', 'single')} voice strategy"
@@ -231,7 +231,7 @@ class VideoGenerator:
 
 ## Session Information
 - **Session ID**: {config.session_id}
-- **Topic**: {config.topic}
+- **Mission**: {config.mission}
 - **Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 - **Platform**: {config.target_platform.value}
 - **Category**: {config.category.value}
@@ -300,7 +300,7 @@ class VideoGenerator:
 - **Engagement factors**: Visual appeal, Audio quality, Script optimization, Platform targeting
 
 ### ⚡ Optimization Summary
-- **Script enhancement**: Optimized from basic topic to {script_result.get('total_word_count', 0)} words
+- **Script enhancement**: Optimized from basic mission to {script_result.get('total_word_count', 0)} words
 - **Duration matching**: Achieved {script_result.get('duration_match', 'unknown')} duration alignment
 - **Style optimization**: Selected {style_decision.get('primary_style', 'dynamic')} style for maximum engagement
 - **Voice optimization**: Configured {voice_config.get('strategy', 'single')} voice strategy
@@ -562,7 +562,7 @@ The last frame of this scene connects to the next.
         start_time = time.time()
         
         # CRITICAL: Store mission context for VEO prompt generation
-        self._current_mission = config.topic
+        self._current_mission = config.mission
         logger.info(f"🎯 Stored mission context: {self._current_mission}")
         
         from ..utils.session_manager import session_manager
@@ -576,7 +576,7 @@ The last frame of this scene connects to the next.
         else:
             logger.info("🆕 Creating new session")
             session_id = session_manager.create_session(
-                topic=config.topic,
+                mission=config.mission,
                 platform=config.target_platform.value,
                 duration=config.duration_seconds,
                 category=config.category.value
@@ -585,7 +585,7 @@ The last frame of this scene connects to the next.
         # Create session context for this generation
         session_context = create_session_context(session_id)
         
-        logger.info(f"🎬 Starting video generation for: {config.topic}")
+        logger.info(f"🎬 Starting video generation for: {config.mission}")
         logger.info(f"   Duration: {config.duration_seconds}s")
         logger.info(f"   Platform: {config.target_platform.value}")
         logger.info(f"   Session: {session_id}")
@@ -612,7 +612,7 @@ The last frame of this scene connects to the next.
                         file_path=cheap_video_path,
                         file_size_mb=round(file_size_mb, 2),
                         generation_time_seconds=time.time() - start_time,
-                        script=config.topic,
+                        script=config.mission,
                         clips_generated=1,
                         audio_files=[],
                         success=True
@@ -645,7 +645,7 @@ The last frame of this scene connects to the next.
                 # Audio will be normal (not cheap)
         
         session_manager.log_generation_step("video_generation_started", "in_progress", {
-            "topic": config.topic,
+            "mission": config.mission,
             "platform": config.target_platform.value,
             "duration": config.duration_seconds
         })
@@ -774,7 +774,7 @@ The last frame of this scene connects to the next.
                     try:
                         fallback_discussion = {
                             "session_id": config.session_id,
-                            "topic": config.topic,
+                            "mission": config.mission,
                             "error": str(e),
                             "status": "failed",
                             "fallback": True
@@ -800,7 +800,7 @@ The last frame of this scene connects to the next.
                 file_path=final_video_path,
                 file_size_mb=self._get_file_size_mb(final_video_path),
                 generation_time_seconds=generation_time,
-                script=script_result.get('optimized_script', config.topic),
+                script=script_result.get('optimized_script', config.mission),
                 clips_generated=len(clips),
                 audio_files=audio_files,
                 success=True
@@ -811,7 +811,7 @@ The last frame of this scene connects to the next.
                 file_path=final_video_path,
                 file_size_mb=self._get_file_size_mb(final_video_path),
                 generation_time_seconds=generation_time,
-                script=script_result.get('optimized_script', config.topic),
+                script=script_result.get('optimized_script', config.mission),
                 clips_generated=len(clips),
                 audio_files=audio_files,
                 success=True
@@ -845,7 +845,7 @@ The last frame of this scene connects to the next.
             return result
     
     def generate_video_config(self, analyses: List[Any], platform: Platform, 
-                            category: VideoCategory, topic: Optional[str] = None,
+                            category: VideoCategory, mission: Optional[str] = None,
                             user_config: Optional[Dict[str, Any]] = None,
                             duration_seconds: Optional[int] = None) -> GeneratedVideoConfig:
         """
@@ -855,7 +855,7 @@ The last frame of this scene connects to the next.
             analyses: List of video analyses
             platform: Target platform
             category: Video category
-            topic: Optional topic override
+            mission: Optional mission override
             
         Returns:
             Generated video configuration
@@ -875,18 +875,18 @@ The last frame of this scene connects to the next.
             if hasattr(analysis, 'success_factors'):
                 success_factors.extend(analysis.success_factors[:2])
         
-        # Generate topic if not provided
-        if not topic:
-            topic = f"Trending: {themes[0] if themes else 'Viral Content'}"
+        # Generate mission if not provided
+        if not mission:
+            mission = f"Trending: {themes[0] if themes else 'Viral Content'}"
         
         # Create hook from trending insights
-        hook = hooks[0] if hooks else f"You won't believe what's trending with {topic}!"
+        hook = hooks[0] if hooks else f"You won't believe what's trending with {mission}!"
         
         # Generate main content
         main_content = [
-            f"Opening: {topic} is taking over social media",
-            f"Main: Here's why {topic} is so popular",
-            f"Conclusion: This is just the beginning of {topic}"
+            f"Opening: {mission} is taking over social media",
+            f"Main: Here's why {mission} is so popular",
+            f"Conclusion: This is just the beginning of {mission}"
         ]
         
         # Generate call to action
@@ -896,7 +896,7 @@ The last frame of this scene connects to the next.
             target_platform=platform,
             category=category,
             duration_seconds=duration_seconds if duration_seconds is not None else 30,  # Use provided duration or default to 30s
-            topic=topic,
+            mission=mission,
             style="viral",
             tone="engaging",
             target_audience=(user_config or {}).get('target_audience', 'general audience'),
@@ -914,23 +914,23 @@ The last frame of this scene connects to the next.
             predicted_viral_score=0.8
         )
         
-        logger.info(f"✅ Generated config for: {topic}")
+        logger.info(f"✅ Generated config for: {mission}")
         return config
     
     async def _process_script_with_ai(self, config: GeneratedVideoConfig, session_context: SessionContext) -> Dict[str, Any]:
         """Process script using AI script processor"""
         logger.info("📝 Processing script with AI")
         
-        # First, use Director to generate a proper narrative script from the topic/mission
+        # First, use Director to generate a proper narrative script from the mission
         try:
-            logger.info(f"🎬 Director generating narrative script for: {config.topic[:100]}...")
+            logger.info(f"🎬 Director generating narrative script for: {config.mission[:100]}..."
             
             # Get patterns for the Director (empty dict if not available)
             patterns = {}
             
             # Generate the narrative script
             director_result = self.director.write_script(
-                topic=config.topic,
+                mission=config.mission,
                 style=getattr(config, 'visual_style', 'dynamic'),
                 duration=config.duration_seconds,
                 platform=config.target_platform,
@@ -980,12 +980,12 @@ The last frame of this scene connects to the next.
             if config.hook:
                 script_parts.append(config.hook)
             
-            # Add main content - FIX: Use the actual topic/mission
+            # Add main content - FIX: Use the actual mission
             if config.main_content:
                 script_parts.extend(config.main_content)
             else:
-                # Use the topic as main content if no main_content provided
-                script_parts.append(config.topic)
+                # Use the mission as main content if no main_content provided
+                script_parts.append(config.mission)
             
             # Add call to action if provided
             if config.call_to_action:
@@ -1041,7 +1041,7 @@ The last frame of this scene connects to the next.
             import json
             session_data = {
                 "session_id": session_context.session_id,
-                "topic": config.topic,
+                "mission": config.mission,
                 "duration_seconds": config.duration_seconds,
                 "platform": str(config.target_platform),
                 "category": str(config.category),
@@ -1088,7 +1088,7 @@ The last frame of this scene connects to the next.
         logger.info("🎨 Getting AI visual style decision")
         
         style_decision = self.style_agent.analyze_optimal_style(
-            topic=config.topic,
+            mission=config.mission,
             target_audience=config.target_audience,
             platform=config.target_platform.value,
             content_type=config.category.value.lower(),
@@ -1104,7 +1104,7 @@ The last frame of this scene connects to the next.
         logger.info("🎯 Getting AI positioning decision")
         
         positioning_decision = self.positioning_agent.analyze_optimal_positioning(
-            topic=config.topic,
+            mission=config.mission,
             video_style=style_decision.get('primary_style', 'dynamic'),
             platform=config.target_platform.value,
             duration=float(config.duration_seconds),
@@ -1243,7 +1243,7 @@ The last frame of this scene connects to the next.
                     # Use full_text for prompts if available (avoid truncated text), otherwise use text
                     segment_text = segment.get('full_text', segment.get('text', ''))
                     clip_duration = segment.get('duration', config.duration_seconds / num_clips)
-                    # Create visual prompt from segment content, not the controversial topic
+                    # Create visual prompt from segment content, not the controversial mission
                     visual_style = getattr(config, 'visual_style', None) or style_decision.get('primary_style', 'dynamic')
                     prompt = self._create_visual_prompt_from_segment(segment_text, i+1, visual_style)
                     logger.info(f"⏱️ Clip {i+1} Duration: {clip_duration:.1f}s (from segment)")
@@ -1271,7 +1271,7 @@ The last frame of this scene connects to the next.
                     'original_segment': segment_text if 'segment_text' in locals() else 'N/A',
                     'base_prompt': prompt,
                     'enhanced_prompt': enhanced_prompt,
-                    'mission': config.topic,
+                    'mission': config.mission,
                     'duration': clip_duration,
                     'style': style_decision.get('primary_style', 'dynamic')
                 })
@@ -1334,7 +1334,7 @@ The last frame of this scene connects to the next.
                             # Rephrase with all original parameters preserved
                             enhanced_prompt = self._rephrase_problematic_prompt(
                                 enhanced_prompt, 
-                                config.topic, 
+                                config.mission, 
                                 i+1,
                                 style=style_decision.get('primary_style'),
                                 tone=getattr(config, 'tone', None),
@@ -1461,7 +1461,7 @@ The last frame of this scene connects to the next.
             if not script_segments:
                 logger.warning("⚠️ No script segments found, using full script as single segment")
                 script_segments = [{
-                    'text': script_result.get('final_script', config.topic),
+                    'text': script_result.get('final_script', config.mission),
                     'duration': config.duration_seconds
                 }]
             
@@ -1475,8 +1475,8 @@ The last frame of this scene connects to the next.
             
             # Get AI voice selection strategy for the correct number of segments
             voice_strategy = self.voice_director.analyze_content_and_select_voices(
-                topic=config.topic,
-                script=script_result.get('final_script', config.topic),
+                mission=config.mission,
+                script=script_result.get('final_script', config.mission),
                 language=Language.ENGLISH_US,
                 platform=config.target_platform,
                 category=config.category,
@@ -1507,7 +1507,7 @@ The last frame of this scene connects to the next.
             if hasattr(config, 'num_clips') and config.num_clips is not None and hasattr(config, 'clip_durations') and config.clip_durations is not None:
                 # Use core decisions to create segments with proper sentence boundaries
                 logger.info(f"🎯 Creating audio segments from script sentences")
-                full_script = script_result.get('final_script', config.topic)
+                full_script = script_result.get('final_script', config.mission)
                 
                 # CRITICAL FIX: Split by sentences first, then group if needed
                 import re
@@ -1611,7 +1611,7 @@ The last frame of this scene connects to the next.
                 segment_audio_files = self.tts_client.generate_intelligent_voice_audio(
                     script=segment_text,
                     language=Language.ENGLISH_US,
-                    topic=config.topic,
+                    mission=config.mission,
                     platform=config.target_platform,
                     category=config.category,
                     duration_seconds=int(segment_duration),  # Convert to int
@@ -1719,7 +1719,7 @@ The last frame of this scene connects to the next.
             from gtts import gTTS
             
             # Create simple script from config
-            script = f"{config.hook or 'Welcome!'} {config.topic} {config.call_to_action or 'Thanks for watching!'}"
+            script = f"{config.hook or 'Welcome!'} {config.mission} {config.call_to_action or 'Thanks for watching!'}"
             
             # Generate with gTTS
             tts = gTTS(text=script, lang='en', slow=False)
@@ -2547,10 +2547,10 @@ The last frame of this scene connects to the next.
             
             # Priority 3: Fallback to config content (old behavior)
             if not actual_script:
-                main_content = config.main_content or [config.topic]
-                # Generate dynamic content based on topic
-                topic_word = config.topic.split()[0] if config.topic else "content"
-                hook = config.hook or f"Discover {topic_word}!"
+                main_content = config.main_content or [config.mission]
+                # Generate dynamic content based on mission
+                mission_word = config.mission.split()[0] if config.mission else "content"
+                hook = config.hook or f"Discover {mission_word}!"
                 cta = config.call_to_action or video_config.get_default_cta(config.target_platform.value)
                 actual_script = f"{hook} {' '.join(main_content)} {cta}"
                 logger.warning("⚠️ Using fallback config content for subtitles")
@@ -3738,7 +3738,7 @@ The last frame of this scene connects to the next.
         content = f"""# AI Video Generator - Video Placeholder
 
 ## Video Information
-- Topic: {config.topic}
+- Mission: {config.mission}
 - Duration: {config.duration_seconds} seconds
 - Platform: {config.target_platform.value}
 - Category: {config.category.value}
@@ -4314,7 +4314,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 "positioning_decision": positioning_decision,
                 "timestamp": datetime.now().isoformat(),
                 "config": {
-                    "topic": config.topic,
+                    "mission": config.mission,
                     "platform": str(config.target_platform),
                     "category": str(config.category),
                     "duration": config.duration_seconds,
@@ -4505,7 +4505,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
         except Exception as e:
             logger.error(f"❌ AI prompt generation failed: {e}")
             # Emergency fallback
-            visual_prompt = f"animated educational scene about {mission_context[:30] if mission_context else 'topic'}, {style} style, scene {scene_number}, colorful animation, no text overlays"
+            visual_prompt = f"animated educational scene about {mission_context[:30] if mission_context else 'mission'}, {style} style, scene {scene_number}, colorful animation, no text overlays"
             return visual_prompt
         
         logger.info(f"🎨 Transformed segment to visual: '{segment_text[:30]}...' → '{visual_prompt}'")
@@ -4562,12 +4562,12 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Emergency fallback
             return f"animated {style} scene {scene_number}, educational content, colorful visuals, no text overlays"
     
-    def _create_safe_fallback_prompt(self, topic: str, scene_number: int) -> str:
+    def _create_safe_fallback_prompt(self, mission: str, scene_number: int) -> str:
         """This method is deprecated - use _rephrase_problematic_prompt instead"""
         logger.warning("⚠️ Using deprecated fallback method, this should not happen")
-        return self._rephrase_problematic_prompt("Generic content", topic, scene_number)
+        return self._rephrase_problematic_prompt("Generic content", mission, scene_number)
 
-    def _rephrase_problematic_prompt(self, original_prompt: str, topic: str, scene_number: int, 
+    def _rephrase_problematic_prompt(self, original_prompt: str, mission: str, scene_number: int, 
                                     style: str = None, tone: str = None, visual_style: str = None,
                                     duration: float = None, continuous_mode: bool = False) -> str:
         """Intelligently rephrase a problematic prompt to preserve ALL original parameters"""
@@ -4591,7 +4591,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 You are an expert at rephrasing video prompts to be policy-compliant while preserving ALL original parameters.
                 
                 ORIGINAL PROMPT: {original_prompt}
-                TOPIC/MISSION: {topic}
+                MISSION: {mission}
                 SCENE NUMBER: {scene_number}
                 
                 CRITICAL PARAMETERS TO PRESERVE:
@@ -4613,7 +4613,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 - NEVER change from realistic to cartoon or vice versa
                 - NEVER change the tone (if dramatic, keep dramatic)
                 - NEVER change the style (if cinematic, keep cinematic)
-                - NEVER change the mission or core topic
+                - NEVER change the mission or core subject
                 - NEVER alter the duration or pacing
                 - ONLY remove/rephrase the specific policy-violating content
                 
@@ -4649,16 +4649,16 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 
             else:
                 # Fallback: Try basic word replacement
-                safe_prompt = self._basic_prompt_sanitization(original_prompt, topic, scene_number)
+                safe_prompt = self._basic_prompt_sanitization(original_prompt, mission, scene_number)
                 logger.info(f"🔧 Basic sanitized prompt: {safe_prompt}")
                 return safe_prompt
                 
         except Exception as e:
             logger.error(f"❌ AI prompt rephrasing failed: {e}")
             # Emergency: Try basic sanitization
-            return self._basic_prompt_sanitization(original_prompt, topic, scene_number)
+            return self._basic_prompt_sanitization(original_prompt, mission, scene_number)
     
-    def _basic_prompt_sanitization(self, original_prompt: str, topic: str, scene_number: int) -> str:
+    def _basic_prompt_sanitization(self, original_prompt: str, mission: str, scene_number: int) -> str:
         """Basic word replacement for prompt sanitization when AI is unavailable - PRESERVES ORIGINAL STYLE"""
         # CRITICAL: Preserve original case and style
         sanitized = original_prompt
@@ -5244,11 +5244,11 @@ This is a placeholder file. In a full implementation, this would be a complete M
             category_str = str(config.category).lower().replace('videocategory.', '')
             
             # Get script content
-            script_content = script_result.get('final_script', config.topic)
+            script_content = script_result.get('final_script', config.mission)
             
             # Generate hashtags
             hashtag_data = self.hashtag_generator.generate_trending_hashtags(
-                topic=config.topic,
+                mission=config.mission,
                 platform=platform_str,
                 category=category_str,
                 script_content=script_content,
@@ -5266,7 +5266,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             try:
                 fallback_hashtags = {
                     'hashtags': [
-                        {'tag': f'#{config.topic.split()[0].lower()}', 'category': 'primary', 'estimated_reach': 'medium'},
+                        {'tag': f'#{config.mission.split()[0].lower()}', 'category': 'primary', 'estimated_reach': 'medium'},
                         {'tag': f'#{platform_str}', 'category': 'platform', 'estimated_reach': 'high'},
                         {'tag': '#viral', 'category': 'engagement', 'estimated_reach': 'high'},
                         {'tag': '#trending', 'category': 'engagement', 'estimated_reach': 'high'}
@@ -5381,7 +5381,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             audio_files = tts.generate_intelligent_voice_audio(
                 script=script_text,
                 language=language_enum,
-                topic=config.topic,
+                mission=config.mission,
                 platform=config.target_platform,
                 category=config.category,
                 duration_seconds=config.duration_seconds,
@@ -6297,7 +6297,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
         try:
             summary = {
                 "session_id": session_context.session_id,
-                "topic": config.topic,
+                "mission": config.mission,
                 "platform": config.target_platform.value,
                 "duration_seconds": config.duration_seconds,
                 "created_at": datetime.now().isoformat(),
@@ -6342,7 +6342,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
 
 ## Session Information
 - **Session ID**: {summary['session_id']}
-- **Topic**: {summary['topic']}
+- **Mission**: {summary['mission']}
 - **Platform**: {summary['platform']}
 - **Duration**: {summary['duration_seconds']} seconds
 - **Created**: {summary['created_at']}

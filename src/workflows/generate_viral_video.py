@@ -38,7 +38,7 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
     Main video generation workflow
 
     Args:
-        mission: Video mission/topic
+        mission: Video mission
         category: Video category
         platform: Target platform
         duration: Video duration in seconds
@@ -124,7 +124,7 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
         else:
             from ..utils.session_manager import session_manager
             session_id = session_manager.create_session(
-                topic=mission,
+                mission=mission,
                 platform=platform,
                 duration=duration,
                 category=category
@@ -179,6 +179,28 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             core_decisions=core_decisions  # Pass all decisions to orchestrator
         )
 
+        # Create config dictionary for orchestrator
+        config = {
+            'mission': mission,
+            'platform': platform,
+            'category': category,
+            'duration': duration,
+            'style': style,
+            'tone': tone,
+            'target_audience': target_audience,
+            'visual_style': visual_style,
+            'mode': mode,
+            'cheap_mode': cheap_mode,
+            'cheap_mode_level': cheap_mode_level,
+            'theme': theme,
+            'style_template': style_template,
+            'reference_style': reference_style,
+            'character': character,
+            'scene': scene,
+            'session_id': session_id,
+            'core_decisions': core_decisions
+        }
+        
         # Generate video
         logger.info("🎬 Starting enhanced AI agent video generation")
         result = await orchestrator.generate_video(config)

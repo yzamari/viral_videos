@@ -70,7 +70,7 @@ class TestFullSystemE2E:
         
         # Test parameters
         test_config = GeneratedVideoConfig(
-            topic="E2E Test Video",
+            mission="E2E Test Video",
             duration_seconds=10,
             target_platform=Platform.YOUTUBE,
             category=VideoCategory.EDUCATION,
@@ -191,7 +191,7 @@ class TestFullSystemE2E:
             
             # Test voice selection
             voice_result = voice_agent.analyze_content_and_select_voices(
-                topic="Test Topic",
+                mission="Test Mission",
                 script="Test script content",
                 language=Language.ENGLISH,
                 platform=Platform.YOUTUBE,
@@ -284,7 +284,7 @@ class TestFullSystemE2E:
         
         # Test configuration
         test_config = GeneratedVideoConfig(
-            topic="System Validation Test",
+            mission="System Validation Test",
             duration_seconds=15,
             target_platform=Platform.YOUTUBE,
             category=VideoCategory.EDUCATION,

@@ -53,7 +53,7 @@ TONE: More urgent than previous episode." \
       --style professional \
       --visual-style documentary \
       --no-cheap \
-      --continuous \
+      --content-continuity \
       --mode enhanced \
       --session-id "gnn_water_ep2"
     

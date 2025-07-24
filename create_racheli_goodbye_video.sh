@@ -40,7 +40,7 @@ if [ $? -eq 0 ]; then
       --visual-style disney \
       --character "Racheli - tech worker leaving company" \
       --scene "modern tech office environment" \
-          --continuous \
+          --content-continuity \
       --no-cheap \
       --mode enhanced \
       --session-id "racheli_goodbye_instagram"
@@ -62,7 +62,7 @@ if [ $? -eq 0 ]; then
           --visual-style disney \
           --character "Racheli - tech worker leaving company" \
           --scene "modern tech office environment" \
-                  --continuous \
+                  --content-continuity \
           --no-cheap \
           --mode enhanced \
           --session-id "racheli_goodbye_tiktok"

@@ -238,7 +238,7 @@ class VoiceDirectorAgent:
         try:
             # Use the existing analyze_content_and_select_voices method
             result = self.analyze_content_and_select_voices(
-                topic=content,
+                mission=content,
                 script=content,
                 language=Language.ENGLISH_US,
                 platform=platform,
@@ -263,7 +263,7 @@ class VoiceDirectorAgent:
             return self._create_fallback_voice_config(content, Language.ENGLISH_US, num_clips)
 
     def analyze_content_and_select_voices(self,
-                                          topic: str,
+                                          mission: str,
                                           script: str,
                                           language: Language,
                                           platform: Platform,
@@ -272,7 +272,7 @@ class VoiceDirectorAgent:
                                           num_clips: int) -> Dict[str, Any]:
         """AI-powered analysis to select optimal voice configuration"""
 
-        logger.info(f"🎭 AI analyzing content for voice selection: {topic}")
+        logger.info(f"🎭 AI analyzing content for voice selection: {mission}")
 
         try:
             # Create comprehensive AI prompt for voice analysis
@@ -281,7 +281,7 @@ class VoiceDirectorAgent:
                     decide the optimal voice strategy.
 
             CONTENT ANALYSIS:
-            Topic: {topic}
+            Mission: {mission}
             Script Preview: {script[:300]}...
             Language: {language.value if hasattr(language, 'value') else str(language)}
             Platform: {platform.value if hasattr(platform, 'value') else str(platform)}
@@ -427,11 +427,11 @@ class VoiceDirectorAgent:
             else:
                 logger.error("❌ JSON fixer could not parse AI response")
                 logger.info("🔄 Creating fallback voice configuration")
-                voice_config = self._create_fallback_voice_config(topic, language, num_clips)
+                voice_config = self._create_fallback_voice_config(mission, language, num_clips)
 
         except Exception as e:
             logger.error(f"❌ AI voice analysis failed: {e}")
-            voice_config = self._create_fallback_voice_config(topic, language, num_clips)
+            voice_config = self._create_fallback_voice_config(mission, language, num_clips)
         
         return voice_config
 
@@ -709,19 +709,19 @@ class VoiceDirectorAgent:
         return pitch_map.get(emotion, 0.0)
 
     def _create_fallback_voice_config(
-            self, topic: str, language: Language, num_clips: int) -> Dict[str, Any]:
+            self, mission: str, language: Language, num_clips: int) -> Dict[str, Any]:
         """Create fallback voice configuration when AI analysis fails"""
 
         logger.info("🔄 Creating fallback voice configuration")
 
         # Simple heuristics for fallback
-        if "comedy" in topic.lower() or "funny" in topic.lower():
+        if "comedy" in mission.lower() or "funny" in mission.lower():
             personality = VoicePersonality.COMEDIAN
             emotion = "excited"
-        elif "education" in topic.lower() or "learn" in topic.lower():
+        elif "education" in mission.lower() or "learn" in mission.lower():
             personality = VoicePersonality.EDUCATOR
             emotion = "neutral"
-        elif "story" in topic.lower() or "tale" in topic.lower():
+        elif "story" in mission.lower() or "tale" in mission.lower():
             personality = VoicePersonality.STORYTELLER
             emotion = "conversational"
         else:

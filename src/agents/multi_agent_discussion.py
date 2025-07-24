@@ -657,7 +657,7 @@ class MultiAgentDiscussionSystem:
                 serializable_context[key] = str(value)
 
         # Extract the mission/topic from context for emphasis
-        mission_or_topic = serializable_context.get('topic', serializable_context.get('mission', 'Unknown'))
+        mission_or_topic = serializable_context.get('mission', serializable_context.get('topic', 'Unknown'))
         platform = serializable_context.get('platform', 'Unknown Platform')
         duration = serializable_context.get('duration', 'Unknown Duration')
         
@@ -1071,10 +1071,10 @@ class VideoGenerationTopics:
     @staticmethod
     def script_optimization(context: Dict[str, Any]) -> DiscussionTopic:
         # Get the actual user topic from context
-        user_topic = context.get('topic', 'Unknown Topic')
+        user_mission = context.get('mission', context.get('topic', 'Unknown Mission'))
         
         # Determine if this is a mission (action-oriented) or topic (informational)
-        is_mission = any(action_word in user_topic.lower() for action_word in [
+        is_mission = any(action_word in user_mission.lower() for action_word in [
             'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
             'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
             'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
@@ -1083,8 +1083,8 @@ class VideoGenerationTopics:
         if is_mission:
             return DiscussionTopic(
                 topic_id="mission_accomplishment",
-                title=f"Mission Accomplishment Strategy: '{user_topic}'",
-                description=(f"Determine the optimal strategic approach to ACCOMPLISH the mission: '{user_topic}' "
+                title=f"Mission Accomplishment Strategy: '{user_mission}'",
+                description=(f"Determine the optimal strategic approach to ACCOMPLISH the mission: '{user_mission}' "
                            f"within {context.get('duration', 'unknown')} seconds with maximum effectiveness"),
                 context=context,
                 required_decisions=[
@@ -1099,8 +1099,8 @@ class VideoGenerationTopics:
         else:
             return DiscussionTopic(
                 topic_id="script_optimization",
-                title=f"Script Content and Structure Optimization for '{user_topic}'",
-                description=(f"Determine the optimal script structure, content, and style for '{user_topic}' "
+                title=f"Script Content and Structure Optimization for '{user_mission}'",
+                description=(f"Determine the optimal script structure, content, and style for '{user_mission}' "
                             "with maximum viral potential"),
                 context=context,
                 required_decisions=[
