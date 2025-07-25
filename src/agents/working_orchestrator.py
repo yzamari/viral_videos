@@ -1277,6 +1277,8 @@ class WorkingOrchestrator:
             frame_continuity=frame_continuity,
             character=config.get('character'),  # Add character from config
             scene=config.get('scene'),  # Add scene from config
+            voice=config.get('voice'),  # Add specific voice from config
+            multiple_voices=config.get('multiple_voices', False),  # Add multiple voices flag
             use_real_veo2=config.get('force_generation') != 'force_image_gen',
             num_clips=num_clips,
             clip_durations=clip_durations
@@ -1426,6 +1428,8 @@ class WorkingOrchestrator:
                 transitions=["none"] if cheap_mode else None,
                 character=config.get('character'),  # Add character from config
                 scene=config.get('scene'),  # Add scene from config
+                voice=config.get('voice'),  # Add specific voice from config
+                multiple_voices=config.get('multiple_voices', False),  # Add multiple voices flag
                 background_music_style="none" if cheap_mode else "upbeat",
                 voiceover_style="simple",
                 sound_effects=[],

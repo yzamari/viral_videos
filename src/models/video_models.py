@@ -132,6 +132,8 @@ class GeneratedVideoConfig:
     background_music_style: Optional[str] = None  # AI-generated, no hardcoded default
     voiceover_style: Optional[str] = None  # AI-generated, no hardcoded default
     sound_effects: Optional[List[str]] = None
+    voice: Optional[str] = None  # Specific voice to use throughout
+    multiple_voices: bool = False  # Whether to allow multiple voices
 
     # Character and scene settings
     character: Optional[str] = None  # Character ID or description for consistent appearance

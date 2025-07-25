@@ -32,6 +32,7 @@ from ..agents.visual_style_agent import VisualStyleAgent
 from ..generators.hashtag_generator import HashtagGenerator
 from ..utils.session_context import SessionContext, create_session_context
 from ..utils.duration_coordinator import DurationCoordinator
+from ..utils.overlay_enhancement import OverlayEnhancer
 from ..utils.professional_text_renderer import (
     ProfessionalTextRenderer, 
     TextOverlay, 
@@ -526,6 +527,7 @@ The last frame of this scene connects to the next.
         self.positioning_agent = OverlayPositioningAgent(api_key)
         self.style_agent = VisualStyleAgent(api_key)
         self.script_processor = EnhancedScriptProcessor(api_key)
+        self.overlay_enhancer = OverlayEnhancer()
         
         # Initialize other clients
         self.image_client = GeminiImageClient(api_key, self.output_dir)
@@ -1463,67 +1465,123 @@ The last frame of this scene connects to the next.
         else:
             return max(7, int(duration / 10))
 
+    def _create_single_voice_strategy(self, voice: str, num_segments: int, mission: str) -> Dict[str, Any]:
+        """Create a voice strategy using a specific voice for all segments"""
+        clip_voices = []
+        for i in range(num_segments):
+            clip_voices.append({
+                "clip_index": i,
+                "voice": voice,
+                "speed": 1.0,
+                "pitch": 0,
+                "emotion": "neutral"
+            })
+        
+        return {
+            "strategy": "single",
+            "clip_voices": clip_voices,
+            "voice_variety": False,
+            "reasoning": f"Using specified voice '{voice}' for all segments",
+            "voice_config": {
+                "strategy": "single",
+                "voices": clip_voices,
+                "primary_personality": "custom",
+                "reasoning": f"User specified voice: {voice}"
+            }
+        }
+    
     def _extract_last_frame(self, video_path: str, clip_id: str, session_context: Optional[SessionContext] = None) -> Optional[str]:
         """Extract the last frame from a video for frame continuity"""
         try:
             import subprocess
+            import glob
             
             # Create frame path in session directory
             if session_context:
                 frame_path = session_context.get_output_path("images", f"last_frame_{clip_id}.jpg")
+                temp_dir = session_context.get_output_path("temp_files", f"frames_{clip_id}")
+                # Ensure both directories exist
                 os.makedirs(os.path.dirname(frame_path), exist_ok=True)
+                os.makedirs(temp_dir, exist_ok=True)
             else:
                 from ..utils.session_manager import session_manager
                 session_dir = session_manager.get_session_path("images")
+                os.makedirs(session_dir, exist_ok=True)
                 frame_path = os.path.join(session_dir, f"last_frame_{clip_id}.jpg")
+                temp_dir = os.path.join(session_manager.get_session_path("temp_files"), f"frames_{clip_id}")
+                os.makedirs(temp_dir, exist_ok=True)
             
-            # CRITICAL FIX: Extract the ACTUAL last frame, not 1 second before
-            # First, get the exact duration of the video
+            # Get video duration
             duration = self._get_video_duration(video_path)
             if not duration:
-                logger.warning("Could not determine video duration, using fallback method")
-                # Fallback: Use sseof with minimal offset
-                cmd = [
-                    'ffmpeg', '-y',
-                    '-sseof', '-0.04',  # 40ms before end (approximately 1 frame at 25fps)
-                    '-i', video_path,
-                    '-vframes', '1',
-                    '-q:v', '1',
-                    '-an',
-                    frame_path
-                ]
-            else:
-                # Use exact timestamp to get the last frame
-                # Get FPS from configuration based on platform
-                from ..config.video_config import video_config
-                platform = getattr(self, '_current_platform', 'instagram')  # Default to instagram
-                fps = video_config.get_fps(platform)
-                
-                # Go back by the number of frames specified in config
-                frames_to_trim = video_config.animation_timing.frame_continuity_trim_frames
-                frame_time = duration - (frames_to_trim / fps)  # Go back exactly N frames
-                
-                cmd = [
-                    'ffmpeg', '-y',
-                    '-ss', str(max(0, frame_time)),  # Seek to exact timestamp
-                    '-i', video_path,
-                    '-vframes', '1',
-                    '-q:v', '1',
-                    '-an',
-                    frame_path
-                ]
+                logger.warning("Could not determine video duration")
+                duration = 8.0  # Default assumption
+            
+            # Extract all frames from the last second
+            start_time = max(0, duration - 1.0)  # Last 1 second
+            
+            # Extract frames to temporary directory
+            temp_pattern = os.path.join(temp_dir, "frame_%04d.jpg")
+            cmd = [
+                'ffmpeg', '-y',
+                '-i', video_path,
+                '-ss', str(start_time),  # Start from last second
+                '-q:v', '1',
+                '-pix_fmt', 'yuvj420p',  # Use full-range YUV for JPEG
+                '-an',
+                temp_pattern
+            ]
             
             result = subprocess.run(cmd, capture_output=True, text=True)
             
-            if result.returncode == 0 and os.path.exists(frame_path):
-                logger.info(f"🖼️ Extracted last frame for continuity: {frame_path}")
-                # Log the exact frame time for debugging
-                if duration:
-                    logger.debug(f"📍 Extracted frame from timestamp: {max(0, frame_time):.3f}s (duration: {duration:.3f}s)")
-                return frame_path
+            if result.returncode == 0:
+                # Find all extracted frames
+                frame_files = sorted(glob.glob(os.path.join(temp_dir, "frame_*.jpg")))
+                
+                if frame_files:
+                    # Get FPS to determine which frame to use
+                    from ..config.video_config import video_config
+                    platform = getattr(self, '_current_platform', 'instagram')
+                    fps = video_config.get_fps(platform)
+                    frames_to_trim = video_config.animation.frame_continuity_trim_frames
+                    
+                    # Calculate which frame to use (default to last if calculation fails)
+                    frame_index = max(0, len(frame_files) - int(frames_to_trim) - 1)
+                    selected_frame = frame_files[frame_index] if frame_index < len(frame_files) else frame_files[-1]
+                    
+                    # Copy the selected frame to final location
+                    import shutil
+                    shutil.copy2(selected_frame, frame_path)
+                    
+                    logger.info(f"🖼️ Extracted frame {frame_index + 1}/{len(frame_files)} for continuity: {frame_path}")
+                    logger.debug(f"📍 Selected frame from last second (frames_to_trim: {frames_to_trim})")
+                    
+                    # Clean up temporary frames
+                    for f in frame_files:
+                        try:
+                            os.remove(f)
+                        except:
+                            pass
+                    try:
+                        os.rmdir(temp_dir)
+                    except:
+                        pass
+                    
+                    return frame_path
+                else:
+                    logger.warning("No frames extracted from video")
             else:
-                logger.warning(f"Failed to extract last frame: {result.stderr}")
-                return None
+                logger.warning(f"Failed to extract frames: {result.stderr}")
+            
+            # Cleanup on failure
+            try:
+                if os.path.exists(temp_dir):
+                    import shutil
+                    shutil.rmtree(temp_dir)
+            except:
+                pass
+            
+            return None
                 
         except Exception as e:
             logger.error(f"Error extracting last frame: {e}")
@@ -1555,16 +1613,38 @@ The last frame of this scene connects to the next.
                 num_segments = len(script_segments)
                 logger.info(f"🎤 Generating voice configuration for {num_segments} script segments")
             
-            # Get AI voice selection strategy for the correct number of segments
-            voice_strategy = self.voice_director.analyze_content_and_select_voices(
-                mission=config.mission,
-                script=script_result.get('final_script', config.mission),
-                language=Language.ENGLISH_US,
-                platform=config.target_platform,
-                category=config.category,
-                duration_seconds=config.duration_seconds,
-                num_clips=num_segments  # Use core decisions or script segments
-            )
+            # Check if we should force single voice or use a specific voice
+            if config.voice:
+                # Use the specified voice for all segments
+                logger.info(f"🎤 Using specified voice: {config.voice}")
+                voice_strategy = self._create_single_voice_strategy(
+                    config.voice, num_segments, config.mission
+                )
+            elif not config.multiple_voices:
+                # Force single voice mode (default behavior)
+                logger.info("🎤 Single voice mode enabled (default)")
+                voice_strategy = self.voice_director.analyze_content_and_select_voices(
+                    mission=config.mission,
+                    script=script_result.get('final_script', config.mission),
+                    language=Language.ENGLISH_US,
+                    platform=config.target_platform,
+                    category=config.category,
+                    duration_seconds=config.duration_seconds,
+                    num_clips=num_segments,
+                    force_single_voice=True  # Force single voice
+                )
+            else:
+                # Allow multiple voices
+                logger.info("🎤 Multiple voices mode enabled")
+                voice_strategy = self.voice_director.analyze_content_and_select_voices(
+                    mission=config.mission,
+                    script=script_result.get('final_script', config.mission),
+                    language=Language.ENGLISH_US,
+                    platform=config.target_platform,
+                    category=config.category,
+                    duration_seconds=config.duration_seconds,
+                    num_clips=num_segments  # Use core decisions or script segments
+                )
             
             # Store voice_config for AI discussions
             if voice_strategy:
@@ -1917,8 +1997,13 @@ The last frame of this scene connects to the next.
                 if duration_coordinator and duration_coordinator.extend_video_to_duration(
                     base_video_path, target_duration, extended_video_path
                 ):
-                    temp_video_path = extended_video_path
-                    logger.info(f"✅ Video extended to target duration: {target_duration}s")
+                    # Verify the extended video file exists before using it
+                    if os.path.exists(extended_video_path):
+                        temp_video_path = extended_video_path
+                        logger.info(f"✅ Video extended to target duration: {target_duration}s")
+                    else:
+                        logger.warning("⚠️ Extended video file not created, using original")
+                        temp_video_path = base_video_path
                 else:
                     logger.warning("⚠️ Failed to extend video, using original")
                     temp_video_path = base_video_path
@@ -1946,6 +2031,10 @@ The last frame of this scene connects to the next.
             
             # Step 5: Create VERSION 2 - Video with overlays only (no subtitles)
             logger.info("🎬 Creating VERSION 2: Video with overlays only (no subtitles)")
+            # Ensure temp_video_path exists, fall back to base_video_path if not
+            if not os.path.exists(temp_video_path):
+                logger.debug(f"Extended video not needed, using base video path for overlays")
+                temp_video_path = base_video_path
             # Use the trimmed/original video without subtitles for overlay-only version
             video_overlays_only = self._add_timed_text_overlays(temp_video_path, style_decision, positioning_decision, config, session_context)
             video_overlays_only = self._apply_platform_orientation(video_overlays_only, config.target_platform.value, session_context)
@@ -4279,12 +4368,18 @@ This is a placeholder file. In a full implementation, this would be a complete M
             fade_duration = video_config.animation.fade_out_duration
             fade_start_time = video_duration - fade_duration  # Start fade before end
             
+            # Import hardware acceleration utilities
+            from ..utils.ffmpeg_utils import FFmpegAcceleration
+            
             # FFmpeg command to add fadeout effect to existing video (no concatenation)
-            cmd = [
-                'ffmpeg', '-y',
+            base_cmd = FFmpegAcceleration.get_optimized_ffmpeg_base()
+            hw_encoder = FFmpegAcceleration.get_hw_encoder('h264')
+            
+            cmd = base_cmd + [
                 '-i', video_path,
                 '-vf', f'fade=t=out:st={fade_start_time}:d={fade_duration}',
-                '-c:v', 'libx264', '-c:a', video_config.encoding.audio_codec,
+                '-c:v', hw_encoder or 'libx264', 
+                '-c:a', 'copy',  # Copy audio stream without re-encoding to avoid corruption
                 '-preset', video_config.encoding.fallback_preset,
                 output_path
             ]
@@ -6127,11 +6222,36 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Get positioning decision
             is_dynamic = positioning_decision.get('primary_style', 'static') == 'dynamic'
             
-            # Create timed overlays for hook and CTA
+            # Create timed overlays with AI-driven colorful hooks
             overlay_filters = []
+            all_overlays = []
             
-            # Add enhanced rich text overlays
-            if config.hook:
+            # First, try to get AI-generated colorful hooks
+            try:
+                logger.info("🎨 Generating AI-driven colorful text hooks")
+                colorful_hooks = self.positioning_agent.create_colorful_text_hooks(
+                    topic=config.mission,
+                    platform=str(config.platform),
+                    video_duration=video_duration,
+                    script_content=config.processed_script if hasattr(config, 'processed_script') else ""
+                )
+                
+                # Filter hooks to avoid subtitle area
+                for hook in colorful_hooks:
+                    # If position would overlap subtitles, move it up
+                    if hook.get('position', 'center') in ['bottom_center', 'bottom_left', 'bottom_right', 'bottom_third', 'center_bottom']:
+                        # Calculate safe Y position above subtitle area
+                        hook['y_position'] = int(video_height * 0.6)  # 60% down, above subtitles
+                    
+                    all_overlays.append(hook)
+                
+                logger.info(f"✅ Added {len(colorful_hooks)} AI-generated colorful hooks")
+                
+            except Exception as e:
+                logger.warning(f"⚠️ Could not generate colorful hooks: {e}")
+            
+            # Add enhanced rich text overlays if needed
+            if len(all_overlays) < 5 and config.hook:
                 hook_style = self._get_ai_overlay_style(str(config.hook), "hook", config.target_platform, video_width, video_height, session_context)
                 
                 # Create rich overlays with headers and summaries
@@ -6159,76 +6279,63 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     total_duration=min(8.0, video_duration)
                 )
                 
-                # Combine rich and traditional overlays
-                all_overlays = rich_overlays + hook_overlays
-                
-                # Add rich overlays first (headers, summaries)
-                for i, overlay in enumerate(rich_overlays):
-                    if isinstance(overlay, dict) and 'text' in overlay:
-                        # Skip overlays in middle and top positions per user preference
-                        position = overlay.get('position', '')
-                        if position in ['center', 'top_center']:
-                            logger.info(f"⏭️ Skipping overlay at {position} position per user preference")
-                            continue
-                            
-                        # Position based on overlay style
-                        if overlay.get('position') == 'top_center':
-                            y_pos = 80
-                        elif overlay.get('position') == 'center':
-                            y_pos = int(video_height / 2)
-                        else:
-                            y_pos = 200
+                # Combine all overlays
+                all_overlays.extend(rich_overlays + hook_overlays)
+            
+            # Process all overlays (colorful hooks + traditional)
+            for i, overlay in enumerate(all_overlays):
+                if isinstance(overlay, dict) and 'text' in overlay:
+                    # Skip overlays in middle and top positions per user preference
+                    position = overlay.get('position', '')
+                    if position in ['center', 'top_center']:
+                        logger.info(f"⏭️ Skipping overlay at {position} position per user preference")
+                        continue
                         
-                        # Create rich overlay filter with properly escaped text and semi-transparent background
-                        escaped_text = self._escape_text_for_ffmpeg(overlay['text'])
-                        
-                        # CRITICAL FIX: Ensure semi-transparent background like subtitles
-                        background_opacity = 0.6  # Consistent with subtitle backgrounds
-                        
-                        filter_expr = (
-                            f"drawtext=text='{escaped_text}':"
-                            f"fontcolor={overlay.get('font_color', '#FFFFFF')}:"
-                            f"fontsize={overlay.get('font_size', 48)}:"
-                            f"font='Impact':"
-                            f"box=1:boxcolor=0x000000@{background_opacity}:boxborderw=5:"
-                            f"x=(w-text_w)/2:y={y_pos}:"
-                            f"enable=between(t\\,{overlay['start_time']}\\,{overlay['end_time']})"
-                        )
-                        overlay_filters.append(filter_expr)
-                
-                # Add traditional hook overlays at bottom with proper text splitting and semi-transparent backgrounds
-                for i, overlay in enumerate(hook_overlays):
-                    # Position at bottom instead of top per user preference
-                    # ENHANCED: Better spacing to prevent overlap
-                    y_offset = video_height - 400 + (i * 80)  # Increased spacing between overlays
+                    # Position based on overlay style
+                    if overlay.get('position') == 'top_center':
+                        y_pos = 80
+                    elif overlay.get('position') == 'center':
+                        y_pos = int(video_height / 2)
+                    else:
+                        y_pos = 200
                     
-                    # CRITICAL FIX: Split long text into multiple lines
-                    text_lines = self._format_subtitle_text(overlay['text'], max_words_per_line=3, max_chars_per_line=20)
-                    text_lines = text_lines.split('\n')
+                    # Create overlay filter with properly escaped text
+                    escaped_text = self._escape_text_for_ffmpeg(overlay['text'])
                     
-                    for line_idx, line_text in enumerate(text_lines):
-                        if not line_text.strip():
-                            continue
-                            
-                        # ENHANCED: Better line spacing within each overlay
-                        line_y_offset = y_offset + (line_idx * 50)  # Increased line spacing
-                        escaped_text = self._escape_text_for_ffmpeg(line_text)
+                    # Use overlay's own styling if it's a colorful hook
+                    if 'color' in overlay and 'font_family' in overlay:
+                        # This is a colorful hook with its own styling
+                        font_color = overlay.get('color', '#FFFFFF')
+                        font_size = overlay.get('font_size', 48)
+                        font_family = overlay.get('font_family', 'Impact')
+                        background_color = overlay.get('background_color', '#000000')
+                        background_opacity = overlay.get('opacity', 0.9)
+                        stroke_width = overlay.get('stroke_width', 2)
                         
-                        # CRITICAL FIX: Ensure semi-transparent background like subtitles
-                        # Force maximum opacity of 0.7 for readability
-                        background_opacity = min(0.7, hook_style.get('background_opacity', 0.6))
-                        
-                        filter_expr = (
-                            f"drawtext=text='{escaped_text}':"
-                            f"fontcolor={hook_style['color']}:"
-                            f"fontsize={hook_style['font_size']}:"
-                            f"font='{hook_style['font_family']}':"
-                            f"box=1:boxcolor={hook_style['background_color']}@{background_opacity}:"
-                            f"boxborderw={hook_style['stroke_width']}:"
-                            f"x=(w-text_w)/2:y={line_y_offset}:"
-                            f"enable=between(t\\,{overlay['start_time']}\\,{overlay['end_time']})"
-                        )
-                        overlay_filters.append(filter_expr)
+                        # Use custom y_position if available (for subtitle avoidance)
+                        if 'y_position' in overlay:
+                            y_pos = overlay['y_position']
+                    else:
+                        # Traditional overlay
+                        font_color = overlay.get('font_color', '#FFFFFF')
+                        font_size = overlay.get('font_size', 48)
+                        font_family = 'Impact'
+                        background_color = '#000000'
+                        background_opacity = 0.6
+                        stroke_width = 5
+                    
+                    filter_expr = (
+                        f"drawtext=text='{escaped_text}':"
+                        f"fontcolor={font_color}:"
+                        f"fontsize={font_size}:"
+                        f"font='{font_family}':"
+                        f"box=1:boxcolor={background_color}@{background_opacity}:boxborderw={stroke_width}:"
+                        f"x=(w-text_w)/2:y={y_pos}:"
+                        f"enable=between(t\\,{overlay['start_time']}\\,{overlay['end_time']})"
+                    )
+                    overlay_filters.append(filter_expr)
+                
+            # Note: Hook overlays are already processed in the all_overlays loop above
             
             # Add call-to-action overlay with line-by-line timing
             if config.call_to_action:

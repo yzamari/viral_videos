@@ -24,14 +24,14 @@ class HashtagGenerator:
         logger.info("🏷️ HashtagGenerator initialized")
 
     def generate_trending_hashtags(self, 
-                                 topic: str, 
+                                 mission: str, 
                                  platform: str, 
                                  category: str,
                                  script_content: str,
                                  num_hashtags: int = 30):
         """Generate trending hashtags based on topic, platform, and current trends"""
         
-        logger.info(f"🏷️ Generating {num_hashtags} trending hashtags for: {topic}")
+        logger.info(f"🏷️ Generating {num_hashtags} trending hashtags for: {mission}")
         logger.info(f"📱 Platform: {platform}, Category: {category}")
         
         try:
@@ -40,7 +40,7 @@ class HashtagGenerator:
             You are a viral social media hashtag expert with access to current trends and platform-specific insights.
             
             CONTENT ANALYSIS:
-            Topic: {topic}
+            Topic: {mission}
             Platform: {platform}
             Category: {category}
             Script: {script_content[:200]}...
@@ -103,7 +103,7 @@ class HashtagGenerator:
                     # Add metadata
                     validated_data['generation_metadata'] = {
                         'generated_at': datetime.now().isoformat(),
-                        'topic': topic,
+                        'topic': mission,
                         'platform': platform,
                         'category': category,
                         'model': 'gemini-2.5-flash',
@@ -115,7 +115,7 @@ class HashtagGenerator:
                     
                 except json.JSONDecodeError as e:
                     logger.warning(f"⚠️ Failed to parse hashtag JSON: {e}")
-                    return self._generate_fallback_hashtags(topic, platform, category, num_hashtags)
+                    return self._generate_fallback_hashtags(mission, platform, category, num_hashtags)
             else:
                 logger.warning("⚠️ No valid JSON found in hashtag response")
                 return self._generate_fallback_hashtags(topic, platform, category, num_hashtags)
@@ -160,14 +160,14 @@ class HashtagGenerator:
             logger.error(f"❌ Hashtag validation failed: {e}")
             return data
 
-    def _generate_fallback_hashtags(self, topic: str, platform: str, category: str, num_hashtags: int) -> Dict[str, Any]:
+    def _generate_fallback_hashtags(self, mission: str, platform: str, category: str, num_hashtags: int) -> Dict[str, Any]:
         """Generate fallback hashtags when AI generation fails"""
         
         logger.info("🏷️ Creating fallback trending hashtags")
         
-        # Extract key words from topic
-        topic_words = re.findall(r'\b\w+\b', topic.lower())
-        main_keywords = [word for word in topic_words if len(word) > 3][:3]
+        # Extract key words from mission
+        mission_words = re.findall(r'\b\w+\b', mission.lower())
+        main_keywords = [word for word in mission_words if len(word) > 3][:3]
         
         # Platform-specific base hashtags
         platform_hashtags = {
@@ -265,7 +265,7 @@ class HashtagGenerator:
             ],
             'generation_metadata': {
                 'generated_at': datetime.now().isoformat(),
-                'topic': topic,
+                'topic': mission,
                 'platform': platform,
                 'category': category,
                 'model': 'fallback',

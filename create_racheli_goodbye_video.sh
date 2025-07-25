@@ -1,98 +1,42 @@
 #!/bin/bash
 
-# Racheli's Goodbye Video from NeuReality
-# AI-generated creative farewell videos for multiple platforms
+# Racheli's Goodbye Video - Celebrating an Amazing Journey
+# A heartfelt tribute to an exceptional colleague
 
-echo "🎬 Generating Racheli's Goodbye Videos for All Platforms"
-echo "========================================================"
+echo "👋 Creating Racheli's Goodbye Video"
+echo "===================================="
+echo "🌟 Celebrating an Agile Champion"
+echo "🏠 Full House Career Mom"
+echo "🚀 Culture Transformation Leader"
 echo ""
 
-# YouTube Version (40 seconds)
-echo "📺 YOUTUBE VERSION - Horizontal 16:9"
-echo "------------------------------------"
 python main.py generate \
-  --mission "Create engaging, funny, humorous first-person goodbye video from Racheli who's leaving NeuReality, AI chips company" \
-  --platform youtube \
+  --mission "Marvel Comics style professional farewell video from Racheli to NeuReality team. Opening: Racheli (green eyes, elegant business suit, stylish headscarf) stands heroically in NeuReality AI chip headquarters. 'Dear NeuReality team, as my mission here completes...' Office transforms with dramatic comic panels. 'Serving as your Agile Coach has been an honor.' Sticky notes swirl like energy particles. Action montage: Racheli leading Scrum ceremonies with superhero efficiency, comic book style. 'We conquered impossible deadlines in chip development.' Dynamic PMO orchestration scene with dramatic angles. '2 in a box partnerships - unstoppable force meets immovable object.' Split panel: 'Mastering work-life balance like a true hero.' Office evolution shown in epic comic panels: 'Together we transformed NeuReality's culture.' Energy effects subtly appear. 'Your dedication and professionalism made us invincible.' Racheli maintains heroic stance. 'The frameworks we built will endure.' Final panel: 'May NeuReality continue its legendary journey in AI innovation.' Professional salute, NeuReality logo glowing behind. 'Excelsior! -Racheli'" \
+  --platform instagram \
   --duration 40 \
-  --style viral \
-  --tone humorous \
-  --visual-style disney \
-  --character "Racheli - tech worker leaving company" \
-  --scene "modern tech office environment" \
+  --character "Racheli: Marvel Comics style professional woman with expressive green eyes, elegant business attire, stylish headscarf, confident posture, consistent comic book appearance throughout" \
+  --scene "Marvel Comics style office with dramatic panels and transitions, maintaining Racheli's consistent character design in every frame" \
+  --visual-style "marvel cinematic universe" \
+  --tone "emotional" \
+  --style "animated" \
   --no-cheap \
-  --mode enhanced \
-  --session-id "racheli_goodbye_youtube"
+  --session-id "racheli_goodbye_tribute" \
+  --content-continuity \
+  --visual-continuity \
+  --voice "en-US-Journey-F"
 
 if [ $? -eq 0 ]; then
-    echo "✅ YouTube version complete!"
-    sleep 5
-    
-    # Instagram Version (30 seconds)
     echo ""
-    echo "📷 INSTAGRAM VERSION - Square 1:1"
-    echo "---------------------------------"
-    python main.py generate \
-      --mission "Create engaging, funny, humorous first-person goodbye video from Racheli who's leaving NeuReality, AI chips company" \
-      --platform instagram \
-      --duration 30 \
-      --style viral \
-      --tone humorous \
-      --visual-style disney \
-      --character "Racheli - tech worker leaving company" \
-      --scene "modern tech office environment" \
-          --content-continuity \
-      --no-cheap \
-      --mode enhanced \
-      --session-id "racheli_goodbye_instagram"
-    
-    if [ $? -eq 0 ]; then
-        echo "✅ Instagram version complete!"
-        sleep 5
-        
-        # TikTok Version (15 seconds)
-        echo ""
-        echo "🎵 TIKTOK VERSION - Vertical 9:16"
-        echo "---------------------------------"
-        python main.py generate \
-          --mission "Create engaging, funny, humorous first-person goodbye video from Racheli who's leaving NeuReality, AI chips company" \
-          --platform tiktok \
-          --duration 15 \
-          --style viral \
-          --tone humorous \
-          --visual-style disney \
-          --character "Racheli - tech worker leaving company" \
-          --scene "modern tech office environment" \
-                  --content-continuity \
-          --no-cheap \
-          --mode enhanced \
-          --session-id "racheli_goodbye_tiktok"
-        
-        if [ $? -eq 0 ]; then
-            echo ""
-            echo "🎉 ALL PLATFORMS COMPLETE!"
-            echo ""
-            echo "📁 Your videos are ready:"
-            echo "   YouTube (40s, 16:9): outputs/racheli_goodbye_youtube/"
-            echo "   Instagram (30s, 1:1): outputs/racheli_goodbye_instagram/"
-            echo "   TikTok (15s, 9:16): outputs/racheli_goodbye_tiktok/"
-            echo ""
-            echo "🎯 AI CREATIVE DECISIONS:"
-            echo "   ✨ Simple mission → AI agents created detailed narrative"
-            echo "   🎤 Single voice consistency across all platforms"
-            echo "   🎨 Disney visual style adapted for each platform"
-            echo "   😂 Humorous tone maintained with platform-specific pacing"
-            echo ""
-        else
-            echo "❌ TikTok version failed!"
-            exit 1
-        fi
-    else
-        echo "❌ Instagram version failed!"
-        exit 1
-    fi
+    echo "✅ Racheli's goodbye video created successfully!"
+    echo "📝 Key themes included:"
+    echo "   - Agile Coach & Scrum Master excellence"
+    echo "   - PMO & Release Management achievements"  
+    echo "   - Full House career mom inspiration"
+    echo "   - Organizational culture transformation"
+    echo "   - 2 in a box partnership success"
+    echo "   - Lasting legacy of positive change"
+    echo ""
+    echo "💝 Thank you, Racheli, for making our workplace better!"
 else
-    echo "❌ YouTube version failed!"
-    exit 1
+    echo "❌ Failed to create goodbye video"
 fi
-
-echo "🚀 Ready for multi-platform distribution!"

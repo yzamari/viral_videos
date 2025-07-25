@@ -33,7 +33,8 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
          mode: str = "enhanced", cheap_mode: bool = True, cheap_mode_level: str = "full", 
          theme: Optional[str] = None, style_template: Optional[str] = None, 
          reference_style: Optional[str] = None, character: Optional[str] = None,
-         scene: Optional[str] = None, **kwargs):
+         scene: Optional[str] = None, voice: Optional[str] = None, 
+         multiple_voices: bool = False, **kwargs):
     """
     Main video generation workflow
 
@@ -196,6 +197,8 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             'style_template': style_template,
             'reference_style': reference_style,
             'character': character,
+            'voice': voice,
+            'multiple_voices': multiple_voices,
             'scene': scene,
             'session_id': session_id,
             'core_decisions': core_decisions

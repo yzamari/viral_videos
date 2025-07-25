@@ -115,6 +115,8 @@ def test_auth():
 @click.option('--reference-style', type=click.Path(exists=True), help='Path to reference video for style extraction')
 @click.option('--character', help='Character ID for consistent character generation (use store-character first)')
 @click.option('--scene', help='Scene description when using --character (e.g., "news studio", "outdoor interview")')
+@click.option('--voice', help='Specific voice to use throughout the video (e.g., "en-US-Journey-F")')
+@click.option('--multiple-voices', is_flag=True, help='Allow multiple voices (default: single voice)')
 def generate(**kwargs):
     """🎬 Generate viral video with optimized AI system"""
     try:
@@ -154,7 +156,9 @@ def generate(**kwargs):
             style_template=kwargs.get('style_template'),
             reference_style=kwargs.get('reference_style'),
             character=kwargs.get('character'),
-            scene=kwargs.get('scene')
+            scene=kwargs.get('scene'),
+            voice=kwargs.get('voice'),
+            multiple_voices=kwargs.get('multiple_voices', False)
         )
         
         # Auto-post if requested

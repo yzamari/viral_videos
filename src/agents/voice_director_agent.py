@@ -270,12 +270,23 @@ class VoiceDirectorAgent:
                                           platform: Platform,
                                           category: VideoCategory,
                                           duration_seconds: int,
-                                          num_clips: int) -> Dict[str, Any]:
+                                          num_clips: int,
+                                          force_single_voice: bool = False) -> Dict[str, Any]:
         """AI-powered analysis to select optimal voice configuration"""
 
         logger.info(f"🎭 AI analyzing content for voice selection: {mission}")
 
         try:
+            # Force single voice if requested
+            force_single_text = ""
+            if force_single_voice:
+                force_single_text = """
+            IMPORTANT: YOU MUST USE SINGLE VOICE STRATEGY ONLY.
+            The user has explicitly requested a single voice throughout the video.
+            Set "strategy": "single", "use_multiple_voices": false, "has_distinct_speakers": false, 
+            "speaker_count": 1 regardless of content.
+            """
+            
             # Create comprehensive AI prompt for voice analysis
             analysis_prompt = f"""
             You are an expert Voice Director for viral video content. Analyze this content and
@@ -289,7 +300,7 @@ class VoiceDirectorAgent:
             Category: {category.value if hasattr(category, 'value') else str(category)}
             Duration: {duration_seconds}s
             Number of clips: {num_clips}
-
+            {force_single_text}
             VOICE STRATEGY OPTIONS:
             1. Single Voice: One consistent voice throughout (PREFERRED - most professional)
             2. Multiple Speakers: ONLY when content has distinct speakers/characters in dialogue

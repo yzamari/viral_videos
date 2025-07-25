@@ -334,7 +334,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                     "text": sentence,
                     "duration": sentence_duration,
                     "word_count": sentence_words,
-                    "voice_suggestion": "storyteller"
+                    "voice_suggestion": None  # Will be determined by AI
                 })
             
             return {
@@ -409,7 +409,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                     "text": sentence,
                     "duration": sentence_duration,
                     "word_count": sentence_words,
-                    "voice_suggestion": "storyteller"
+                    "voice_suggestion": None  # Will be determined by AI
                 })
                 total_words += sentence_words
             
@@ -419,7 +419,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                     "text": optimized_script,
                     "duration": estimated_duration,
                     "word_count": word_count,
-                    "voice_suggestion": "storyteller"
+                    "voice_suggestion": None  # Will be determined by AI
                 }]
                 total_words = word_count
             
