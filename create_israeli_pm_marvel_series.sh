@@ -48,6 +48,7 @@ if should_generate_episode 1; then
   --tone darkly_humorous \
   --style cinematic \
   --no-cheap \
+  --voice "en-US-Neural2-J" \
   --session-id "israeli_pm_ep1_bengurion"
 
     if [ $? -eq 0 ]; then
@@ -78,6 +79,7 @@ if should_generate_episode 2; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep2_sharett"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 2 complete!"
@@ -107,6 +109,7 @@ if should_generate_episode 3; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep3_eshkol"
     
     if [ $? -eq 0 ]; then
@@ -137,6 +140,7 @@ if should_generate_episode 4; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep4_golda"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 4 complete!"
@@ -166,6 +170,7 @@ if should_generate_episode 5; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep5_rabin1"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 5 complete!"
@@ -195,6 +200,7 @@ if should_generate_episode 6; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep6_begin"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 6 complete!"
@@ -224,6 +230,7 @@ if should_generate_episode 7; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep7_shamir"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 7 complete!"
@@ -253,6 +260,7 @@ if should_generate_episode 8; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep8_rabin2"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 8 complete!"
@@ -282,6 +290,7 @@ if should_generate_episode 9; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep9_peres"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 9 complete!"
@@ -311,6 +320,7 @@ if should_generate_episode 10; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep10_netanyahu1"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 10 complete!"
@@ -340,6 +350,7 @@ if should_generate_episode 11; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep11_barak"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 11 complete!"
@@ -369,6 +380,7 @@ if should_generate_episode 12; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep12_sharon"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 12 complete!"
@@ -398,6 +410,7 @@ if should_generate_episode 13; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep13_olmert"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 13 complete!"
@@ -427,6 +440,7 @@ if should_generate_episode 14; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep14_netanyahu_return"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 14 complete!"
@@ -456,6 +470,7 @@ if should_generate_episode 15; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep15_bennett"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 15 complete!"
@@ -485,6 +500,7 @@ if should_generate_episode 16; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep16_lapid"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 16 complete!"
@@ -514,6 +530,7 @@ if should_generate_episode 17; then
       --tone darkly_humorous \
       --style cinematic \
       --no-cheap \
+      --voice "en-US-Neural2-J" \
       --session-id "israeli_pm_ep17_netanyahu_final"
     if [ $? -eq 0 ]; then
         echo "✅ Episode 17 complete!"

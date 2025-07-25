@@ -108,6 +108,9 @@ class EnhancedScriptProcessor:
                 language_value = language.value if hasattr(language, 'value') else str(language)
             
             logger.info(f"📝 Processing script for TTS optimization ({language_value})")
+            
+            # Clean visual descriptions first
+            script_content = self._clean_visual_descriptions(script_content)
             if target_duration:
                 logger.info(f"🎯 Target duration: {target_duration} seconds")
 
@@ -733,8 +736,46 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
 
         return script
 
+    def _clean_visual_descriptions(self, text: str) -> str:
+        """Remove visual descriptions and stage directions from script text.
+        
+        Args:
+            text: Raw script text that may contain visual descriptions
+            
+        Returns:
+            Cleaned text suitable for TTS
+        """
+        # Remove content in brackets [visual description]
+        text = re.sub(r'\[.*?\]', '', text)
+        
+        # Remove content in parentheses (stage direction)
+        text = re.sub(r'\(.*?\)', '', text)
+        
+        # Remove lines starting with Scene:, Visual:, SCENE:, VISUAL:
+        text = re.sub(r'^(Scene|Visual|SCENE|VISUAL):.*$', '', text, flags=re.MULTILINE)
+        
+        # Remove lines that are obviously visual descriptions
+        lines = text.split('\n')
+        cleaned_lines = []
+        for line in lines:
+            # Skip lines that describe visual elements
+            if not any(keyword in line.lower() for keyword in 
+                      ['panel:', 'shot:', 'cut to:', 'fade:', 'zoom:', 'camera:', 
+                       'establishing shot', 'close-up', 'wide shot', 'montage']):
+                cleaned_lines.append(line)
+        
+        text = '\n'.join(cleaned_lines)
+        
+        # Clean up extra whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        return text
+
     def _basic_cleanup(self, script: str, language: Language) -> str:
         """Basic cleanup when AI processing fails"""
+        
+        # First remove visual descriptions
+        script = self._clean_visual_descriptions(script)
 
         # Remove multiple spaces
         script = re.sub(r'\s+', ' ', script)
