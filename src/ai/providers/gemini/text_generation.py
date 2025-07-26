@@ -3,6 +3,7 @@ Google Gemini Text Generation Implementation
 """
 import google.generativeai as genai
 import asyncio
+import logging
 from typing import List, Dict, Any
 from ...interfaces.text_generation import (
     TextGenerationService, 
@@ -10,6 +11,8 @@ from ...interfaces.text_generation import (
     TextGenerationResponse
 )
 from ...interfaces.base import AIProvider
+
+logger = logging.getLogger(__name__)
 
 class GeminiTextService(TextGenerationService):
     """Google Gemini implementation of text generation"""
@@ -54,19 +57,39 @@ class GeminiTextService(TextGenerationService):
                 finish_reason = response.candidates[0].finish_reason if response.candidates else "unknown"
                 raise RuntimeError(f"Gemini blocked response (finish_reason: {finish_reason})")
             
-            # Calculate cost estimate
-            cost = self.estimate_cost(
-                input_tokens=response.usage_metadata.prompt_token_count,
-                output_tokens=response.usage_metadata.candidates_token_count
-            )
+            # Handle usage metadata - it may not exist in older API versions
+            usage_data = {}
+            cost = 0.0
             
-            return TextGenerationResponse(
-                text=response.text,
-                usage={
+            if hasattr(response, 'usage_metadata'):
+                # New API version with usage_metadata
+                usage_data = {
                     "prompt_tokens": response.usage_metadata.prompt_token_count,
                     "completion_tokens": response.usage_metadata.candidates_token_count,
                     "total_tokens": response.usage_metadata.total_token_count
-                },
+                }
+                cost = self.estimate_cost(
+                    input_tokens=response.usage_metadata.prompt_token_count,
+                    output_tokens=response.usage_metadata.candidates_token_count
+                )
+            else:
+                # Fallback for older API versions - estimate from text length
+                prompt_tokens = len(request.prompt.split()) * 1.3  # Rough estimate
+                completion_tokens = len(response.text.split()) * 1.3  # Rough estimate
+                usage_data = {
+                    "prompt_tokens": int(prompt_tokens),
+                    "completion_tokens": int(completion_tokens),
+                    "total_tokens": int(prompt_tokens + completion_tokens)
+                }
+                cost = self.estimate_cost(
+                    input_tokens=int(prompt_tokens),
+                    output_tokens=int(completion_tokens)
+                )
+                logger.debug("Using estimated token counts - usage_metadata not available")
+            
+            return TextGenerationResponse(
+                text=response.text,
+                usage=usage_data,
                 model=self.config.model_name,
                 provider="gemini",
                 cost_estimate=cost

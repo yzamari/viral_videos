@@ -42,6 +42,7 @@ from ..utils.professional_text_renderer import (
     TextAlignment
 )
 from ..config import video_config
+from .png_overlay_handler import PNGOverlayHandler
 
 logger = get_logger(__name__)
 
@@ -393,7 +394,7 @@ class VideoGenerator:
 Create the opening scene of a continuous {config.visual_style} {config.duration_seconds}-second video:
 Content: {segment.get('text', '')}
 Visual Style: {config.visual_style}
-Duration: {segment.get('duration', 5)} seconds
+Duration: 5-8 seconds
 
 This is the FIRST scene of a continuous narrative. Establish the visual style, setting, and characters that will continue throughout.
 The ending frame of this scene will connect directly to the next scene.
@@ -403,7 +404,7 @@ The ending frame of this scene will connect directly to the next scene.
 Continue the {config.visual_style} video - Scene {i+1}/{len(script_segments)}:
 Previous Scene: {previous_scene_description}
 Current Content: {segment.get('text', '')}
-Duration: {segment.get('duration', 5)} seconds
+Duration: 5-8 seconds
 
 CRITICAL: This scene must START exactly where the previous scene ended. Maintain:
 - Same visual style and quality
@@ -528,6 +529,7 @@ The last frame of this scene connects to the next.
         self.style_agent = VisualStyleAgent(api_key)
         self.script_processor = EnhancedScriptProcessor(api_key)
         self.overlay_enhancer = OverlayEnhancer()
+        self.png_overlay_handler = PNGOverlayHandler()
         
         # Initialize other clients
         self.image_client = GeminiImageClient(api_key, self.output_dir)
@@ -541,7 +543,7 @@ The last frame of this scene connects to the next.
         available_models = self.veo_factory.get_available_models()
         
         logger.info(f"🎬 VideoGenerator initialized with clean OOP architecture")
-        logger.info(f"   VEO Models: {[m.value for m in available_models]}")
+        logger.info(f"   VEO Models: {available_models}")
         logger.info(f"   Prefer VEO-3: {'✅' if prefer_veo3 else '❌'}")
         logger.info(f"   Vertex AI: {'✅' if use_vertex_ai else '❌'}")
         logger.info(f"   AI Agents: ✅ (Voice, Positioning, Style, Script)")
@@ -1006,9 +1008,13 @@ The last frame of this scene connects to the next.
         
         # Process with AI script processor for TTS optimization
         from ..models.video_models import Language
+        # Determine the language from config
+        languages = getattr(config, 'languages', [Language.ENGLISH_US])
+        target_language = languages[0] if languages else Language.ENGLISH_US
+        
         result = await self.script_processor.process_script_for_tts(
             script_content=script,
-            language=Language.ENGLISH_US,
+            language=target_language,
             target_duration=config.duration_seconds
         )
         
@@ -1192,10 +1198,10 @@ The last frame of this scene connects to the next.
             num_clips = max(3, int(config.duration_seconds / 5))
             logger.warning(f"⚠️ No script segments found, using duration-based clips: {num_clips}")
         
-        # CRITICAL: Get actual audio durations if available
-        actual_audio_durations = []
+        # Log audio durations for reference but DO NOT use them for video clips
         if audio_files:
             import subprocess
+            actual_audio_durations = []
             for audio_file in audio_files:
                 audio_path = os.path.join(audio_dir, audio_file)
                 try:
@@ -1210,29 +1216,46 @@ The last frame of this scene connects to the next.
                         actual_audio_durations.append(5.0)  # Default duration
                 except:
                     actual_audio_durations.append(5.0)  # Default duration
-            logger.info(f"🎵 Actual audio durations: {[f'{d:.1f}s' for d in actual_audio_durations]}")
-            logger.info(f"🎵 Total audio duration: {sum(actual_audio_durations):.1f}s")
+            logger.info(f"📊 Audio segment durations (for reference only): {[f'{d:.1f}s' for d in actual_audio_durations]}")
+            logger.info(f"📊 Total audio duration: {sum(actual_audio_durations):.1f}s")
         
-        # Use actual audio durations if available
-        if actual_audio_durations:
-            clip_durations = actual_audio_durations
-            logger.info(f"🎯 Using actual audio durations for video clips: {[f'{d:.1f}s' for d in clip_durations]}")
-        elif hasattr(config, 'clip_durations') and config.clip_durations is not None:
+        # Always use optimal video clip durations (5-8 seconds each)
+        # NEVER use audio durations for video clips
+        if hasattr(config, 'clip_durations') and config.clip_durations is not None:
             clip_durations = config.clip_durations
             logger.info(f"🎯 Using core decisions clip durations: {[f'{d:.1f}s' for d in clip_durations]}")
             logger.info(f"⏱️ Total from core decisions: {sum(clip_durations):.1f}s (Target: {config.duration_seconds}s)")
         else:
-            # Use actual script segment durations instead of average
-            if script_segments:
-                clip_durations = [segment.get('duration', config.duration_seconds / num_clips) for segment in script_segments]
-                logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips with segment-based durations")
-                logger.info(f"⏱️ Individual Clip Durations: {[f'{d:.1f}s' for d in clip_durations]}")
-                logger.info(f"⏱️ Total Clip Duration Sum: {sum(clip_durations):.1f}s (Target: {config.duration_seconds}s)")
-            else:
-                avg_duration = config.duration_seconds / num_clips
-                clip_durations = [avg_duration] * num_clips
-                logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips ({avg_duration:.1f}s each)")
-                logger.info(f"⏱️ All Clips Duration: {[f'{avg_duration:.1f}s'] * num_clips}")
+            # Calculate optimal clip durations (5-8 seconds each)
+            # Don't use audio segment durations for video clips!
+            target_clip_duration = 6.0  # Aim for 6-second clips
+            min_clip_duration = 5.0
+            max_clip_duration = 8.0
+            
+            # Calculate how many clips we need
+            optimal_num_clips = max(2, int(config.duration_seconds / target_clip_duration))
+            
+            # Recalculate clip durations to be 5-8 seconds each
+            base_duration = config.duration_seconds / optimal_num_clips
+            clip_durations = []
+            
+            for i in range(optimal_num_clips):
+                # Add slight variation for natural pacing
+                variation = (i % 3 - 1) * 0.5  # -0.5, 0, +0.5 variation
+                clip_duration = max(min_clip_duration, min(max_clip_duration, base_duration + variation))
+                clip_durations.append(clip_duration)
+            
+            # Adjust last clip to match exact target duration
+            total_so_far = sum(clip_durations[:-1])
+            last_clip_duration = config.duration_seconds - total_so_far
+            clip_durations[-1] = max(min_clip_duration, min(max_clip_duration, last_clip_duration))
+            
+            # Update num_clips if it changed
+            num_clips = optimal_num_clips
+            
+            logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips with optimal durations (5-8s each)")
+            logger.info(f"⏱️ Individual Clip Durations: {[f'{d:.1f}s' for d in clip_durations]}")
+            logger.info(f"⏱️ Total Clip Duration Sum: {sum(clip_durations):.1f}s (Target: {config.duration_seconds}s)")
         
         last_frame_image = None
         
@@ -1263,11 +1286,12 @@ The last frame of this scene connects to the next.
                     segment = script_segments[i]
                     # Use full_text for prompts if available (avoid truncated text), otherwise use text
                     segment_text = segment.get('full_text', segment.get('text', ''))
-                    clip_duration = segment.get('duration', config.duration_seconds / num_clips)
+                    # ALWAYS use optimal clip duration (5-8s), NEVER audio segment duration
+                    clip_duration = clip_durations[i] if i < len(clip_durations) else 6.0
                     # Create visual prompt from segment content, not the controversial mission
                     visual_style = getattr(config, 'visual_style', None) or style_decision.get('primary_style', 'dynamic')
                     prompt = self._create_visual_prompt_from_segment(segment_text, i+1, visual_style)
-                    logger.info(f"⏱️ Clip {i+1} Duration: {clip_duration:.1f}s (from segment)")
+                    logger.info(f"⏱️ Clip {i+1} Duration: {clip_duration:.1f}s (optimal video duration)")
                 else:
                     # Fallback for when segments don't match
                     clip_duration = config.duration_seconds / num_clips
@@ -1372,70 +1396,22 @@ The last frame of this scene connects to the next.
                             print(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1} - using fallback with reduced quality")
                             clip_path = None
                     except Exception as e:
-                        error_str = str(e).lower()
-                        if 'policy' in error_str or 'content filter' in error_str or 'safety' in error_str:
-                            logger.warning(f"⚠️ VEO content policy violation for clip {i+1}, rephrasing prompt")
-                            # Rephrase with all original parameters preserved
-                            enhanced_prompt = self._rephrase_problematic_prompt(
-                                enhanced_prompt, 
-                                config.mission, 
-                                i+1,
-                                style=style_decision.get('primary_style'),
-                                tone=getattr(config, 'tone', None),
-                                visual_style=style_decision.get('visual_style', getattr(config, 'visual_style', None)),
-                                duration=clip_duration,
-                                continuous_mode=getattr(config, 'continuous_generation', False)
-                            )
-                            
-                            # Try again with rephrased prompt
-                            try:
-                                logger.info(f"🔄 Retrying VEO with rephrased prompt for clip {i+1}")
-                                clip_path = veo_client.generate_video(
-                                    prompt=enhanced_prompt,
-                                    duration=clip_duration,
-                                    clip_id=f"clip_{i+1}_rephrased",
-                                    aspect_ratio=self._get_platform_aspect_ratio(config.target_platform.value)
-                                )
-                                if clip_path and os.path.exists(clip_path):
-                                    # Log actual duration but DON'T trim - we want to maintain sync
-                                    actual_clip_duration = self._get_video_duration(clip_path)
-                                    if actual_clip_duration:
-                                        if actual_clip_duration > clip_duration * 1.1:  # More than 10% over
-                                            logger.info(f"📏 Rephrased VEO clip {i+1} is {actual_clip_duration:.1f}s (requested: {clip_duration:.1f}s) - keeping full duration for sync")
-                                        else:
-                                            logger.info(f"✅ Rephrased VEO clip {i+1} duration: {actual_clip_duration:.1f}s")
-                                    logger.info(f"✅ Successfully generated clip {i+1} with rephrased prompt")
-                                else:
-                                    logger.error(f"❌ VEO generation still failed after rephrasing for clip {i+1}")
-                                    clip_path = None
-                            except Exception as retry_error:
-                                logger.error(f"❌ VEO retry failed for clip {i+1}: {retry_error}")
-                                clip_path = None
-                        else:
-                            logger.error(f"❌ VEO generation error for clip {i+1}: {e}")
-                            clip_path = None
+                        logger.warning(f"⚠️ VEO generation failed for clip {i+1}: {e}")
+                        self._last_veo_error = str(e)  # Store error for hierarchical fallback
+                        clip_path = None
                 
-                # If VEO failed, use fallback
+                # If VEO failed, implement hierarchical fallback
                 if not clip_path:
-                    fallback_path = os.path.join(
-                        session_context.get_output_path("video_clips"), 
-                        f"fallback_clip_{i}.mp4"
-                    )
-                    
-                    # Ensure clips directory exists
-                    os.makedirs(os.path.dirname(fallback_path), exist_ok=True)
-                    
-                    # Create fallback clip using FFmpeg
-                    print(f"⚠️ FALLBACK WARNING: Creating fallback clip {i+1} due to VEO failure - quality may be reduced")
-                    clip_path = self._create_direct_fallback_clip(
+                    clip_path = self._hierarchical_fallback_generation(
                         prompt=enhanced_prompt,
                         duration=clip_duration,
-                        output_path=fallback_path,
-                        config=config
+                        clip_number=i+1,
+                        config=config,
+                        session_context=session_context,
+                        style_decision=style_decision,
+                        use_frame_continuity=use_frame_continuity,
+                        last_frame_image=last_frame_image if use_frame_continuity and i > 0 else None
                     )
-                    
-                    if clip_path:
-                        logger.info(f"✅ Generated fallback clip {i+1}/{num_clips}")
                 
                 if clip_path:
                     clips.append(clip_path)
@@ -1623,10 +1599,14 @@ The last frame of this scene connects to the next.
             elif not config.multiple_voices:
                 # Force single voice mode (default behavior)
                 logger.info("🎤 Single voice mode enabled (default)")
+                # Determine the language from config
+                languages = getattr(config, 'languages', [Language.ENGLISH_US])
+                target_language = languages[0] if languages else Language.ENGLISH_US
+                
                 voice_strategy = self.voice_director.analyze_content_and_select_voices(
                     mission=config.mission,
                     script=script_result.get('final_script', config.mission),
-                    language=Language.ENGLISH_US,
+                    language=target_language,
                     platform=config.target_platform,
                     category=config.category,
                     duration_seconds=config.duration_seconds,
@@ -1636,10 +1616,14 @@ The last frame of this scene connects to the next.
             else:
                 # Allow multiple voices
                 logger.info("🎤 Multiple voices mode enabled")
+                # Determine the language from config
+                languages = getattr(config, 'languages', [Language.ENGLISH_US])
+                target_language = languages[0] if languages else Language.ENGLISH_US
+                
                 voice_strategy = self.voice_director.analyze_content_and_select_voices(
                     mission=config.mission,
                     script=script_result.get('final_script', config.mission),
-                    language=Language.ENGLISH_US,
+                    language=target_language,
                     platform=config.target_platform,
                     category=config.category,
                     duration_seconds=config.duration_seconds,
@@ -1759,6 +1743,7 @@ The last frame of this scene connects to the next.
                     
                 # Use full_text for TTS if available (avoid truncated text), otherwise use text
                 segment_text = segment.get('full_text', segment.get('text', ''))
+                # Audio segment duration - NOT used for video clips
                 segment_duration = segment.get('duration', 5.0)
                 
                 # Adjust segment duration if it would exceed total
@@ -1769,10 +1754,14 @@ The last frame of this scene connects to the next.
                 
                 logger.info(f"🎵 Generating audio for segment {i+1}/{len(segments_to_generate)}: '{segment_text[:50]}...' (duration: {segment_duration:.1f}s)")
                 
+                # Determine the language from config
+                languages = getattr(config, 'languages', [Language.ENGLISH_US])
+                target_language = languages[0] if languages else Language.ENGLISH_US
+                
                 # Generate audio for this specific segment
                 segment_audio_files = self.tts_client.generate_intelligent_voice_audio(
                     script=segment_text,
-                    language=Language.ENGLISH_US,
+                    language=target_language,
                     mission=config.mission,
                     platform=config.target_platform,
                     category=config.category,
@@ -2028,6 +2017,9 @@ The last frame of this scene connects to the next.
             
             # Step 4: Add text overlays and hooks
             video_with_overlays = self._add_timed_text_overlays(video_with_subtitles, style_decision, positioning_decision, config, session_context)
+            
+            # Step 4b: Add PNG overlays (flags, logos, etc.) if requested
+            video_with_overlays = self._add_png_overlays(video_with_overlays, config, session_context)
             
             # Step 5: Create VERSION 2 - Video with overlays only (no subtitles)
             logger.info("🎬 Creating VERSION 2: Video with overlays only (no subtitles)")
@@ -2358,8 +2350,16 @@ The last frame of this scene connects to the next.
             
             # Add call-to-action overlay with DYNAMIC positioning and AI-driven styling
             if config.call_to_action:
+                # Validate CTA text before using it
+                cta_text_raw = str(config.call_to_action)
+                if self._is_metadata_or_instruction_text(cta_text_raw):
+                    logger.warning(f"⚠️ Detected metadata/instruction in CTA: {cta_text_raw[:50]}...")
+                    # Use platform-specific default CTA
+                    cta_text_raw = video_config.get_default_cta(config.target_platform.value)
+                    logger.info(f"✅ Using default CTA: {cta_text_raw}")
+                
                 # Get AI-driven overlay styling for CTA
-                cta_style = self._get_ai_overlay_style(str(config.call_to_action), "cta", config.target_platform, video_width, video_height, session_context)
+                cta_style = self._get_ai_overlay_style(cta_text_raw, "cta", config.target_platform, video_width, video_height, session_context)
                 
                 # Create smart multi-line CTA text with width constraints
                 # Ensure words_per_line is an integer
@@ -2369,7 +2369,7 @@ The last frame of this scene connects to the next.
                         cta_words = int(cta_words)
                     except:
                         cta_words = 4
-                cta_text = self._create_short_multi_line_text(str(config.call_to_action), max_words_per_line=cta_words, video_width=video_width)
+                cta_text = self._create_short_multi_line_text(cta_text_raw, max_words_per_line=cta_words, video_width=video_width)
                 # Ensure CTA text is escaped for FFmpeg
                 escaped_cta_text = self._escape_text_for_ffmpeg(cta_text)
                 
@@ -2396,6 +2396,36 @@ The last frame of this scene connects to the next.
             logger.error(f"❌ Text overlay failed: {e}")
             return video_path
     
+    def _is_metadata_or_instruction_text(self, text: str) -> bool:
+        """Check if text contains metadata, instructions, or script descriptions"""
+        if not text:
+            return False
+            
+        # Patterns that indicate metadata or instructions
+        metadata_patterns = [
+            'emotional_arc', 'surprise_moments', 'shareability_score',
+            '{', '}', ':', 'viral_elements', 'script_data', 'config',
+            'visual:', 'show:', 'cut to:', 'scene:', 'fade:', 'zoom:',
+            'camera:', 'angle:', 'shot:', 'transition:', 'effect:',
+            'this concludes', 'this ends', 'segment ends', 'scene ends'
+        ]
+        
+        # Check if text contains any metadata patterns
+        text_lower = text.lower()
+        for pattern in metadata_patterns:
+            if pattern.lower() in text_lower:
+                return True
+        
+        # Check if text looks like a dictionary representation
+        if text.strip().startswith('{') or text.strip().endswith('}'):
+            return True
+            
+        # Check if text contains multiple colons (likely key:value pairs)
+        if text.count(':') > 2:
+            return True
+            
+        return False
+
     def _add_professional_text_overlays(self, video_path: str, config: GeneratedVideoConfig,
                                        video_width: int, video_height: int, video_duration: float,
                                        session_context: SessionContext) -> str:
@@ -4448,6 +4478,173 @@ This is a placeholder file. In a full implementation, this would be a complete M
             logger.error(f"❌ Direct fallback creation failed: {e}")
             return self._create_minimal_direct_fallback(prompt, duration, output_path)
     
+    def _hierarchical_fallback_generation(self, prompt: str, duration: float, clip_number: int,
+                                        config: GeneratedVideoConfig, session_context: SessionContext,
+                                        style_decision: Dict[str, Any], use_frame_continuity: bool = False,
+                                        last_frame_image: Optional[str] = None) -> Optional[str]:
+        """Implement hierarchical fallback: VEO (2x) → Image Generation (2x) → Color Fallback"""
+        logger.info(f"🔄 Starting hierarchical fallback for clip {clip_number}")
+        
+        # Step 1: Try VEO again with rephrased prompt
+        error_str = ""
+        if hasattr(self, '_last_veo_error'):
+            error_str = str(getattr(self, '_last_veo_error', '')).lower()
+        
+        if 'policy' in error_str or 'content filter' in error_str or 'safety' in error_str:
+            logger.info(f"🔄 Attempting VEO with rephrased prompt (attempt 2)")
+            rephrased_prompt = self._rephrase_problematic_prompt(
+                prompt, 
+                config.mission, 
+                clip_number,
+                style=style_decision.get('primary_style'),
+                tone=getattr(config, 'tone', None),
+                visual_style=style_decision.get('visual_style', getattr(config, 'visual_style', None)),
+                duration=duration,
+                continuous_mode=getattr(config, 'continuous_generation', False)
+            )
+            
+            try:
+                if hasattr(self, 'veo_client') and self.veo_client:
+                    generation_params = {
+                        'prompt': rephrased_prompt,
+                        'duration': duration,
+                        'clip_id': f"clip_{clip_number}_rephrased",
+                        'aspect_ratio': self._get_platform_aspect_ratio(config.target_platform.value)
+                    }
+                    
+                    if use_frame_continuity and last_frame_image and os.path.exists(last_frame_image):
+                        generation_params['image_path'] = last_frame_image
+                    
+                    clip_path = self.veo_client.generate_video(**generation_params)
+                    if clip_path and os.path.exists(clip_path):
+                        logger.info(f"✅ VEO succeeded with rephrased prompt for clip {clip_number}")
+                        return clip_path
+            except Exception as e:
+                logger.warning(f"⚠️ VEO rephrased attempt failed: {e}")
+        
+        # Step 2: Try image generation (2 attempts)
+        logger.info(f"🖼️ Attempting image generation fallback for clip {clip_number}")
+        
+        # Use rephrased prompt if it exists, otherwise use original
+        final_prompt = rephrased_prompt if 'rephrased_prompt' in locals() else prompt
+        
+        for attempt in range(2):
+            try:
+                image_path = self._generate_image_fallback(
+                    prompt=prompt if attempt == 0 else final_prompt,
+                    clip_number=clip_number,
+                    session_context=session_context,
+                    style_decision=style_decision,
+                    attempt=attempt + 1
+                )
+                
+                if image_path and os.path.exists(image_path):
+                    # Convert image to video
+                    video_path = self._convert_image_to_video(
+                        image_path=image_path,
+                        duration=duration,
+                        clip_number=clip_number,
+                        session_context=session_context,
+                        config=config
+                    )
+                    
+                    if video_path and os.path.exists(video_path):
+                        logger.info(f"✅ Image generation succeeded (attempt {attempt + 1}) for clip {clip_number}")
+                        return video_path
+            except Exception as e:
+                logger.warning(f"⚠️ Image generation attempt {attempt + 1} failed: {e}")
+        
+        # Step 3: Final fallback - colored video
+        logger.warning(f"⚠️ All generation methods failed, using colored fallback for clip {clip_number}")
+        fallback_path = os.path.join(
+            session_context.get_output_path("video_clips"), 
+            f"fallback_clip_{clip_number}.mp4"
+        )
+        
+        os.makedirs(os.path.dirname(fallback_path), exist_ok=True)
+        
+        clip_path = self._create_direct_fallback_clip(
+            prompt=prompt,
+            duration=duration,
+            output_path=fallback_path,
+            config=config
+        )
+        
+        if clip_path:
+            logger.info(f"✅ Created colored fallback for clip {clip_number}")
+        
+        return clip_path
+    
+    def _generate_image_fallback(self, prompt: str, clip_number: int, session_context: SessionContext,
+                                style_decision: Dict[str, Any], attempt: int = 1) -> Optional[str]:
+        """Generate an image using Gemini image generation as fallback"""
+        try:
+            logger.info(f"🖼️ Generating image for clip {clip_number} (attempt {attempt})")
+            
+            # Try to use Gemini for image generation
+            if hasattr(self, 'positioning_agent') and self.positioning_agent:
+                # Create image generation prompt
+                image_prompt = f"""
+                Create a single frame image for this video scene:
+                {prompt}
+                
+                Style: {style_decision.get('primary_style', 'dynamic')}
+                Visual Style: {style_decision.get('visual_style', 'realistic')}
+                
+                Requirements:
+                - High quality illustration
+                - Appropriate for the narrative
+                - Clear and visually appealing
+                - No text or overlays
+                """
+                
+                # Note: This is a placeholder for actual image generation
+                # You would need to implement actual image generation here
+                logger.warning("⚠️ Image generation not yet implemented - placeholder")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Image generation failed: {e}")
+            return None
+    
+    def _convert_image_to_video(self, image_path: str, duration: float, clip_number: int,
+                               session_context: SessionContext, config: GeneratedVideoConfig) -> Optional[str]:
+        """Convert a static image to a video with Ken Burns effect"""
+        try:
+            output_path = os.path.join(
+                session_context.get_output_path("video_clips"),
+                f"image_video_clip_{clip_number}.mp4"
+            )
+            
+            width, height = self._get_video_dimensions(config.target_platform.value)
+            
+            # Create video from image with subtle zoom/pan effect
+            import subprocess
+            cmd = [
+                'ffmpeg', '-y',
+                '-loop', '1',
+                '-i', image_path,
+                '-vf', f'scale={width*1.2}:{height*1.2},zoompan=z="min(zoom+0.0015,1.5)":x="iw/2-(iw/zoom/2)":y="ih/2-(ih/zoom/2)":d={int(duration*30)}:s={width}x{height}',
+                '-t', str(duration),
+                '-c:v', video_config.encoding.video_codec,
+                '-pix_fmt', video_config.encoding.pixel_format,
+                '-r', str(video_config.get_fps(config.target_platform.value)),
+                output_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            
+            if result.returncode == 0 and os.path.exists(output_path):
+                logger.info(f"✅ Converted image to video: {output_path}")
+                return output_path
+            else:
+                logger.error(f"❌ Image to video conversion failed: {result.stderr}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Image to video conversion error: {e}")
+            return None
+    
     def _create_minimal_direct_fallback(self, prompt: str, duration: float, output_path: str, platform: Optional[str] = None) -> str:
         """Create minimal fallback using basic FFmpeg"""
         try:
@@ -5017,22 +5214,39 @@ This is a placeholder file. In a full implementation, this would be a complete M
         return sanitized
     
     def _escape_text_for_ffmpeg(self, text: str) -> str:
-        """Escape text for FFmpeg drawtext filter"""
+        """Escape text for FFmpeg drawtext filter with RTL support"""
         if not text or not text.strip():
             return "Text"
         
+        # Check if text contains RTL characters
+        rtl_chars = re.compile(r'[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]')
+        is_rtl = bool(rtl_chars.search(text))
+        
         escaped = text
+        
+        # For RTL text, add RTL mark to ensure proper rendering
+        if is_rtl:
+            # Add Right-to-Left Mark (RLM) at the beginning
+            escaped = '\u200F' + escaped
+            logger.debug(f"🔤 Detected RTL text, adding RTL mark")
         
         # FIRST: Replace Unicode quotes with regular quotes to avoid double-escaping
         escaped = escaped.replace('"', '"').replace('"', '"').replace('"', '"')
         escaped = escaped.replace(''', "'").replace(''', "'")
         
         # Remove problematic characters that cause FFmpeg filter issues
-        escaped = escaped.replace("'", "").replace('"', '')
-        escaped = escaped.replace(':', '').replace('=', '').replace(',', '')
-        escaped = escaped.replace('[', '').replace(']', '').replace('(', '').replace(')', '')
-        escaped = escaped.replace('{', '').replace('}', '').replace('\\', '').replace('/', '')
-        escaped = escaped.replace('!', '').replace('?', '').replace(';', '')
+        # For RTL languages, preserve some punctuation that's important
+        if not is_rtl:
+            escaped = escaped.replace("'", "").replace('"', '')
+            escaped = escaped.replace(':', '').replace('=', '').replace(',', '')
+            escaped = escaped.replace('[', '').replace(']', '').replace('(', '').replace(')', '')
+            escaped = escaped.replace('{', '').replace('}', '').replace('\\', '').replace('/', '')
+            escaped = escaped.replace('!', '').replace('?', '').replace(';', '')
+        else:
+            # For RTL, be more careful with punctuation removal
+            escaped = escaped.replace("'", "׳").replace('"', '״')  # Hebrew quotes
+            escaped = escaped.replace('\\', '').replace('/', '')
+            escaped = escaped.replace('{', '').replace('}', '')
         
         # Convert newlines to spaces and clean up whitespace
         escaped = escaped.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
@@ -5694,7 +5908,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
             
             # Generate cheap audio
             from ..models.video_models import Language
-            language_enum = Language.ENGLISH_US  # Default to English US
+            # Determine the language from config
+            languages = getattr(config, 'languages', [Language.ENGLISH_US])
+            language_enum = languages[0] if languages else Language.ENGLISH_US
             
             audio_files = tts.generate_intelligent_voice_audio(
                 script=script_text,
@@ -6549,6 +6765,54 @@ This is a placeholder file. In a full implementation, this would be a complete M
         except Exception as e:
             logger.error(f"❌ Failed to save cheap mode subtitles: {e}")
 
+    def _add_png_overlays(self, video_path: str, config: GeneratedVideoConfig, 
+                         session_context: SessionContext) -> str:
+        """Add PNG overlays (flags, logos, etc.) based on mission content"""
+        try:
+            # Check if mission contains Israeli flag request
+            mission_lower = config.mission.lower() if config.mission else ""
+            
+            # Look for flag requests in mission
+            if any(flag in mission_lower for flag in ['israeli flag', 'israel flag', 'flag in corner', 'flag in top']):
+                logger.info("🇮🇱 Adding Israeli flag overlay as requested in mission")
+                
+                # Create output path
+                flag_output = os.path.join(session_context.session_dir, 'temp_files', 'video_with_flag.mp4')
+                os.makedirs(os.path.dirname(flag_output), exist_ok=True)
+                
+                # Determine position from mission
+                position = 'top-left'  # Default
+                if 'top-right' in mission_lower:
+                    position = 'top-right'
+                elif 'bottom' in mission_lower:
+                    position = 'bottom-left' if 'left' in mission_lower else 'bottom-right'
+                
+                # Add Israeli flag
+                result = self.png_overlay_handler.add_israeli_flag(
+                    video_path=video_path,
+                    output_path=flag_output,
+                    position=position,
+                    scale=0.08  # 8% of video size
+                )
+                
+                if result and os.path.exists(result):
+                    logger.info(f"✅ Israeli flag added at {position}")
+                    return result
+                else:
+                    logger.warning("⚠️ Failed to add Israeli flag, continuing without it")
+            
+            # Check for other overlay requests (marvel logo, etc.)
+            if 'marvel' in mission_lower and any(word in mission_lower for word in ['logo', 'watermark']):
+                logger.info("🦸 Marvel logo requested but not available")
+                # Could add Marvel-style overlay here if we had the asset
+            
+            # Return original video if no overlays added
+            return video_path
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to add PNG overlays: {e}")
+            return video_path
+    
     def _save_cheap_mode_overlay_metadata(self, script_text: str, session_context) -> None:
         """Save overlay metadata for cheap mode"""
         try:

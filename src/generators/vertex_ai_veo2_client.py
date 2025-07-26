@@ -86,9 +86,9 @@ class VertexAIVeo2Client(BaseVeoClient):
             Path to generated video file
         """
         if not self.is_available:
-            logger.warning("⚠️ FALLBACK WARNING: VEO-2 not available, using fallback video generation")
-            print("⚠️ FALLBACK WARNING: VEO-2 service unavailable - generating fallback video with reduced quality")
-            return self._create_fallback_clip(prompt, duration, clip_id)
+            logger.warning("⚠️ VEO-2 not available")
+            # Don't create fallback here - let upper layer handle it
+            return None
 
         logger.info(f"🎬 Starting VEO-2 generation for clip: {clip_id}")
         logger.info(f"⏱️ VEO-2 Duration Requested: {duration}s")
@@ -128,23 +128,29 @@ class VertexAIVeo2Client(BaseVeoClient):
                                 return local_path
                             else:
                                 logger.error("❌ Failed to download VEO-2 video from GCS")
-                                return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
+                                # Don't create fallback here - let upper layer handle it
+                                return None
                         else:
                             logger.error(f"❌ Invalid result format: {video_path} (type: {type(video_path)})")
-                            return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
+                            # Don't create fallback here - let upper layer handle it
+                            return None
                     else:
                         logger.error("❌ Failed to process VEO-2 operation result")
-                        return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
+                        # Don't create fallback here - let upper layer handle it
+                        return None
                 else:
                     logger.error("❌ Polling operation failed")
-                    return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
+                    # Don't create fallback here - let upper layer handle it
+                    return None
             else:
                 logger.error("❌ VEO-2 generation failed")
-                return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
+                # Don't create fallback here - let upper layer handle it
+                return None
 
         except Exception as e:
             logger.error(f"❌ VEO-2 generation failed: {e}")
-            return self._create_fallback_clip(prompt, duration, clip_id)
+            # Always re-raise exceptions to let upper layer handle retries and fallbacks
+            raise e
 
     def _enhance_prompt_with_gemini(self, prompt: str) -> str:
         """Enhance prompt for VEO-2 with cinematic instructions"""

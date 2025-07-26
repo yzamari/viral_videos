@@ -36,7 +36,7 @@ class TestVideoGenerator(unittest.TestCase):
         
         # Create test config
         self.test_config = GeneratedVideoConfig(
-            topic="Test video topic",
+            mission="Test video mission",
             duration_seconds=10,
             target_platform=Platform.TIKTOK,
             category=VideoCategory.COMEDY,
@@ -378,7 +378,7 @@ class TestVideoGenerator(unittest.TestCase):
         mock_session_context = Mock()
         
         # Test aligned subtitle overlays
-        result = generator._add_aligned_subtitle_overlays(
+        result = generator._add_subtitle_overlays(
             "input_video.mp4", self.test_config, mock_session_context
         )
         
@@ -408,7 +408,7 @@ class TestVideoGenerator(unittest.TestCase):
         mock_session_context = Mock()
         
         # Test aligned subtitle overlays with error
-        result = generator._add_aligned_subtitle_overlays(
+        result = generator._add_subtitle_overlays(
             "input_video.mp4", self.test_config, mock_session_context
         )
         

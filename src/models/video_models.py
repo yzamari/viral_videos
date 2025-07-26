@@ -106,6 +106,10 @@ class GeneratedVideoConfig:
 
     # Session tracking
     session_id: Optional[str] = None
+    
+    # Theme and style reference
+    theme_id: Optional[str] = None
+    style_reference_id: Optional[str] = None
 
     # Visual and audio settings
     visual_style: str = "cinematic"

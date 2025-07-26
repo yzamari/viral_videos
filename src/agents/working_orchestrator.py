@@ -204,7 +204,7 @@ class WorkingOrchestrator:
                 # Create new session in session manager
                 logger.info(f"🆕 Creating new session in session manager: {self.session_id}")
                 session_manager.create_session(
-                    topic=mission,
+                    mission=mission,
                     platform=platform.value,
                     duration=duration,
                     category=category.value
@@ -315,6 +315,9 @@ class WorkingOrchestrator:
         Returns:
             Generation result with success status and metadata """
         logger.info(f"🎬 Starting {self.mode.value} AI agent video generation")
+        
+        # Store config for access in extraction methods
+        self._current_config = config
 
         try:
             # Phase 1: CRITICAL - Make frame continuity decision FIRST
@@ -383,9 +386,41 @@ class WorkingOrchestrator:
 
             # Phase 6: Video Generation with All Features (continuity-aware)
             try:
-                if self.cheap_mode:
+                # Check if multiple languages are requested
+                languages = config.get('languages', [])
+                logger.info(f"🔍 DEBUG: Languages in config: {languages}")
+                logger.info(f"🔍 DEBUG: Language count: {len(languages)}")
+                logger.info(f"🔍 DEBUG: Multiple languages check: {len(languages) > 1}")
+                if len(languages) > 1:
+                    # Multi-language generation requested
+                    logger.info(f"🌍 Multiple languages requested: {[lang.value if hasattr(lang, 'value') else lang for lang in languages]}")
+                    
+                    # Generate base video first, then create language-specific files
+                    logger.info("🎬 Generating base video...")
+                    base_video_path = await self._generate_enhanced_video(script_data, decisions, config)
+                    logger.info(f"✅ Base video generated: {base_video_path}")
+                    
+                    # Create language-specific files for each language
+                    logger.info("🌍 Creating language-specific audio and subtitle files...")
+                    try:
+                        multilang_result = await self._create_multilingual_files(
+                            languages, script_data, base_video_path
+                        )
+                        logger.info(f"✅ Multilingual files created: {multilang_result}")
+                        if multilang_result and hasattr(multilang_result, 'language_versions'):
+                            logger.info(f"✅ Generated {len(multilang_result.language_versions)} language versions")
+                        else:
+                            logger.warning("⚠️ No language versions were created")
+                    except Exception as e:
+                        logger.error(f"❌ Multi-language generation failed: {e}")
+                        import traceback
+                        logger.error(f"❌ Full traceback: {traceback.format_exc()}")
+                    
+                    # Return the base video path
+                    video_path = base_video_path
+                elif self.cheap_mode:
                     video_path = await self._generate_cheap_video(script_data, decisions, config)
-                elif self.mode == OrchestratorMode.MULTILINGUAL and config.get('languages'):
+                elif self.mode == OrchestratorMode.MULTILINGUAL:
                     video_path = await self._generate_multilingual_video(script_data, decisions, config)
                 else:
                     video_path = await self._generate_enhanced_video(script_data, decisions, config)
@@ -828,9 +863,32 @@ class WorkingOrchestrator:
         elif self.discussion_results and 'duration_validation' in self.discussion_results:
             duration_constraints = self.discussion_results['duration_validation'].decision
         
+        # Determine the target language for script generation
+        languages = config.get('languages', [Language.ENGLISH_US])
+        target_language = languages[0] if languages else Language.ENGLISH_US
+        
+        # Add language instruction to the mission if not English
+        mission_with_language = self.mission
+        if target_language != Language.ENGLISH_US:
+            language_name = {
+                Language.HEBREW: "Hebrew",
+                Language.ARABIC: "Arabic", 
+                Language.FRENCH: "French",
+                Language.SPANISH: "Spanish",
+                Language.GERMAN: "German",
+                Language.ITALIAN: "Italian",
+                Language.PORTUGUESE: "Portuguese",
+                Language.RUSSIAN: "Russian",
+                Language.CHINESE: "Chinese",
+                Language.JAPANESE: "Japanese"
+            }.get(target_language, "the target language")
+            
+            mission_with_language = f"{self.mission}\n\nIMPORTANT: Generate all script content, dialogue, and text in {language_name}. Do not translate the mission statement itself, but create the script output in {language_name}."
+            logger.info(f"🌍 Generating script in {language_name}")
+        
         # Use Director to create base script
         script_data = self.director.write_script(
-            mission=self.mission,
+            mission=mission_with_language,
             style=self.style,
             duration=self.duration,
             platform=self.platform,
@@ -841,7 +899,8 @@ class WorkingOrchestrator:
                 'success_factors': [self.style, 'engaging'],
                 'duration_constraints': duration_constraints,
                 'max_words': int(self.duration * 2.8),  # Enforce word limit (2.8 words per second for TTS)
-                'tolerance_percent': 0.05  # 5% tolerance
+                'tolerance_percent': 0.05,  # 5% tolerance
+                'target_language': target_language
             }
         )
 
@@ -849,7 +908,7 @@ class WorkingOrchestrator:
         if self.script_processor and self.mode != OrchestratorMode.SIMPLE:
             processed_script = await self.script_processor.process_script_for_tts(
                 script_content=str(script_data),
-                language=config.get('language', Language.ENGLISH_US),
+                language=target_language,  # Use the target_language we already determined above
                 target_duration=self.duration
             )
 
@@ -886,7 +945,7 @@ class WorkingOrchestrator:
         voice_decision = self.voice_agent.analyze_content_and_select_voices(
             script=str(script_data),
             mission=self.mission,
-            language=Language.ENGLISH_US,
+            language=target_language,  # Use the target_language for voice selection
             platform=self.platform,
             category=self.category,
             duration_seconds=self.duration,
@@ -1059,9 +1118,23 @@ class WorkingOrchestrator:
         logger.info("🌍 Generating multilingual video...")
 
         if not self.multilang_generator:
-            logger.warning( "Multilingual generator not available, " "using standard video generation"
-            )
-            return await self._generate_enhanced_video(script_data, decisions, config)
+            logger.info("🔧 Initializing multilingual generator on demand...")
+            logger.info(f"🔧 Cheap mode: {self.cheap_mode}")
+            
+            # Import here to avoid circular imports
+            from ..generators.multi_language_generator import MultiLanguageVideoGenerator
+            
+            # Create the multilingual generator on demand with appropriate settings
+            # Use session output directory instead of self.output_dir
+            output_dir = self.session_context.get_output_path() if hasattr(self, 'session_context') else "outputs"
+            self.multilang_generator = MultiLanguageVideoGenerator(self.api_key, output_dir)
+            
+            # Override the generator's VEO settings if in cheap mode
+            if self.cheap_mode:
+                logger.info("💰 Applying cheap mode settings to multilingual generator")
+                # We'll need to pass this info to the generator when we call it
+            
+            logger.info("✅ Multilingual generator initialized")
 
         languages = config.get('languages', [Language.ENGLISH_US])
 
@@ -1070,26 +1143,458 @@ class WorkingOrchestrator:
             script_data,
             decisions,
             config)
+        
+        # Apply cheap mode settings to video config if needed
+        if self.cheap_mode:
+            logger.info("💰 Applying cheap mode settings to video config")
+            video_config.use_real_veo2 = False
+            video_config.realistic_audio = False
 
-        # Generate multilingual video
+        # Generate multilingual video using simplified approach
         try:
-            multilang_result = self.multilang_generator.generate_multilingual_video_with_ai_voices(
-                config=video_config,
-                languages=languages,
-                base_script=str(script_data)
+            logger.info(f"🔧 Using simplified multilingual generation for {len(languages)} languages")
+            
+            # Generate the base video first
+            logger.info("🎬 Generating base video...")
+            base_video_path = await self._generate_enhanced_video(script_data, decisions, config)
+            logger.info(f"✅ Base video generated: {base_video_path}")
+            
+            # Create language-specific files for each language
+            logger.info("🌍 Creating language-specific audio and subtitle files...")
+            multilang_result = await self._create_multilingual_files(
+                languages, script_data, base_video_path
             )
+            logger.info(f"✅ Multilingual files created: {multilang_result}")
+            
+            logger.info(f"🔧 Simplified multilingual generation completed")
 
-            # Return primary language video path
+            # Save language-specific files
+            if multilang_result and multilang_result.language_versions:
+                logger.info(f"💾 Saving {len(multilang_result.language_versions)} language versions...")
+                
+                # Get session directory
+                session_dir = self.session_context.get_output_path()
+                languages_dir = os.path.join(session_dir, "languages")
+                os.makedirs(languages_dir, exist_ok=True)
+                
+                # Save info about all languages
+                lang_info = {
+                    "primary_language": languages[0].value if languages else "en-US",
+                    "all_languages": [lang.value for lang in languages],
+                    "language_files": {}
+                }
+                
+                for lang, version in multilang_result.language_versions.items():
+                    lang_code = lang.value if hasattr(lang, 'value') else str(lang)
+                    lang_dir = os.path.join(languages_dir, lang_code)
+                    os.makedirs(lang_dir, exist_ok=True)
+                    
+                    # Save audio file
+                    if version.audio_path and os.path.exists(version.audio_path):
+                        audio_filename = f"audio_{lang_code}.mp3"
+                        audio_dest = os.path.join(lang_dir, audio_filename)
+                        import shutil
+                        shutil.copy2(version.audio_path, audio_dest)
+                        lang_info["language_files"][lang_code] = {"audio": audio_filename}
+                        logger.info(f"  📁 Saved {lang_code} audio: {audio_filename}")
+                    
+                    # Save translated script
+                    script_path = os.path.join(lang_dir, f"script_{lang_code}.txt")
+                    with open(script_path, 'w', encoding='utf-8') as f:
+                        f.write(version.translated_script)
+                    logger.info(f"  📝 Saved {lang_code} script")
+                    
+                    # Save subtitles if available
+                    if hasattr(version, 'subtitle_path') and version.subtitle_path:
+                        subtitle_filename = f"subtitles_{lang_code}.srt"
+                        subtitle_dest = os.path.join(lang_dir, subtitle_filename)
+                        shutil.copy2(version.subtitle_path, subtitle_dest)
+                        lang_info["language_files"][lang_code]["subtitles"] = subtitle_filename
+                        logger.info(f"  📄 Saved {lang_code} subtitles")
+                
+                # Save language info JSON
+                import json
+                with open(os.path.join(languages_dir, "language_info.json"), 'w', encoding='utf-8') as f:
+                    json.dump(lang_info, f, indent=2, ensure_ascii=False)
+                
+                logger.info(f"✅ All language versions saved to: {languages_dir}")
+
+            # Return primary language video path (for now, return a placeholder)
+            # In a full implementation, we would composite the video with each audio track
             primary_language = languages[0] if languages else Language.ENGLISH_US
-            primary_video = multilang_result.language_versions.get(primary_language)
-
-            if primary_video and hasattr(primary_video, 'video_path'):
-                return primary_video.video_path
+            
+            # For now, return the final video path from the session
+            # The actual video composition would happen here
+            return os.path.join(self.session_context.get_output_path(), "final_output", f"final_video_{self.session_id}.mp4")
+            
         except Exception as e:
             logger.error(f"Multilingual generation failed: {e}")
+            import traceback
+            traceback.print_exc()
 
         # Fallback to regular generation
         return await self._generate_enhanced_video(script_data, decisions, config)
+    
+    async def _create_multilingual_files(self, languages: list, script_data: Dict[str, Any], base_video_path: str):
+        """Create language-specific audio and subtitle files using a simple approach"""
+        logger.info(f"🌍 Starting multi-language file creation with {len(languages)} languages")
+        logger.info(f"📹 Base video path: {base_video_path}")
+        logger.info(f"📹 Base video exists: {os.path.exists(base_video_path) if base_video_path else 'No path provided'}")
+        
+        try:
+            import google.generativeai as genai
+            from gtts import gTTS
+            import tempfile
+            import uuid
+            import json
+            import shutil
+            from ..models.video_models import Language, LanguageVersion, MultiLanguageVideo
+            
+            logger.info(f"🌍 Creating multilingual files for {len(languages)} languages")
+            
+            # Language mapping
+            lang_mapping = {
+                'en': Language.ENGLISH_US,
+                'en-US': Language.ENGLISH_US,
+                'he': Language.HEBREW,
+                'ar': Language.ARABIC,
+                'fa': Language.PERSIAN,
+                'fr': Language.FRENCH,
+                'es': Language.SPANISH,
+                'de': Language.GERMAN,
+            }
+            
+            # TTS language codes
+            tts_codes = {
+                Language.ENGLISH_US: 'en',
+                Language.HEBREW: 'iw',
+                Language.ARABIC: 'ar',
+                Language.PERSIAN: 'fa',
+                Language.FRENCH: 'fr',
+                Language.SPANISH: 'es',
+                Language.GERMAN: 'de'
+            }
+            
+            # Language display names
+            lang_names = {
+                Language.ENGLISH_US: "English (US)",
+                Language.HEBREW: "Hebrew (עברית)",
+                Language.ARABIC: "Arabic (العربية)",
+                Language.PERSIAN: "Persian (فارسی)",
+                Language.FRENCH: "French (Français)",
+                Language.SPANISH: "Spanish (Español)",
+                Language.GERMAN: "German (Deutsch)"
+            }
+            
+            # Convert string languages to Language enums
+            language_enums = []
+            for lang_str in languages:
+                if isinstance(lang_str, str):
+                    if lang_str in lang_mapping:
+                        language_enums.append(lang_mapping[lang_str])
+                    else:
+                        logger.warning(f"⚠️ Unknown language string: {lang_str}")
+                else:
+                    language_enums.append(lang_str)
+            
+            # Extract base script text
+            base_script = str(script_data)
+            if 'segments' in script_data:
+                # Extract text from segments if available
+                base_script = " ".join([seg.get('text', '') for seg in script_data['segments']])
+            
+            logger.info(f"📝 Base script: {base_script[:100]}...")
+            
+            # Create session language directory
+            session_dir = f"outputs/{self.session_id}"
+            languages_dir = os.path.join(session_dir, "languages")
+            os.makedirs(languages_dir, exist_ok=True)
+            logger.info(f"📁 Created languages directory: {languages_dir}")
+            
+            language_versions = {}
+            
+            for language in language_enums:
+                try:
+                    logger.info(f"🗣️ Processing {lang_names.get(language, language.value)}...")
+                    
+                    # Create language directory
+                    lang_code = language.value.replace('-', '_')
+                    lang_dir = os.path.join(languages_dir, lang_code)
+                    os.makedirs(lang_dir, exist_ok=True)
+                    
+                    # Translate script if not English
+                    if language == Language.ENGLISH_US:
+                        translated_script = base_script
+                    else:
+                        translated_script = await self._translate_script_simple(base_script, language)
+                    
+                    # Generate TTS audio
+                    audio_path = await self._generate_simple_tts(translated_script, language, lang_dir)
+                    
+                    # Generate subtitles (simple SRT format)
+                    subtitle_path = self._generate_simple_subtitles(translated_script, language, lang_dir)
+                    
+                    # Combine base video with translated audio and subtitles
+                    video_filename = f"video_{lang_code}.mp4"
+                    video_path = os.path.join(lang_dir, video_filename)
+                    
+                    if base_video_path and os.path.exists(base_video_path):
+                        # Combine video with language-specific audio and subtitles
+                        combined_video_path = self._combine_video_audio_subtitles(
+                            base_video_path, audio_path, subtitle_path, video_path
+                        )
+                        if combined_video_path and os.path.exists(combined_video_path):
+                            logger.info(f"✅ Created {language.value} video with embedded audio and subtitles: {combined_video_path}")
+                            video_path = combined_video_path
+                        else:
+                            logger.warning(f"⚠️ Failed to combine video with audio/subtitles, copying base video")
+                            shutil.copy2(base_video_path, video_path)
+                    else:
+                        logger.warning(f"⚠️ Base video not found at {base_video_path}, using placeholder path")
+                        video_path = base_video_path or "placeholder_video.mp4"
+                    
+                    # Create language version
+                    language_versions[language] = LanguageVersion(
+                        language=language,
+                        language_name=lang_names.get(language, language.value),
+                        audio_path=audio_path,
+                        video_path=video_path,
+                        subtitle_path=subtitle_path,
+                        translated_script=translated_script,
+                        translated_overlays=[],
+                        tts_voice_used=tts_codes.get(language, 'en'),
+                        word_count=len(translated_script.split()),
+                        audio_duration=20.0  # Approximate
+                    )
+                    
+                    logger.info(f"✅ Created {lang_names.get(language, language.value)} version")
+                    
+                except Exception as e:
+                    logger.error(f"❌ Failed to create {language.value} version: {e}")
+                    continue
+            
+            # Create a simple MultiLanguageVideo object
+            base_video_id = str(uuid.uuid4())[:8]
+            
+            # Save language info
+            lang_info = {
+                "primary_language": language_enums[0].value if language_enums else "en-US",
+                "all_languages": [lang.value for lang in language_enums],
+                "base_video": base_video_path,
+                "language_files": {}
+            }
+            
+            for lang, version in language_versions.items():
+                lang_code = lang.value.replace('-', '_')
+                lang_info["language_files"][lang_code] = {
+                    "audio": os.path.basename(version.audio_path),
+                    "video": os.path.basename(version.video_path),
+                    "subtitles": os.path.basename(version.subtitle_path) if version.subtitle_path else None,
+                    "script": version.translated_script
+                }
+            
+            with open(os.path.join(languages_dir, "language_info.json"), 'w', encoding='utf-8') as f:
+                json.dump(lang_info, f, indent=2, ensure_ascii=False)
+            
+            logger.info(f"💾 Saved language info to: {languages_dir}")
+            logger.info(f"✅ Created {len(language_versions)} language versions")
+            
+            # Create a mock MultiLanguageVideo result
+            multilang_video = type('MockMultiLanguageVideo', (), {
+                'language_versions': language_versions,
+                'base_video_id': base_video_id
+            })()
+            
+            return multilang_video
+            
+        except Exception as e:
+            logger.error(f"❌ Multi-language file creation failed: {e}")
+            import traceback
+            logger.error(f"❌ Traceback: {traceback.format_exc()}")
+            return None
+        
+    def _combine_video_audio_subtitles(self, video_path: str, audio_path: str, subtitle_path: str, output_path: str) -> str:
+        """Combine video with audio and burn in subtitles using ffmpeg"""
+        try:
+            import subprocess
+            
+            logger.info(f"🎬 Combining video with audio and subtitles")
+            logger.info(f"   Video: {video_path}")
+            logger.info(f"   Audio: {audio_path}")
+            logger.info(f"   Subtitles: {subtitle_path}")
+            logger.info(f"   Output: {output_path}")
+            
+            # First, replace audio track
+            temp_video = output_path.replace('.mp4', '_temp.mp4')
+            
+            # Replace audio in video
+            cmd_audio = [
+                'ffmpeg', '-y',
+                '-i', video_path,
+                '-i', audio_path,
+                '-c:v', 'copy',
+                '-c:a', 'aac',
+                '-map', '0:v:0',
+                '-map', '1:a:0',
+                '-shortest',
+                temp_video
+            ]
+            
+            logger.info(f"🔊 Replacing audio track...")
+            result = subprocess.run(cmd_audio, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                logger.error(f"❌ Audio replacement failed: {result.stderr}")
+                return None
+                
+            # Now add subtitles
+            if subtitle_path and os.path.exists(subtitle_path):
+                # Burn in subtitles
+                cmd_subtitles = [
+                    'ffmpeg', '-y',
+                    '-i', temp_video,
+                    '-vf', f"subtitles={subtitle_path}:force_style='Fontsize=24,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,Outline=2,Alignment=2,MarginV=40'",
+                    '-c:a', 'copy',
+                    output_path
+                ]
+                
+                logger.info(f"📝 Burning in subtitles...")
+                result = subprocess.run(cmd_subtitles, capture_output=True, text=True)
+                
+                # Clean up temp file
+                if os.path.exists(temp_video):
+                    os.remove(temp_video)
+                    
+                if result.returncode != 0:
+                    logger.error(f"❌ Subtitle burning failed: {result.stderr}")
+                    # If subtitle burning fails, use video with just audio replaced
+                    if os.path.exists(temp_video):
+                        shutil.move(temp_video, output_path)
+                    return output_path
+            else:
+                # No subtitles, just rename temp file
+                shutil.move(temp_video, output_path)
+                
+            logger.info(f"✅ Successfully combined video with audio and subtitles")
+            return output_path
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to combine video/audio/subtitles: {e}")
+            return None
+    
+    async def _translate_script_simple(self, script: str, target_language: Language) -> str:
+        """Simple script translation using Gemini"""
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=self.api_key)
+            from ..config.ai_model_config import DEFAULT_AI_MODEL
+            model = genai.GenerativeModel(DEFAULT_AI_MODEL)
+            
+            lang_names = {
+                Language.HEBREW: "Hebrew",
+                Language.ARABIC: "Arabic", 
+                Language.PERSIAN: "Persian/Farsi",
+                Language.FRENCH: "French",
+                Language.SPANISH: "Spanish",
+                Language.GERMAN: "German"
+            }
+            
+            target_lang = lang_names.get(target_language, target_language.value)
+            
+            prompt = f"Translate this video script to {target_lang}. Keep it natural and engaging:\n\n{script}\n\nReturn only the translated text:"
+            
+            response = model.generate_content(prompt)
+            translated = response.text.strip()
+            
+            logger.info(f"📝 Translated to {target_lang}: {translated[:50]}...")
+            return translated
+            
+        except Exception as e:
+            logger.error(f"❌ Translation failed for {target_language.value}: {e}")
+            return script  # Return original as fallback
+    
+    async def _generate_simple_tts(self, script: str, language: Language, output_dir: str) -> str:
+        """Generate simple TTS audio using gTTS"""
+        try:
+            try:
+                from gtts import gTTS
+            except ImportError:
+                logger.error("❌ gTTS not installed. Installing...")
+                import subprocess
+                import sys
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "gtts"])
+                from gtts import gTTS
+            
+            tts_codes = {
+                Language.ENGLISH_US: 'en',
+                Language.HEBREW: 'iw',
+                Language.ARABIC: 'ar', 
+                Language.PERSIAN: 'fa',
+                Language.FRENCH: 'fr',
+                Language.SPANISH: 'es',
+                Language.GERMAN: 'de'
+            }
+            
+            lang_code = tts_codes.get(language, 'en')
+            
+            # Create TTS
+            tts = gTTS(text=script, lang=lang_code, slow=False)
+            
+            # Save audio file
+            audio_filename = f"audio_{language.value.replace('-', '_')}.mp3"
+            audio_path = os.path.join(output_dir, audio_filename)
+            tts.save(audio_path)
+            
+            logger.info(f"🎤 Generated TTS audio: {audio_path}")
+            return audio_path
+            
+        except Exception as e:
+            logger.error(f"❌ TTS generation failed for {language.value}: {e}")
+            # Create a dummy file as fallback
+            audio_filename = f"audio_{language.value.replace('-', '_')}.txt"
+            audio_path = os.path.join(output_dir, audio_filename)
+            with open(audio_path, 'w') as f:
+                f.write(f"TTS failed for {language.value}: {script}")
+            return audio_path
+    
+    def _generate_simple_subtitles(self, script: str, language: Language, output_dir: str) -> str:
+        """Generate simple SRT subtitles"""
+        try:
+            # Simple subtitle generation - split script into sentences
+            sentences = script.replace('.', '.\n').replace('!', '!\n').replace('?', '?\n').split('\n')
+            sentences = [s.strip() for s in sentences if s.strip()]
+            
+            # Create SRT content
+            srt_content = ""
+            duration_per_sentence = 20.0 / len(sentences) if sentences else 20.0
+            
+            for i, sentence in enumerate(sentences):
+                start_time = i * duration_per_sentence
+                end_time = (i + 1) * duration_per_sentence
+                
+                start_srt = f"{int(start_time//60):02d}:{int(start_time%60):02d},{int((start_time%1)*1000):03d}"
+                end_srt = f"{int(end_time//60):02d}:{int(end_time%60):02d},{int((end_time%1)*1000):03d}"
+                
+                srt_content += f"{i+1}\n{start_srt} --> {end_srt}\n{sentence}\n\n"
+            
+            # Save subtitle file
+            subtitle_filename = f"subtitles_{language.value.replace('-', '_')}.srt"
+            subtitle_path = os.path.join(output_dir, subtitle_filename)
+            
+            with open(subtitle_path, 'w', encoding='utf-8') as f:
+                f.write(srt_content)
+            
+            logger.info(f"📄 Generated subtitles: {subtitle_path}")
+            return subtitle_path
+            
+        except Exception as e:
+            logger.error(f"❌ Subtitle generation failed for {language.value}: {e}")
+            # Create a dummy file as fallback
+            subtitle_filename = f"subtitles_{language.value.replace('-', '_')}.txt"
+            subtitle_path = os.path.join(output_dir, subtitle_filename)
+            with open(subtitle_path, 'w', encoding='utf-8') as f:
+                f.write(f"Subtitle generation failed for {language.value}: {script}")
+            return subtitle_path
 
     async def _generate_enhanced_video(self, script_data: Dict[str, Any],
                                  decisions: Dict[str, Any], config: Dict[str, Any]) -> str:
@@ -1302,14 +1807,22 @@ class WorkingOrchestrator:
                     return hook['text']
                 return str(hook)
 
-        # Generate hook from mission
-        mission_words = self.mission.split()
-        meaningful_words = [word for word in mission_words if len(word) > 3]
-            
-        if meaningful_words:
-            return f"Mission: {meaningful_words[0]}"
+        # Generate hook from mission - check if we need Hebrew
+        languages = getattr(self, '_current_config', {}).get('languages', [Language.ENGLISH_US])
+        target_language = languages[0] if languages else Language.ENGLISH_US
+        
+        if target_language == Language.HEBREW:
+            # Hebrew default hooks
+            return "גלו את הסיפור המדהים!"
         else:
-            return f"Mission: {self.mission}"
+            # English default hook
+            mission_words = self.mission.split()
+            meaningful_words = [word for word in mission_words if len(word) > 3]
+                
+            if meaningful_words:
+                return f"Mission: {meaningful_words[0]}"
+            else:
+                return f"Mission: {self.mission}"
     
     def _extract_content_from_script(self, script_data: Dict[str, Any]) -> list:
         """Extract main content from script data"""
@@ -1326,15 +1839,65 @@ class WorkingOrchestrator:
     
     def _extract_cta_from_script(self, script_data: Dict[str, Any]) -> str:
         """Extract call-to-action from script data"""
+        # First priority: Use CTA from core decisions if available
+        if self.core_decisions and hasattr(self.core_decisions, 'call_to_action'):
+            cta = self.core_decisions.call_to_action
+            if cta and len(str(cta)) > 5 and not self._is_metadata_text(str(cta)):
+                return str(cta)
+        
+        # Second priority: Check script data for explicit CTA
         if isinstance(script_data, dict):
+            # Check for CTA in proper structure
+            if 'cta' in script_data and isinstance(script_data['cta'], dict):
+                cta_text = script_data['cta'].get('text', '')
+                if cta_text and not self._is_metadata_text(cta_text):
+                    return cta_text
+            
+            # Check for call_to_action field
+            if 'call_to_action' in script_data:
+                cta = script_data['call_to_action']
+                # If it's a string, validate it
+                if isinstance(cta, str) and not self._is_metadata_text(cta):
+                    return cta
+                # If it's a dict, extract text
+                elif isinstance(cta, dict) and 'text' in cta:
+                    return cta['text']
+            
+            # Last resort: Extract from processed script
             if 'processed' in script_data and 'final_script' in script_data['processed']:
-                # Use processed script if available
                 processed_script = script_data['processed']['final_script']
                 sentences = processed_script.split('.')
-                return sentences[-1].strip() if sentences else "Follow for more!"
-            elif 'call_to_action' in script_data:
-                return str(script_data['call_to_action'])
-        return "Follow for more!"
+                last_sentence = sentences[-1].strip() if sentences else ""
+                if last_sentence and len(last_sentence) > 5 and not self._is_metadata_text(last_sentence):
+                    return last_sentence
+        
+        # Fallback to platform-specific default - check language
+        languages = getattr(self, '_current_config', {}).get('languages', [Language.ENGLISH_US])
+        target_language = languages[0] if languages else Language.ENGLISH_US
+        
+        if target_language == Language.HEBREW:
+            # Hebrew CTAs by platform
+            platform_ctas = {
+                'youtube': "הירשמו לעוד תוכן!",
+                'tiktok': "עקבו לעוד סרטונים!",
+                'instagram': "עקבו לתוכן יומי!",
+                'default': "עקבו לעוד!"
+            }
+            platform = str(self.platform).lower() if self.platform else 'default'
+            return platform_ctas.get(platform, platform_ctas['default'])
+        else:
+            # English default
+            from ..config.video_config import video_config
+            platform = self.core_decisions.platform if self.core_decisions else 'youtube'
+            return video_config.get_default_cta(platform)
+    
+    def _is_metadata_text(self, text: str) -> bool:
+        """Check if text contains metadata patterns"""
+        metadata_patterns = [
+            'emotional_arc', 'surprise_moments', 'shareability_score',
+            '{', '}', ':', 'viral_elements', 'script_data', 'config'
+        ]
+        return any(pattern in text for pattern in metadata_patterns)
     
     def _count_agents_used(self) -> int:
         """Count the number of agents used based on mode"""

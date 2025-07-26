@@ -11,7 +11,8 @@ from unittest.mock import Mock, MagicMock, patch
 from src.themes.managers.theme_manager import ThemeManager
 from src.themes.managers.themed_session_manager import ThemedSessionManager
 from src.themes.models.theme import Theme, ThemeCategory
-from src.core.session_manager import SessionManager, SessionContext
+from src.utils.session_manager import SessionManager
+from src.utils.session_context import SessionContext
 
 
 class TestThemedSessionManager:

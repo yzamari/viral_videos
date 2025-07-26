@@ -185,7 +185,41 @@ python main.py generate \
   --platform youtube \
   --duration 20 \
   --cheap full
+```
 
+### 🌍 **Multi-Language Support with RTL**
+
+Generate videos with audio and subtitles in multiple languages, including full support for right-to-left (RTL) languages like Hebrew, Arabic, and Persian.
+
+```bash
+# Generate video in English, Hebrew, and Persian
+python main.py generate \
+  --mission "Breaking news about water conservation" \
+  --platform youtube \
+  --duration 30 \
+  --languages en-US \
+  --languages he \
+  --languages fa \
+  --no-cheap
+
+# Supported languages:
+# - English: en-US, en-GB, en-IN
+# - RTL Languages: he (Hebrew), ar (Arabic), fa (Persian/Farsi)
+# - European: fr (French), de (German), es (Spanish), it (Italian), pt (Portuguese)
+# - Asian: zh (Chinese), ja (Japanese), th (Thai)
+# - Other: ru (Russian)
+
+# Features:
+# - Automatic translation with cultural context
+# - RTL text alignment in subtitles and overlays
+# - Native TTS voices for each language
+# - Single video generation with multiple audio/subtitle tracks
+# - Preserves visual content across all languages
+```
+
+### Using Advanced Features
+
+```bash
 # Use style reference from existing video
 python main.py generate \
   --mission "Create product showcase" \

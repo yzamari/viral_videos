@@ -117,6 +117,7 @@ def test_auth():
 @click.option('--scene', help='Scene description when using --character (e.g., "news studio", "outdoor interview")')
 @click.option('--voice', help='Specific voice to use throughout the video (e.g., "en-US-Journey-F")')
 @click.option('--multiple-voices', is_flag=True, help='Allow multiple voices (default: single voice)')
+@click.option('--languages', multiple=True, default=['en-US'], help='Languages for audio/subtitles (e.g., --languages en-US --languages he --languages fa). First language is primary.')
 def generate(**kwargs):
     """🎬 Generate viral video with optimized AI system"""
     try:
@@ -158,7 +159,8 @@ def generate(**kwargs):
             character=kwargs.get('character'),
             scene=kwargs.get('scene'),
             voice=kwargs.get('voice'),
-            multiple_voices=kwargs.get('multiple_voices', False)
+            multiple_voices=kwargs.get('multiple_voices', False),
+            languages=list(kwargs.get('languages', ['en-US']))
         )
         
         # Auto-post if requested

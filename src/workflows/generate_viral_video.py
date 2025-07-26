@@ -8,7 +8,7 @@ Advanced AI-powered video generation with multi-agent discussions and
 import os
 import sys
 import time
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 
 # Add src to path
@@ -18,7 +18,8 @@ from src.agents.working_orchestrator import WorkingOrchestrator, OrchestratorMod
 from src.models.video_models import (
     GeneratedVideoConfig,
     Platform,
-    VideoCategory
+    VideoCategory,
+    Language
 )
 from src.utils.logging_config import get_logger
 from src.utils.session_manager import session_manager
@@ -34,7 +35,7 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
          theme: Optional[str] = None, style_template: Optional[str] = None, 
          reference_style: Optional[str] = None, character: Optional[str] = None,
          scene: Optional[str] = None, voice: Optional[str] = None, 
-         multiple_voices: bool = False, **kwargs):
+         multiple_voices: bool = False, languages: List[str] = None, **kwargs):
     """
     Main video generation workflow
 
@@ -180,6 +181,47 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             core_decisions=core_decisions  # Pass all decisions to orchestrator
         )
 
+        # Convert language strings to Language enums
+        language_enums = []
+        if languages:
+            for lang_str in languages:
+                try:
+                    # Map common language codes to Language enum values
+                    lang_mapping = {
+                        'en': Language.ENGLISH_US,
+                        'en-US': Language.ENGLISH_US,
+                        'en-GB': Language.ENGLISH_UK,
+                        'en-IN': Language.ENGLISH_IN,
+                        'he': Language.HEBREW,
+                        'hebrew': Language.HEBREW,
+                        'ar': Language.ARABIC,
+                        'arabic': Language.ARABIC,
+                        'fa': Language.PERSIAN,
+                        'persian': Language.PERSIAN,
+                        'farsi': Language.PERSIAN,
+                        'fr': Language.FRENCH,
+                        'de': Language.GERMAN,
+                        'es': Language.SPANISH,
+                        'it': Language.ITALIAN,
+                        'pt': Language.PORTUGUESE,
+                        'ru': Language.RUSSIAN,
+                        'zh': Language.CHINESE,
+                        'ja': Language.JAPANESE,
+                        'th': Language.THAI
+                    }
+                    lang_enum = lang_mapping.get(lang_str.lower(), Language.ENGLISH_US)
+                    language_enums.append(lang_enum)
+                except Exception as e:
+                    logger.warning(f"Invalid language '{lang_str}', using English: {e}")
+                    language_enums.append(Language.ENGLISH_US)
+        else:
+            language_enums = [Language.ENGLISH_US]
+        
+        # Log languages
+        logger.info(f"🌍 Languages: {', '.join([lang.value for lang in language_enums])}")
+        if any(lang in [Language.HEBREW, Language.ARABIC, Language.PERSIAN] for lang in language_enums):
+            logger.info("📝 RTL languages detected - will handle right-to-left text properly")
+        
         # Create config dictionary for orchestrator
         config = {
             'mission': mission,
@@ -201,7 +243,8 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             'multiple_voices': multiple_voices,
             'scene': scene,
             'session_id': session_id,
-            'core_decisions': core_decisions
+            'core_decisions': core_decisions,
+            'languages': language_enums  # Pass Language enums
         }
         
         # Generate video

@@ -14,6 +14,7 @@ from ..utils.json_fixer import JSONFixer
 from ..ai.manager import AIServiceManager
 from ..ai.interfaces.text_generation import TextGenerationRequest
 from ..config.tts_config import tts_config
+from ..utils.text_validator import TextValidator
 
 logger = get_logger(__name__)
 
@@ -36,6 +37,9 @@ class EnhancedScriptProcessor:
         
         # Keep json_fixer for compatibility
         self.json_fixer = JSONFixer(api_key or "dummy")
+        
+        # Initialize text validator
+        self.text_validator = TextValidator()
 
         # TTS optimization rules by language
         self.language_rules = {
@@ -251,6 +255,36 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 result['processing_timestamp'] = datetime.now().isoformat()
                 result['target_duration'] = target_duration
                 
+                # Validate and clean the optimized script
+                if 'optimized_script' in result:
+                    validation = self.text_validator.validate_text(
+                        result['optimized_script'],
+                        context="script",
+                        expected_language=language if isinstance(language, Language) else None
+                    )
+                    if validation.cleaned_text != result['optimized_script']:
+                        if validation.issues_found:
+                            logger.warning(f"⚠️ Cleaned script text - removed: {validation.issues_found}")
+                        else:
+                            logger.debug(f"✅ Script text is clean - no issues found")
+                    result['optimized_script'] = validation.cleaned_text
+                
+                # Validate segments
+                if 'segments' in result and isinstance(result['segments'], list):
+                    for i, segment in enumerate(result['segments']):
+                        if isinstance(segment, dict) and 'text' in segment:
+                            seg_validation = self.text_validator.validate_text(
+                                segment['text'],
+                                context=f"segment_{i}",
+                                expected_language=language if isinstance(language, Language) else None
+                            )
+                            if seg_validation.cleaned_text != segment['text']:
+                                if seg_validation.issues_found:
+                                    logger.warning(f"⚠️ Cleaned segment {i} - removed: {seg_validation.issues_found}")
+                                else:
+                                    logger.debug(f"✅ Segment {i} is clean - no issues found")
+                            segment['text'] = seg_validation.cleaned_text
+                
                 # Ensure final_script key exists for compatibility
                 if 'optimized_script' in result and 'final_script' not in result:
                     result['final_script'] = result['optimized_script']
@@ -340,11 +374,35 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                     "voice_suggestion": None  # Will be determined by AI
                 })
             
+            # Validate the reprocessed script
+            validation = self.text_validator.validate_text(
+                optimized_text,
+                context="reprocessed_script",
+                expected_language=language if isinstance(language, Language) else None
+            )
+            if validation.cleaned_text != optimized_text:
+                if validation.issues_found:
+                    logger.warning(f"⚠️ Cleaned reprocessed script - removed: {validation.issues_found}")
+                else:
+                    logger.debug(f"✅ Reprocessed script is clean - no issues found")
+            
+            cleaned_text = validation.cleaned_text
+            
+            # Re-validate segments
+            for segment in segments:
+                if 'text' in segment:
+                    seg_validation = self.text_validator.validate_text(
+                        segment['text'],
+                        context="reprocessed_segment",
+                        expected_language=language if isinstance(language, Language) else None
+                    )
+                    segment['text'] = seg_validation.cleaned_text
+            
             return {
-                "optimized_script": optimized_text,
+                "optimized_script": cleaned_text,
                 "segments": segments,
                 "total_estimated_duration": sum(seg['duration'] for seg in segments),
-                "total_word_count": len(optimized_text.split()),
+                "total_word_count": len(cleaned_text.split()),
                 "optimization_notes": f"Reprocessed for exact {target_duration}s duration",
                 "duration_match": "adjusted",
                 "tts_optimizations": ["Duration-based word count adjustment"],
@@ -426,12 +484,36 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 }]
                 total_words = word_count
             
+            # Validate the parsed script
+            validation = self.text_validator.validate_text(
+                optimized_script,
+                context="manual_parsed_script",
+                expected_language=language if isinstance(language, Language) else None
+            )
+            if validation.cleaned_text != optimized_script:
+                if validation.issues_found:
+                    logger.warning(f"⚠️ Cleaned manual parsed script - removed: {validation.issues_found}")
+                else:
+                    logger.debug(f"✅ Manual parsed script is clean - no issues found")
+            
+            cleaned_script = validation.cleaned_text
+            
+            # Re-validate segments
+            for segment in segments:
+                if 'text' in segment:
+                    seg_validation = self.text_validator.validate_text(
+                        segment['text'],
+                        context="manual_parsed_segment",
+                        expected_language=language if isinstance(language, Language) else None
+                    )
+                    segment['text'] = seg_validation.cleaned_text
+            
             return {
-                "optimized_script": optimized_script,
-                "final_script": optimized_script,
+                "optimized_script": cleaned_script,
+                "final_script": cleaned_script,
                 "segments": segments,
                 "total_estimated_duration": sum(seg['duration'] for seg in segments),
-                "total_word_count": total_words,
+                "total_word_count": len(cleaned_script.split()),
                 "optimization_notes": "Manual parsing with single-sentence segments",
                 "duration_match": "manual",
                 "tts_optimizations": ["Manual parsing recovery", "Single sentence per segment enforced"],
@@ -525,12 +607,37 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
             total_words = word_count
             total_duration = estimated_duration
         
+        # Validate the script before returning
+        validation = self.text_validator.validate_text(
+            script_content,
+            context="fallback_script",
+            expected_language=language if isinstance(language, Language) else None
+        )
+        if validation.cleaned_text != script_content:
+            if validation.issues_found:
+                logger.warning(f"⚠️ Cleaned fallback script - removed: {validation.issues_found}")
+            else:
+                logger.debug(f"✅ Fallback script is clean - no issues found")
+        
+        cleaned_script = validation.cleaned_text
+        
+        # Re-validate segments with cleaned text
+        if segments:
+            for segment in segments:
+                if 'text' in segment:
+                    seg_validation = self.text_validator.validate_text(
+                        segment['text'],
+                        context="fallback_segment",
+                        expected_language=language if isinstance(language, Language) else None
+                    )
+                    segment['text'] = seg_validation.cleaned_text
+        
         return {
-            "optimized_script": script_content,
-            "final_script": script_content,  # Add this key for compatibility
+            "optimized_script": cleaned_script,
+            "final_script": cleaned_script,  # Add this key for compatibility
             "segments": segments,
             "total_estimated_duration": total_duration,
-            "total_word_count": total_words,
+            "total_word_count": len(cleaned_script.split()),
             "optimization_notes": "Fallback processing with single-sentence segments",
             "duration_match": "fallback",
             "tts_optimizations": ["Single sentence per segment enforced"],
