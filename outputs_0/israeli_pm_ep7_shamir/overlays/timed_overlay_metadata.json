@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 4,
+  "hook_text": "Size matters NOT!\" screams the ant-sized titan.",
+  "cta_text": "Share this powerful message!",
+  "style_decision": {
+    "primary_style": "comic",
+    "color_palette": "vibrant",
+    "reasoning": "The prompt explicitly mentions 'Marvel Comics' and describes action-packed, dynamic scenes with sound effects ('CLANG!', 'CRASH!', 'BOOM!') and clear character archetypes (David vs Goliath, immovable object vs unstoppable force). The 'comic' style is the most direct and effective way to translate these elements visually. 'Vibrant' colors will enhance the energy and impact of these scenes, fitting for Instagram and a general audience.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "The prompt specifies Instagram and a comic style. While avoiding the bottom 20% is a general rule, 'bottom_center' often works well for titles or punchy lines in a comic context on Instagram, especially when the content itself is visually dynamic. This allows for clear readability without obstructing the main action. The content is dense and punchy, suggesting a clear, anchored title.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/israeli_pm_ep7_shamir/temp_files/base_video.mp4 -vf drawtext=text='DRAGGED TO PEACE \ud83d\udd4a\ufe0f':fontcolor=#5F27CD:fontsize=50:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,12.5\\,15.0),drawtext=text='VOTES SCATTER \ud83d\udca8':fontcolor=#E74C3C:fontsize=55:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,24.5\\,27.0),drawtext=text='Share this powerful':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,36.264\\,37.664),drawtext=text='message':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,37.764\\,39.164) -c:a copy -y outputs/israeli_pm_ep7_shamir/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='DRAGGED TO PEACE \ud83d\udd4a\ufe0f':fontcolor=#5F27CD:fontsize=50:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,12.5\\,15.0),drawtext=text='VOTES SCATTER \ud83d\udca8':fontcolor=#E74C3C:fontsize=55:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,24.5\\,27.0),drawtext=text='Share this powerful':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,36.264\\,37.664),drawtext=text='message':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,37.764\\,39.164)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 42.264,
+    "overlay_count": 4
+  }
+}

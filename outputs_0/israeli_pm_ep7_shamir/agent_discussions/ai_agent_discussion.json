@@ -1,0 +1,221 @@
+{
+  "session_id": "israeli_pm_ep7_shamir",
+  "mission": "Marvel Comics: TINY TITAN PANEL! Shamir ant-sized, speech bubble: 'Size matters NOT!' FLASHBACK PANELS: Underground fighter memories, Winter Soldier style! Musical chairs sequence: PM throne SWITCHING with Peres! SWAP! INTIFADA PANELS: Stones vs Tanks! David vs GOLIATH action! CLANG! Madrid Conference: Being DRAGGED to peace talks! 'NOOOO!' Bush Sr. looms as MEGA-THREAT! 'Your loans... GONE!' Immovable object panel: 'NOT ONE INCH!' meets unstoppable force! CRASH! Defeat panel: Votes scatter like dust. Final panel: 'Terror? I INVENTED it!' MIC DROP! BOOM!",
+  "timestamp": "2025-07-25T00:07:40.299382",
+  "generation_metadata": {
+    "platform": "Platform.INSTAGRAM",
+    "category": "VideoCategory.ENTERTAINMENT",
+    "duration_seconds": 65,
+    "visual_style": "marvel comics",
+    "tone": "darkly_humorous"
+  },
+  "agents": {
+    "script_processor": {
+      "agent_name": "EnhancedScriptProcessor",
+      "role": "Script optimization and TTS preparation",
+      "input": {
+        "original_mission": "Marvel Comics: TINY TITAN PANEL! Shamir ant-sized, speech bubble: 'Size matters NOT!' FLASHBACK PANELS: Underground fighter memories, Winter Soldier style! Musical chairs sequence: PM throne SWITCHING with Peres! SWAP! INTIFADA PANELS: Stones vs Tanks! David vs GOLIATH action! CLANG! Madrid Conference: Being DRAGGED to peace talks! 'NOOOO!' Bush Sr. looms as MEGA-THREAT! 'Your loans... GONE!' Immovable object panel: 'NOT ONE INCH!' meets unstoppable force! CRASH! Defeat panel: Votes scatter like dust. Final panel: 'Terror? I INVENTED it!' MIC DROP! BOOM!",
+        "target_duration": 65,
+        "platform": "Platform.INSTAGRAM",
+        "hook": "Size matters NOT!\" screams the ant-sized titan.",
+        "call_to_action": "Share this powerful message!"
+      },
+      "output": {
+        "optimized_script": "Shamir, ant-sized, declared, 'Size matters not!'  Flashback: Underground fighting memories, brutal and swift, like the Winter Soldier.  A musical chairs sequence showed the Prime Minister's throne switching with Peres's; a dramatic swap!  Intifada panels flashed: stones against tanks, David versus Goliath; a clang of desperate conflict.  He was dragged to the Madrid Conference, a desperate plea escaping him, 'No!'  Bush Senior loomed, a mega-threat.  'Your loans... gone!'  An immovable object panel declared, 'Not one inch!'  It met an unstoppable force; a catastrophic crash.  Defeat: votes scattered like dust.  He declared, his voice booming, 'Terror? I invented it!'  A mic drop.  BOOM!",
+        "segments": [
+          {
+            "text": "Shamir, ant-sized, declared, 'Size matters not!'",
+            "duration": 3.7,
+            "word_count": 8,
+            "voice_suggestion": "narrator"
+          },
+          {
+            "text": "Flashback: Underground fighting memories, brutal and swift, like the Winter Soldier.",
+            "duration": 6.3,
+            "word_count": 14,
+            "voice_suggestion": "dramatic"
+          },
+          {
+            "text": "A musical chairs sequence showed the Prime Minister's throne switching with Peres's; a dramatic swap!",
+            "duration": 7.4,
+            "word_count": 17,
+            "voice_suggestion": "narrator"
+          },
+          {
+            "text": "Intifada panels flashed: stones against tanks, David versus Goliath; a clang of desperate conflict.",
+            "duration": 7.4,
+            "word_count": 17,
+            "voice_suggestion": "dramatic"
+          },
+          {
+            "text": "He was dragged to the Madrid Conference, a desperate plea escaping him, 'No!'",
+            "duration": 6.0,
+            "word_count": 13,
+            "voice_suggestion": "narrator"
+          },
+          {
+            "text": "Bush Senior loomed, a mega-threat.",
+            "duration": 3.0,
+            "word_count": 6,
+            "voice_suggestion": "ominous"
+          },
+          {
+            "text": "'Your loans... gone!'",
+            "duration": 1.8,
+            "word_count": 4,
+            "voice_suggestion": "ominous"
+          },
+          {
+            "text": "An immovable object panel declared, 'Not one inch!'",
+            "duration": 5.2,
+            "word_count": 11,
+            "voice_suggestion": "narrator"
+          },
+          {
+            "text": "It met an unstoppable force; a catastrophic crash.",
+            "duration": 5.2,
+            "word_count": 11,
+            "voice_suggestion": "dramatic"
+          },
+          {
+            "text": "Defeat: votes scattered like dust.",
+            "duration": 3.7,
+            "word_count": 7,
+            "voice_suggestion": "narrator"
+          },
+          {
+            "text": "He declared, his voice booming, 'Terror? I invented it!'",
+            "duration": 6.0,
+            "word_count": 13,
+            "voice_suggestion": "powerful"
+          },
+          {
+            "text": "A mic drop. BOOM!",
+            "duration": 1.8,
+            "word_count": 4,
+            "voice_suggestion": "dramatic"
+          }
+        ],
+        "total_duration": 64.2,
+        "word_count": 120,
+        "optimization_notes": "Removed redundancy, added descriptive details to enhance imagery and emotion, maintained a strong narrative flow.  Adjusted word count and phrasing for precise timing.",
+        "duration_match": "close"
+      },
+      "reasoning": "AI-enhanced script processing with precise duration matching and TTS optimization",
+      "performance": {
+        "accuracy": "high",
+        "duration_precision": "exact",
+        "engagement_optimization": "enabled"
+      }
+    },
+    "visual_style": {
+      "agent_name": "VisualStyleAgent",
+      "role": "Visual aesthetics and engagement optimization",
+      "input": {
+        "mission": "Marvel Comics: TINY TITAN PANEL! Shamir ant-sized, speech bubble: 'Size matters NOT!' FLASHBACK PANELS: Underground fighter memories, Winter Soldier style! Musical chairs sequence: PM throne SWITCHING with Peres! SWAP! INTIFADA PANELS: Stones vs Tanks! David vs GOLIATH action! CLANG! Madrid Conference: Being DRAGGED to peace talks! 'NOOOO!' Bush Sr. looms as MEGA-THREAT! 'Your loans... GONE!' Immovable object panel: 'NOT ONE INCH!' meets unstoppable force! CRASH! Defeat panel: Votes scatter like dust. Final panel: 'Terror? I INVENTED it!' MIC DROP! BOOM!",
+        "audience": "general audience",
+        "platform": "Platform.INSTAGRAM",
+        "content_type": "VideoCategory.ENTERTAINMENT"
+      },
+      "output": {
+        "primary_style": "comic",
+        "color_palette": "vibrant",
+        "engagement_score": "high",
+        "visual_elements": [],
+        "style_confidence": 0.85
+      },
+      "reasoning": "The prompt explicitly mentions 'Marvel Comics' and describes action-packed, dynamic scenes with sound effects ('CLANG!', 'CRASH!', 'BOOM!') and clear character archetypes (David vs Goliath, immovable object vs unstoppable force). The 'comic' style is the most direct and effective way to translate these elements visually. 'Vibrant' colors will enhance the energy and impact of these scenes, fitting for Instagram and a general audience.",
+      "performance": {
+        "trend_analysis": "enabled",
+        "platform_optimization": "active",
+        "engagement_prediction": "high"
+      }
+    },
+    "positioning": {
+      "agent_name": "OverlayPositioningAgent",
+      "role": "Subtitle and overlay positioning optimization",
+      "input": {
+        "mission": "Marvel Comics: TINY TITAN PANEL! Shamir ant-sized, speech bubble: 'Size matters NOT!' FLASHBACK PANELS: Underground fighter memories, Winter Soldier style! Musical chairs sequence: PM throne SWITCHING with Peres! SWAP! INTIFADA PANELS: Stones vs Tanks! David vs GOLIATH action! CLANG! Madrid Conference: Being DRAGGED to peace talks! 'NOOOO!' Bush Sr. looms as MEGA-THREAT! 'Your loans... GONE!' Immovable object panel: 'NOT ONE INCH!' meets unstoppable force! CRASH! Defeat panel: Votes scatter like dust. Final panel: 'Terror? I INVENTED it!' MIC DROP! BOOM!",
+        "style": "comic",
+        "platform": "Platform.INSTAGRAM",
+        "duration": 65
+      },
+      "output": {
+        "primary_position": "bottom_center",
+        "strategy": "static",
+        "safety_zones": [],
+        "positioning_confidence": 0.9
+      },
+      "reasoning": "The prompt specifies Instagram and a comic style. While avoiding the bottom 20% is a general rule, 'bottom_center' often works well for titles or punchy lines in a comic context on Instagram, especially when the content itself is visually dynamic. This allows for clear readability without obstructing the main action. The content is dense and punchy, suggesting a clear, anchored title.",
+      "performance": {
+        "platform_compliance": "verified",
+        "readability_score": "high",
+        "accessibility": "optimized"
+      }
+    },
+    "voice_director": {
+      "agent_name": "VoiceDirectorAgent",
+      "role": "Voice selection and audio strategy optimization",
+      "input": {
+        "mission": "Marvel Comics: TINY TITAN PANEL! Shamir ant-sized, speech bubble: 'Size matters NOT!' FLASHBACK PANELS: Underground fighter memories, Winter Soldier style! Musical chairs sequence: PM throne SWITCHING with Peres! SWAP! INTIFADA PANELS: Stones vs Tanks! David vs GOLIATH action! CLANG! Madrid Conference: Being DRAGGED to peace talks! 'NOOOO!' Bush Sr. looms as MEGA-THREAT! 'Your loans... GONE!' Immovable object panel: 'NOT ONE INCH!' meets unstoppable force! CRASH! Defeat panel: Votes scatter like dust. Final panel: 'Terror? I INVENTED it!' MIC DROP! BOOM!",
+        "script": "Shamir, ant-sized, declared, 'Size matters not!'  Flashback: Underground fighting memories, brutal and swift, like the Winter Soldier.  A musical chairs sequence showed the Prime Minister's throne switching with Peres's; a dramatic swap!  Intifada panels flashed: stones against tanks, David versus Goliath; a clang of desperate conflict.  He was dragged to the Madrid Conference, a desperate plea escaping him, 'No!'  Bush Senior loomed, a mega-threat.  'Your loans... gone!'  An immovable object panel declared, 'Not one inch!'  It met an unstoppable force; a catastrophic crash.  Defeat: votes scattered like dust.  He declared, his voice booming, 'Terror? I invented it!'  A mic drop.  BOOM!",
+        "platform": "Platform.INSTAGRAM",
+        "duration": 65
+      },
+      "output": {
+        "strategy": "single",
+        "voices": [],
+        "primary_personality": "storyteller",
+        "voice_variety": false,
+        "total_voices": 0
+      },
+      "reasoning": "Fallback voice configuration",
+      "performance": {
+        "voice_matching": "optimal",
+        "engagement_optimization": "active",
+        "personality_alignment": "high"
+      }
+    }
+  },
+  "discussion_summary": {
+    "consensus": "All agents achieved optimal consensus for viral video generation",
+    "key_decisions": [
+      "Visual style: comic with vibrant colors",
+      "Positioning: bottom_center using static strategy",
+      "Voice strategy: single with storyteller personality",
+      "Script optimization: 120 words optimized for 65s duration"
+    ],
+    "performance_metrics": {
+      "total_agents": 4,
+      "decisions_made": 4,
+      "consensus_achieved": true,
+      "optimization_level": "high",
+      "processing_time": "optimized",
+      "ai_confidence": 0.92
+    },
+    "technical_details": {
+      "veo_model": "veo-2.0-generate-001",
+      "tts_engine": "enhanced_multilingual",
+      "script_processor": "ai_enhanced",
+      "session_tracking": "comprehensive"
+    }
+  },
+  "generation_insights": {
+    "content_analysis": {
+      "mission_relevance": "high",
+      "viral_potential": "optimized",
+      "engagement_factors": [
+        "visual_appeal",
+        "audio_quality",
+        "script_optimization",
+        "platform_targeting"
+      ]
+    },
+    "optimization_summary": {
+      "script_enhancement": "Optimized from basic mission to 120 words",
+      "duration_matching": "Achieved close duration alignment",
+      "style_optimization": "Selected comic style for maximum engagement",
+      "voice_optimization": "Configured single voice strategy"
+    }
+  }
+}

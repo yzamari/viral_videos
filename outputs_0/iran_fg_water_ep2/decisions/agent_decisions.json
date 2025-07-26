@@ -1,0 +1,160 @@
+{
+  "frame_continuity": {
+    "agent": "ContinuityDecisionAgent",
+    "decision": {
+      "use_frame_continuity": false,
+      "confidence": 0.9,
+      "primary_reason": "The cutaway gag format, common in animated comedy like Family Guy, relies on sharp, unexpected transitions (jump cuts) to enhance the comedic timing and surprise element.",
+      "alternative_approach": "While jump cuts are primary, a brief dissolve or wipe could be used to signal the transition to and from the cutaway to maintain a clear visual separation of the news anchor segment and the gag.",
+      "engagement_impact": "Jump cuts will amplify the comedic impact and quick pacing, keeping viewers engaged with the humor and surprise, which is crucial for viral potential in this genre.",
+      "decision_factors": [
+        "Comedy: May benefit from jump cuts for timing",
+        "Story Flow Analysis: Would jump cuts be more effective for pacing?",
+        "Engagement Factors: Do jump cuts create better hooks?"
+      ],
+      "platform_optimization": "YouTube's longer format allows for slightly more deliberate comedic timing, but the core humor still benefits from sharp cuts that prevent pacing lulls.",
+      "visual_style_recommendation": "Employ rapid, distinct jump cuts between Maryam's news segments and the Stewie-style cutaway, with a quick visual flourish for the exploding organizational chart, maximizing the comedic effect.",
+      "agent_name": "VisualFlow",
+      "analysis_timestamp": "2025-07-25T09:18:27.872404",
+      "input_parameters": {
+        "mission": "Family Guy cutaway style. Same anchor Maryam (consistent character) announces: 'Government unveils master plan: Committee to form committee about committees.' Cutaway gag: Stewie-style minister in meeting: 'Gentlemen, I propose we form a sub-committee to discuss forming committees.' Room full of identical officials nodding. Cut back to Maryam: 'In related news, the Committee Committee has formed a Committee Committee Committee.' Show organizational chart exploding. Persian text: '\u06a9\u0645\u06cc\u062a\u0647\u200c\u0647\u0627\u06cc \u0628\u06cc\u200c\u0646\u0647\u0627\u06cc\u062a' (Infinite committees)",
+        "category": "Entertainment",
+        "platform": "youtube",
+        "duration": 60,
+        "style": "animated_comedy"
+      },
+      "requires_veo2_only": false,
+      "frame_overlap_handling": "none",
+      "transition_strategy": "standard_cuts"
+    }
+  },
+  "script": {
+    "agent": "Director",
+    "data": {
+      "hook": {
+        "text": "The government's master plan: a committee to form committees about committees.",
+        "type": "ai_generated",
+        "duration_seconds": 3
+      },
+      "segments": [
+        {
+          "text": "Good evening. The government has unveiled its master plan.",
+          "duration": 5,
+          "character": "Maryam"
+        },
+        {
+          "text": "A committee to form a committee about committees.",
+          "duration": 5,
+          "character": "Maryam"
+        },
+        {
+          "text": "(Cutaway - Stewie-style minister in a lavish room)",
+          "duration": 5,
+          "character": "Minister"
+        },
+        {
+          "text": "Gentlemen, I propose we form a sub-committee.",
+          "duration": 5,
+          "character": "Minister"
+        },
+        {
+          "text": "To discuss the forming of further committees.",
+          "duration": 5,
+          "character": "Minister"
+        },
+        {
+          "text": "(Room full of identical officials nod vigorously)",
+          "duration": 5,
+          "character": "Officials"
+        },
+        {
+          "text": "In related news, the Committee Committee has formed a Committee Committee Committee.",
+          "duration": 5,
+          "character": "Maryam"
+        },
+        {
+          "text": "(Organizational chart explodes. Persian text: '\u06a9\u0645\u06cc\u062a\u0647\u200c\u0647\u0627\u06cc \u0628\u06cc\u200c\u0646\u0647\u0627\u06cc\u062a')",
+          "duration": 5,
+          "character": "Visual"
+        }
+      ],
+      "cta": {
+        "text": "Share this message - every voice matters!",
+        "visual": "Share button animation",
+        "action": "share"
+      },
+      "total_duration": 60,
+      "platform": "youtube",
+      "created_at": "2025-07-25T09:18:35.398808",
+      "structure": {
+        "hook_duration": 3,
+        "content_duration": 55,
+        "cta_duration": 2
+      },
+      "full_text": "The government's master plan: a committee to form committees about committees. Good evening. The government has unveiled its master plan. A committee to form a committee about committees. (Cutaway - Stewie-style minister in a lavish room) Gentlemen, I propose we form a sub-committee. To discuss the forming of further committees. (Room full of identical officials nod vigorously) In related news, the Committee Committee has formed a Committee Committee Committee. (Organizational chart explodes. Persian text: '\u06a9\u0645\u06cc\u062a\u0647\u200c\u0647\u0627\u06cc \u0628\u06cc\u200c\u0646\u0647\u0627\u06cc\u062a') Share this message - every voice matters!",
+      "viral_elements": {
+        "shareability_score": 0.6,
+        "emotional_arc": "complex",
+        "surprise_moments": []
+      }
+    },
+    "enhanced": false
+  },
+  "voice": {
+    "agent": "VoiceDirectorAgent",
+    "decision": {
+      "strategy": "single",
+      "clip_voices": [
+        {
+          "clip_index": 0,
+          "voice_name": "en-US-Neural2-C",
+          "personality": "comedian",
+          "gender": "female",
+          "emotion": "neutral",
+          "speed": 1.0,
+          "pitch": 0.0,
+          "energy_level": "medium",
+          "content_focus": "hook",
+          "ai_reasoning": ""
+        },
+        {
+          "clip_index": 1,
+          "voice_name": "en-US-Neural2-C",
+          "personality": "comedian",
+          "gender": "female",
+          "emotion": "conversational",
+          "speed": 1.0,
+          "pitch": 0.0,
+          "energy_level": "medium",
+          "content_focus": "introduction",
+          "ai_reasoning": ""
+        },
+        {
+          "clip_index": 2,
+          "voice_name": "en-US-Neural2-C",
+          "personality": "comedian",
+          "gender": "female",
+          "emotion": "playful",
+          "speed": 1.1,
+          "pitch": 1.5,
+          "energy_level": "high",
+          "content_focus": "cutaway_gag",
+          "ai_reasoning": ""
+        },
+        {
+          "clip_index": 3,
+          "voice_name": "en-US-Neural2-C",
+          "personality": "comedian",
+          "gender": "female",
+          "emotion": "enthusiastic",
+          "speed": 1.05,
+          "pitch": 1.0,
+          "energy_level": "high",
+          "content_focus": "conclusion",
+          "ai_reasoning": ""
+        }
+      ],
+      "voice_variety": false
+    }
+  }
+}

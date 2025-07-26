@@ -1,0 +1,68 @@
+{
+  "hook": {
+    "text": "The government's master plan: a committee to form committees about committees.",
+    "type": "ai_generated",
+    "duration_seconds": 3
+  },
+  "segments": [
+    {
+      "text": "Good evening. The government has unveiled its master plan.",
+      "duration": 5,
+      "character": "Maryam"
+    },
+    {
+      "text": "A committee to form a committee about committees.",
+      "duration": 5,
+      "character": "Maryam"
+    },
+    {
+      "text": "(Cutaway - Stewie-style minister in a lavish room)",
+      "duration": 5,
+      "character": "Minister"
+    },
+    {
+      "text": "Gentlemen, I propose we form a sub-committee.",
+      "duration": 5,
+      "character": "Minister"
+    },
+    {
+      "text": "To discuss the forming of further committees.",
+      "duration": 5,
+      "character": "Minister"
+    },
+    {
+      "text": "(Room full of identical officials nod vigorously)",
+      "duration": 5,
+      "character": "Officials"
+    },
+    {
+      "text": "In related news, the Committee Committee has formed a Committee Committee Committee.",
+      "duration": 5,
+      "character": "Maryam"
+    },
+    {
+      "text": "(Organizational chart explodes. Persian text: '\u06a9\u0645\u06cc\u062a\u0647\u200c\u0647\u0627\u06cc \u0628\u06cc\u200c\u0646\u0647\u0627\u06cc\u062a')",
+      "duration": 5,
+      "character": "Visual"
+    }
+  ],
+  "cta": {
+    "text": "Share this message - every voice matters!",
+    "visual": "Share button animation",
+    "action": "share"
+  },
+  "total_duration": 60,
+  "platform": "youtube",
+  "created_at": "2025-07-25T09:18:35.398808",
+  "structure": {
+    "hook_duration": 3,
+    "content_duration": 55,
+    "cta_duration": 2
+  },
+  "full_text": "The government's master plan: a committee to form committees about committees. Good evening. The government has unveiled its master plan. A committee to form a committee about committees. (Cutaway - Stewie-style minister in a lavish room) Gentlemen, I propose we form a sub-committee. To discuss the forming of further committees. (Room full of identical officials nod vigorously) In related news, the Committee Committee has formed a Committee Committee Committee. (Organizational chart explodes. Persian text: '\u06a9\u0645\u06cc\u062a\u0647\u200c\u0647\u0627\u06cc \u0628\u06cc\u200c\u0646\u0647\u0627\u06cc\u062a') Share this message - every voice matters!",
+  "viral_elements": {
+    "shareability_score": 0.6,
+    "emotional_arc": "complex",
+    "surprise_moments": []
+  }
+}

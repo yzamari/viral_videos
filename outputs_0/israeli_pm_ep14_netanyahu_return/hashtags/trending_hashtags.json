@@ -1,0 +1,235 @@
+{
+  "hashtags": [
+    {
+      "tag": "#BibiInevitability",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly references Netanyahu's quote and the Marvel theme, creating a strong primary association.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#MarvelPolitics",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the Marvel theme with political commentary, a growing intersection.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#NetanyahuTimeLoop",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the 'time loop' narrative and directly links it to the subject.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#ThanosKindergarten",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "A visually striking and humorous element of the content, highly shareable.",
+      "trend_score": 0.93
+    },
+    {
+      "tag": "#KingBibiCrumble",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Captures the 'crown to ash' imagery and the potential political downfall, creating intrigue.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#PoliticalMeme",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popularity of political memes, especially those with visual storytelling.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#MarvelInspired",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Taps into the massive Marvel fanbase and the current popularity of its cinematic universe.",
+      "trend_score": 0.96
+    },
+    {
+      "tag": "#CurrentEvents",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects the content to real-world political discussions and news.",
+      "trend_score": 0.94
+    },
+    {
+      "tag": "#Satire",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Identifies the satirical nature of the content, which often performs well on social media.",
+      "trend_score": 0.91
+    },
+    {
+      "tag": "#Humor",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A broad and evergreen tag that captures the comedic elements of the content.",
+      "trend_score": 0.93
+    },
+    {
+      "tag": "#ViralContent",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A general tag aiming for widespread visibility and shareability.",
+      "trend_score": 0.97
+    },
+    {
+      "tag": "#MemeCulture",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects to the broader meme and internet culture that influences content consumption.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#InstaViral",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Specifically targets Instagram's viral discovery algorithms.",
+      "trend_score": 0.96
+    },
+    {
+      "tag": "#Storytelling",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the narrative aspect and the visual storytelling employed.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#PoliticalCommentary",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to users interested in discussions about political figures and events.",
+      "trend_score": 0.89
+    },
+    {
+      "tag": "#IsraeliPolitics",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets a specific audience interested in Israeli political developments.",
+      "trend_score": 0.87
+    },
+    {
+      "tag": "#ComicBookArt",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Appeals to users interested in the artistic and visual elements inspired by comic books.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#PoliticalHumor",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "A more specific niche that combines politics and humor, attracting a targeted audience.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Animation",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Relevant if the content includes animated panels, appealing to animation enthusiasts.",
+      "trend_score": 0.82
+    },
+    {
+      "tag": "#SocialMediaMarketing",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets those interested in how content is crafted for social media success.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#Comedy",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A general tag for humorous content, maximizing broad discovery.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#Politics",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A very broad tag to reach a wide audience interested in political topics.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#News",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Connects the content to current events and news consumption.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Entertainment",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Aligns with the specified category, attracting users looking for engaging content.",
+      "trend_score": 0.93
+    },
+    {
+      "tag": "#Culture",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "A general tag for content reflecting cultural trends and discussions.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#Video",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Essential for video content on platforms like Instagram.",
+      "trend_score": 0.96
+    },
+    {
+      "tag": "#Reels",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Crucial for maximizing reach within Instagram's short-form video format.",
+      "trend_score": 0.97
+    },
+    {
+      "tag": "#ShareThis",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "A direct call to action encouraging users to share the content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Prompts discussion and comments, boosting engagement metrics.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#CommentBelow",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Another direct call to action to encourage user interaction in the comments.",
+      "trend_score": 0.87
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The strategy incorporates a mix of primary, trending, niche, broad, and engagement hashtags. Key trends leveraged include the ongoing popularity of Marvel Cinematic Universe content, the prevalence of political satire and memes on social media, and the use of short-form video (Reels).  The 'inevitable' quote and the 'time loop' narrative are also directly targeted. The hashtags aim to tap into both the Marvel fan base and those interested in current political events and humorous commentary.",
+    "engagement_strategy": "Engagement is driven through a combination of topical hashtags that spark discussion (#WhatDoYouThink, #CommentBelow) and hashtags that encourage sharing (#ShareThis). The humor and relatable political commentary inherent in the content are expected to naturally drive organic engagement and shares."
+  },
+  "usage_tips": [
+    "Use a mix of hashtag types to reach diverse audiences on Instagram.",
+    "Prioritize the primary and trending hashtags at the beginning of your hashtag list for maximum impact.",
+    "Rotate your hashtags periodically to avoid potential shadow-banning and to discover new trending tags.",
+    "Ensure your hashtags are relevant to the specific visual content and caption you are posting.",
+    "Research newer trending hashtags on Instagram by observing what other similar content creators are using."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-25T02:13:14.048978",
+    "topic": "Marvel Comics mega-episode: RETURN PANEL! Netanyahu: 'I am INEVITABLE!' SNAP! 12-year montage: Election panels blur in TIME LOOP! Strange-style! UN cartoon bomb panel: KINDERGARTEN THANOS draws! 'THIS IS IRAN!' Trump bromance panels: Hearts float! 'Love you 3000!' Corruption trial: Collecting scandal stones! CIGARS! CHAMPAGNE! MEDIA! COVID panels: 'I SAVED Israel!' Protests RAGE outside! Abraham Accords: PLOT TWIST! Unexpected peace signatures! Coalition JUGGLING - balls drop! CRASH! 'Back in 2022!' WINK! Crown to ash panel: 'KING BIBI' crumbles! Post-credit: Plotting in shadows...",
+    "platform": "instagram",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

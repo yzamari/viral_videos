@@ -1,0 +1,226 @@
+{
+  "duration_seconds": {
+    "key": "duration_seconds",
+    "value": 65,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-25T00:25:47.025859"
+  },
+  "platform": {
+    "key": "platform",
+    "value": "instagram",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Platform: instagram",
+    "timestamp": "2025-07-25T00:25:47.026049"
+  },
+  "category": {
+    "key": "category",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Category: Entertainment",
+    "timestamp": "2025-07-25T00:25:47.026230"
+  },
+  "category_string": {
+    "key": "category_string",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Original category string: Entertainment",
+    "timestamp": "2025-07-25T00:25:47.026368"
+  },
+  "target_audience": {
+    "key": "target_audience",
+    "value": "general audience",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Target audience: general audience",
+    "timestamp": "2025-07-25T00:25:47.026514"
+  },
+  "language": {
+    "key": "language",
+    "value": "en-US",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Default language",
+    "timestamp": "2025-07-25T00:25:47.026657"
+  },
+  "style": {
+    "key": "style",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-25T00:25:47.026814"
+  },
+  "style_string": {
+    "key": "style_string",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original style string: cinematic",
+    "timestamp": "2025-07-25T00:25:47.026956"
+  },
+  "tone": {
+    "key": "tone",
+    "value": "darkly_humorous",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Tone: darkly_humorous",
+    "timestamp": "2025-07-25T00:25:47.027234"
+  },
+  "tone_string": {
+    "key": "tone_string",
+    "value": "darkly_humorous",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original tone string: darkly_humorous",
+    "timestamp": "2025-07-25T00:25:47.027403"
+  },
+  "visual_style": {
+    "key": "visual_style",
+    "value": "marvel comics",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Visual style: marvel comics",
+    "timestamp": "2025-07-25T00:25:47.027545"
+  },
+  "visual_style_string": {
+    "key": "visual_style_string",
+    "value": "marvel comics",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original visual style string: marvel comics",
+    "timestamp": "2025-07-25T00:25:47.027680"
+  },
+  "theme_id": {
+    "key": "theme_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No theme specified",
+    "timestamp": "2025-07-25T00:25:47.027822"
+  },
+  "style_reference_id": {
+    "key": "style_reference_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No style reference specified",
+    "timestamp": "2025-07-25T00:25:47.027955"
+  },
+  "character_id": {
+    "key": "character_id",
+    "value": "Shimon Peres - with his distinctive hawk nose, white swept-back hair, and intellectual demeanor like the real historical figure",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character specified by user: Shimon Peres - with his distinctive hawk nose, white swept-back hair, and intellectual demeanor like the real historical figure",
+    "timestamp": "2025-07-25T00:25:47.028085"
+  },
+  "character_scene": {
+    "key": "character_scene",
+    "value": null,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character scene: None",
+    "timestamp": "2025-07-25T00:25:47.028225"
+  },
+  "frame_continuity": {
+    "key": "frame_continuity",
+    "value": true,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.95,
+    "reasoning": "AI decision: 65s duration on instagram - continuity preferred for quality",
+    "timestamp": "2025-07-25T00:25:52.860049"
+  },
+  "continuous_generation": {
+    "key": "continuous_generation",
+    "value": true,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified continuous: True",
+    "timestamp": "2025-07-25T00:25:52.860555"
+  },
+  "mode": {
+    "key": "mode",
+    "value": "enhanced",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mode: enhanced",
+    "timestamp": "2025-07-25T00:25:52.860855"
+  },
+  "cheap_mode": {
+    "key": "cheap_mode",
+    "value": false,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode: False",
+    "timestamp": "2025-07-25T00:25:52.861153"
+  },
+  "cheap_mode_level": {
+    "key": "cheap_mode_level",
+    "value": "full",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode level: full",
+    "timestamp": "2025-07-25T00:25:52.861355"
+  },
+  "mission": {
+    "key": "mission",
+    "value": "Marvel Comics tragedy: THRONE PANEL! Peres finally sits, but 'ACTING PM' floats mockingly above! Tries lifting peace hammer - ALMOST worthy! STRAIN LINES! Operation Grapes panels: MISSILES EVERYWHERE! 'What have I done?!' Qana disaster: SCARLET WITCH-level accident! HORROR! Election battle: BIBI vs PERES! Epic clash panels! '1% MARGIN!' So close! CRUSHING DEFEAT! Lifetime montage panels: Always the bridesmaid. 'MR. PEACE' becomes 'President of... Nothing.' Final panel: Age 93, arc reactor dims... still dreaming. Editor's note: 'The Eternal Runner-Up Rests.'",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mission: Marvel Comics tragedy: THRONE PANEL! Peres finally...",
+    "timestamp": "2025-07-25T00:25:52.861549"
+  },
+  "hook": {
+    "key": "hook",
+    "value": "Amazing content ahead!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated hook",
+    "timestamp": "2025-07-25T00:25:52.861756"
+  },
+  "call_to_action": {
+    "key": "call_to_action",
+    "value": "Follow for more!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated CTA",
+    "timestamp": "2025-07-25T00:25:52.861962"
+  },
+  "voice_strategy": {
+    "key": "voice_strategy",
+    "value": "variety",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: 65s duration",
+    "timestamp": "2025-07-25T00:25:52.862158"
+  },
+  "color_palette": {
+    "key": "color_palette",
+    "value": "marvel comics palette",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 0.5,
+    "reasoning": "Style-based fallback",
+    "timestamp": "2025-07-25T00:25:52.862351"
+  },
+  "background_music_style": {
+    "key": "background_music_style",
+    "value": "ambient",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: cinematic style, darkly_humorous tone",
+    "timestamp": "2025-07-25T00:25:52.862538"
+  },
+  "num_clips": {
+    "key": "num_clips",
+    "value": 13,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.9,
+    "reasoning": "Standard informational pacing",
+    "timestamp": "2025-07-25T00:26:05.292383"
+  }
+}

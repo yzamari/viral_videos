@@ -1,0 +1,23 @@
+{
+  "total_segments": 24,
+  "total_duration": 30.984,
+  "script_content": "Ariel Sharon, the Bulldozer, an unstoppable force. His legend began with sheer power.  Sabra-Shatila cast a long shadow. The Temple Mount visit ignited a firestorm. During the Second Intifada, he adopted a relentless approach.  A surprising shift followed: Gaza disengagement, settlers removed.  His own party rebelled. He declared, \"Fine, I will do it myself.\" He forged Kadima.  A stroke struck; eight years in a coma. He died, his Gaza legacy unresolved.  His impact remains complex and debated globally.",
+  "audio_files_used": [
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_0.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_1.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_2.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_3.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_4.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_5.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_6.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_7.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_8.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_9.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_10.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_11.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_12.mp3",
+    "outputs/israeli_pm_ep12_sharon/audio/audio_segment_13.mp3"
+  ],
+  "target_duration": 30.984,
+  "capped_to_target": false
+}

@@ -161,6 +161,12 @@ CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All C
 - Use meaningful `--session-id` for organization (e.g., "series_ep1", "series_ep2")
 - See [Series Creation Guide](docs/SERIES_CREATION_GUIDE.md) for detailed instructions
 
+### Fixed Issues (July 2025)
+- **cheap_mode_level bug**: Fixed logic to only use cheap mode when explicitly enabled with `--cheap`
+- **Audio-subtitle sync**: Fixed by excluding pause files from subtitle segment counting
+- **Script duration**: Provide detailed narrative content, not just visual descriptions
+- **VEO generation**: Remove `--cheap` flag to enable VEO video generation
+
 ### Duration Management
 - Duration is decided once in `DecisionFramework`
 - Flows to all components via `CoreDecisions`
@@ -196,6 +202,8 @@ outputs/session_YYYYMMDD_HHMMSS/
 - Document architectural decisions
 - NO HARDCODED VALUES - use configuration system
 - Platform-aware code using configuration methods
+- Test with both cheap mode and VEO generation
+- Verify audio-subtitle sync with pause files
 
 ### Generation Segment Guidelines
 - Audio segment, subtitles segment should be of one sentence
@@ -231,5 +239,8 @@ outputs/session_YYYYMMDD_HHMMSS/
    # If you need a new parameter, add it to the appropriate config class
    # Don't hardcode it in the component
    ```
+
+## Generation Order
+- The video generation order is: video generation -> image generation -> colored fallback (this is the fallbacks order)
 
 This system provides a robust, scalable, and maintainable architecture for AI-powered video generation with comprehensive social media integration and ZERO hardcoded values.

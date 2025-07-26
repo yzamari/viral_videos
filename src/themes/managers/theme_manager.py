@@ -15,6 +15,7 @@ from ..presets.sports_theme import SportsTheme
 from ..presets.tech_theme import TechTheme
 from ..presets.entertainment_theme import EntertainmentTheme
 from ..presets.iran_international_news import IranInternationalNewsTheme
+from ..presets.nuclear_news import NuclearNewsTheme
 from ...utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -81,7 +82,8 @@ class ThemeManager:
             "preset_sports": SportsTheme(),
             "preset_tech": TechTheme(),
             "preset_entertainment": EntertainmentTheme(),
-            "preset_iran_international_news": IranInternationalNewsTheme()
+            "preset_iran_international_news": IranInternationalNewsTheme(),
+            "preset_nuclear_news": NuclearNewsTheme()
         }
         
         logger.info(f"Loaded {len(presets)} preset themes")
@@ -174,6 +176,11 @@ class ThemeManager:
         # Check presets first
         if theme_id in self.preset_themes:
             return self.preset_themes[theme_id]
+        
+        # Try adding preset_ prefix if not found
+        preset_id = f"preset_{theme_id}"
+        if preset_id in self.preset_themes:
+            return self.preset_themes[preset_id]
         
         # Load from custom themes
         theme_file = self.custom_themes_dir / f"{theme_id}.json"

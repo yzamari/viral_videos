@@ -1,0 +1,226 @@
+{
+  "duration_seconds": {
+    "key": "duration_seconds",
+    "value": 65,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-24T23:52:13.002141"
+  },
+  "platform": {
+    "key": "platform",
+    "value": "instagram",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Platform: instagram",
+    "timestamp": "2025-07-24T23:52:13.002304"
+  },
+  "category": {
+    "key": "category",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Category: Entertainment",
+    "timestamp": "2025-07-24T23:52:13.002453"
+  },
+  "category_string": {
+    "key": "category_string",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Original category string: Entertainment",
+    "timestamp": "2025-07-24T23:52:13.002581"
+  },
+  "target_audience": {
+    "key": "target_audience",
+    "value": "general audience",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Target audience: general audience",
+    "timestamp": "2025-07-24T23:52:13.002714"
+  },
+  "language": {
+    "key": "language",
+    "value": "en-US",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Default language",
+    "timestamp": "2025-07-24T23:52:13.002850"
+  },
+  "style": {
+    "key": "style",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-24T23:52:13.002977"
+  },
+  "style_string": {
+    "key": "style_string",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original style string: cinematic",
+    "timestamp": "2025-07-24T23:52:13.003101"
+  },
+  "tone": {
+    "key": "tone",
+    "value": "darkly_humorous",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Tone: darkly_humorous",
+    "timestamp": "2025-07-24T23:52:13.003228"
+  },
+  "tone_string": {
+    "key": "tone_string",
+    "value": "darkly_humorous",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original tone string: darkly_humorous",
+    "timestamp": "2025-07-24T23:52:13.003352"
+  },
+  "visual_style": {
+    "key": "visual_style",
+    "value": "marvel comics",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Visual style: marvel comics",
+    "timestamp": "2025-07-24T23:52:13.003475"
+  },
+  "visual_style_string": {
+    "key": "visual_style_string",
+    "value": "marvel comics",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original visual style string: marvel comics",
+    "timestamp": "2025-07-24T23:52:13.003612"
+  },
+  "theme_id": {
+    "key": "theme_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No theme specified",
+    "timestamp": "2025-07-24T23:52:13.003734"
+  },
+  "style_reference_id": {
+    "key": "style_reference_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No style reference specified",
+    "timestamp": "2025-07-24T23:52:13.003853"
+  },
+  "character_id": {
+    "key": "character_id",
+    "value": "Yitzhak Shamir - with his short stature, bald head with white hair on sides, and stern expression like the real historical figure",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character specified by user: Yitzhak Shamir - with his short stature, bald head with white hair on sides, and stern expression like the real historical figure",
+    "timestamp": "2025-07-24T23:52:13.003972"
+  },
+  "character_scene": {
+    "key": "character_scene",
+    "value": null,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character scene: None",
+    "timestamp": "2025-07-24T23:52:13.004103"
+  },
+  "frame_continuity": {
+    "key": "frame_continuity",
+    "value": true,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.95,
+    "reasoning": "AI decision: 65s duration on instagram - continuity preferred for quality",
+    "timestamp": "2025-07-24T23:52:19.017238"
+  },
+  "continuous_generation": {
+    "key": "continuous_generation",
+    "value": true,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified continuous: True",
+    "timestamp": "2025-07-24T23:52:19.017940"
+  },
+  "mode": {
+    "key": "mode",
+    "value": "enhanced",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mode: enhanced",
+    "timestamp": "2025-07-24T23:52:19.018285"
+  },
+  "cheap_mode": {
+    "key": "cheap_mode",
+    "value": false,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode: False",
+    "timestamp": "2025-07-24T23:52:19.018578"
+  },
+  "cheap_mode_level": {
+    "key": "cheap_mode_level",
+    "value": "full",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode level: full",
+    "timestamp": "2025-07-24T23:52:19.018781"
+  },
+  "mission": {
+    "key": "mission",
+    "value": "Marvel Comics: TINY TITAN PANEL! Shamir ant-sized, speech bubble: 'Size matters NOT!' FLASHBACK PANELS: Underground fighter memories, Winter Soldier style! Musical chairs sequence: PM throne SWITCHING with Peres! SWAP! INTIFADA PANELS: Stones vs Tanks! David vs GOLIATH action! CLANG! Madrid Conference: Being DRAGGED to peace talks! 'NOOOO!' Bush Sr. looms as MEGA-THREAT! 'Your loans... GONE!' Immovable object panel: 'NOT ONE INCH!' meets unstoppable force! CRASH! Defeat panel: Votes scatter like dust. Final panel: 'Terror? I INVENTED it!' MIC DROP! BOOM!",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mission: Marvel Comics: TINY TITAN PANEL! Shamir ant-sized,...",
+    "timestamp": "2025-07-24T23:52:19.018985"
+  },
+  "hook": {
+    "key": "hook",
+    "value": "Amazing content ahead!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated hook",
+    "timestamp": "2025-07-24T23:52:19.019198"
+  },
+  "call_to_action": {
+    "key": "call_to_action",
+    "value": "Follow for more!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated CTA",
+    "timestamp": "2025-07-24T23:52:19.019391"
+  },
+  "voice_strategy": {
+    "key": "voice_strategy",
+    "value": "variety",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: 65s duration",
+    "timestamp": "2025-07-24T23:52:19.019594"
+  },
+  "color_palette": {
+    "key": "color_palette",
+    "value": "marvel comics palette",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 0.5,
+    "reasoning": "Style-based fallback",
+    "timestamp": "2025-07-24T23:52:19.019791"
+  },
+  "background_music_style": {
+    "key": "background_music_style",
+    "value": "ambient",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: cinematic style, darkly_humorous tone",
+    "timestamp": "2025-07-24T23:52:19.019984"
+  },
+  "num_clips": {
+    "key": "num_clips",
+    "value": 9,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.9,
+    "reasoning": "Two clips allow for a clear division between the fast-paced action sequences and the more impactful, emotionally resonant final moments.  More clips would risk losing the impact of the narrative's momentum. [ADJUSTED: Enforced 8-second maximum clip duration constraint - increased from 2 to 9 clips]",
+    "timestamp": "2025-07-24T23:52:37.258769"
+  }
+}

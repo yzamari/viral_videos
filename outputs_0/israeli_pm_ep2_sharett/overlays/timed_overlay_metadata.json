@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 3,
+  "hook_text": "Did anyone notice I was here?\" Moshe Sharett, lost in the shadow of greatness.",
+  "cta_text": "Share this poignant tale!",
+  "style_decision": {
+    "primary_style": "comic",
+    "color_palette": "vibrant",
+    "reasoning": "The 'Marvel intro' and 'Spider-Man style inner monologue' directly reference comic book aesthetics. The descriptions of characters materializing, papers flying in slow-mo, and dramatic villain reveals are all hallmarks of comic book paneling and visual storytelling. A vibrant color palette aligns with the energetic and often bold visuals of Marvel comics, suitable for a general audience on Instagram.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "The content describes a narrative with a strong visual focus on the character's presence and actions. Placing the overlay at the top_center allows for a clear view of the visual gags and character interactions without obstructing any essential parts of the 'Marvel intro', 'Montage', or 'Villain reveal'. Given Instagram's UI, avoiding the bottom 20% is crucial, and the top_center provides ample space. The 'Spider-Man style inner monologue' also lends itself well to being read at the top of the screen.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/israeli_pm_ep2_sharett/temp_files/base_video.mp4 -vf drawtext=text='Still Here \ud83d\udd70\ufe0f':fontcolor=#96CEB4:fontsize=40:font='Arial-Bold':box=1:boxcolor=#000000@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,28.0\\,30.5),drawtext=text='Share this':fontcolor=#FFFFFF:fontsize=52:font='Impact':box=1:boxcolor=#FF0000@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,49.512\\,50.912),drawtext=text='poignant tale':fontcolor=#FFFFFF:fontsize=52:font='Impact':box=1:boxcolor=#FF0000@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,51.012\\,52.412) -c:a copy -y outputs/israeli_pm_ep2_sharett/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='Still Here \ud83d\udd70\ufe0f':fontcolor=#96CEB4:fontsize=40:font='Arial-Bold':box=1:boxcolor=#000000@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,28.0\\,30.5),drawtext=text='Share this':fontcolor=#FFFFFF:fontsize=52:font='Impact':box=1:boxcolor=#FF0000@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,49.512\\,50.912),drawtext=text='poignant tale':fontcolor=#FFFFFF:fontsize=52:font='Impact':box=1:boxcolor=#FF0000@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,51.012\\,52.412)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 55.512,
+    "overlay_count": 3
+  }
+}

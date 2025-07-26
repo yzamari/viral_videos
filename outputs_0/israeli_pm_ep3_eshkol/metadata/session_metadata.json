@@ -1,0 +1,66 @@
+{
+  "session_id": "israeli_pm_ep3_eshkol",
+  "session_dir": "outputs/israeli_pm_ep3_eshkol",
+  "subdirs": {
+    "logs": "outputs/israeli_pm_ep3_eshkol/logs",
+    "scripts": "outputs/israeli_pm_ep3_eshkol/scripts",
+    "audio": "outputs/israeli_pm_ep3_eshkol/audio",
+    "video_clips": "outputs/israeli_pm_ep3_eshkol/video_clips",
+    "images": "outputs/israeli_pm_ep3_eshkol/images",
+    "ai_agents": "outputs/israeli_pm_ep3_eshkol/ai_agents",
+    "discussions": "outputs/israeli_pm_ep3_eshkol/discussions",
+    "final_output": "outputs/israeli_pm_ep3_eshkol/final_output",
+    "metadata": "outputs/israeli_pm_ep3_eshkol/metadata",
+    "comprehensive_logs": "outputs/israeli_pm_ep3_eshkol/comprehensive_logs",
+    "temp_files": "outputs/israeli_pm_ep3_eshkol/temp_files",
+    "fallback_content": "outputs/israeli_pm_ep3_eshkol/fallback_content",
+    "debug_info": "outputs/israeli_pm_ep3_eshkol/debug_info",
+    "performance_metrics": "outputs/israeli_pm_ep3_eshkol/performance_metrics",
+    "user_configs": "outputs/israeli_pm_ep3_eshkol/user_configs",
+    "error_logs": "outputs/israeli_pm_ep3_eshkol/error_logs",
+    "success_metrics": "outputs/israeli_pm_ep3_eshkol/success_metrics",
+    "decisions": "outputs/israeli_pm_ep3_eshkol/decisions",
+    "subtitles": "outputs/israeli_pm_ep3_eshkol/subtitles",
+    "overlays": "outputs/israeli_pm_ep3_eshkol/overlays",
+    "agent_discussions": "outputs/israeli_pm_ep3_eshkol/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-24T22:55:04.330602",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Marvel Comics: War room panel, countdown timer bubbles! '6 DAYS!' Generals in action poses: 'Attack NOW!' Eshkol with sweat drops, thought bubble: 'What would Ben-Gurion do?' TRANSFORMATION PANEL: Mild PM becomes WAR HERO! Table SMASH! 'ESHKOL DECIDES!' Victory montage panels: Territory TRIPLES! Map expanding with motion lines. Spider-Man pointing meme panel: 'We have Sinai?!' Death panel: Speech bubble weakening... 'Jerusalem... united...' Final panel: Golda's smoke forms next episode teaser. Editor's note: 'The Anxious Avenger Falls!'",
+        "platform": "instagram",
+        "duration": 65
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

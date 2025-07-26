@@ -1,0 +1,226 @@
+{
+  "duration_seconds": {
+    "key": "duration_seconds",
+    "value": 65,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-25T03:01:37.989974"
+  },
+  "platform": {
+    "key": "platform",
+    "value": "instagram",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Platform: instagram",
+    "timestamp": "2025-07-25T03:01:37.990107"
+  },
+  "category": {
+    "key": "category",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Category: Entertainment",
+    "timestamp": "2025-07-25T03:01:37.990220"
+  },
+  "category_string": {
+    "key": "category_string",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Original category string: Entertainment",
+    "timestamp": "2025-07-25T03:01:37.990321"
+  },
+  "target_audience": {
+    "key": "target_audience",
+    "value": "general audience",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Target audience: general audience",
+    "timestamp": "2025-07-25T03:01:37.990445"
+  },
+  "language": {
+    "key": "language",
+    "value": "en-US",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Default language",
+    "timestamp": "2025-07-25T03:01:37.990591"
+  },
+  "style": {
+    "key": "style",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-25T03:01:37.990707"
+  },
+  "style_string": {
+    "key": "style_string",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original style string: cinematic",
+    "timestamp": "2025-07-25T03:01:37.990826"
+  },
+  "tone": {
+    "key": "tone",
+    "value": "darkly_humorous",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Tone: darkly_humorous",
+    "timestamp": "2025-07-25T03:01:37.990928"
+  },
+  "tone_string": {
+    "key": "tone_string",
+    "value": "darkly_humorous",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original tone string: darkly_humorous",
+    "timestamp": "2025-07-25T03:01:37.991094"
+  },
+  "visual_style": {
+    "key": "visual_style",
+    "value": "marvel comics",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Visual style: marvel comics",
+    "timestamp": "2025-07-25T03:01:37.991204"
+  },
+  "visual_style_string": {
+    "key": "visual_style_string",
+    "value": "marvel comics",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original visual style string: marvel comics",
+    "timestamp": "2025-07-25T03:01:37.991300"
+  },
+  "theme_id": {
+    "key": "theme_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No theme specified",
+    "timestamp": "2025-07-25T03:01:37.991399"
+  },
+  "style_reference_id": {
+    "key": "style_reference_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No style reference specified",
+    "timestamp": "2025-07-25T03:01:37.991504"
+  },
+  "character_id": {
+    "key": "character_id",
+    "value": "Benjamin Netanyahu (final form) - greyer, tired, but still defiant like the real historical figure in 2024",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character specified by user: Benjamin Netanyahu (final form) - greyer, tired, but still defiant like the real historical figure in 2024",
+    "timestamp": "2025-07-25T03:01:37.991621"
+  },
+  "character_scene": {
+    "key": "character_scene",
+    "value": null,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character scene: None",
+    "timestamp": "2025-07-25T03:01:37.991764"
+  },
+  "frame_continuity": {
+    "key": "frame_continuity",
+    "value": true,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.95,
+    "reasoning": "AI decision: 65s duration on instagram - continuity preferred for quality",
+    "timestamp": "2025-07-25T03:01:42.553900"
+  },
+  "continuous_generation": {
+    "key": "continuous_generation",
+    "value": true,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified continuous: True",
+    "timestamp": "2025-07-25T03:01:42.554227"
+  },
+  "mode": {
+    "key": "mode",
+    "value": "enhanced",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mode: enhanced",
+    "timestamp": "2025-07-25T03:01:42.554501"
+  },
+  "cheap_mode": {
+    "key": "cheap_mode",
+    "value": false,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode: False",
+    "timestamp": "2025-07-25T03:01:42.554772"
+  },
+  "cheap_mode_level": {
+    "key": "cheap_mode_level",
+    "value": "full",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode level: full",
+    "timestamp": "2025-07-25T03:01:42.555032"
+  },
+  "mission": {
+    "key": "mission",
+    "value": "Marvel Comics finale: ULTIMATE RETURN! 'Somehow, Netanyahu RETURNED!' Lightning effects! Most right-wing panel: EXTREMISM STONES assembled! GLOW! Judicial reform: SNAP attempt at Supreme Court! RESISTANCE! Protest panels: Half of Israel DISSOLVING! Dust effects! October 7th: DARKEST DAY! Security shield SHATTERS! Vibranium cracks! Gaza war panels: 'TOTAL VICTORY!' Empty speech bubbles for hostages. ICC warrant: INTERNATIONAL VILLAIN status! Wanted posters! Polls diving panel: Coalition held by SCOTCH TAPE! Literally! 'After me, the FLOOD!' Noah vibes. Universe ending panel: Still in power! Post-credit: 'Democracy will return...?' Question mark HUGE! THE END... OR IS IT?!",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mission: Marvel Comics finale: ULTIMATE RETURN! 'Somehow, N...",
+    "timestamp": "2025-07-25T03:01:42.555231"
+  },
+  "hook": {
+    "key": "hook",
+    "value": "Amazing content ahead!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated hook",
+    "timestamp": "2025-07-25T03:01:42.555441"
+  },
+  "call_to_action": {
+    "key": "call_to_action",
+    "value": "Follow for more!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated CTA",
+    "timestamp": "2025-07-25T03:01:42.555728"
+  },
+  "voice_strategy": {
+    "key": "voice_strategy",
+    "value": "variety",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: 65s duration",
+    "timestamp": "2025-07-25T03:01:42.555962"
+  },
+  "color_palette": {
+    "key": "color_palette",
+    "value": "marvel comics palette",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 0.5,
+    "reasoning": "Style-based fallback",
+    "timestamp": "2025-07-25T03:01:42.556172"
+  },
+  "background_music_style": {
+    "key": "background_music_style",
+    "value": "ambient",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: cinematic style, darkly_humorous tone",
+    "timestamp": "2025-07-25T03:01:42.556369"
+  },
+  "num_clips": {
+    "key": "num_clips",
+    "value": 9,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.9,
+    "reasoning": "Two clips allow for a clear narrative arc: one establishing the chaotic situation, the other showcasing the absurd, almost apocalyptic consequences.  More clips would risk diluting the impact within the time constraint. [ADJUSTED: Enforced 8-second maximum clip duration constraint - increased from 2 to 9 clips]",
+    "timestamp": "2025-07-25T03:02:15.634743"
+  }
+}

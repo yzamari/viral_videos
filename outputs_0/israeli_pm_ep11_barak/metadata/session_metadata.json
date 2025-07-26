@@ -1,0 +1,66 @@
+{
+  "session_id": "israeli_pm_ep11_barak",
+  "session_dir": "outputs/israeli_pm_ep11_barak",
+  "subdirs": {
+    "logs": "outputs/israeli_pm_ep11_barak/logs",
+    "scripts": "outputs/israeli_pm_ep11_barak/scripts",
+    "audio": "outputs/israeli_pm_ep11_barak/audio",
+    "video_clips": "outputs/israeli_pm_ep11_barak/video_clips",
+    "images": "outputs/israeli_pm_ep11_barak/images",
+    "ai_agents": "outputs/israeli_pm_ep11_barak/ai_agents",
+    "discussions": "outputs/israeli_pm_ep11_barak/discussions",
+    "final_output": "outputs/israeli_pm_ep11_barak/final_output",
+    "metadata": "outputs/israeli_pm_ep11_barak/metadata",
+    "comprehensive_logs": "outputs/israeli_pm_ep11_barak/comprehensive_logs",
+    "temp_files": "outputs/israeli_pm_ep11_barak/temp_files",
+    "fallback_content": "outputs/israeli_pm_ep11_barak/fallback_content",
+    "debug_info": "outputs/israeli_pm_ep11_barak/debug_info",
+    "performance_metrics": "outputs/israeli_pm_ep11_barak/performance_metrics",
+    "user_configs": "outputs/israeli_pm_ep11_barak/user_configs",
+    "error_logs": "outputs/israeli_pm_ep11_barak/error_logs",
+    "success_metrics": "outputs/israeli_pm_ep11_barak/success_metrics",
+    "decisions": "outputs/israeli_pm_ep11_barak/decisions",
+    "subtitles": "outputs/israeli_pm_ep11_barak/subtitles",
+    "overlays": "outputs/israeli_pm_ep11_barak/overlays",
+    "agent_discussions": "outputs/israeli_pm_ep11_barak/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-25T01:07:33.838517",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Marvel entrance: Ehud Barak most decorated soldier ever, medals like Infinity Stones. 'Israel's smartest PM' brain glows like Mind Stone. Camp David 2: Offers everything like Doctor Strange seeing all futures. Arafat says no to every timeline. Second Intifada explodes like Hulk rampage. Dressed as woman in operation flashback - 'I understood gender fluidity before it was cool.' Coalition crumbles faster than Thanos snap. Loses to Sharon in biggest landslide ever. Later: Epstein's island cameo, 'I kept my underwear on!' Apartment in luxury tower: 'I'm watching you... from above.'",
+        "platform": "instagram",
+        "duration": 65
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

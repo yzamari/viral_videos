@@ -1,0 +1,235 @@
+{
+  "hashtags": [
+    {
+      "tag": "#PeresLegacy",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly relates to the core subject of Shimon Peres and his legacy, ensuring relevance.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#MarvelPolitics",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the Marvel framing with the political context, attracting fans of both.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#OperationGrapes",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "References a specific, impactful event mentioned in the content, making it searchable.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#TheEternalRunnerUp",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Uses the editor's note as a unique, descriptive tag for a specific aspect of the narrative.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#ShimonPeres",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "A foundational hashtag for anyone searching for information about Shimon Peres.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#BibiVsPeres",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the political rivalry aspect, appealing to those interested in Israeli politics.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MarvelComicArt",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to the visual nature of Instagram and the comic book art style.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#PoliticalSatire",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Captures the tone and style of the content, often a trending category.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#WhatHaveIDone",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A widely used phrase in memes and emotional content, highly relatable.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ScarletWitch",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popularity of a Marvel character to draw in a wider audience familiar with the 'accident' trope.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#EpicClash",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Commonly used to describe intense rivalries and dramatic events, fitting the election battle.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#AlmostWorthy",
+      "category": "trending",
+      "estimated_reach": "low",
+      "reasoning": "A more specific, narrative-driven phrase that can resonate with those who understand the context.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#StrainLines",
+      "category": "trending",
+      "estimated_reach": "low",
+      "reasoning": "A visual descriptor that might attract artists or those interested in comic book aesthetics.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#PresidentOfNothing",
+      "category": "trending",
+      "estimated_reach": "low",
+      "reasoning": "A poignant and ironic phrase that could spark discussion.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#ArcReactorDimming",
+      "category": "trending",
+      "estimated_reach": "low",
+      "reasoning": "A metaphorical and visually evocative phrase for the end of an era.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#IsraelHistory",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets users specifically interested in Israeli political and historical figures.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MiddleEastPolitics",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Broadens the political scope to a significant geopolitical region.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#ComicBookArt",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets artists and enthusiasts who appreciate comic book visual styles.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#PoliticalComics",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Combines political commentary with the comic book medium, a specific interest group.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#IsraeliLeaders",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "A highly specific tag for individuals searching for information on Israeli political figures.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#NarrativeArt",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Focuses on the storytelling aspect within the visual medium.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#PoliticalCommentary",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A widely searched category for content that offers opinions or analysis on political events.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#History",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A general but effective tag for content with historical elements.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Art",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to a broad audience interested in visual content and artistic expression.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Marvel",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Leverages the massive reach of the Marvel brand, even if the content is a metaphorical interpretation.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Comics",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A fundamental tag for anything related to comic books.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#InstaArt",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Specific to Instagram and highlights the artistic nature of the post.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Storytelling",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Encourages engagement from those who appreciate a compelling narrative.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "A direct call to action that invites comments and discussion.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ShareYourThoughts",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Another prompt for user interaction and community building.",
+      "trend_score": 0.75
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The strategy incorporates trending phrases related to Marvel, political drama, and emotional resonance (#ScarletWitch, #WhatHaveIDone, #EpicClash). It also leverages niche tags for specific interests like Israeli politics and comic art, alongside broad tags for general discoverability. Primary tags focus on the core subject and the unique framing.",
+    "engagement_strategy": "Engagement is driven by direct calls to action like #WhatDoYouThink, #ShareYourThoughts, and #CommentBelow, encouraging interaction. The use of specific, narrative-driven hashtags like #AlmostWorthy and #PresidentOfNothing also aims to spark conversation and elicit opinions."
+  },
+  "usage_tips": [
+    "On Instagram, aim for a mix of broad, niche, and specific hashtags. Don't overload; 15-20 is often optimal.",
+    "Place hashtags in the caption or in the first comment for better organization.",
+    "Monitor which hashtags perform best for your content and adjust your strategy accordingly.",
+    "Consider creating a unique, branded hashtag for this specific series if you plan to create more like it.",
+    "Engage with users who use similar hashtags to build community."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-25T00:42:09.152168",
+    "topic": "Marvel Comics tragedy: THRONE PANEL! Peres finally sits, but 'ACTING PM' floats mockingly above! Tries lifting peace hammer - ALMOST worthy! STRAIN LINES! Operation Grapes panels: MISSILES EVERYWHERE! 'What have I done?!' Qana disaster: SCARLET WITCH-level accident! HORROR! Election battle: BIBI vs PERES! Epic clash panels! '1% MARGIN!' So close! CRUSHING DEFEAT! Lifetime montage panels: Always the bridesmaid. 'MR. PEACE' becomes 'President of... Nothing.' Final panel: Age 93, arc reactor dims... still dreaming. Editor's note: 'The Eternal Runner-Up Rests.'",
+    "platform": "instagram",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

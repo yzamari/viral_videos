@@ -1,0 +1,33 @@
+{
+  "total_segments": 40,
+  "total_duration": 39.93600000000001,
+  "script_content": "SMOKE PANEL! Golda emerges, a cigarette glowing fiercely.  She commands, her voice gravelly: \"I am the only man in the cabinet!\" TRANSFORMATION! Cabinet members shrink to toddlers, their debates childish cries. Action explodes: Yom Kippur War! Coffee pot in one hand, tank radio in the other. KABOOM! SNAP! Intelligence failure! Crucial files scatter; warnings ignored. TIME REWIND: Ignored warnings flash. Kitchen diplomacy begins. World leaders shrink before her. Resignation! A mushroom cloud billows.  The internet ignites. \"There is no Palestine!\" POW! Digital firestorm.",
+  "audio_files_used": [
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_0.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_1.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_2.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_3.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_4.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_5.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_6.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_7.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_8.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_9.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_10.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_11.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_12.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_13.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_14.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_15.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_16.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_17.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_18.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_19.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_20.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_21.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_22.mp3",
+    "outputs/israeli_pm_ep4_golda/audio/audio_segment_23.mp3"
+  ],
+  "target_duration": 39.93600000000001,
+  "capped_to_target": false
+}

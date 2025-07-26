@@ -1,0 +1,66 @@
+{
+  "session_id": "israeli_pm_ep4_golda",
+  "session_dir": "outputs/israeli_pm_ep4_golda",
+  "subdirs": {
+    "logs": "outputs/israeli_pm_ep4_golda/logs",
+    "scripts": "outputs/israeli_pm_ep4_golda/scripts",
+    "audio": "outputs/israeli_pm_ep4_golda/audio",
+    "video_clips": "outputs/israeli_pm_ep4_golda/video_clips",
+    "images": "outputs/israeli_pm_ep4_golda/images",
+    "ai_agents": "outputs/israeli_pm_ep4_golda/ai_agents",
+    "discussions": "outputs/israeli_pm_ep4_golda/discussions",
+    "final_output": "outputs/israeli_pm_ep4_golda/final_output",
+    "metadata": "outputs/israeli_pm_ep4_golda/metadata",
+    "comprehensive_logs": "outputs/israeli_pm_ep4_golda/comprehensive_logs",
+    "temp_files": "outputs/israeli_pm_ep4_golda/temp_files",
+    "fallback_content": "outputs/israeli_pm_ep4_golda/fallback_content",
+    "debug_info": "outputs/israeli_pm_ep4_golda/debug_info",
+    "performance_metrics": "outputs/israeli_pm_ep4_golda/performance_metrics",
+    "user_configs": "outputs/israeli_pm_ep4_golda/user_configs",
+    "error_logs": "outputs/israeli_pm_ep4_golda/error_logs",
+    "success_metrics": "outputs/israeli_pm_ep4_golda/success_metrics",
+    "decisions": "outputs/israeli_pm_ep4_golda/decisions",
+    "subtitles": "outputs/israeli_pm_ep4_golda/subtitles",
+    "overlays": "outputs/israeli_pm_ep4_golda/overlays",
+    "agent_discussions": "outputs/israeli_pm_ep4_golda/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-24T23:10:14.136982",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Marvel Comics: SMOKE PANEL! Golda emerges, cigarette glowing with power! Speech bubble: 'I'm the only MAN in the cabinet!' TRANSFORMATION: Cabinet members become kindergarteners! Action panels: YOM KIPPUR WAR! Coffee pot in one hand, tank radio in other! KABOOM! SNAP! Intelligence failure panel - files scatter! TIME REWIND PANELS showing ignored warnings. Kitchen diplomacy: World leaders SHRINK in her presence! Resignation panel: Mushroom cloud of smoke. Final panel: 'There's no Palestine' - Internet EXPLODES in background! POW!",
+        "platform": "instagram",
+        "duration": 65
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

@@ -1,0 +1,24 @@
+{
+  "session_id": "israeli_pm_ep7_shamir",
+  "mission": "Marvel Comics: TINY TITAN PANEL! Shamir ant-sized, speech bubble: 'Size matters NOT!' FLASHBACK PANELS: Underground fighter memories, Winter Soldier style! Musical chairs sequence: PM throne SWITCHING with Peres! SWAP! INTIFADA PANELS: Stones vs Tanks! David vs GOLIATH action! CLANG! Madrid Conference: Being DRAGGED to peace talks! 'NOOOO!' Bush Sr. looms as MEGA-THREAT! 'Your loans... GONE!' Immovable object panel: 'NOT ONE INCH!' meets unstoppable force! CRASH! Defeat panel: Votes scatter like dust. Final panel: 'Terror? I INVENTED it!' MIC DROP! BOOM!",
+  "platform": "instagram",
+  "duration_seconds": 65,
+  "created_at": "2025-07-25T00:07:40.285803",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/israeli_pm_ep7_shamir/final_output/final_video_israeli_pm_ep7_shamir__final.mp4",
+      "file_size_mb": 38.90635871887207
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/israeli_pm_ep7_shamir/final_output/final_video_israeli_pm_ep7_shamir__audio_only.mp4",
+      "file_size_mb": 30.829707145690918
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/israeli_pm_ep7_shamir/final_output/final_video_israeli_pm_ep7_shamir__overlays_only.mp4",
+      "file_size_mb": 30.85225200653076
+    }
+  }
+}

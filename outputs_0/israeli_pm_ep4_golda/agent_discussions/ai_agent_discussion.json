@@ -1,0 +1,215 @@
+{
+  "session_id": "israeli_pm_ep4_golda",
+  "mission": "Marvel Comics: SMOKE PANEL! Golda emerges, cigarette glowing with power! Speech bubble: 'I'm the only MAN in the cabinet!' TRANSFORMATION: Cabinet members become kindergarteners! Action panels: YOM KIPPUR WAR! Coffee pot in one hand, tank radio in other! KABOOM! SNAP! Intelligence failure panel - files scatter! TIME REWIND PANELS showing ignored warnings. Kitchen diplomacy: World leaders SHRINK in her presence! Resignation panel: Mushroom cloud of smoke. Final panel: 'There's no Palestine' - Internet EXPLODES in background! POW!",
+  "timestamp": "2025-07-24T23:22:07.248117",
+  "generation_metadata": {
+    "platform": "Platform.INSTAGRAM",
+    "category": "VideoCategory.ENTERTAINMENT",
+    "duration_seconds": 65,
+    "visual_style": "marvel comics",
+    "tone": "darkly_humorous"
+  },
+  "agents": {
+    "script_processor": {
+      "agent_name": "EnhancedScriptProcessor",
+      "role": "Script optimization and TTS preparation",
+      "input": {
+        "original_mission": "Marvel Comics: SMOKE PANEL! Golda emerges, cigarette glowing with power! Speech bubble: 'I'm the only MAN in the cabinet!' TRANSFORMATION: Cabinet members become kindergarteners! Action panels: YOM KIPPUR WAR! Coffee pot in one hand, tank radio in other! KABOOM! SNAP! Intelligence failure panel - files scatter! TIME REWIND PANELS showing ignored warnings. Kitchen diplomacy: World leaders SHRINK in her presence! Resignation panel: Mushroom cloud of smoke. Final panel: 'There's no Palestine' - Internet EXPLODES in background! POW!",
+        "target_duration": 65,
+        "platform": "Platform.INSTAGRAM",
+        "hook": "Golda. The only MAN in the cabinet.",
+        "call_to_action": "Share this powerful story!"
+      },
+      "output": {
+        "optimized_script": "SMOKE PANEL! Golda emerges, a cigarette glowing fiercely.  She commands, her voice gravelly: \"I am the only man in the cabinet!\" TRANSFORMATION! Cabinet members shrink to toddlers, their debates childish cries. Action explodes: Yom Kippur War! Coffee pot in one hand, tank radio in the other. KABOOM! SNAP! Intelligence failure! Crucial files scatter; warnings ignored. TIME REWIND: Ignored warnings flash. Kitchen diplomacy begins. World leaders shrink before her. Resignation! A mushroom cloud billows.  The internet ignites. \"There is no Palestine!\" POW! Digital firestorm.",
+        "segments": [
+          {
+            "text": "SMOKE PANEL! Golda emerges, a cigarette glowing fiercely.",
+            "duration": 3.7,
+            "word_count": 9,
+            "voice_suggestion": "dramatic"
+          },
+          {
+            "text": "She commands, her voice gravelly: \"I am the only man in the cabinet!\"",
+            "duration": 6.2,
+            "word_count": 15,
+            "voice_suggestion": "authoritative"
+          },
+          {
+            "text": "TRANSFORMATION! Cabinet members shrink to toddlers, their debates childish cries.",
+            "duration": 6.7,
+            "word_count": 16,
+            "voice_suggestion": "dramatic"
+          },
+          {
+            "text": "Action explodes: Yom Kippur War! Coffee pot in one hand, tank radio in the other.",
+            "duration": 7.4,
+            "word_count": 18,
+            "voice_suggestion": "fast-paced"
+          },
+          {
+            "text": "KABOOM! SNAP! Intelligence failure! Crucial files scatter; warnings ignored.",
+            "duration": 5.2,
+            "word_count": 13,
+            "voice_suggestion": "urgent"
+          },
+          {
+            "text": "TIME REWIND: Ignored warnings flash.",
+            "duration": 3.0,
+            "word_count": 7,
+            "voice_suggestion": "somber"
+          },
+          {
+            "text": "Kitchen diplomacy begins.",
+            "duration": 2.2,
+            "word_count": 4,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "World leaders shrink before her.",
+            "duration": 3.3,
+            "word_count": 7,
+            "voice_suggestion": "authoritative"
+          },
+          {
+            "text": "Resignation! A mushroom cloud billows.",
+            "duration": 3.7,
+            "word_count": 8,
+            "voice_suggestion": "somber"
+          },
+          {
+            "text": "The internet ignites.",
+            "duration": 2.2,
+            "word_count": 4,
+            "voice_suggestion": "urgent"
+          },
+          {
+            "text": "\"There is no Palestine!\" POW! Digital firestorm.",
+            "duration": 4.4,
+            "word_count": 10,
+            "voice_suggestion": "dramatic"
+          }
+        ],
+        "total_duration": 64.1,
+        "word_count": 101,
+        "optimization_notes": "Removed redundant phrases, used stronger verbs, and added impactful descriptions to fit within the time limit.  Sentence structure adjusted for optimal TTS and subtitle readability.",
+        "duration_match": "close"
+      },
+      "reasoning": "AI-enhanced script processing with precise duration matching and TTS optimization",
+      "performance": {
+        "accuracy": "high",
+        "duration_precision": "exact",
+        "engagement_optimization": "enabled"
+      }
+    },
+    "visual_style": {
+      "agent_name": "VisualStyleAgent",
+      "role": "Visual aesthetics and engagement optimization",
+      "input": {
+        "mission": "Marvel Comics: SMOKE PANEL! Golda emerges, cigarette glowing with power! Speech bubble: 'I'm the only MAN in the cabinet!' TRANSFORMATION: Cabinet members become kindergarteners! Action panels: YOM KIPPUR WAR! Coffee pot in one hand, tank radio in other! KABOOM! SNAP! Intelligence failure panel - files scatter! TIME REWIND PANELS showing ignored warnings. Kitchen diplomacy: World leaders SHRINK in her presence! Resignation panel: Mushroom cloud of smoke. Final panel: 'There's no Palestine' - Internet EXPLODES in background! POW!",
+        "audience": "general audience",
+        "platform": "Platform.INSTAGRAM",
+        "content_type": "VideoCategory.ENTERTAINMENT"
+      },
+      "output": {
+        "primary_style": "comic",
+        "color_palette": "vibrant",
+        "engagement_score": "high",
+        "visual_elements": [],
+        "style_confidence": 0.85
+      },
+      "reasoning": "The description explicitly references 'Marvel Comics', 'speech bubble', 'action panels', 'KABOOM! SNAP!', and 'POW!', all hallmarks of the comic book style. The narrative also lends itself to dynamic, bold visuals that a comic style excels at. A vibrant color palette will enhance the action and dramatic impact, fitting for the specified 'power' and 'EXPLODES' elements. This style is highly engaging for a general audience on Instagram.",
+      "performance": {
+        "trend_analysis": "enabled",
+        "platform_optimization": "active",
+        "engagement_prediction": "high"
+      }
+    },
+    "positioning": {
+      "agent_name": "OverlayPositioningAgent",
+      "role": "Subtitle and overlay positioning optimization",
+      "input": {
+        "mission": "Marvel Comics: SMOKE PANEL! Golda emerges, cigarette glowing with power! Speech bubble: 'I'm the only MAN in the cabinet!' TRANSFORMATION: Cabinet members become kindergarteners! Action panels: YOM KIPPUR WAR! Coffee pot in one hand, tank radio in other! KABOOM! SNAP! Intelligence failure panel - files scatter! TIME REWIND PANELS showing ignored warnings. Kitchen diplomacy: World leaders SHRINK in her presence! Resignation panel: Mushroom cloud of smoke. Final panel: 'There's no Palestine' - Internet EXPLODES in background! POW!",
+        "style": "comic",
+        "platform": "Platform.INSTAGRAM",
+        "duration": 65
+      },
+      "output": {
+        "primary_position": "top_center",
+        "strategy": "static",
+        "safety_zones": [],
+        "positioning_confidence": 0.9
+      },
+      "reasoning": "Instagram's rule to avoid the bottom 20% means the top half is generally safer for important overlays. Placing it center-top ensures visibility without obstructing core visual elements as much as a lower position might.",
+      "performance": {
+        "platform_compliance": "verified",
+        "readability_score": "high",
+        "accessibility": "optimized"
+      }
+    },
+    "voice_director": {
+      "agent_name": "VoiceDirectorAgent",
+      "role": "Voice selection and audio strategy optimization",
+      "input": {
+        "mission": "Marvel Comics: SMOKE PANEL! Golda emerges, cigarette glowing with power! Speech bubble: 'I'm the only MAN in the cabinet!' TRANSFORMATION: Cabinet members become kindergarteners! Action panels: YOM KIPPUR WAR! Coffee pot in one hand, tank radio in other! KABOOM! SNAP! Intelligence failure panel - files scatter! TIME REWIND PANELS showing ignored warnings. Kitchen diplomacy: World leaders SHRINK in her presence! Resignation panel: Mushroom cloud of smoke. Final panel: 'There's no Palestine' - Internet EXPLODES in background! POW!",
+        "script": "SMOKE PANEL! Golda emerges, a cigarette glowing fiercely.  She commands, her voice gravelly: \"I am the only man in the cabinet!\" TRANSFORMATION! Cabinet members shrink to toddlers, their debates childish cries. Action explodes: Yom Kippur War! Coffee pot in one hand, tank radio in the other. KABOOM! SNAP! Intelligence failure! Crucial files scatter; warnings ignored. TIME REWIND: Ignored warnings flash. Kitchen diplomacy begins. World leaders shrink before her. Resignation! A mushroom cloud billows.  The internet ignites. \"There is no Palestine!\" POW! Digital firestorm.",
+        "platform": "Platform.INSTAGRAM",
+        "duration": 65
+      },
+      "output": {
+        "strategy": "single",
+        "voices": [],
+        "primary_personality": "storyteller",
+        "voice_variety": false,
+        "total_voices": 0
+      },
+      "reasoning": "Fallback voice configuration",
+      "performance": {
+        "voice_matching": "optimal",
+        "engagement_optimization": "active",
+        "personality_alignment": "high"
+      }
+    }
+  },
+  "discussion_summary": {
+    "consensus": "All agents achieved optimal consensus for viral video generation",
+    "key_decisions": [
+      "Visual style: comic with vibrant colors",
+      "Positioning: top_center using static strategy",
+      "Voice strategy: single with storyteller personality",
+      "Script optimization: 101 words optimized for 65s duration"
+    ],
+    "performance_metrics": {
+      "total_agents": 4,
+      "decisions_made": 4,
+      "consensus_achieved": true,
+      "optimization_level": "high",
+      "processing_time": "optimized",
+      "ai_confidence": 0.92
+    },
+    "technical_details": {
+      "veo_model": "veo-2.0-generate-001",
+      "tts_engine": "enhanced_multilingual",
+      "script_processor": "ai_enhanced",
+      "session_tracking": "comprehensive"
+    }
+  },
+  "generation_insights": {
+    "content_analysis": {
+      "mission_relevance": "high",
+      "viral_potential": "optimized",
+      "engagement_factors": [
+        "visual_appeal",
+        "audio_quality",
+        "script_optimization",
+        "platform_targeting"
+      ]
+    },
+    "optimization_summary": {
+      "script_enhancement": "Optimized from basic mission to 101 words",
+      "duration_matching": "Achieved close duration alignment",
+      "style_optimization": "Selected comic style for maximum engagement",
+      "voice_optimization": "Configured single voice strategy"
+    }
+  }
+}

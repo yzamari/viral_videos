@@ -1,0 +1,24 @@
+{
+  "session_id": "iran_fg_water_ep5",
+  "mission": "Family Guy apocalypse finale. Maryam (hijab completely disheveled, makeup running): 'This just in: Tehran has gone full Mad Max.' Cutaway: Peter Griffin-style warriors fighting over last water bottle: 'WITNESS ME!' *drinks entire bottle* Cut to Brian-style intellectual dog: 'You know, this reminds me of my novel about\u2014' *gets hit by water truck* Maryam removes hijab completely: 'F*** it, there's no water to wash it anyway!' Chicken fight with dehydration. End card: 'Iran International: We're as thirsty as you are!' Persian: '\u0622\u062e\u0631\u0627\u0644\u0632\u0645\u0627\u0646 \u0622\u0628\u06cc' (Water apocalypse)",
+  "platform": "youtube",
+  "duration_seconds": 60,
+  "created_at": "2025-07-25T09:29:27.963445",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/iran_fg_water_ep5/final_output/final_video_iran_fg_water_ep5__final.mp4",
+      "file_size_mb": 4.0567474365234375
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/iran_fg_water_ep5/final_output/final_video_iran_fg_water_ep5__audio_only.mp4",
+      "file_size_mb": 0.8119869232177734
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/iran_fg_water_ep5/final_output/final_video_iran_fg_water_ep5__overlays_only.mp4",
+      "file_size_mb": 0.8115606307983398
+    }
+  }
+}

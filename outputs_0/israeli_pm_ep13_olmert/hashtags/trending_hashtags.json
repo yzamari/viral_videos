@@ -1,0 +1,235 @@
+{
+  "hashtags": [
+    {
+      "tag": "#MarvelComicsAccident",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Directly reflects the 'Marvel Comics accident' theme and the visual storytelling described.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#OlmertSurprise",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the key figure and the unexpected nature of the event.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#SpiderBiteStyle",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Connects to the Marvel theme and implies a sudden, impactful event.",
+      "trend_score": 0.4
+    },
+    {
+      "tag": "#LebanonWar2",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Addresses the historical and political context of the narrative.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#ShieldStyleInterrogation",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Leverages the SHIELD reference for a specific narrative element.",
+      "trend_score": 0.45
+    },
+    {
+      "tag": "#InfinityGauntletOffer",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "References a powerful Marvel item to describe the stakes of a negotiation.",
+      "trend_score": 0.4
+    },
+    {
+      "tag": "#CorruptionPanels",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Describes the visual metaphor for corruption in the narrative.",
+      "trend_score": 0.4
+    },
+    {
+      "tag": "#FirstPMBehindBars",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights a significant and visually arresting moment.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#AlmostMadePeace",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Captures the poignant regret expressed in the narrative.",
+      "trend_score": 0.45
+    },
+    {
+      "tag": "#IfOnlyTheyKnew",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Conveys the reflective and potentially regretful tone of the memoir aspect.",
+      "trend_score": 0.45
+    },
+    {
+      "tag": "#MarvelMemes",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects to a popular and evergreen trend within the Marvel fandom.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ComicBookArt",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to a broad audience interested in visual art related to comics.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#PoliticalSatire",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Captures the satirical and critical tone often found in such content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#Storytelling",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A general but highly relevant hashtag for content with a narrative.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#VisualStorytelling",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Emphasizes the panel-based, visual nature of the content.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#GraphicNovel",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Broader term that encompasses the comic-style storytelling.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#InstaComics",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Platform-specific trend for comic content on Instagram.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#WhatIfMarvel",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Plays on the popular Marvel series and suggests an alternative reality scenario.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#InstaArt",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A popular hashtag for visual content on Instagram.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Olmert",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets users specifically interested in the former Israeli Prime Minister.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#LebanonWar",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets users interested in the historical conflict.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#SHIELD",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popularity of the Marvel Cinematic Universe organization.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#IronManArmor",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to fans of a specific, iconic Marvel character.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#PoliticalComics",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Combines the political and comic book elements precisely.",
+      "trend_score": 0.4
+    },
+    {
+      "tag": "#HistoryInPanels",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Describes the method of presenting historical events.",
+      "trend_score": 0.35
+    },
+    {
+      "tag": "#ComicArtStyle",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Focuses on the artistic aspect of the comic panels.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#EntertainmentNews",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A general tag for anyone browsing entertainment content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ComicsOfInstagram",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Places the content within the larger Instagram comic community.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ArtLovers",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Attracts users who appreciate visual art in any form.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#InstaGood",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "A highly popular, broad hashtag for visually appealing content.",
+      "trend_score": 0.9
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "Instagram",
+    "trend_analysis": "The hashtags incorporate current trends like 'What If...' narratives and the enduring popularity of Marvel fandom. The inclusion of broad and discoverable tags like #InstaGood and #ExplorePage aims for maximum reach on Instagram's algorithm. Platform-specific tags like #InstaComics are also utilized. The blend covers visual art trends (#ComicBookArt, #InstaArt) and thematic trends (#PoliticalSatire, #Storytelling).",
+    "engagement_strategy": "Engagement is driven by directly asking questions (#WhatDoYouThink, #ShareYourThoughts) and fostering a sense of community (#MarvelCommunity). The niche and primary hashtags are designed to attract a highly relevant audience, increasing the likelihood of meaningful interactions."
+  },
+  "usage_tips": [
+    "Use a mix of hashtag categories for optimal reach and engagement.",
+    "Prioritize the most relevant primary and niche hashtags first.",
+    "Don't be afraid to experiment with trending hashtags, but ensure they have some relevance to your content.",
+    "Check Instagram's explore page for even more specific trending audio or visual styles to incorporate.",
+    "Consider adding 5-10 additional niche or broad hashtags if space allows, for further reach."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-25T01:59:31.071881",
+    "topic": "Marvel Comics accident: SURPRISE PM PANEL! Olmert: 'I didn't ASK for this!' Spider-bite style! Lebanon War 2 panels: LAUNCHING ATTACK! Everything goes WRONG! BOOM! CRASH! Winograd investigation: SHIELD-style interrogation panels! Secret talks panel: Offers Jerusalem! 'Take the INFINITY GAUNTLET!' CORRUPTION PANELS: Hydra heads multiply! Cash envelopes RAIN DOWN! Prison fitting: Iron Man armor REMOVAL sequence! CLANK! Prison stripes panel: First PM behind bars! Cell echo: 'I almost made PEACE!' Memoir writing panel: 'If only they knew...' Thought bubble despair.",
+    "platform": "instagram",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

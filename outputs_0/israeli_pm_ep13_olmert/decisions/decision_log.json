@@ -1,0 +1,226 @@
+{
+  "duration_seconds": {
+    "key": "duration_seconds",
+    "value": 65,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-25T01:39:13.904171"
+  },
+  "platform": {
+    "key": "platform",
+    "value": "instagram",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Platform: instagram",
+    "timestamp": "2025-07-25T01:39:13.904331"
+  },
+  "category": {
+    "key": "category",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Category: Entertainment",
+    "timestamp": "2025-07-25T01:39:13.904470"
+  },
+  "category_string": {
+    "key": "category_string",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Original category string: Entertainment",
+    "timestamp": "2025-07-25T01:39:13.904596"
+  },
+  "target_audience": {
+    "key": "target_audience",
+    "value": "general audience",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Target audience: general audience",
+    "timestamp": "2025-07-25T01:39:13.904728"
+  },
+  "language": {
+    "key": "language",
+    "value": "en-US",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Default language",
+    "timestamp": "2025-07-25T01:39:13.904871"
+  },
+  "style": {
+    "key": "style",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-25T01:39:13.904991"
+  },
+  "style_string": {
+    "key": "style_string",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original style string: cinematic",
+    "timestamp": "2025-07-25T01:39:13.905108"
+  },
+  "tone": {
+    "key": "tone",
+    "value": "darkly_humorous",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Tone: darkly_humorous",
+    "timestamp": "2025-07-25T01:39:13.905228"
+  },
+  "tone_string": {
+    "key": "tone_string",
+    "value": "darkly_humorous",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original tone string: darkly_humorous",
+    "timestamp": "2025-07-25T01:39:13.905344"
+  },
+  "visual_style": {
+    "key": "visual_style",
+    "value": "marvel comics",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Visual style: marvel comics",
+    "timestamp": "2025-07-25T01:39:13.905460"
+  },
+  "visual_style_string": {
+    "key": "visual_style_string",
+    "value": "marvel comics",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original visual style string: marvel comics",
+    "timestamp": "2025-07-25T01:39:13.905575"
+  },
+  "theme_id": {
+    "key": "theme_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No theme specified",
+    "timestamp": "2025-07-25T01:39:13.905708"
+  },
+  "style_reference_id": {
+    "key": "style_reference_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No style reference specified",
+    "timestamp": "2025-07-25T01:39:13.905824"
+  },
+  "character_id": {
+    "key": "character_id",
+    "value": "Ehud Olmert - with his slicked-back hair, smooth features, and polished appearance like the real historical figure",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character specified by user: Ehud Olmert - with his slicked-back hair, smooth features, and polished appearance like the real historical figure",
+    "timestamp": "2025-07-25T01:39:13.905938"
+  },
+  "character_scene": {
+    "key": "character_scene",
+    "value": null,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character scene: None",
+    "timestamp": "2025-07-25T01:39:13.906059"
+  },
+  "frame_continuity": {
+    "key": "frame_continuity",
+    "value": true,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.95,
+    "reasoning": "AI decision: 65s duration on instagram - continuity preferred for quality",
+    "timestamp": "2025-07-25T01:39:19.578492"
+  },
+  "continuous_generation": {
+    "key": "continuous_generation",
+    "value": true,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified continuous: True",
+    "timestamp": "2025-07-25T01:39:19.579324"
+  },
+  "mode": {
+    "key": "mode",
+    "value": "enhanced",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mode: enhanced",
+    "timestamp": "2025-07-25T01:39:19.579629"
+  },
+  "cheap_mode": {
+    "key": "cheap_mode",
+    "value": false,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode: False",
+    "timestamp": "2025-07-25T01:39:19.579905"
+  },
+  "cheap_mode_level": {
+    "key": "cheap_mode_level",
+    "value": "full",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode level: full",
+    "timestamp": "2025-07-25T01:39:19.580174"
+  },
+  "mission": {
+    "key": "mission",
+    "value": "Marvel Comics accident: SURPRISE PM PANEL! Olmert: 'I didn't ASK for this!' Spider-bite style! Lebanon War 2 panels: LAUNCHING ATTACK! Everything goes WRONG! BOOM! CRASH! Winograd investigation: SHIELD-style interrogation panels! Secret talks panel: Offers Jerusalem! 'Take the INFINITY GAUNTLET!' CORRUPTION PANELS: Hydra heads multiply! Cash envelopes RAIN DOWN! Prison fitting: Iron Man armor REMOVAL sequence! CLANK! Prison stripes panel: First PM behind bars! Cell echo: 'I almost made PEACE!' Memoir writing panel: 'If only they knew...' Thought bubble despair.",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mission: Marvel Comics accident: SURPRISE PM PANEL! Olmert:...",
+    "timestamp": "2025-07-25T01:39:19.580392"
+  },
+  "hook": {
+    "key": "hook",
+    "value": "Amazing content ahead!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated hook",
+    "timestamp": "2025-07-25T01:39:19.580689"
+  },
+  "call_to_action": {
+    "key": "call_to_action",
+    "value": "Follow for more!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated CTA",
+    "timestamp": "2025-07-25T01:39:19.581125"
+  },
+  "voice_strategy": {
+    "key": "voice_strategy",
+    "value": "variety",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: 65s duration",
+    "timestamp": "2025-07-25T01:39:19.581398"
+  },
+  "color_palette": {
+    "key": "color_palette",
+    "value": "marvel comics palette",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 0.5,
+    "reasoning": "Style-based fallback",
+    "timestamp": "2025-07-25T01:39:19.581613"
+  },
+  "background_music_style": {
+    "key": "background_music_style",
+    "value": "ambient",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: cinematic style, darkly_humorous tone",
+    "timestamp": "2025-07-25T01:39:19.581811"
+  },
+  "num_clips": {
+    "key": "num_clips",
+    "value": 13,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.9,
+    "reasoning": "Standard informational pacing",
+    "timestamp": "2025-07-25T01:39:38.523534"
+  }
+}

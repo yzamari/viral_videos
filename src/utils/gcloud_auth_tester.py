@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 class GCloudAuthTester:
     """Comprehensive Google Cloud authentication tester"""
 
-    def __init(self):
+    def __init__(self):
         """Initialize the authentication tester"""
         self.test_results = {}
         self.critical_failures = []

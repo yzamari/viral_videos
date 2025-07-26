@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 6,
+  "hook_text": "Marvel's Ice Thaw: Peace Avengers Assemble... then, darkness.",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "comic",
+    "color_palette": "vibrant",
+    "reasoning": "The narrative elements like 'Marvel Comics return,' 'discomfort lines visible,' 'wrenches fly! CLANG! BANG!,' 'BLACK OOZE!,' 'ASSASSINATION NOIR,' and 'Nation SPLITS' strongly suggest a visual language best suited for the 'comic' style. This style can effectively convey action, emotion, and dramatic shifts in tone. Instagram's preference for creative and animated styles also aligns well with comic book aesthetics. A vibrant color palette will enhance the impact and visual interest for a general audience on Instagram.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "The content describes a narrative with distinct panels, suggesting a sequence of visuals. A 'bottom_center' position for the overlaid text allows for clear readability across the diverse imagery without obscuring key elements, especially considering the 'comic' style and the Instagram platform's general avoidance of the bottom 20%. This position provides a stable anchor for the text throughout the 65-second duration.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/israeli_pm_ep8_rabin2/temp_files/base_video.mp4 -vf drawtext=text='HISTORIC':fontcolor=#54A0FF:fontsize=50:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,6.5\\,8.5),drawtext=text='PEACE SONG \ud83d\udd4a\ufe0f':fontcolor=#96CEB4:fontsize=46:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,15.0\\,17.5),drawtext=text='PEACE MAN \ud83d\udc94':fontcolor=#00D2D3:fontsize=52:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,24.0\\,26.5),drawtext=text='#MarvelHistory':fontcolor=#4ECDC4:fontsize=40:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.85:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,33.5\\,36.0),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,31.896\\,33.296),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,33.396\\,34.796) -c:a copy -y outputs/israeli_pm_ep8_rabin2/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='HISTORIC':fontcolor=#54A0FF:fontsize=50:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,6.5\\,8.5),drawtext=text='PEACE SONG \ud83d\udd4a\ufe0f':fontcolor=#96CEB4:fontsize=46:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,15.0\\,17.5),drawtext=text='PEACE MAN \ud83d\udc94':fontcolor=#00D2D3:fontsize=52:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,24.0\\,26.5),drawtext=text='#MarvelHistory':fontcolor=#4ECDC4:fontsize=40:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.85:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,33.5\\,36.0),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,31.896\\,33.296),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,33.396\\,34.796)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 37.896,
+    "overlay_count": 6
+  }
+}

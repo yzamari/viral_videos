@@ -570,8 +570,8 @@ class WorkingOrchestrator:
                 'target_duration': self.duration,
                 'max_duration': self.duration * 1.05,  # 5% tolerance
                 'min_duration': self.duration * 0.95,  # 5% tolerance
-                'words_per_second': 2.3,  # Speaking rate
-                'max_words': int(self.duration * 2.5),
+                'words_per_second': 2.8,  # Speaking rate (matches TTS configuration)
+                'max_words': int(self.duration * 2.8),
                 'platform': self.platform.value,
                 'num_segments': max(1, self.duration // 8),  # Approximate segments
                 'mode': self.mode.value,
@@ -613,8 +613,8 @@ class WorkingOrchestrator:
                 'target_duration': self.duration,
                 'max_duration': self.duration * 1.05,  # 5% tolerance
                 'min_duration': self.duration * 0.95,  # 5% tolerance
-                'words_per_second': 2.3,  # Speaking rate
-                'max_words': int(self.duration * 2.5),
+                'words_per_second': 2.8,  # Speaking rate (matches TTS configuration)
+                'max_words': int(self.duration * 2.8),
                 'platform': self.platform.value,
                 'num_segments': max(1, self.duration // 8)  # Approximate segments
             },
@@ -840,7 +840,7 @@ class WorkingOrchestrator:
                 'themes': [self.tone],
                 'success_factors': [self.style, 'engaging'],
                 'duration_constraints': duration_constraints,
-                'max_words': int(self.duration * 2.5),  # Enforce word limit
+                'max_words': int(self.duration * 2.8),  # Enforce word limit (2.8 words per second for TTS)
                 'tolerance_percent': 0.05  # 5% tolerance
             }
         )
@@ -1098,10 +1098,15 @@ class WorkingOrchestrator:
 
         try:
             # Create video generator with VEO3 disabled
+            # Get Vertex AI configuration from environment
+            import os
             video_generator = VideoGenerator(
                 api_key=self.api_key,
                 use_real_veo2=not self.cheap_mode,  # Use VEO2 when cheap_mode is False
                 use_vertex_ai=True,
+                vertex_project_id=os.getenv('VERTEX_AI_PROJECT_ID') or os.getenv('VERTEX_PROJECT_ID'),
+                vertex_location=os.getenv('VERTEX_AI_LOCATION') or os.getenv('VERTEX_LOCATION', 'us-central1'),
+                vertex_gcs_bucket=os.getenv('VERTEX_AI_GCS_BUCKET') or os.getenv('VERTEX_GCS_BUCKET'),
                 prefer_veo3=False  # CRITICAL: Disable VEO3 as requested
             )
 
@@ -1281,7 +1286,8 @@ class WorkingOrchestrator:
             multiple_voices=config.get('multiple_voices', False),  # Add multiple voices flag
             use_real_veo2=config.get('force_generation') != 'force_image_gen',
             num_clips=num_clips,
-            clip_durations=clip_durations
+            clip_durations=clip_durations,
+            theme_id=self.core_decisions.theme_id if self.core_decisions and hasattr(self.core_decisions, 'theme_id') else None
         )
 
         logger.info(f"✅ Created enhanced video config with {len(decisions)} AI decisions")

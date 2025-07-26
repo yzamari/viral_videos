@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 5,
+  "hook_text": "Marvel Comics finale: UNIVERSE ENDING? Netanyahu RETURNED! Is this the ultimate Endgame?",
+  "cta_text": "Will democracy return?",
+  "style_decision": {
+    "primary_style": "comic",
+    "color_palette": "vibrant",
+    "reasoning": "The prompt's language is heavily influenced by comic book tropes ('ULTIMATE RETURN!', 'EXTREMISM STONES', 'SNAP attempt', 'SHATTERS!', 'Vibranium cracks', 'Wanted posters', 'SCOTCH TAPE', 'Noah vibes', 'Universe ending'). The visual descriptions like 'lightning effects', 'GLOW!', 'Dust effects', and 'Vibranium cracks' also align perfectly with the dynamic and often exaggerated visual language of comic books. For Instagram's general audience and creative/animated preference, a vibrant comic style would be highly engaging, allowing for bold storytelling and impactful visual metaphors.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "Instagram's safe zone is the top 80% of the screen. Placing the text in the top center allows for maximum visibility without obscuring any of the described visual elements, many of which are likely to occupy the middle and lower portions of the screen. This avoids the bottom 20% as per the rules and is a good balance for readability on a mobile feed.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/israeli_pm_ep17_netanyahu_final/temp_files/base_video.mp4 -vf drawtext=text='ISRAEL DISSOLVING \ud83c\udf2a\ufe0f':fontcolor=#45B7D1:fontsize=45:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,13.5\\,16.5),drawtext=text='INTL VILLAIN \ud83d\udea8':fontcolor=#54A0FF:fontsize=45:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,27.5\\,30.5),drawtext=text='THE END... OR IS IT \ud83e\udd2f':fontcolor=#00D2D3:fontsize=50:font='Georgia-Bold':box=1:boxcolor=#2C3E50@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,45.5\\,49.0),drawtext=text='Will democracy':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF4500@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,43.728\\,45.128),drawtext=text='return':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF4500@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,45.228\\,46.628) -c:a copy -y outputs/israeli_pm_ep17_netanyahu_final/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='ISRAEL DISSOLVING \ud83c\udf2a\ufe0f':fontcolor=#45B7D1:fontsize=45:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,13.5\\,16.5),drawtext=text='INTL VILLAIN \ud83d\udea8':fontcolor=#54A0FF:fontsize=45:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,27.5\\,30.5),drawtext=text='THE END... OR IS IT \ud83e\udd2f':fontcolor=#00D2D3:fontsize=50:font='Georgia-Bold':box=1:boxcolor=#2C3E50@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,45.5\\,49.0),drawtext=text='Will democracy':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF4500@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,43.728\\,45.128),drawtext=text='return':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF4500@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,45.228\\,46.628)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 49.728,
+    "overlay_count": 5
+  }
+}

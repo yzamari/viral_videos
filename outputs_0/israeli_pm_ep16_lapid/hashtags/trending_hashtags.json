@@ -1,0 +1,227 @@
+{
+  "hashtags": [
+    {
+      "tag": "#SpiderManArrival",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly references the core Marvel cameo and the script's opening, highly searchable.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#LapidQuote",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the specific quote and personality mentioned, appealing to those following the news.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#PrimeMinisterSpeedrun",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Captures the 'speedrun' concept and the PM's achievements, a creative and intriguing phrase.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#TwoStatesPanel",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Specific to the UN speech panel, making it discoverable for those interested in that event.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#DavidVsGoliath47",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "References the campaign battle, niche but relevant to the narrative.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#SurprisedPikachuMeme",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Ties into a universally recognized and viral meme, increasing shareability.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#RightWingExplodes",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Reflects the highly charged political reaction, attracting engagement from both sides.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#HandsomePM",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the 'handsome' descriptor and mirror admiration, a trending compliment style.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#HeartEyesEmoji",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Capitalizes on the common visual cue for admiration, easily relatable and searchable.",
+      "trend_score": 0.87
+    },
+    {
+      "tag": "#FiveMinutesOfFame",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Plays on a common idiom for fleeting attention, relatable and ironic.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MaybeNextDecade",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "A humorous and relatable phrase often used in political or topical discussions.",
+      "trend_score": 0.82
+    },
+    {
+      "tag": "#InstagramThirstTrap",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Directly references the post-credit scene and a popular Instagram trend.",
+      "trend_score": 0.93
+    },
+    {
+      "tag": "#DemocracyDiesInDarkness",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects to a well-known political phrase with a witty twist, increasing virality.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#RingLightLife",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Ties into the 'ring light' caption and current influencer culture.",
+      "trend_score": 0.89
+    },
+    {
+      "tag": "#MarvelCameo",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Targets the Marvel fan base directly, ensuring relevance for a key audience.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#WebSwinging",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "References a core Spider-Man visual element, appealing to superhero fans.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#PoliticalHumor",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Accurately categorizes the blend of political commentary and humor.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#DigitalArtPanel",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the visual storytelling aspect of the comic panels.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ElectionMemes",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Targets users actively searching for election-related humor and commentary.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ComicsCommunity",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Connects with the broader comic book enthusiast community.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#PopCulture",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "A wide-reaching tag that captures the intersection of comics, politics, and memes.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#EntertainmentNews",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Relevant for users looking for updates in the entertainment sphere.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#SocialMediaTrends",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Targets users interested in what's currently popular online.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ViralContent",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "A direct call for virality, appealing to the platform's nature.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#InstaGood",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "A general discovery hashtag for aesthetically pleasing or engaging content.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#DailyDoseOfAwesome",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "An aspirational and positive tag to attract a wider audience.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Directly prompts comments and discussion from followers.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ShareIfYouAgree",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Encourages shares by appealing to common sentiment.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#TagAFriend",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "A classic call to action to increase reach through user networks.",
+      "trend_score": 0.88
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "Incorporates current meme culture (Surprised Pikachu, Ring Light), political commentary trends (Right Wing Explodes, Maybe Next Decade), and established pop culture references (Spider-Man, Marvel). Leverages both niche and broad hashtags for maximum discoverability and targeted reach on Instagram.",
+    "engagement_strategy": "A mix of direct questions (#WhatDoYouThink), calls to action (#ShareIfYouAgree, #TagAFriend), and trend-based hashtags that invite participation and commentary (e.g., #RightWingExplodes, #HandsomePM) will drive conversation and interaction."
+  },
+  "usage_tips": [
+    "For Instagram, aim for a diverse mix of popular and niche hashtags. Don't be afraid to use all 30, but ensure relevance. ",
+    "Consider placing a portion of your hashtags in the first comment to keep the caption clean, especially for longer posts.",
+    "Monitor the performance of each hashtag in your Instagram insights to refine your strategy over time. Adjust based on which tags are driving the most reach and impressions.",
+    "Tailor the hashtag mix slightly if cross-posting to other platforms, emphasizing trending and searchable tags where appropriate (e.g., #SpiderManMovie on Twitter or YouTube)."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-25T03:01:16.952979",
+    "topic": "Marvel Comics cameo: SPIDER-MAN ARRIVAL! Lapid: 'Just happy to be HERE!' Web-swinging panels! Five-month SPEEDRUN: PM achievements BLUR by! ZOOM! UN speech panel: 'TWO STATES!' Right-wing heads EXPLODE! SCANNER-STYLE! TV host panels: Mirror admiration! 'HANDSOME PM!' Heart eyes everywhere! Campaign battle: DAVID vs GOLIATH #47! Slingshot ready! Election loss: SURPRISED PIKACHU FACE panel! 'Five minutes of fame!' Clock shows 5:00! Opposition return: 'Maybe next DECADE?' Shrug panel. Post-credit: Instagram THIRST TRAP poses! Caption: 'Democracy dies in darkness... but with RING LIGHT!' CLICK!",
+    "platform": "instagram",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 29
+  }
+}

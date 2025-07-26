@@ -329,7 +329,7 @@ class Director:
                 CRITICAL: Generate the ACTUAL CREATIVE SCRIPT described - the dialogue, narration, or performance content itself.
                 This is NOT educational content ABOUT the topic - this IS the creative content.
 
-                Duration: EXACTLY {duration} seconds ({duration * 3} words total at 3 words/second)
+                Duration: EXACTLY {duration} seconds ({int(duration * 2.8)} words total at 2.8 words/second)
                 Segments: {num_segments} segments, each ~{duration // num_segments} seconds
 
                 SUBTITLE REQUIREMENTS:
@@ -368,8 +368,8 @@ class Director:
 
                 Mission Strategy:
                 - Duration: EXACTLY {duration} seconds (HARD CONSTRAINT - content MUST fit this time limit)
-                - Word limit: {int(duration * 2.3)} to {int(duration * 2.5)} words MAXIMUM (2.3-2.5 words per second)
-                - DO NOT EXCEED {int(duration * 2.5)} words!
+                - Word limit: {int(duration * 2.8)} words MAXIMUM (2.8 words per second)
+                - DO NOT EXCEED {int(duration * 2.8)} words!
                 - Segments: {num_segments} strategic segments that build toward mission completion
                 - Pacing: {patterns.get('pacing', 'fast')} to maximize persuasive impact
                 - Success patterns: {patterns.get('success_factors', [])}
@@ -417,8 +417,8 @@ class Director:
 
                 Duration constraints:
                 - Duration: EXACTLY {duration} seconds (HARD CONSTRAINT - content MUST fit this time limit)
-                - Word limit: {int(duration * 2.3)} to {int(duration * 2.5)} words MAXIMUM (2.3-2.5 words per second)
-                - DO NOT EXCEED {int(duration * 2.5)} words!
+                - Word limit: {int(duration * 2.8)} words MAXIMUM (2.8 words per second)
+                - DO NOT EXCEED {int(duration * 2.8)} words!
                 - Each segment: ~{duration // num_segments} seconds each
 
                 CRITICAL SUBTITLE REQUIREMENTS:

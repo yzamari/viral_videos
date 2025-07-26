@@ -1,0 +1,66 @@
+{
+  "session_id": "israeli_pm_ep14_netanyahu_return",
+  "session_dir": "outputs/israeli_pm_ep14_netanyahu_return",
+  "subdirs": {
+    "logs": "outputs/israeli_pm_ep14_netanyahu_return/logs",
+    "scripts": "outputs/israeli_pm_ep14_netanyahu_return/scripts",
+    "audio": "outputs/israeli_pm_ep14_netanyahu_return/audio",
+    "video_clips": "outputs/israeli_pm_ep14_netanyahu_return/video_clips",
+    "images": "outputs/israeli_pm_ep14_netanyahu_return/images",
+    "ai_agents": "outputs/israeli_pm_ep14_netanyahu_return/ai_agents",
+    "discussions": "outputs/israeli_pm_ep14_netanyahu_return/discussions",
+    "final_output": "outputs/israeli_pm_ep14_netanyahu_return/final_output",
+    "metadata": "outputs/israeli_pm_ep14_netanyahu_return/metadata",
+    "comprehensive_logs": "outputs/israeli_pm_ep14_netanyahu_return/comprehensive_logs",
+    "temp_files": "outputs/israeli_pm_ep14_netanyahu_return/temp_files",
+    "fallback_content": "outputs/israeli_pm_ep14_netanyahu_return/fallback_content",
+    "debug_info": "outputs/israeli_pm_ep14_netanyahu_return/debug_info",
+    "performance_metrics": "outputs/israeli_pm_ep14_netanyahu_return/performance_metrics",
+    "user_configs": "outputs/israeli_pm_ep14_netanyahu_return/user_configs",
+    "error_logs": "outputs/israeli_pm_ep14_netanyahu_return/error_logs",
+    "success_metrics": "outputs/israeli_pm_ep14_netanyahu_return/success_metrics",
+    "decisions": "outputs/israeli_pm_ep14_netanyahu_return/decisions",
+    "subtitles": "outputs/israeli_pm_ep14_netanyahu_return/subtitles",
+    "overlays": "outputs/israeli_pm_ep14_netanyahu_return/overlays",
+    "agent_discussions": "outputs/israeli_pm_ep14_netanyahu_return/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-25T02:01:07.020426",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Marvel Comics mega-episode: RETURN PANEL! Netanyahu: 'I am INEVITABLE!' SNAP! 12-year montage: Election panels blur in TIME LOOP! Strange-style! UN cartoon bomb panel: KINDERGARTEN THANOS draws! 'THIS IS IRAN!' Trump bromance panels: Hearts float! 'Love you 3000!' Corruption trial: Collecting scandal stones! CIGARS! CHAMPAGNE! MEDIA! COVID panels: 'I SAVED Israel!' Protests RAGE outside! Abraham Accords: PLOT TWIST! Unexpected peace signatures! Coalition JUGGLING - balls drop! CRASH! 'Back in 2022!' WINK! Crown to ash panel: 'KING BIBI' crumbles! Post-credit: Plotting in shadows...",
+        "platform": "instagram",
+        "duration": 65
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 5,
+  "hook_text": "She is the only MAN in the cabinet.",
+  "cta_text": "5, 'emotional_arc': 'complex', 'surprise_moments': }}",
+  "style_decision": {
+    "primary_style": "comic",
+    "color_palette": "vibrant",
+    "reasoning": "The prompt specifically mentions 'Marvel Comics' and 'comic' panels, suggesting a strong comic book aesthetic. The described visual elements (glowing cigarette, KABOOM! SNAP!, POW!, mushroom cloud, internet explodes) are hallmarks of comic book art. A vibrant color palette will enhance the dynamic and impactful nature of these elements for an Instagram audience.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "For Instagram, avoiding the bottom 20% is key. The 'bottom_center' position offers good visibility while staying above the most sensitive area of the screen. The comic style can benefit from a centered placement for key text elements.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/test_v2_pm_ep4_golda/temp_files/base_video.mp4 -vf drawtext=text='WARNINGS IGNORED \u23f3':fontcolor=#54A0FF:fontsize=56:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@1:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,13.0\\,15.5),drawtext=text='INTERNET EXPLODES \ud83e\udd2f':fontcolor=#E74C3C:fontsize=62:font='Arial-Bold':box=1:boxcolor=#FFFFFF@1:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,25.0\\,27.5),drawtext=text='5 emotional_arc':fontcolor=#FFFF00:fontsize=60:font='Impact':box=1:boxcolor=#FF00FF@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,22.500007\\,23.900007),drawtext=text='complex':fontcolor=#FFFF00:fontsize=60:font='Impact':box=1:boxcolor=#FF00FF@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,24.000007\\,25.400007),drawtext=text='surprise_moments':fontcolor=#FFFF00:fontsize=60:font='Impact':box=1:boxcolor=#FF00FF@0.7:boxborderw=2:x=(w-text_w)/2:y=1690:enable=between(t\\,24.000007\\,25.400007) -c:a copy -y outputs/test_v2_pm_ep4_golda/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='WARNINGS IGNORED \u23f3':fontcolor=#54A0FF:fontsize=56:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@1:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,13.0\\,15.5),drawtext=text='INTERNET EXPLODES \ud83e\udd2f':fontcolor=#E74C3C:fontsize=62:font='Arial-Bold':box=1:boxcolor=#FFFFFF@1:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,25.0\\,27.5),drawtext=text='5 emotional_arc':fontcolor=#FFFF00:fontsize=60:font='Impact':box=1:boxcolor=#FF00FF@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,22.500007\\,23.900007),drawtext=text='complex':fontcolor=#FFFF00:fontsize=60:font='Impact':box=1:boxcolor=#FF00FF@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,24.000007\\,25.400007),drawtext=text='surprise_moments':fontcolor=#FFFF00:fontsize=60:font='Impact':box=1:boxcolor=#FF00FF@0.7:boxborderw=2:x=(w-text_w)/2:y=1690:enable=between(t\\,24.000007\\,25.400007)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 28.500007,
+    "overlay_count": 5
+  }
+}

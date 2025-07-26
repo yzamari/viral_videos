@@ -1,0 +1,27 @@
+{
+  "total_segments": 31,
+  "total_duration": 34.272,
+  "script_content": "SMOKE PANEL! Golda emerges, her cigarette glowing with immense power. I am the only man in the cabinet! TRANSFORMATION! Cabinet members instantly become bewildered kindergarteners. YOM KIPPUR WAR! Coffee pot in one hand, tank radio in the other. KABOOM! SNAP! Intelligence failure panels show scattered, ignored files. TIME REWIND! Warnings are seen being dismissed by a dismissive hand. Kitchen diplomacy. World leaders shrink, awestruck by her presence. Resignation! A mushroom cloud of smoke. There is no Palestine! Internet EXPLODES!",
+  "audio_files_used": [
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_0.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_1.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_2.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_3.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_4.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_5.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_6.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_7.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_8.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_9.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_10.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_11.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_12.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_13.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_14.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_15.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_16.mp3",
+    "outputs/test_v2_pm_ep4_golda/audio/audio_segment_17.mp3"
+  ],
+  "target_duration": 34.272,
+  "capped_to_target": false
+}

@@ -1,0 +1,24 @@
+{
+  "session_id": "israeli_pm_ep2_sharett",
+  "mission": "Marvel intro: Moshe Sharett materializes between Ben-Gurion appearances like Ant-Man - 'Did anyone notice I was here?' Montage of being overshadowed, papers flying past him in slow-mo. Spider-Man style inner monologue: 'With great responsibility comes... being ignored by history.' Shows diplomatic skills like Doctor Strange's hand movements creating peace treaties. Villain reveal: Ben-Gurion's shadow literally consuming screen. Post-credit: Still in office, checking watch, 'Is it 1955 yet?' Stan Lee cameo as confused citizen: 'Who's the Prime Minister again?'",
+  "platform": "instagram",
+  "duration_seconds": 65,
+  "created_at": "2025-07-24T22:53:26.788795",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/israeli_pm_ep2_sharett/final_output/final_video_israeli_pm_ep2_sharett__final.mp4",
+      "file_size_mb": 5.479592323303223
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/israeli_pm_ep2_sharett/final_output/final_video_israeli_pm_ep2_sharett__audio_only.mp4",
+      "file_size_mb": 1.2631235122680664
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/israeli_pm_ep2_sharett/final_output/final_video_israeli_pm_ep2_sharett__overlays_only.mp4",
+      "file_size_mb": 1.2963619232177734
+    }
+  }
+}

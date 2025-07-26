@@ -1,0 +1,15 @@
+{
+  "session_id": "israeli_pm_ep2_sharett",
+  "mission": "Marvel intro: Moshe Sharett materializes between Ben-Gurion appearances like Ant-Man - 'Did anyone notice I was here?' Montage of being overshadowed, papers flying past him in slow-mo. Spider-Man style inner monologue: 'With great responsibility comes... being ignored by history.' Shows diplomatic skills like Doctor Strange's hand movements creating peace treaties. Villain reveal: Ben-Gurion's shadow literally consuming screen. Post-credit: Still in office, checking watch, 'Is it 1955 yet?' Stan Lee cameo as confused citizen: 'Who's the Prime Minister again?'",
+  "duration_seconds": 65,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.ENTERTAINMENT",
+  "visual_style": "marvel comics",
+  "tone": "darkly_humorous",
+  "script_processing": {
+    "original_script": " Moshe Sharett materializes. Did anyone notice I was here? With great responsibility comes... Being ignored by history. Strange's hands move, treaties form. Ben-Gurion's shadow consumes the screen. Still in office. Is it 1955 yet? Who is the Prime Minister again?",
+    "final_script": "Moshe Sharett appears, a sudden presence in the room. Did anyone notice his arrival?  With great responsibility comes the weight of history, a burden often unseen. Strange's hands move deftly, shaping international treaties.  Ben-Gurion's imposing shadow looms large on the screen, a constant reminder of his enduring power. He remains in office. Is it 1955 already? The air crackles with unspoken tensions. Who is the Prime Minister now? The question hangs heavy, unanswered.  A sense of uncertainty pervades the room, thick and suffocating. The weight of decisions rests heavily on their shoulders. The future of the nation hangs in the balance.  Each move is fraught with consequence.  The clock ticks relentlessly, marking the passage of time and the urgency of the moment.  A silent prayer escapes Sharett's lips, a plea for wisdom and strength. The fate of many rests on the decisions made tonight. The weight of the world presses down.  History watches, silent and judging. The future remains uncertain.",
+    "word_count": 179,
+    "tts_ready": false
+  }
+}

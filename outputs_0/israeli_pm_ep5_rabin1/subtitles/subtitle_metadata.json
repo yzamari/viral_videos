@@ -1,0 +1,26 @@
+{
+  "total_segments": 27,
+  "total_duration": 32.279999999999994,
+  "script_content": "Behold, the young Rabin! A beacon of hope, his Star of David shield gleaming brightly. From soldier to statesman, a remarkable transformation unfolds. A new era dawns. Entebbe! Commandos launch a daring night raid. The nation faces a crippling economic crisis; prosperity vanishes. Scandal erupts; betrayal is revealed. His shield falls; 'I will return,' he vows.  Post-credit: A chilling grin; a dark future looms.  A future assassination casts a long shadow. To be continued...",
+  "audio_files_used": [
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_0.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_1.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_2.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_3.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_4.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_5.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_6.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_7.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_8.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_9.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_10.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_11.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_12.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_13.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_14.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_15.mp3",
+    "outputs/israeli_pm_ep5_rabin1/audio/audio_segment_16.mp3"
+  ],
+  "target_duration": 32.279999999999994,
+  "capped_to_target": false
+}

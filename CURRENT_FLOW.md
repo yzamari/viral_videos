@@ -256,10 +256,10 @@ CLI → DecisionFramework → CoreDecisions → All components use same decision
 - **Professional**: 22 agents with comprehensive discussions (premium)
 
 ### Cheap Mode Levels
-- **Full**: Text-based video + gTTS audio (cheapest)
-- **Audio**: Normal video + gTTS audio (medium cost)
-- **Video**: Fallback video + normal audio (medium cost)
-- **Off**: Full premium generation (most expensive)
+- **Full**: Text-based video + gTTS audio (cheapest) - activated with `--cheap`
+- **Audio**: Normal video + gTTS audio (medium cost) - not currently used
+- **Video**: Fallback video + normal audio (medium cost) - not currently used  
+- **Off**: Full premium generation (most expensive) - default or `--no-cheap`
 
 ### Platform Options
 - **TikTok**: 9:16 aspect ratio, 15-60s duration
@@ -279,12 +279,15 @@ CLI → DecisionFramework → CoreDecisions → All components use same decision
 - Comprehensive session management
 - Duration flow consistency
 
-### ✅ **Recently Fixed**
+### ✅ **Recently Fixed (July 2025)**
 - Duration conflicts resolved
 - Professional mode agent coverage
 - Mission vs topic detection
 - Centralized decision making
 - Hardcoded defaults removed
+- **cheap_mode_level bug**: Fixed to only activate with explicit `--cheap` flag
+- **Audio-subtitle sync**: Fixed to exclude pause files from timing calculations
+- **Script duration**: Fixed by providing narrative content, not just visual descriptions
 
 ### 🔄 **In Progress**
 - Testing centralized decision flow

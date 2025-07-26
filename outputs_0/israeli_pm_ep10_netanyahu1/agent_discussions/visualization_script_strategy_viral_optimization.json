@@ -1,0 +1,127 @@
+{
+  "discussion_summary": {
+    "topic": "Script Strategy & Viral Optimization",
+    "participants": [
+      "StoryWeaver",
+      "VisionCraft",
+      "AudioMaster"
+    ],
+    "duration_seconds": 5.329310894012451,
+    "total_rounds": 1,
+    "final_consensus": 1.0,
+    "target_consensus": 0.7,
+    "success": true
+  },
+  "round_by_round": [
+    {
+      "round": 1,
+      "contributions": [
+        {
+          "agent": "StoryWeaver",
+          "message": "We will craft a rapid-fire, comic-book-style visual narrative for Instagram, dedicating approximately 5-8 seconds to each key event, from the MIT graduation to the post-credit tease. This pacing, combined with dynamic sound effects, punchy voiceovers, and clear, impactful subtitles, will create an engaging and memorable portrayal of a political \"origin story\" with a darkly humorous, Marvel-esque twist, ensuring all plot points are hit within the 65-second duration.",
+          "vote": "agree",
+          "timestamp": "2025-07-25 00:42:57.276906"
+        },
+        {
+          "agent": "VisionCraft",
+          "message": "To accomplish the mission, we will create a dynamic, panel-by-panel visual narrative that mirrors a comic book, leveraging precise timing (5-8 seconds per segment) and impactful audio-visual cues. This strategy will convey the 'origin story' with a darkly humorous, Marvel-esque tone, ensuring all key events, from graduation swagger to future ambition, are delivered within the 65-second Instagram timeframe, fostering engagement through rapid pacing and compelling storytelling.",
+          "vote": "agree",
+          "timestamp": "2025-07-25 00:42:59.116313"
+        },
+        {
+          "agent": "AudioMaster",
+          "message": "To accomplish the mission, we will structure the 65-second Instagram video as a rapid-fire comic book narrative, allocating 6-8 seconds per key event with distinct Marvel-esque audio cues and visual effects. This strategic pacing ensures all plot points are delivered crisply, creating a compelling origin story that leverages dark humor and dramatic escalation to capture audience attention and achieve mission objectives.",
+          "vote": "agree",
+          "timestamp": "2025-07-25 00:43:00.566453"
+        }
+      ],
+      "votes": {
+        "agree": 3,
+        "disagree": 0,
+        "neutral": 0
+      }
+    }
+  ],
+  "consensus_progression": [
+    {
+      "round": 1,
+      "consensus": 1.0,
+      "timestamp": "2025-07-25 00:43:00.567785"
+    }
+  ],
+  "agent_contributions": {
+    "StoryWeaver": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-25 00:42:57.276906",
+      "last_contribution": "2025-07-25 00:42:57.276906"
+    },
+    "VisionCraft": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-25 00:42:59.116313",
+      "last_contribution": "2025-07-25 00:42:59.116313"
+    },
+    "AudioMaster": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-25 00:43:00.566453",
+      "last_contribution": "2025-07-25 00:43:00.566453"
+    }
+  },
+  "timeline": [
+    {
+      "timestamp": "2025-07-25 00:42:55.242227",
+      "event": "discussion_started",
+      "description": "Discussion 'Script Strategy & Viral Optimization' started"
+    },
+    {
+      "timestamp": "2025-07-25 00:42:57.276906",
+      "event": "agent_contribution",
+      "agent": "StoryWeaver",
+      "round": 1,
+      "description": "StoryWeaver contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-25 00:42:59.116313",
+      "event": "agent_contribution",
+      "agent": "VisionCraft",
+      "round": 1,
+      "description": "VisionCraft contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-25 00:43:00.566453",
+      "event": "agent_contribution",
+      "agent": "AudioMaster",
+      "round": 1,
+      "description": "AudioMaster contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-25 00:43:00.567785",
+      "event": "consensus_update",
+      "round": 1,
+      "consensus_level": 1.0,
+      "description": "Consensus updated to 100.0% in round 1"
+    },
+    {
+      "timestamp": "2025-07-25 00:43:00.571546",
+      "event": "discussion_completed",
+      "description": "Discussion completed with 100.0% consensus"
+    }
+  ]
+}

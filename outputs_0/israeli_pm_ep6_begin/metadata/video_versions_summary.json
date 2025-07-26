@@ -1,0 +1,24 @@
+{
+  "session_id": "israeli_pm_ep6_begin",
+  "mission": "Marvel Comics epic: UNDERGROUND PANEL! Begin rises, British 'WANTED' posters swirl! Thought bubble: 'First they ignore you...' CAMP DAVID SUMMIT: Wakanda-style meeting! Sadat and Carter in council poses. PEACE SIGNING: Slow-mo panels, doves with pyramid/star wings! FLUTTER! Dark turn panel: LEBANON WAR CHAOS! Powers out of control! Depression spiral panels: Thor-like breakdown sequence. Nobel Prize MELTS in hands! Cave hermit panel: Alone in darkness. Caption: 'From terrorist to peacemaker to...' Post-credit: Map panel shows settlements spreading like symbiote! CREEP!",
+  "platform": "instagram",
+  "duration_seconds": 65,
+  "created_at": "2025-07-24T23:51:50.993954",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/israeli_pm_ep6_begin/final_output/final_video_israeli_pm_ep6_begin__final.mp4",
+      "file_size_mb": 37.37532424926758
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/israeli_pm_ep6_begin/final_output/final_video_israeli_pm_ep6_begin__audio_only.mp4",
+      "file_size_mb": 29.67472553253174
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/israeli_pm_ep6_begin/final_output/final_video_israeli_pm_ep6_begin__overlays_only.mp4",
+      "file_size_mb": 29.674799919128418
+    }
+  }
+}

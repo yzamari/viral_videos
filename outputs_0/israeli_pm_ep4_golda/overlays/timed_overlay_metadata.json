@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 8,
+  "hook_text": "Golda. The only MAN in the cabinet.",
+  "cta_text": "Share this powerful story!",
+  "style_decision": {
+    "primary_style": "comic",
+    "color_palette": "vibrant",
+    "reasoning": "The description explicitly references 'Marvel Comics', 'speech bubble', 'action panels', 'KABOOM! SNAP!', and 'POW!', all hallmarks of the comic book style. The narrative also lends itself to dynamic, bold visuals that a comic style excels at. A vibrant color palette will enhance the action and dramatic impact, fitting for the specified 'power' and 'EXPLODES' elements. This style is highly engaging for a general audience on Instagram.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "Instagram's rule to avoid the bottom 20% means the top half is generally safer for important overlays. Placing it center-top ensures visibility without obstructing core visual elements as much as a lower position might.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/israeli_pm_ep4_golda/temp_files/base_video.mp4 -vf drawtext=text='YOM KIPPUR \ud83d\ude80':fontcolor=#54A0FF:fontsize=56:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.92:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,7.0\\,9.5),drawtext=text='COFFEE & TANKS \u2615\ufe0f':fontcolor=#5F27CD:fontsize=48:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.88:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,10.5\\,13.0),drawtext=text='INTEL FAILURE \ud83d\udea8':fontcolor=#C44569:fontsize=64:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.93:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,14.5\\,17.0),drawtext=text='WARNINGS IGNORED \u23f3':fontcolor=#00D2D3:fontsize=44:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,18.0\\,20.5),drawtext=text='RESIGNATION SMOKE \ud83d\udca8':fontcolor=#E74C3C:fontsize=50:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,26.0\\,28.5),drawtext=text='NO PALESTINE \ud83d\udca5':fontcolor=#FF6B6B:fontsize=70:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.98:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,30.0\\,32.5),drawtext=text='Share this powerful':fontcolor=#FFFF00:fontsize=58:font='Anton':box=1:boxcolor=#FF4500@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,33.936\\,35.336),drawtext=text='story':fontcolor=#FFFF00:fontsize=58:font='Anton':box=1:boxcolor=#FF4500@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,35.436\\,36.836) -c:a copy -y outputs/israeli_pm_ep4_golda/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='YOM KIPPUR \ud83d\ude80':fontcolor=#54A0FF:fontsize=56:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.92:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,7.0\\,9.5),drawtext=text='COFFEE & TANKS \u2615\ufe0f':fontcolor=#5F27CD:fontsize=48:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.88:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,10.5\\,13.0),drawtext=text='INTEL FAILURE \ud83d\udea8':fontcolor=#C44569:fontsize=64:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.93:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,14.5\\,17.0),drawtext=text='WARNINGS IGNORED \u23f3':fontcolor=#00D2D3:fontsize=44:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,18.0\\,20.5),drawtext=text='RESIGNATION SMOKE \ud83d\udca8':fontcolor=#E74C3C:fontsize=50:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,26.0\\,28.5),drawtext=text='NO PALESTINE \ud83d\udca5':fontcolor=#FF6B6B:fontsize=70:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.98:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,30.0\\,32.5),drawtext=text='Share this powerful':fontcolor=#FFFF00:fontsize=58:font='Anton':box=1:boxcolor=#FF4500@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,33.936\\,35.336),drawtext=text='story':fontcolor=#FFFF00:fontsize=58:font='Anton':box=1:boxcolor=#FF4500@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,35.436\\,36.836)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 39.936,
+    "overlay_count": 8
+  }
+}

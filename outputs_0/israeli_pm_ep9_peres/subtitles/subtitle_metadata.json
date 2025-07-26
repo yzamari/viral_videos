@@ -1,0 +1,25 @@
+{
+  "total_segments": 29,
+  "total_duration": 35.856,
+  "script_content": "The throne awaits; Peres finally sits.  But the 'Acting PM' title mocks his every move. He reaches for the gavel, a weighty symbol of power, strain etched deep on his face. Operation Grapes erupts, a nightmare of missiles raining down uncontrollably.  What have I done? The Qana disaster unfolds, a catastrophic accident.  Horror grips the nation.  The election battle rages; Bibi and Peres clash. A razor-thin margin of one percent!  An agonizingly close defeat. Always the bridesmaid, never the bride.  Mr. Peace becomes President of\u2026 nothing at all.  At ninety-three, his dreams dim, a legacy unfulfilled.",
+  "audio_files_used": [
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_0.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_1.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_2.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_3.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_4.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_5.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_6.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_7.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_8.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_9.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_10.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_11.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_12.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_13.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_14.mp3",
+    "outputs/israeli_pm_ep9_peres/audio/audio_segment_15.mp3"
+  ],
+  "target_duration": 35.856,
+  "capped_to_target": false
+}

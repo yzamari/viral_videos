@@ -1,0 +1,15 @@
+{
+  "session_id": "israeli_pm_ep16_lapid",
+  "mission": "Marvel Comics cameo: SPIDER-MAN ARRIVAL! Lapid: 'Just happy to be HERE!' Web-swinging panels! Five-month SPEEDRUN: PM achievements BLUR by! ZOOM! UN speech panel: 'TWO STATES!' Right-wing heads EXPLODE! SCANNER-STYLE! TV host panels: Mirror admiration! 'HANDSOME PM!' Heart eyes everywhere! Campaign battle: DAVID vs GOLIATH #47! Slingshot ready! Election loss: SURPRISED PIKACHU FACE panel! 'Five minutes of fame!' Clock shows 5:00! Opposition return: 'Maybe next DECADE?' Shrug panel. Post-credit: Instagram THIRST TRAP poses! Caption: 'Democracy dies in darkness... but with RING LIGHT!' CLICK!",
+  "duration_seconds": 65,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.ENTERTAINMENT",
+  "visual_style": "marvel comics",
+  "tone": "darkly_humorous",
+  "script_processing": {
+    "original_script": "Spider-Man! Right here! I am just happy to be here! Five-month speedrun! Prime Minister achievements are a blur! ZOOM! TWO STATES! Right-wing heads explode! This is unbelievable! My goodness, what a handsome Prime Minister you are! Truly admired! It is David versus Goliath, number forty-seven! Slingshot is ready! Surprised Pikachu face! My five minutes of fame are over! Maybe next decade? We will see how things unfold. Democracy dies in darkness, but with ring light! CLICK!",
+    "final_script": "Spider-Man! Right here! I am incredibly happy to be here.  A five-month speedrun culminated in this moment. Prime Minister achievements are a blur! ZOOM! Across two states! Right-wing heads exploded! This is unbelievable! My goodness, what a handsome Prime Minister! He is truly admired. It is David versus Goliath, number forty-seven. My slingshot is ready.  A surprised Pikachu face! My five minutes of fame are over. Perhaps next decade? We will see how things unfold. Democracy does not die in darkness, but with ring light! CLICK!",
+    "word_count": 86,
+    "tts_ready": false
+  }
+}

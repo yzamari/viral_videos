@@ -129,9 +129,9 @@ class DurationCoordinator:
         Returns:
             Estimated script duration in seconds
         """
-        # Method 1: Word count estimation (2.5 words per second)
+        # Method 1: Word count estimation (2.8 words per second - matches TTS config)
         word_count = len(script.split())
-        word_based_duration = word_count / 2.5
+        word_based_duration = word_count / 2.8
         
         # Method 2: Segment timing sum
         segment_duration = sum(seg.get('duration', 0) for seg in segments)

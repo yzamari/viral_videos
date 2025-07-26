@@ -1,0 +1,33 @@
+{
+  "total_segments": 45,
+  "total_duration": 49.727999999999994,
+  "script_content": "Marvel Comics finale: Ultimate Return! Netanyahu returned. Electrifying lightning crackled. Extremist stones glowed, assembled on the most right-wing panel. A snap attempt at judicial reform targeted the Supreme Court. Resistance erupted in furious protests.  Half of Israel dissolved in dust, a shocking sight. October 7th: the darkest day. The security shield shattered; Vibranium cracked. Gaza war panels declared total victory, empty speech bubbles for the hostages. An ICC warrant declared international villain status. Wanted posters plastered the desolate land.  Polls plummeted; the coalition clung precariously, held together by Scotch tape.  'After me, the flood!' echoed, a Noah-like vibe. The universe-ending panel showed him still in power. Post-credit: 'Democracy will return...?' The end... or is it?",
+  "audio_files_used": [
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_0.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_1.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_2.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_3.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_4.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_5.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_6.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_7.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_8.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_9.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_10.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_11.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_12.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_13.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_14.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_15.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_16.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_17.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_18.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_19.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_20.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_21.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_22.mp3",
+    "outputs/israeli_pm_ep17_netanyahu_final/audio/audio_segment_23.mp3"
+  ],
+  "target_duration": 49.727999999999994,
+  "capped_to_target": false
+}

@@ -1,0 +1,236 @@
+{
+  "hashtags": [
+    {
+      "tag": "#ArielSharon",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly names the subject, crucial for discoverability.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#MarvelEpic",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Connects the content to a popular genre and the metaphorical comparisons.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#TheBulldozer",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "References a key nickname and powerful metaphor used in the script.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#PoliticalHistory",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Accurately describes the core subject matter.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#HistoricalFigures",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Broadens the primary topic to a more general but relevant category.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#GenerationalSaga",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Captures the epic, multi-faceted nature of the narrative, suggesting a deeper dive.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#WhatIf",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Plays on the popular Marvel 'What If...?' series and the hypothetical framing of the historical narrative.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#MarvelInspired",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popularity of Marvel without being a direct copy, appealing to fans.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#HistoricalRemix",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Reflects the creative reinterpretation of historical events through a pop culture lens.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#StoryTime",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A common and highly engaging tag for narrative-driven content on Instagram.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#LearnOnInstagram",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to users looking for educational or informative content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#PopCultureHistory",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Combines historical context with current cultural interests.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Geopolitics",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Connects to broader discussions of international relations, a relevant trend.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#LegacyUnpacked",
+      "category": "trending",
+      "estimated_reach": "low",
+      "reasoning": "Invites discussion and analysis of a complex legacy, aligning with current discourse on historical figures.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#HistoryBuff",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets a specific audience interested in historical details.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#IsraeliHistory",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Narrows the focus to a specific national history, relevant for informed audiences.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#MiddleEastPolitics",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Positions the content within a specific and often discussed geopolitical region.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#SecondIntifada",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights a critical period mentioned in the script, for those seeking specific context.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#GazaDisengagement",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Focuses on a key policy decision, attracting audiences interested in the specifics of Sharon's tenure.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#SabraShatila",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Addresses a specific, highly charged event, attracting those interested in controversial aspects.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#TempleMount",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights another significant and contentious event mentioned.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#History",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General tag for broad historical content discovery.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Politics",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Broad category to capture general political interest.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#Documentary",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to users who enjoy historical and biographical content presented in this format.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Biographies",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Targets users interested in learning about notable individuals.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#Reels",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Essential for Instagram Reels discoverability and reaching a wider audience.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#InstaGood",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General popular hashtag for visually appealing and engaging content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ShareYourThoughts",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages comments and discussion, fostering community interaction.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Direct call to action for audience opinions, boosting engagement.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#HistoryDebate",
+      "category": "engagement",
+      "estimated_reach": "low",
+      "reasoning": "Invites active participation and debate, generating comments and shares.",
+      "trend_score": 0.7
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "Instagram",
+    "trend_analysis": "Incorporates trending Marvel-related hashtags like #WhatIf and #MarvelInspired to leverage current pop culture conversations.  Also includes broadly popular and engagement-driving tags like #Reels and #StoryTime, alongside niche historical and geopolitical terms for targeted reach. The \"LegacyUnpacked\" tag taps into the growing trend of nuanced historical analysis.",
+    "engagement_strategy": "Hashtags like #ShareYourThoughts, #WhatDoYouThink, and #HistoryDebate directly prompt user interaction, encouraging comments and discussions. The use of narrative tags like #StoryTime and #LearnOnInstagram also draws users in to consume and engage with the content."
+  },
+  "usage_tips": [
+    "Mix primary, trending, niche, broad, and engagement hashtags for a balanced reach strategy.",
+    "Place hashtags in the caption or the first comment on Instagram.",
+    "Research the current popularity and relevance of trending hashtags before using them.",
+    "Monitor hashtag performance and adjust your strategy based on what resonates with your audience.",
+    "Avoid overstuffing your caption with too many hashtags; aim for quality and relevance.",
+    "Consider creating a unique, branded hashtag for your content series if applicable."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-25T01:38:53.174314",
+    "topic": "Marvel epic: Ariel Sharon enters like Juggernaut, 'Nothing stops the Bulldozer!' Sabra-Shatila ghosts swirl like Mysterio illusions. Temple Mount visit: 'I'm just taking a walk' - explosion like stepping on landmine. Second Intifada: goes full Punisher mode. Plot twist: Gaza disengagement, removes settlers like Thanos with Reality Stone. Own party rebels: 'Fine, I'll do it myself,' creates Kadima. Stroke hits like Thor's hammer: eight years in coma, body kept alive like Winter Soldier. Dies with Gaza still unsolved. 'Legacy: It's complicated' in every language.",
+    "platform": "instagram",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

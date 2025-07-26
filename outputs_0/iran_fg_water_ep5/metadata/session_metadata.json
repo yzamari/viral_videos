@@ -1,0 +1,66 @@
+{
+  "session_id": "iran_fg_water_ep5",
+  "session_dir": "outputs/iran_fg_water_ep5",
+  "subdirs": {
+    "logs": "outputs/iran_fg_water_ep5/logs",
+    "scripts": "outputs/iran_fg_water_ep5/scripts",
+    "audio": "outputs/iran_fg_water_ep5/audio",
+    "video_clips": "outputs/iran_fg_water_ep5/video_clips",
+    "images": "outputs/iran_fg_water_ep5/images",
+    "ai_agents": "outputs/iran_fg_water_ep5/ai_agents",
+    "discussions": "outputs/iran_fg_water_ep5/discussions",
+    "final_output": "outputs/iran_fg_water_ep5/final_output",
+    "metadata": "outputs/iran_fg_water_ep5/metadata",
+    "comprehensive_logs": "outputs/iran_fg_water_ep5/comprehensive_logs",
+    "temp_files": "outputs/iran_fg_water_ep5/temp_files",
+    "fallback_content": "outputs/iran_fg_water_ep5/fallback_content",
+    "debug_info": "outputs/iran_fg_water_ep5/debug_info",
+    "performance_metrics": "outputs/iran_fg_water_ep5/performance_metrics",
+    "user_configs": "outputs/iran_fg_water_ep5/user_configs",
+    "error_logs": "outputs/iran_fg_water_ep5/error_logs",
+    "success_metrics": "outputs/iran_fg_water_ep5/success_metrics",
+    "decisions": "outputs/iran_fg_water_ep5/decisions",
+    "subtitles": "outputs/iran_fg_water_ep5/subtitles",
+    "overlays": "outputs/iran_fg_water_ep5/overlays",
+    "agent_discussions": "outputs/iran_fg_water_ep5/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-25T09:26:03.793868",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Family Guy apocalypse finale. Maryam (hijab completely disheveled, makeup running): 'This just in: Tehran has gone full Mad Max.' Cutaway: Peter Griffin-style warriors fighting over last water bottle: 'WITNESS ME!' *drinks entire bottle* Cut to Brian-style intellectual dog: 'You know, this reminds me of my novel about\u2014' *gets hit by water truck* Maryam removes hijab completely: 'F*** it, there's no water to wash it anyway!' Chicken fight with dehydration. End card: 'Iran International: We're as thirsty as you are!' Persian: '\u0622\u062e\u0631\u0627\u0644\u0632\u0645\u0627\u0646 \u0622\u0628\u06cc' (Water apocalypse)",
+        "platform": "youtube",
+        "duration": 60
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 3,
+  "hook_text": "Marvel Comics accident: Olmert's Spider-bite surprise! War, corruption, prison \u2013 a true superhero downfall!",
+  "cta_text": "\" Save this for later!",
+  "style_decision": {
+    "primary_style": "comic",
+    "color_palette": "vibrant",
+    "reasoning": "The description is replete with comic book tropes ('SURPRISE PM PANEL!', 'Spider-bite style!', 'BOOM! CRASH!', 'SHIELD-style interrogation', 'INFINITY GAUNTLET!', 'Hydra heads multiply!', 'Iron Man armor REMOVAL sequence!', 'First PM behind bars!'). A comic style is the most direct and effective way to translate these visual cues and the overall narrative tone. Vibrant colors will enhance the dramatic and impactful nature of these scenes, fitting for Instagram's visual-first platform and a general audience.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "The text content is extensive and describes a narrative that unfolds over time. Placing it at the bottom center provides a good balance for readability on Instagram while adhering to the 'avoid bottom 20%' rule. A static position is suitable as the text describes a sequence of events and doesn't require dynamic movement to stay in sync with specific on-screen elements.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/israeli_pm_ep13_olmert/temp_files/base_video.mp4 -vf drawtext=text='PRISON STRIPES \u26d3\ufe0f':fontcolor=#4ECDC4:fontsize=50:font='Arial-Bold':box=1:boxcolor=#2C3E50@1.0:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,27.0\\,30.0),drawtext=text='Save this for':fontcolor=#FFFFFF:fontsize=52:font='Montserrat-Bold':box=1:boxcolor=#FF0080@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,45.384\\,46.784),drawtext=text='later':fontcolor=#FFFFFF:fontsize=52:font='Montserrat-Bold':box=1:boxcolor=#FF0080@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,46.884\\,48.284) -c:a copy -y outputs/israeli_pm_ep13_olmert/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='PRISON STRIPES \u26d3\ufe0f':fontcolor=#4ECDC4:fontsize=50:font='Arial-Bold':box=1:boxcolor=#2C3E50@1.0:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,27.0\\,30.0),drawtext=text='Save this for':fontcolor=#FFFFFF:fontsize=52:font='Montserrat-Bold':box=1:boxcolor=#FF0080@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,45.384\\,46.784),drawtext=text='later':fontcolor=#FFFFFF:fontsize=52:font='Montserrat-Bold':box=1:boxcolor=#FF0080@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,46.884\\,48.284)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 51.384,
+    "overlay_count": 3
+  }
+}

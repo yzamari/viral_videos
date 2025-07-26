@@ -1,0 +1,15 @@
+{
+  "session_id": "israeli_pm_ep4_golda",
+  "mission": "Marvel Comics: SMOKE PANEL! Golda emerges, cigarette glowing with power! Speech bubble: 'I'm the only MAN in the cabinet!' TRANSFORMATION: Cabinet members become kindergarteners! Action panels: YOM KIPPUR WAR! Coffee pot in one hand, tank radio in other! KABOOM! SNAP! Intelligence failure panel - files scatter! TIME REWIND PANELS showing ignored warnings. Kitchen diplomacy: World leaders SHRINK in her presence! Resignation panel: Mushroom cloud of smoke. Final panel: 'There's no Palestine' - Internet EXPLODES in background! POW!",
+  "duration_seconds": 65,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.ENTERTAINMENT",
+  "visual_style": "marvel comics",
+  "tone": "darkly_humorous",
+  "script_processing": {
+    "original_script": "SMOKE PANEL! Golda emerges, cigarette glowing with raw power. She speaks, her voice a gravelly command. \u201cI am the only man in the cabinet!\u201d TRANSFORMATION! Cabinet members gasp, shrinking down to mere toddlers. Their important debates are now childish cries. Action panels explode! Yom Kippur War! Coffee pot in one hand, tank radio in the other. KABOOM! SNAP! Intelligence failure panel! Crucial files scatter like fallen leaves. Warnings were ignored, lost to the wind. TIME REWIND PANELS flash, showing those ignored warnings. Kitchen diplomacy now begins. World leaders shrink in her formidable presence. Resignation panel. A mushroom cloud of smoke billows. The final panel arrives, the internet ignites. \u201cThere is no Palestine!\u201d POW! The world explodes in a digital firestorm.",
+    "final_script": "SMOKE PANEL! Golda emerges, a cigarette glowing fiercely.  She commands, her voice gravelly: \"I am the only man in the cabinet!\" TRANSFORMATION! Cabinet members shrink to toddlers, their debates childish cries. Action explodes: Yom Kippur War! Coffee pot in one hand, tank radio in the other. KABOOM! SNAP! Intelligence failure! Crucial files scatter; warnings ignored. TIME REWIND: Ignored warnings flash. Kitchen diplomacy begins. World leaders shrink before her. Resignation! A mushroom cloud billows.  The internet ignites. \"There is no Palestine!\" POW! Digital firestorm.",
+    "word_count": 101,
+    "tts_ready": false
+  }
+}

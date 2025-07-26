@@ -1,0 +1,24 @@
+{
+  "session_id": "israeli_pm_ep11_barak",
+  "mission": "Marvel entrance: Ehud Barak most decorated soldier ever, medals like Infinity Stones. 'Israel's smartest PM' brain glows like Mind Stone. Camp David 2: Offers everything like Doctor Strange seeing all futures. Arafat says no to every timeline. Second Intifada explodes like Hulk rampage. Dressed as woman in operation flashback - 'I understood gender fluidity before it was cool.' Coalition crumbles faster than Thanos snap. Loses to Sharon in biggest landslide ever. Later: Epstein's island cameo, 'I kept my underwear on!' Apartment in luxury tower: 'I'm watching you... from above.'",
+  "platform": "instagram",
+  "duration_seconds": 65,
+  "created_at": "2025-07-25T01:23:50.628349",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/israeli_pm_ep11_barak/final_output/final_video_israeli_pm_ep11_barak__final.mp4",
+      "file_size_mb": 49.36359405517578
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/israeli_pm_ep11_barak/final_output/final_video_israeli_pm_ep11_barak__audio_only.mp4",
+      "file_size_mb": 39.51222324371338
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/israeli_pm_ep11_barak/final_output/final_video_israeli_pm_ep11_barak__overlays_only.mp4",
+      "file_size_mb": 39.52043533325195
+    }
+  }
+}

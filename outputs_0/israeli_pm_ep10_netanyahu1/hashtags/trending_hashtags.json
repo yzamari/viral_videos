@@ -1,0 +1,234 @@
+{
+  "hashtags": [
+    {
+      "tag": "#BibiNetanyahu",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly relates to the subject of the content, ensuring relevance for those searching for Bibi Netanyahu.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MarvelComics",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Connects the narrative to a popular and widely recognized cultural phenomenon, increasing discoverability.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MITGraduation",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the specific event and institution, appealing to alumni, students, and those interested in education.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#PoliticalHumor",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Acknowledges the comedic and satirical nature of the content, attracting users who enjoy political commentary.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#IsraelPolitics",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Targets users interested in Israeli political figures and events.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#Netanyahu",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "A broader, commonly used hashtag for the subject, increasing general visibility.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MemeCulture",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "The content is presented in a meme-like format, tapping into the widespread popularity of meme culture.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#FunnyPolitics",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the current trend of humorous political content shared on social media.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#SuperheroParody",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Combines the Marvel theme with a parodic approach, appealing to fans of both.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ViralContent",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A general tag for content with viral potential, aiming for broad exposure.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#CurrentEvents",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects the content to broader discussions about political events and figures.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#WhatIf",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "The narrative style of presenting alternate scenarios or interpretations aligns with 'What If' content trends.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#PoliticalSatire",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Highlights the satirical nature of the content, attracting a specific audience.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#PopCulture",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A broad tag that captures the blend of politics and popular entertainment.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#IsraeliHistory",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets a specific interest in the historical context of Israeli politics.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#PoliticalCartoons",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "The panel-based narrative resembles political cartoons, attracting that audience.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#InternationalRelations",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Appeals to users interested in global political dynamics.",
+      "trend_score": 0.4
+    },
+    {
+      "tag": "#MarvelFanArt",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "While not traditional fan art, it adopts a visual style that resonates with Marvel fans and could be discovered by them.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#PoliticsAndHumor",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "A more specific combination of the two main elements, targeting a engaged audience.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ComicsPanel",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Specifically targets users who consume content in a comic panel format.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#InstaGood",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A very popular Instagram tag for visually appealing or noteworthy content.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ExplorePage",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Aims to get the content featured on Instagram's Explore page.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Reels",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Essential for visibility on Instagram Reels, where much of trending content is found.",
+      "trend_score": 0.98
+    },
+    {
+      "tag": "#TrendingNow",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Leverages current trending topics and popular content.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ForYouPage",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Aims to be discovered by users on their personalized 'For You' feeds, similar to TikTok's algorithm.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Politics",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A very general tag for anyone interested in political content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Funny",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to a wide audience looking for entertaining and humorous content.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ShareThis",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "A direct call to action encouraging users to share the content.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#TagAFriend",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Encourages user interaction by prompting them to tag others who would find it interesting.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#CommentBelow",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Prompts discussion and engagement in the comments section.",
+      "trend_score": 0.75
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The strategy heavily incorporates current trends like #MemeCulture, #FunnyPolitics, and #SuperheroParody due to the content's format and subject matter. It also leverages broad discoverability tags like #Reels and #ExplorePage, vital for Instagram's algorithm. Niche tags like #MarvelFanArt and #PoliticalCartoons aim to capture specific, highly engaged communities.",
+    "engagement_strategy": "Engagement is driven through direct calls to action like #ShareThis, #TagAFriend, and #CommentBelow, encouraging community interaction and organic spread. The use of popular, broad tags also increases the chance of the content being discovered by a wider audience who might then engage."
+  },
+  "usage_tips": [
+    "For Instagram Reels, prioritize hashtags related to trending audio or visual effects if applicable to further boost discoverability.",
+    "Mix and match hashtag categories within each post to ensure a balance of niche, trending, and broad reach.",
+    "Monitor the performance of different hashtags and adjust your strategy based on which ones drive the most engagement and reach.",
+    "Consider creating a unique branded hashtag if this content is part of a series or campaign."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-25T01:05:57.989643",
+    "topic": "Marvel Comics origin: MIT GRADUATION PANEL! Young Bibi emerges, perfect English speech bubble! American swagger lines! 'MR. SECURITY' glows like arc reactor! CHEST BEAM! Election panel: Defeats Peres by 1%! 'NARROW VICTORY!' Western Wall tunnel opening: PORTAL TO CHAOS! Spirits escape! WHOOSH! Peace process DISSOLVES like Spider-Man! Particle effects! Scandal montage panels: Cigars! Champagne! Sara RAGE MODE! 'HULK SARA SMASH!' Coalition collapse: Heroes scatter! DISBANDING! Landslide loss panel: 'I'LL BE BACK!' Mirror practice panel: 'One day... LONGEST SERVING!' Post-credit tease!",
+    "platform": "instagram",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

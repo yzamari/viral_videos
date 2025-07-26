@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 7,
+  "hook_text": "Young Rabin. Star of David. A hero reborn.",
+  "cta_text": "Share this important message!",
+  "style_decision": {
+    "primary_style": "comic",
+    "color_palette": "vibrant",
+    "reasoning": "The prompt explicitly mentions 'Marvel Comics' and describes classic comic book visual elements like 'action lines', 'WHOOSH!', 'SNAP!', 'SHOCK effects', and 'CLANGS'. The content itself, featuring superhero-like transformations, rescues, and political intrigue, is best served by the dynamic and impactful visual language of the comic book style. A vibrant color palette will enhance the energy and drama of these scenes, which aligns well with Instagram's preference for creative and engaging content.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "The instructions for Instagram are to avoid the bottom 20%. Placing the overlay in the bottom_center, but not at the very bottom, allows for good visibility without obstructing crucial visual elements. This position also balances the text across the width of the screen.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/israeli_pm_ep5_rabin1/temp_files/base_video.mp4 -vf drawtext=text='ENTEBBE EPIC':fontcolor=#E74C3C:fontsize=60:font='Arial-Bold':box=1:boxcolor=#00D2D3@0.95:boxborderw=3:x=(w-text_w)/2:y=200:enable=between(t\\,7.0\\,9.5),drawtext=text='COMMANDOS ASSEMBLE':fontcolor=#5F27CD:fontsize=65:font='Trebuchet-Bold':box=1:boxcolor=#FF6B6B@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,10.0\\,12.5),drawtext=text='THE SNAP \ud83d\udca5':fontcolor=#00D2D3:fontsize=75:font='Impact':box=1:boxcolor=#5F27CD@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,16.0\\,18.5),drawtext=text='RESIGNATION \ud83d\udee1\ufe0f':fontcolor=#45B7D1:fontsize=65:font='Arial-Bold':box=1:boxcolor=#96CEB4@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,25.0\\,27.5),drawtext=text='WHAT IF... \ud83d\ude31':fontcolor=#FFFFFF:fontsize=55:font='Georgia-Bold':box=1:boxcolor=#C44569@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,31.0\\,33.0),drawtext=text='Share this important':fontcolor=#FF00FF:fontsize=52:font='Anton':box=1:boxcolor=#FFFF00@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,26.28\\,27.68),drawtext=text='message':fontcolor=#FF00FF:fontsize=52:font='Anton':box=1:boxcolor=#FFFF00@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,27.78\\,29.18) -c:a copy -y outputs/israeli_pm_ep5_rabin1/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='ENTEBBE EPIC':fontcolor=#E74C3C:fontsize=60:font='Arial-Bold':box=1:boxcolor=#00D2D3@0.95:boxborderw=3:x=(w-text_w)/2:y=200:enable=between(t\\,7.0\\,9.5),drawtext=text='COMMANDOS ASSEMBLE':fontcolor=#5F27CD:fontsize=65:font='Trebuchet-Bold':box=1:boxcolor=#FF6B6B@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,10.0\\,12.5),drawtext=text='THE SNAP \ud83d\udca5':fontcolor=#00D2D3:fontsize=75:font='Impact':box=1:boxcolor=#5F27CD@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,16.0\\,18.5),drawtext=text='RESIGNATION \ud83d\udee1\ufe0f':fontcolor=#45B7D1:fontsize=65:font='Arial-Bold':box=1:boxcolor=#96CEB4@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,25.0\\,27.5),drawtext=text='WHAT IF... \ud83d\ude31':fontcolor=#FFFFFF:fontsize=55:font='Georgia-Bold':box=1:boxcolor=#C44569@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,31.0\\,33.0),drawtext=text='Share this important':fontcolor=#FF00FF:fontsize=52:font='Anton':box=1:boxcolor=#FFFF00@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,26.28\\,27.68),drawtext=text='message':fontcolor=#FF00FF:fontsize=52:font='Anton':box=1:boxcolor=#FFFF00@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,27.78\\,29.18)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 32.28,
+    "overlay_count": 7
+  }
+}

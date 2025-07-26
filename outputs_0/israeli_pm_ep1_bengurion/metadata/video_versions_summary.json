@@ -1,0 +1,24 @@
+{
+  "session_id": "israeli_pm_ep1_bengurion",
+  "mission": "Marvel Comics opening: Comic panels explode! BOOM! David Ben-Gurion bursts from desert sands, speech bubbles everywhere. 'I am... INEVITABLE!' SNAP! British Mandate vanishes in comic smoke. Action panels montage: KA-POW! Declaring independence while others have sweat drops. WHOOSH! Yoga headstands with motion lines during cabinet meetings. Tech panels: Building kibbutzim with Kirby Dots energy. Plot twist panel: Retired to desert cabin, thought bubble: 'Finally, peace.' Final panel teaser: 'Ben-Gurion will return... in 1955!' Editor's note box: 'True Believer Achievement: Created Entire Country!'",
+  "platform": "instagram",
+  "duration_seconds": 65,
+  "created_at": "2025-07-24T23:05:14.593786",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/israeli_pm_ep1_bengurion/final_output/final_video_israeli_pm_ep1_bengurion__final.mp4",
+      "file_size_mb": 57.698227882385254
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/israeli_pm_ep1_bengurion/final_output/final_video_israeli_pm_ep1_bengurion__audio_only.mp4",
+      "file_size_mb": 46.073370933532715
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/israeli_pm_ep1_bengurion/final_output/final_video_israeli_pm_ep1_bengurion__overlays_only.mp4",
+      "file_size_mb": 46.087785720825195
+    }
+  }
+}

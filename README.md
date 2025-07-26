@@ -9,6 +9,12 @@
 
 ## ✨ **What's New in v3.0.0**
 
+### 🔧 **Critical Bug Fixes (July 2025)** ✅ **FIXED**
+- **Fixed VEO Generation**: Resolved `cheap_mode_level` forcing cheap mode even with `--no-cheap`
+- **Fixed Audio-Subtitle Sync**: Subtitles now properly exclude pause files for accurate timing
+- **Fixed Duration Issues**: Scripts now properly expand to meet requested duration
+- **Theme Overlays**: Confirmed working with VEO generation (not visible in cheap mode)
+
 ### 🎭 **Character Consistency System** ✅ **BREAKTHROUGH!**
 - **TRUE Character Persistence**: Same face across ALL episodes using Imagen + VEO pipeline
 - **Store Character References**: Upload reference photos of any person
@@ -718,9 +724,11 @@ python main.py generate --mission "Test" --cheap video
 
 ### Common Issues
 1. **Authentication Problems**: Run any command - system auto-fixes
-2. **Quota Exceeded**: Use `--cheap full` for testing
+2. **Quota Exceeded**: Use `--cheap` for testing (not `--cheap full`)
 3. **Duration Conflicts**: All resolved with centralized decisions
 4. **VEO Unavailable**: Automatic fallback to alternative generation
+5. **Short Scripts**: Provide detailed narrative content, not just visual descriptions
+6. **No VEO with --cheap**: Remove `--cheap` flag to enable VEO generation
 
 ### Getting Help
 - Check `logs/` directory for detailed error information

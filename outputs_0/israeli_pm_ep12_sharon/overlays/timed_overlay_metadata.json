@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 5,
+  "hook_text": "Unleash the Marvel epic: Sharon, the Juggernaut, enters.",
+  "cta_text": "Share this important message!",
+  "style_decision": {
+    "primary_style": "comic",
+    "color_palette": "vibrant",
+    "reasoning": "The 'Marvel epic' framing, comparisons to Juggernaut, Mysterio, Punisher, Thanos, and Thor, along with specific plot points like 'explosion like stepping on landmine,' strongly suggest a comic book visual style. The vibrant color palette is also typical for comic art and would grab attention on Instagram. This style allows for dynamic storytelling and impactful visual metaphors that resonate with the dramatic language used in the prompt.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "For Instagram with a comic style, 'bottom_center' provides good visibility for text overlays without obstructing key visual elements, while adhering to the 'avoid bottom 20%' rule. A static position is suitable for this narrative.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/israeli_pm_ep12_sharon/temp_files/base_video.mp4 -vf drawtext=text='Mysterios Illusions \ud83d\udc7b':fontcolor=#54A0FF:fontsize=32:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,6.0\\,9.0),drawtext=text='Gaza Disengagement \ud83e\udd2f':fontcolor=#5F27CD:fontsize=38:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,15.5\\,18.5),drawtext=text='Legacy COMPLICATED \ud83d\udc94':fontcolor=#5F27CD:fontsize=48:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,28.5\\,31.0),drawtext=text='Share this':fontcolor=#FFEB3B:fontsize=56:font='Anton':box=1:boxcolor=#E91E63@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,24.984\\,26.384),drawtext=text='important message':fontcolor=#FFEB3B:fontsize=56:font='Anton':box=1:boxcolor=#E91E63@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,26.484\\,27.884) -c:a copy -y outputs/israeli_pm_ep12_sharon/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='Mysterios Illusions \ud83d\udc7b':fontcolor=#54A0FF:fontsize=32:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,6.0\\,9.0),drawtext=text='Gaza Disengagement \ud83e\udd2f':fontcolor=#5F27CD:fontsize=38:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,15.5\\,18.5),drawtext=text='Legacy COMPLICATED \ud83d\udc94':fontcolor=#5F27CD:fontsize=48:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,28.5\\,31.0),drawtext=text='Share this':fontcolor=#FFEB3B:fontsize=56:font='Anton':box=1:boxcolor=#E91E63@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,24.984\\,26.384),drawtext=text='important message':fontcolor=#FFEB3B:fontsize=56:font='Anton':box=1:boxcolor=#E91E63@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,26.484\\,27.884)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 30.984,
+    "overlay_count": 5
+  }
+}

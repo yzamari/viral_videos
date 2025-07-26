@@ -1,0 +1,66 @@
+{
+  "session_id": "israeli_pm_ep5_rabin1",
+  "session_dir": "outputs/israeli_pm_ep5_rabin1",
+  "subdirs": {
+    "logs": "outputs/israeli_pm_ep5_rabin1/logs",
+    "scripts": "outputs/israeli_pm_ep5_rabin1/scripts",
+    "audio": "outputs/israeli_pm_ep5_rabin1/audio",
+    "video_clips": "outputs/israeli_pm_ep5_rabin1/video_clips",
+    "images": "outputs/israeli_pm_ep5_rabin1/images",
+    "ai_agents": "outputs/israeli_pm_ep5_rabin1/ai_agents",
+    "discussions": "outputs/israeli_pm_ep5_rabin1/discussions",
+    "final_output": "outputs/israeli_pm_ep5_rabin1/final_output",
+    "metadata": "outputs/israeli_pm_ep5_rabin1/metadata",
+    "comprehensive_logs": "outputs/israeli_pm_ep5_rabin1/comprehensive_logs",
+    "temp_files": "outputs/israeli_pm_ep5_rabin1/temp_files",
+    "fallback_content": "outputs/israeli_pm_ep5_rabin1/fallback_content",
+    "debug_info": "outputs/israeli_pm_ep5_rabin1/debug_info",
+    "performance_metrics": "outputs/israeli_pm_ep5_rabin1/performance_metrics",
+    "user_configs": "outputs/israeli_pm_ep5_rabin1/user_configs",
+    "error_logs": "outputs/israeli_pm_ep5_rabin1/error_logs",
+    "success_metrics": "outputs/israeli_pm_ep5_rabin1/success_metrics",
+    "decisions": "outputs/israeli_pm_ep5_rabin1/decisions",
+    "subtitles": "outputs/israeli_pm_ep5_rabin1/subtitles",
+    "overlays": "outputs/israeli_pm_ep5_rabin1/overlays",
+    "agent_discussions": "outputs/israeli_pm_ep5_rabin1/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-24T23:23:34.276210",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Marvel Comics: HERO PANEL! Young Rabin with Star of David shield! Transformation sequence: Soldier panels morph to PM! ENTEBBE RESCUE: 'COMMANDOS ASSEMBLE!' Sky-drop action lines! WHOOSH! Economic crisis panel: SNAP! Half the economy dusts away! SCANDAL REVEAL: Bank account papers with SHOCK effects! 'BETRAYAL!' Resignation panel: Shield CLANGS to ground. Speech bubble: 'I'll be back!' Post-credit panel: Begin rising with evil grin. Timeline SPLIT panel: 'What If...?' Future assassination shadow. Editor's box: 'To be continued... tragically.'",
+        "platform": "instagram",
+        "duration": 65
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

@@ -1,0 +1,66 @@
+{
+  "session_id": "israeli_pm_ep6_begin",
+  "session_dir": "outputs/israeli_pm_ep6_begin",
+  "subdirs": {
+    "logs": "outputs/israeli_pm_ep6_begin/logs",
+    "scripts": "outputs/israeli_pm_ep6_begin/scripts",
+    "audio": "outputs/israeli_pm_ep6_begin/audio",
+    "video_clips": "outputs/israeli_pm_ep6_begin/video_clips",
+    "images": "outputs/israeli_pm_ep6_begin/images",
+    "ai_agents": "outputs/israeli_pm_ep6_begin/ai_agents",
+    "discussions": "outputs/israeli_pm_ep6_begin/discussions",
+    "final_output": "outputs/israeli_pm_ep6_begin/final_output",
+    "metadata": "outputs/israeli_pm_ep6_begin/metadata",
+    "comprehensive_logs": "outputs/israeli_pm_ep6_begin/comprehensive_logs",
+    "temp_files": "outputs/israeli_pm_ep6_begin/temp_files",
+    "fallback_content": "outputs/israeli_pm_ep6_begin/fallback_content",
+    "debug_info": "outputs/israeli_pm_ep6_begin/debug_info",
+    "performance_metrics": "outputs/israeli_pm_ep6_begin/performance_metrics",
+    "user_configs": "outputs/israeli_pm_ep6_begin/user_configs",
+    "error_logs": "outputs/israeli_pm_ep6_begin/error_logs",
+    "success_metrics": "outputs/israeli_pm_ep6_begin/success_metrics",
+    "decisions": "outputs/israeli_pm_ep6_begin/decisions",
+    "subtitles": "outputs/israeli_pm_ep6_begin/subtitles",
+    "overlays": "outputs/israeli_pm_ep6_begin/overlays",
+    "agent_discussions": "outputs/israeli_pm_ep6_begin/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-24T23:38:06.033111",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Marvel Comics epic: UNDERGROUND PANEL! Begin rises, British 'WANTED' posters swirl! Thought bubble: 'First they ignore you...' CAMP DAVID SUMMIT: Wakanda-style meeting! Sadat and Carter in council poses. PEACE SIGNING: Slow-mo panels, doves with pyramid/star wings! FLUTTER! Dark turn panel: LEBANON WAR CHAOS! Powers out of control! Depression spiral panels: Thor-like breakdown sequence. Nobel Prize MELTS in hands! Cave hermit panel: Alone in darkness. Caption: 'From terrorist to peacemaker to...' Post-credit: Map panel shows settlements spreading like symbiote! CREEP!",
+        "platform": "instagram",
+        "duration": 65
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

@@ -1,0 +1,68 @@
+{
+  "hook": {
+    "text": "Maryam: \"Citizens pioneer innovative water collection methods.",
+    "type": "ai_generated",
+    "duration_seconds": 3
+  },
+  "segments": [
+    {
+      "text": "Maryam reporting live: Citizens are pioneering innovative water collection methods.",
+      "duration": 5,
+      "character": "Maryam"
+    },
+    {
+      "text": "Cutaway to Mahmoud, collecting family tears in buckets while watching water bills.",
+      "duration": 5,
+      "character": "Narrator"
+    },
+    {
+      "text": "Wife (Lois voice): Mahmoud, this is completely ridiculous!",
+      "duration": 5,
+      "character": "Wife"
+    },
+    {
+      "text": "Mahmoud: Shh, cry harder, we need to shower now!",
+      "duration": 5,
+      "character": "Mahmoud"
+    },
+    {
+      "text": "Cut to Quagmire-style neighbor: Giggity, I am selling my sweat!",
+      "duration": 5,
+      "character": "Neighbor"
+    },
+    {
+      "text": "Maryam deadpan: The government now declares tears tax-deductible.",
+      "duration": 5,
+      "character": "Maryam"
+    },
+    {
+      "text": "Visuals of new tear collection centers opening up.",
+      "duration": 5,
+      "character": "Narrator"
+    },
+    {
+      "text": "Persian slogan displayed: 'Ashk-haye Melli' (National Tears).",
+      "duration": 5,
+      "character": "Narrator"
+    }
+  ],
+  "cta": {
+    "text": "Share this message - every voice matters!",
+    "visual": "Share button animation",
+    "action": "share"
+  },
+  "total_duration": 60,
+  "platform": "youtube",
+  "created_at": "2025-07-25T09:20:49.603149",
+  "structure": {
+    "hook_duration": 3,
+    "content_duration": 55,
+    "cta_duration": 2
+  },
+  "full_text": "Maryam: \"Citizens pioneer innovative water collection methods. Maryam reporting live: Citizens are pioneering innovative water collection methods. Cutaway to Mahmoud, collecting family tears in buckets while watching water bills. Wife (Lois voice): Mahmoud, this is completely ridiculous! Mahmoud: Shh, cry harder, we need to shower now! Cut to Quagmire-style neighbor: Giggity, I am selling my sweat! Maryam deadpan: The government now declares tears tax-deductible. Visuals of new tear collection centers opening up. Persian slogan displayed: 'Ashk-haye Melli' (National Tears). Share this message - every voice matters!",
+  "viral_elements": {
+    "shareability_score": 0.5,
+    "emotional_arc": "complex",
+    "surprise_moments": []
+  }
+}

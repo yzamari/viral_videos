@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 6,
+  "hook_text": "**SPIDER-MAN SWINGS IN! Lapid: \u201cJust happy to be HERE!\u201d**",
+  "cta_text": "but with RING LIGHT!\" CLICK! Share this important message!",
+  "style_decision": {
+    "primary_style": "comic",
+    "color_palette": "vibrant",
+    "reasoning": "The prompt explicitly references 'Marvel Comics cameo', 'web-swinging panels', 'SCANNER-STYLE!', 'DAVID vs GOLIATH', and 'SURPRISED PIKACHU FACE panel'. These are all strong indicators of a comic book visual style, which is also highly engaging on Instagram. Vibrant colors are a natural fit for this energetic and pop-culture-infused content.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_left",
+    "positioning_strategy": "dynamic",
+    "reasoning": "The content is highly visual and fast-paced, with many distinct elements. Placing the primary overlay on the bottom left allows it to be present without obscuring key action or dialogue in most panels. A dynamic strategy is chosen because the exact placement might need minor adjustments between the numerous quick cuts to ensure readability and avoid clashes with specific imagery, while still generally adhering to the bottom left.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i /var/folders/p9/8_jtm3l55v921154bg2xg5vr0000gn/T/tmpsovpqm3m.mp4 -vf drawtext=text='DEMOCRACY DIES... \ud83d\udca1':fontcolor=#FFFFFF:fontsize=50:font='Trebuchet-Bold':box=1:boxcolor=#2C3E50@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,27.0\\,30.0),drawtext=text='but with':fontcolor=#FFD700:fontsize=56:font='Anton':box=1:boxcolor=#8A2BE2@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,25.833333\\,27.233333),drawtext=text='RING LIGHT':fontcolor=#FFD700:fontsize=56:font='Anton':box=1:boxcolor=#8A2BE2@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,27.333333\\,28.733333),drawtext=text='CLICK Share':fontcolor=#FFD700:fontsize=56:font='Anton':box=1:boxcolor=#8A2BE2@0.7:boxborderw=3:x=(w-text_w)/2:y=1560:enable=between(t\\,28.833333\\,30.233333000000002),drawtext=text='this important':fontcolor=#FFD700:fontsize=56:font='Anton':box=1:boxcolor=#8A2BE2@0.7:boxborderw=3:x=(w-text_w)/2:y=1480:enable=between(t\\,30.333333\\,31.733333000000002),drawtext=text='message':fontcolor=#FFD700:fontsize=56:font='Anton':box=1:boxcolor=#8A2BE2@0.7:boxborderw=3:x=(w-text_w)/2:y=1400:enable=between(t\\,31.833333\\,33.233333) -c:a copy -y outputs/israeli_pm_ep16_lapid/temp_files/timed_overlays_tmpsovpqm3m.mp4",
+  "filter_complex": "drawtext=text='DEMOCRACY DIES... \ud83d\udca1':fontcolor=#FFFFFF:fontsize=50:font='Trebuchet-Bold':box=1:boxcolor=#2C3E50@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,27.0\\,30.0),drawtext=text='but with':fontcolor=#FFD700:fontsize=56:font='Anton':box=1:boxcolor=#8A2BE2@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,25.833333\\,27.233333),drawtext=text='RING LIGHT':fontcolor=#FFD700:fontsize=56:font='Anton':box=1:boxcolor=#8A2BE2@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,27.333333\\,28.733333),drawtext=text='CLICK Share':fontcolor=#FFD700:fontsize=56:font='Anton':box=1:boxcolor=#8A2BE2@0.7:boxborderw=3:x=(w-text_w)/2:y=1560:enable=between(t\\,28.833333\\,30.233333000000002),drawtext=text='this important':fontcolor=#FFD700:fontsize=56:font='Anton':box=1:boxcolor=#8A2BE2@0.7:boxborderw=3:x=(w-text_w)/2:y=1480:enable=between(t\\,30.333333\\,31.733333000000002),drawtext=text='message':fontcolor=#FFD700:fontsize=56:font='Anton':box=1:boxcolor=#8A2BE2@0.7:boxborderw=3:x=(w-text_w)/2:y=1400:enable=between(t\\,31.833333\\,33.233333)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 31.833333,
+    "overlay_count": 6
+  }
+}

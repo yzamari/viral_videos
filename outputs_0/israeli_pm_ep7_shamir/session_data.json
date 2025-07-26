@@ -1,0 +1,15 @@
+{
+  "session_id": "israeli_pm_ep7_shamir",
+  "mission": "Marvel Comics: TINY TITAN PANEL! Shamir ant-sized, speech bubble: 'Size matters NOT!' FLASHBACK PANELS: Underground fighter memories, Winter Soldier style! Musical chairs sequence: PM throne SWITCHING with Peres! SWAP! INTIFADA PANELS: Stones vs Tanks! David vs GOLIATH action! CLANG! Madrid Conference: Being DRAGGED to peace talks! 'NOOOO!' Bush Sr. looms as MEGA-THREAT! 'Your loans... GONE!' Immovable object panel: 'NOT ONE INCH!' meets unstoppable force! CRASH! Defeat panel: Votes scatter like dust. Final panel: 'Terror? I INVENTED it!' MIC DROP! BOOM!",
+  "duration_seconds": 65,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.ENTERTAINMENT",
+  "visual_style": "marvel comics",
+  "tone": "darkly_humorous",
+  "script_processing": {
+    "original_script": "Shamir ant-sized, speech bubble: 'Size matters NOT!' FLASHBACK PANELS: Underground fighter memories, Winter Soldier style! Musical chairs sequence: PM throne SWITCHING with Peres! SWAP! INTIFADA PANELS: Stones versus Tanks! David versus GOLIATH action! CLANG! Madrid Conference: Being DRAGGED to peace talks! 'NOOOO!' Bush Sr. looms as MEGA-THREAT! 'Your loans... GONE!' Immovable object panel: 'NOT ONE INCH!' meets unstoppable force! CRASH! Defeat panel: Votes scatter like dust. 'Terror? I INVENTED it!' MIC DROP! BOOM!",
+    "final_script": "Shamir, ant-sized, declared, 'Size matters not!'  Flashback: Underground fighting memories, brutal and swift, like the Winter Soldier.  A musical chairs sequence showed the Prime Minister's throne switching with Peres's; a dramatic swap!  Intifada panels flashed: stones against tanks, David versus Goliath; a clang of desperate conflict.  He was dragged to the Madrid Conference, a desperate plea escaping him, 'No!'  Bush Senior loomed, a mega-threat.  'Your loans... gone!'  An immovable object panel declared, 'Not one inch!'  It met an unstoppable force; a catastrophic crash.  Defeat: votes scattered like dust.  He declared, his voice booming, 'Terror? I invented it!'  A mic drop.  BOOM!",
+    "word_count": 120,
+    "tts_ready": false
+  }
+}

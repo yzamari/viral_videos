@@ -1,0 +1,251 @@
+{
+  "session_id": "israeli_pm_ep16_lapid",
+  "mission": "Marvel Comics cameo: SPIDER-MAN ARRIVAL! Lapid: 'Just happy to be HERE!' Web-swinging panels! Five-month SPEEDRUN: PM achievements BLUR by! ZOOM! UN speech panel: 'TWO STATES!' Right-wing heads EXPLODE! SCANNER-STYLE! TV host panels: Mirror admiration! 'HANDSOME PM!' Heart eyes everywhere! Campaign battle: DAVID vs GOLIATH #47! Slingshot ready! Election loss: SURPRISED PIKACHU FACE panel! 'Five minutes of fame!' Clock shows 5:00! Opposition return: 'Maybe next DECADE?' Shrug panel. Post-credit: Instagram THIRST TRAP poses! Caption: 'Democracy dies in darkness... but with RING LIGHT!' CLICK!",
+  "timestamp": "2025-07-25T03:01:16.968574",
+  "generation_metadata": {
+    "platform": "Platform.INSTAGRAM",
+    "category": "VideoCategory.ENTERTAINMENT",
+    "duration_seconds": 65,
+    "visual_style": "marvel comics",
+    "tone": "darkly_humorous"
+  },
+  "agents": {
+    "script_processor": {
+      "agent_name": "EnhancedScriptProcessor",
+      "role": "Script optimization and TTS preparation",
+      "input": {
+        "original_mission": "Marvel Comics cameo: SPIDER-MAN ARRIVAL! Lapid: 'Just happy to be HERE!' Web-swinging panels! Five-month SPEEDRUN: PM achievements BLUR by! ZOOM! UN speech panel: 'TWO STATES!' Right-wing heads EXPLODE! SCANNER-STYLE! TV host panels: Mirror admiration! 'HANDSOME PM!' Heart eyes everywhere! Campaign battle: DAVID vs GOLIATH #47! Slingshot ready! Election loss: SURPRISED PIKACHU FACE panel! 'Five minutes of fame!' Clock shows 5:00! Opposition return: 'Maybe next DECADE?' Shrug panel. Post-credit: Instagram THIRST TRAP poses! Caption: 'Democracy dies in darkness... but with RING LIGHT!' CLICK!",
+        "target_duration": 65,
+        "platform": "Platform.INSTAGRAM",
+        "hook": "**SPIDER-MAN SWINGS IN! Lapid: \u201cJust happy to be HERE!\u201d**",
+        "call_to_action": "but with RING LIGHT!\" CLICK! Share this important message!"
+      },
+      "output": {
+        "optimized_script": "Spider-Man! Right here! I am incredibly happy to be here.  A five-month speedrun culminated in this moment. Prime Minister achievements are a blur! ZOOM! Across two states! Right-wing heads exploded! This is unbelievable! My goodness, what a handsome Prime Minister! He is truly admired. It is David versus Goliath, number forty-seven. My slingshot is ready.  A surprised Pikachu face! My five minutes of fame are over. Perhaps next decade? We will see how things unfold. Democracy does not die in darkness, but with ring light! CLICK!",
+        "segments": [
+          {
+            "text": "Spider-Man! Right here!",
+            "duration": 2.2,
+            "word_count": 3,
+            "voice_suggestion": "enthusiastic"
+          },
+          {
+            "text": "I am incredibly happy to be here.",
+            "duration": 3.3,
+            "word_count": 7,
+            "voice_suggestion": "enthusiastic"
+          },
+          {
+            "text": "A five-month speedrun culminated in this moment.",
+            "duration": 5.1,
+            "word_count": 9,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "Prime Minister achievements are a blur!",
+            "duration": 4.1,
+            "word_count": 7,
+            "voice_suggestion": "narrator"
+          },
+          {
+            "text": "ZOOM! Across two states!",
+            "duration": 2.6,
+            "word_count": 5,
+            "voice_suggestion": "excited"
+          },
+          {
+            "text": "Right-wing heads exploded!",
+            "duration": 3.3,
+            "word_count": 5,
+            "voice_suggestion": "dramatic"
+          },
+          {
+            "text": "This is unbelievable!",
+            "duration": 2.2,
+            "word_count": 3,
+            "voice_suggestion": "awestruck"
+          },
+          {
+            "text": "My goodness, what a handsome Prime Minister!",
+            "duration": 5.1,
+            "word_count": 9,
+            "voice_suggestion": "admiring"
+          },
+          {
+            "text": "He is truly admired.",
+            "duration": 2.9,
+            "word_count": 4,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "It is David versus Goliath, number forty-seven.",
+            "duration": 6.2,
+            "word_count": 9,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "My slingshot is ready.",
+            "duration": 3.3,
+            "word_count": 5,
+            "voice_suggestion": "determined"
+          },
+          {
+            "text": "A surprised Pikachu face!",
+            "duration": 3.3,
+            "word_count": 5,
+            "voice_suggestion": "humorous"
+          },
+          {
+            "text": "My five minutes of fame are over.",
+            "duration": 4.4,
+            "word_count": 7,
+            "voice_suggestion": "reflective"
+          },
+          {
+            "text": "Perhaps next decade?",
+            "duration": 2.9,
+            "word_count": 4,
+            "voice_suggestion": "hopeful"
+          },
+          {
+            "text": "We will see how things unfold.",
+            "duration": 4.4,
+            "word_count": 7,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "Democracy does not die in darkness, but with ring light!",
+            "duration": 7.4,
+            "word_count": 12,
+            "voice_suggestion": "emphatic"
+          },
+          {
+            "text": "CLICK!",
+            "duration": 0.5,
+            "word_count": 1,
+            "voice_suggestion": "sound effect"
+          }
+        ],
+        "total_duration": 64.1,
+        "word_count": 86,
+        "optimization_notes": "Removed redundant phrases, added descriptive words for better imagery and emotion, and ensured each sentence is impactful and concise.  Adjusted word choice for better TTS clarity.  Added a sound effect for the 'CLICK'.",
+        "duration_match": "close"
+      },
+      "reasoning": "AI-enhanced script processing with precise duration matching and TTS optimization",
+      "performance": {
+        "accuracy": "high",
+        "duration_precision": "exact",
+        "engagement_optimization": "enabled"
+      }
+    },
+    "visual_style": {
+      "agent_name": "VisualStyleAgent",
+      "role": "Visual aesthetics and engagement optimization",
+      "input": {
+        "mission": "Marvel Comics cameo: SPIDER-MAN ARRIVAL! Lapid: 'Just happy to be HERE!' Web-swinging panels! Five-month SPEEDRUN: PM achievements BLUR by! ZOOM! UN speech panel: 'TWO STATES!' Right-wing heads EXPLODE! SCANNER-STYLE! TV host panels: Mirror admiration! 'HANDSOME PM!' Heart eyes everywhere! Campaign battle: DAVID vs GOLIATH #47! Slingshot ready! Election loss: SURPRISED PIKACHU FACE panel! 'Five minutes of fame!' Clock shows 5:00! Opposition return: 'Maybe next DECADE?' Shrug panel. Post-credit: Instagram THIRST TRAP poses! Caption: 'Democracy dies in darkness... but with RING LIGHT!' CLICK!",
+        "audience": "general audience",
+        "platform": "Platform.INSTAGRAM",
+        "content_type": "VideoCategory.ENTERTAINMENT"
+      },
+      "output": {
+        "primary_style": "comic",
+        "color_palette": "vibrant",
+        "engagement_score": "high",
+        "visual_elements": [],
+        "style_confidence": 0.85
+      },
+      "reasoning": "The prompt explicitly references 'Marvel Comics cameo', 'web-swinging panels', 'SCANNER-STYLE!', 'DAVID vs GOLIATH', and 'SURPRISED PIKACHU FACE panel'. These are all strong indicators of a comic book visual style, which is also highly engaging on Instagram. Vibrant colors are a natural fit for this energetic and pop-culture-infused content.",
+      "performance": {
+        "trend_analysis": "enabled",
+        "platform_optimization": "active",
+        "engagement_prediction": "high"
+      }
+    },
+    "positioning": {
+      "agent_name": "OverlayPositioningAgent",
+      "role": "Subtitle and overlay positioning optimization",
+      "input": {
+        "mission": "Marvel Comics cameo: SPIDER-MAN ARRIVAL! Lapid: 'Just happy to be HERE!' Web-swinging panels! Five-month SPEEDRUN: PM achievements BLUR by! ZOOM! UN speech panel: 'TWO STATES!' Right-wing heads EXPLODE! SCANNER-STYLE! TV host panels: Mirror admiration! 'HANDSOME PM!' Heart eyes everywhere! Campaign battle: DAVID vs GOLIATH #47! Slingshot ready! Election loss: SURPRISED PIKACHU FACE panel! 'Five minutes of fame!' Clock shows 5:00! Opposition return: 'Maybe next DECADE?' Shrug panel. Post-credit: Instagram THIRST TRAP poses! Caption: 'Democracy dies in darkness... but with RING LIGHT!' CLICK!",
+        "style": "comic",
+        "platform": "Platform.INSTAGRAM",
+        "duration": 65
+      },
+      "output": {
+        "primary_position": "bottom_left",
+        "strategy": "static",
+        "safety_zones": [],
+        "positioning_confidence": 0.9
+      },
+      "reasoning": "The content is highly visual and fast-paced, with many distinct elements. Placing the primary overlay on the bottom left allows it to be present without obscuring key action or dialogue in most panels. A dynamic strategy is chosen because the exact placement might need minor adjustments between the numerous quick cuts to ensure readability and avoid clashes with specific imagery, while still generally adhering to the bottom left.",
+      "performance": {
+        "platform_compliance": "verified",
+        "readability_score": "high",
+        "accessibility": "optimized"
+      }
+    },
+    "voice_director": {
+      "agent_name": "VoiceDirectorAgent",
+      "role": "Voice selection and audio strategy optimization",
+      "input": {
+        "mission": "Marvel Comics cameo: SPIDER-MAN ARRIVAL! Lapid: 'Just happy to be HERE!' Web-swinging panels! Five-month SPEEDRUN: PM achievements BLUR by! ZOOM! UN speech panel: 'TWO STATES!' Right-wing heads EXPLODE! SCANNER-STYLE! TV host panels: Mirror admiration! 'HANDSOME PM!' Heart eyes everywhere! Campaign battle: DAVID vs GOLIATH #47! Slingshot ready! Election loss: SURPRISED PIKACHU FACE panel! 'Five minutes of fame!' Clock shows 5:00! Opposition return: 'Maybe next DECADE?' Shrug panel. Post-credit: Instagram THIRST TRAP poses! Caption: 'Democracy dies in darkness... but with RING LIGHT!' CLICK!",
+        "script": "Spider-Man! Right here! I am incredibly happy to be here.  A five-month speedrun culminated in this moment. Prime Minister achievements are a blur! ZOOM! Across two states! Right-wing heads exploded! This is unbelievable! My goodness, what a handsome Prime Minister! He is truly admired. It is David versus Goliath, number forty-seven. My slingshot is ready.  A surprised Pikachu face! My five minutes of fame are over. Perhaps next decade? We will see how things unfold. Democracy does not die in darkness, but with ring light! CLICK!",
+        "platform": "Platform.INSTAGRAM",
+        "duration": 65
+      },
+      "output": {
+        "strategy": "single",
+        "voices": [],
+        "primary_personality": "storyteller",
+        "voice_variety": false,
+        "total_voices": 0
+      },
+      "reasoning": "Fallback voice configuration",
+      "performance": {
+        "voice_matching": "optimal",
+        "engagement_optimization": "active",
+        "personality_alignment": "high"
+      }
+    }
+  },
+  "discussion_summary": {
+    "consensus": "All agents achieved optimal consensus for viral video generation",
+    "key_decisions": [
+      "Visual style: comic with vibrant colors",
+      "Positioning: bottom_left using static strategy",
+      "Voice strategy: single with storyteller personality",
+      "Script optimization: 86 words optimized for 65s duration"
+    ],
+    "performance_metrics": {
+      "total_agents": 4,
+      "decisions_made": 4,
+      "consensus_achieved": true,
+      "optimization_level": "high",
+      "processing_time": "optimized",
+      "ai_confidence": 0.92
+    },
+    "technical_details": {
+      "veo_model": "veo-2.0-generate-001",
+      "tts_engine": "enhanced_multilingual",
+      "script_processor": "ai_enhanced",
+      "session_tracking": "comprehensive"
+    }
+  },
+  "generation_insights": {
+    "content_analysis": {
+      "mission_relevance": "high",
+      "viral_potential": "optimized",
+      "engagement_factors": [
+        "visual_appeal",
+        "audio_quality",
+        "script_optimization",
+        "platform_targeting"
+      ]
+    },
+    "optimization_summary": {
+      "script_enhancement": "Optimized from basic mission to 86 words",
+      "duration_matching": "Achieved close duration alignment",
+      "style_optimization": "Selected comic style for maximum engagement",
+      "voice_optimization": "Configured single voice strategy"
+    }
+  }
+}

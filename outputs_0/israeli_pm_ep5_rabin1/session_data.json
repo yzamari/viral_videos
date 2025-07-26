@@ -1,0 +1,15 @@
+{
+  "session_id": "israeli_pm_ep5_rabin1",
+  "mission": "Marvel Comics: HERO PANEL! Young Rabin with Star of David shield! Transformation sequence: Soldier panels morph to PM! ENTEBBE RESCUE: 'COMMANDOS ASSEMBLE!' Sky-drop action lines! WHOOSH! Economic crisis panel: SNAP! Half the economy dusts away! SCANDAL REVEAL: Bank account papers with SHOCK effects! 'BETRAYAL!' Resignation panel: Shield CLANGS to ground. Speech bubble: 'I'll be back!' Post-credit panel: Begin rising with evil grin. Timeline SPLIT panel: 'What If...?' Future assassination shadow. Editor's box: 'To be continued... tragically.'",
+  "duration_seconds": 65,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.ENTERTAINMENT",
+  "visual_style": "marvel comics",
+  "tone": "darkly_humorous",
+  "script_processing": {
+    "original_script": "Behold! The young Rabin, a beacon of hope!  His Star of David shield gleams brightly. From soldier to statesman, a remarkable metamorphosis occurs!  A new era begins now. Entebbe Rescue! Commandos assemble!  Sky-drop action ignites the night! WHOOSH! The nation faces an economic crisis! SNAP! Half the prosperity vanishes like smoke. Scandal revealed! Bank account papers flutter down! SHOCK effects ripple through the halls. BETRAYAL! The shield clangs to the ground.  'I will return,' he vows. Post-credit: He begins his rise with an evil grin.  A dark future beckons. Timeline split! 'What If...?' A future assassination shadow looms large.  To be continued tragically.",
+    "final_script": "Behold, the young Rabin! A beacon of hope, his Star of David shield gleaming brightly. From soldier to statesman, a remarkable transformation unfolds. A new era dawns. Entebbe! Commandos launch a daring night raid. The nation faces a crippling economic crisis; prosperity vanishes. Scandal erupts; betrayal is revealed. His shield falls; 'I will return,' he vows.  Post-credit: A chilling grin; a dark future looms.  A future assassination casts a long shadow. To be continued...",
+    "word_count": 82,
+    "tts_ready": false
+  }
+}

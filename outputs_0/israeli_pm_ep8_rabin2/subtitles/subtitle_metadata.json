@@ -1,0 +1,33 @@
+{
+  "total_segments": 40,
+  "total_duration": 37.89600000000001,
+  "script_content": "Marvel Comics returns: Ice Thaw Panel! Rabin, back from Oslo, calls for peace.  A historic handshake, yet discomfort lines etched deep.  Peace panels show construction, wrenches flying; CLANG! BANG!  'TRAITOR!' chants echo. Black ooze stains the ground.  A rally panel displays peace song notes.  November 4, 1995.  Three shots ring out! BANG! BANG! BANG!  The shield falls.  'Et tu, Yigal?' Rabin, fading in the hospital, whispers, 'I am... Peace Man.' The nation fractured. An empty suit stands in ceremony. Legacy: It is complicated.",
+  "audio_files_used": [
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_0.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_1.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_2.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_3.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_4.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_5.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_6.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_7.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_8.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_9.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_10.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_11.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_12.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_13.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_14.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_15.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_16.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_17.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_18.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_19.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_20.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_21.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_22.mp3",
+    "outputs/israeli_pm_ep8_rabin2/audio/audio_segment_23.mp3"
+  ],
+  "target_duration": 37.89600000000001,
+  "capped_to_target": false
+}
