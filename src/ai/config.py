@@ -5,8 +5,7 @@ from typing import Dict, Optional, Any
 from dataclasses import dataclass, field
 import os
 import json
-from .factory import AIServiceType, AIProvider
-from .interfaces.base import AIServiceConfig
+from .interfaces.base import AIServiceConfig, AIProvider, AIServiceType
 
 @dataclass
 class AIConfiguration:
@@ -57,9 +56,14 @@ class AIConfiguration:
         
         # Set default providers
         config.default_providers[AIServiceType.TEXT_GENERATION] = AIProvider.GEMINI
+        config.default_providers[AIServiceType.IMAGE_GENERATION] = AIProvider.GEMINI
+        config.default_providers[AIServiceType.VIDEO_GENERATION] = AIProvider.GEMINI  # VEO
+        config.default_providers[AIServiceType.SPEECH_SYNTHESIS] = AIProvider.GOOGLE
         
         # Load API keys from environment
-        config.api_keys[AIProvider.GEMINI] = os.getenv('GEMINI_API_KEY')
+        config.api_keys[AIProvider.GEMINI] = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+        config.api_keys[AIProvider.GOOGLE] = os.getenv('GOOGLE_API_KEY')
+        config.api_keys[AIProvider.VERTEX] = os.getenv('GOOGLE_API_KEY')
         
         return config
     
@@ -94,5 +98,9 @@ class AIConfiguration:
             (AIServiceType.TEXT_GENERATION, AIProvider.GEMINI): "gemini-1.5-flash",
             (AIServiceType.TEXT_GENERATION, AIProvider.OPENAI): "gpt-4-turbo",
             (AIServiceType.TEXT_GENERATION, AIProvider.ANTHROPIC): "claude-3-opus",
+            (AIServiceType.IMAGE_GENERATION, AIProvider.GEMINI): "gemini-pro-vision",
+            (AIServiceType.IMAGE_GENERATION, AIProvider.VERTEX): "imagegeneration@002",
+            (AIServiceType.VIDEO_GENERATION, AIProvider.GEMINI): "veo",
+            (AIServiceType.SPEECH_SYNTHESIS, AIProvider.GOOGLE): "en-US-Neural2-J",
         }
         return defaults.get((service_type, provider), "default")

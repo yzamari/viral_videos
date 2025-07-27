@@ -235,6 +235,46 @@ class LayoutConfig:
 
 
 @dataclass
+class AudioConfig:
+    """Audio generation and validation parameters"""
+    # Duration tolerance
+    duration_tolerance_percent: float = 5.0  # Accept ±5% duration variance
+    
+    # Segment duration constraints
+    min_segment_duration: float = 2.0       # Minimum 2 seconds per segment
+    max_segment_duration: float = 8.0       # Maximum 8 seconds per segment
+    
+    # Padding between segments
+    padding_between_segments: float = 0.3   # 300ms pause between segments
+    
+    # Quality thresholds
+    min_quality_score: float = 0.6          # Minimum quality score to proceed
+    block_on_duration_failure: bool = True  # Block generation if duration fails
+    
+    # Regeneration settings
+    max_regeneration_attempts: int = 3      # Max attempts to regenerate audio
+    speech_rate_adjustment_step: float = 0.1  # Adjust speech rate by 10% per retry
+    
+    # Sound effect handling
+    sound_effect_patterns: list = field(default_factory=lambda: [
+        r'\b(POOF|WHOOSH|BANG|POW|ZAP|BOOM|CRASH|SNAP|KA-POW)\b',
+        r'\b(whoosh|poof|bang|pow|zap|boom|crash|snap)\b',
+        r'\*[^*]+\*',  # Anything in asterisks like *explosion*
+    ])
+    min_sound_effect_duration: float = 0.5  # Minimum duration for sound effects
+    
+    # Voice speed settings by language
+    voice_speed_multipliers: Dict[str, float] = field(default_factory=lambda: {
+        'en-US': 1.0,
+        'en-GB': 0.95,
+        'en-IN': 1.05,
+        'he': 0.9,      # Hebrew often needs slower speech
+        'ar': 0.9,      # Arabic too
+        'default': 1.0
+    })
+
+
+@dataclass
 class VideoGenerationConfig:
     """Master configuration for video generation"""
     encoding: VideoEncodingConfig = field(default_factory=VideoEncodingConfig)
@@ -242,6 +282,7 @@ class VideoGenerationConfig:
     animation: AnimationTimingConfig = field(default_factory=AnimationTimingConfig)
     default_text: DefaultTextConfig = field(default_factory=DefaultTextConfig)
     layout: LayoutConfig = field(default_factory=LayoutConfig)
+    audio: AudioConfig = field(default_factory=AudioConfig)
     
     def get_fps(self, platform: str) -> int:
         """Get FPS for platform"""

@@ -2,18 +2,11 @@
 AI Service Factory & Registry
 """
 from typing import Dict, Type, Optional, List
-from enum import Enum
-from .interfaces.base import AIService, AIProvider, AIServiceConfig
+from .interfaces.base import AIService, AIProvider, AIServiceConfig, AIServiceType
 from .interfaces.text_generation import TextGenerationService
 
 # Provider implementations
 from .providers.gemini.text_generation import GeminiTextService
-
-class AIServiceType(Enum):
-    TEXT_GENERATION = "text_generation"
-    VIDEO_GENERATION = "video_generation"
-    AUDIO_GENERATION = "audio_generation"
-    IMAGE_GENERATION = "image_generation"
 
 class AIServiceFactory:
     """Factory for creating AI service instances"""
@@ -61,3 +54,9 @@ class AIServiceFactory:
         if service_type not in cls._registry:
             return []
         return list(cls._registry[service_type].keys())
+    
+    @classmethod
+    def initialize_providers(cls):
+        """Initialize all providers - call this after factory is loaded"""
+        from .providers import register_all_providers
+        register_all_providers()

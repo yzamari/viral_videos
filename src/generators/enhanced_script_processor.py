@@ -40,6 +40,11 @@ class EnhancedScriptProcessor:
         
         # Initialize text validator
         self.text_validator = TextValidator()
+        
+        # Import video config for minimum segment duration
+        from ..config import video_config
+        self.min_segment_duration = video_config.audio.min_segment_duration
+        self.max_segment_duration = video_config.audio.max_segment_duration
 
         # TTS optimization rules by language
         self.language_rules = {
@@ -374,6 +379,12 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                     "voice_suggestion": None  # Will be determined by AI
                 })
             
+            # Apply minimum segment duration thresholds
+            segments = self._apply_minimum_segment_durations(segments)
+            
+            # Handle sound effects intelligently
+            segments = self._handle_sound_effects_in_segments(segments)
+            
             # Validate the reprocessed script
             validation = self.text_validator.validate_text(
                 optimized_text,
@@ -473,6 +484,12 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                     "voice_suggestion": None  # Will be determined by AI
                 })
                 total_words += sentence_words
+            
+            # Apply minimum segment duration thresholds
+            segments = self._apply_minimum_segment_durations(segments)
+            
+            # Handle sound effects intelligently
+            segments = self._handle_sound_effects_in_segments(segments)
             
             # If no valid sentences, create single segment
             if not segments:
@@ -590,6 +607,9 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 "voice_suggestion": "storyteller"
             })
             total_words += sentence_words
+        
+        # Apply minimum segment duration thresholds
+        segments = self._apply_minimum_segment_durations(segments)
         
         total_duration = sum(seg['duration'] for seg in segments)
         
@@ -1111,3 +1131,140 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 'needs_adjustment': True,
                 'error': str(e)
             }
+    
+    def _apply_minimum_segment_durations(self, segments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Apply minimum segment duration thresholds by combining short segments"""
+        logger.info(f"🕒 Applying minimum segment duration threshold: {self.min_segment_duration}s")
+        
+        if not segments:
+            return segments
+        
+        # First pass: identify segments that are too short
+        segments_needing_merge = []
+        for i, segment in enumerate(segments):
+            if segment['duration'] < self.min_segment_duration:
+                segments_needing_merge.append(i)
+                logger.info(f"   Segment {i+1}: {segment['duration']:.1f}s < {self.min_segment_duration}s (too short)")
+        
+        if not segments_needing_merge:
+            logger.info("✅ All segments meet minimum duration requirement")
+            return segments
+        
+        # Second pass: merge short segments with adjacent ones
+        merged_segments = []
+        i = 0
+        
+        while i < len(segments):
+            current_segment = segments[i].copy()
+            
+            # If this segment is too short, try to merge with next segment(s)
+            if current_segment['duration'] < self.min_segment_duration:
+                combined_text = current_segment['text']
+                combined_duration = current_segment['duration']
+                combined_words = current_segment['word_count']
+                segments_merged = 1
+                
+                # Keep merging until we reach minimum duration or run out of segments
+                while (combined_duration < self.min_segment_duration and 
+                       i + segments_merged < len(segments) and
+                       combined_duration < self.max_segment_duration):
+                    next_segment = segments[i + segments_merged]
+                    
+                    # Check if merging would exceed max duration
+                    if combined_duration + next_segment['duration'] > self.max_segment_duration:
+                        break
+                    
+                    # Merge the segments
+                    combined_text += " " + next_segment['text']
+                    combined_duration += next_segment['duration']
+                    combined_words += next_segment['word_count']
+                    segments_merged += 1
+                
+                # Create merged segment
+                merged_segment = {
+                    'text': combined_text,
+                    'duration': combined_duration,
+                    'word_count': combined_words,
+                    'voice_suggestion': current_segment.get('voice_suggestion', 'default')
+                }
+                merged_segments.append(merged_segment)
+                logger.info(f"✅ Merged {segments_merged} segments: {combined_duration:.1f}s duration")
+                
+                i += segments_merged
+            else:
+                # Segment is already long enough
+                merged_segments.append(current_segment)
+                i += 1
+        
+        logger.info(f"📊 Segment consolidation: {len(segments)} → {len(merged_segments)} segments")
+        
+        # Final validation
+        short_segments = [s for s in merged_segments if s['duration'] < self.min_segment_duration]
+        if short_segments:
+            logger.warning(f"⚠️ Still have {len(short_segments)} segments below minimum duration")
+        
+        return merged_segments
+    
+    def _handle_sound_effects_in_segments(self, segments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Handle sound effects intelligently in script segments"""
+        logger.info("🔊 Processing sound effects in script segments")
+        
+        # Import video config for sound effect patterns
+        from ..config import video_config
+        sound_effect_patterns = video_config.audio.sound_effect_patterns
+        min_sound_effect_duration = video_config.audio.min_sound_effect_duration
+        
+        processed_segments = []
+        
+        for segment in segments:
+            text = segment['text']
+            
+            # Check if this segment is primarily a sound effect
+            is_sound_effect = False
+            for pattern in sound_effect_patterns:
+                import re
+                if re.match(pattern, text.strip(), re.IGNORECASE):
+                    is_sound_effect = True
+                    break
+            
+            if is_sound_effect:
+                # This is a sound effect segment
+                logger.info(f"🔊 Detected sound effect: '{text}'")
+                
+                # Ensure minimum duration for sound effects
+                segment['duration'] = max(segment['duration'], min_sound_effect_duration)
+                segment['is_sound_effect'] = True
+                segment['voice_suggestion'] = 'effect'  # Special voice tag for effects
+                
+                # Try to merge with adjacent narrative if too short
+                if len(processed_segments) > 0 and segment['duration'] < self.min_segment_duration:
+                    # Merge with previous segment
+                    prev_segment = processed_segments[-1]
+                    if not prev_segment.get('is_sound_effect', False):
+                        logger.info(f"   Merging sound effect with previous narrative")
+                        prev_segment['text'] += f" {text}"
+                        prev_segment['duration'] += segment['duration']
+                        prev_segment['word_count'] += segment['word_count']
+                        continue  # Skip adding this as separate segment
+            else:
+                # Regular narrative segment - check for inline sound effects
+                import re
+                
+                # Find inline sound effects (e.g., "The door went BANG!")
+                inline_effects = []
+                for pattern in sound_effect_patterns:
+                    matches = re.findall(pattern, text, re.IGNORECASE)
+                    inline_effects.extend(matches)
+                
+                if inline_effects:
+                    logger.info(f"   Found inline effects: {inline_effects}")
+                    # Add slight pause time for each inline effect
+                    extra_duration = len(inline_effects) * 0.3  # 300ms per effect
+                    segment['duration'] += extra_duration
+                    segment['has_inline_effects'] = True
+                    segment['inline_effects'] = inline_effects
+            
+            processed_segments.append(segment)
+        
+        logger.info(f"✅ Processed {len(processed_segments)} segments with sound effect handling")
+        return processed_segments

@@ -17,14 +17,11 @@ logger = logging.getLogger(__name__)
 class GeminiTextService(TextGenerationService):
     """Google Gemini implementation of text generation"""
     
-    def _validate_config(self) -> None:
+    def validate_config(self) -> None:
         if not self.config.api_key:
             raise ValueError("Gemini API key required")
         genai.configure(api_key=self.config.api_key)
         self.model = genai.GenerativeModel(self.config.model_name)
-    
-    def get_provider_name(self) -> str:
-        return f"Google Gemini ({self.config.model_name})"
     
     async def generate(self, request: TextGenerationRequest) -> TextGenerationResponse:
         try:

@@ -2,7 +2,8 @@
 AI Service Manager (Dependency Injection)
 """
 from typing import Dict, Optional, TypeVar, Type, List
-from .factory import AIServiceFactory, AIServiceType
+from .factory import AIServiceFactory
+from .interfaces.base import AIServiceType
 from .config import AIConfiguration
 from .interfaces.base import AIService, AIProvider
 from .interfaces.text_generation import TextGenerationService
@@ -20,6 +21,10 @@ class AIServiceManager:
     def get_text_service(self, provider: Optional[AIProvider] = None) -> TextGenerationService:
         """Get text generation service"""
         return self._get_service(AIServiceType.TEXT_GENERATION, TextGenerationService, provider)
+    
+    def get_service(self, service_type: AIServiceType, provider: Optional[AIProvider] = None) -> AIService:
+        """Get any AI service by type"""
+        return self._get_service(service_type, AIService, provider)
     
     def _get_service(self, 
                     service_type: AIServiceType, 
