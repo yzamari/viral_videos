@@ -132,6 +132,9 @@ def generate(**kwargs):
         # Import and run the generation
         from src.workflows.generate_viral_video import main as generate_main
         
+        # Debug logging
+        logger.info(f"🔍 CLI Debug - cheap flag value: {kwargs.get('cheap')} (--no-cheap was {'used' if kwargs.get('cheap') is False else 'not used'})")
+        
         # Convert click options to the format expected by the workflow
         session_path = generate_main(
             mission=kwargs['mission'],

@@ -1340,58 +1340,79 @@ The last frame of this scene connects to the next.
                 
                 clip_path = None
                 
-                # Try VEO generation first
+                # Try VEO generation first (up to 2 attempts)
                 if veo_client:
-                    try:
-                        logger.info(f"🎬 Generating VEO clip {i+1}/{num_clips}: {enhanced_prompt[:50]}... (duration: {clip_duration:.1f}s)")
-                        # Log full prompt for debugging
-                        logger.info(f"📝 FULL VEO PROMPT for clip {i+1}: {enhanced_prompt}")
-                        
-                        # Add frame continuity if enabled and available
-                        generation_params = {
-                            'prompt': enhanced_prompt,
-                            'duration': clip_duration,
-                            'clip_id': f"clip_{i+1}",
-                            'aspect_ratio': self._get_platform_aspect_ratio(config.target_platform.value)
-                        }
-                        
-                        # Use last frame for continuity if enabled
-                        use_frame_continuity = getattr(config, 'frame_continuity', False)
-                        if use_frame_continuity and i > 0 and last_frame_image and os.path.exists(last_frame_image):
-                            generation_params['image_path'] = last_frame_image
-                            logger.info(f"🖼️ Using frame continuity from clip {i}")
-                        
-                        clip_path = veo_client.generate_video(**generation_params)
-                        
-                        if clip_path and os.path.exists(clip_path):
-                            # Log actual duration but DON'T trim - we want to maintain sync
-                            actual_clip_duration = self._get_video_duration(clip_path)
-                            if actual_clip_duration:
-                                if actual_clip_duration > clip_duration * 1.1:  # More than 10% over
-                                    logger.info(f"📏 VEO clip {i+1} is {actual_clip_duration:.1f}s (requested: {clip_duration:.1f}s) - keeping full duration for sync")
-                                else:
-                                    logger.info(f"✅ VEO clip {i+1} duration: {actual_clip_duration:.1f}s")
-                            logger.info(f"✅ Generated VEO clip {i+1}/{num_clips}")
+                    for veo_attempt in range(2):
+                        try:
+                            logger.info(f"🎬 Generating VEO clip {i+1}/{num_clips} (attempt {veo_attempt + 1}/2): {enhanced_prompt[:50]}... (duration: {clip_duration:.1f}s)")
                             
-                            # Extract last frame for next clip if frame continuity is enabled
-                            if use_frame_continuity and i < num_clips - 1:
-                                last_frame_image = self._extract_last_frame(clip_path, f"clip_{i+1}", session_context)
-                                if last_frame_image:
-                                    # Save to session for debugging
-                                    frame_filename = f"frame_continuity_{i+1}_to_{i+2}.jpg"
-                                    session_frame_path = session_context.get_output_path("images", frame_filename)
-                                    os.makedirs(os.path.dirname(session_frame_path), exist_ok=True)
-                                    
-                                    import shutil
-                                    shutil.copy2(last_frame_image, session_frame_path)
-                                    logger.info(f"💾 Saved continuity frame: {frame_filename}")
-                        else:
-                            logger.warning(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1}, using fallback")
-                            print(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1} - using fallback with reduced quality")
+                            # For second attempt, use rephrased prompt if first failed due to content filtering
+                            current_prompt = enhanced_prompt
+                            if veo_attempt == 1 and hasattr(self, '_last_veo_error'):
+                                error_str = str(getattr(self, '_last_veo_error', '')).lower()
+                                if 'filter' in error_str or 'policy' in error_str or 'safety' in error_str or 'unknown reasons' in error_str:
+                                    current_prompt = self._rephrase_problematic_prompt(enhanced_prompt, platform=config.target_platform.value)
+                                    logger.info("🔄 Using rephrased prompt for second VEO attempt due to content filtering")
+                            
+                            # Log full prompt for debugging
+                            logger.info(f"📝 FULL VEO PROMPT for clip {i+1} attempt {veo_attempt + 1}: {current_prompt}")
+                            
+                            # Add frame continuity if enabled and available
+                            generation_params = {
+                                'prompt': current_prompt,
+                                'duration': clip_duration,
+                                'clip_id': f"clip_{i+1}_attempt_{veo_attempt + 1}",
+                                'aspect_ratio': self._get_platform_aspect_ratio(config.target_platform.value)
+                            }
+                            
+                            # Use last frame for continuity if enabled
+                            use_frame_continuity = getattr(config, 'frame_continuity', False)
+                            if use_frame_continuity and i > 0 and last_frame_image and os.path.exists(last_frame_image):
+                                generation_params['image_path'] = last_frame_image
+                                logger.info(f"🖼️ Using frame continuity from clip {i}")
+                            
+                            clip_path = veo_client.generate_video(**generation_params)
+                            
+                            if clip_path and os.path.exists(clip_path):
+                                # Success! Log actual duration but DON'T trim - we want to maintain sync
+                                actual_clip_duration = self._get_video_duration(clip_path)
+                                break  # Exit the retry loop on success
+                                
+                        except Exception as e:
+                            logger.warning(f"⚠️ VEO generation failed for clip {i+1} attempt {veo_attempt + 1}: {e}")
+                            self._last_veo_error = str(e)  # Store error for next attempt
                             clip_path = None
-                    except Exception as e:
-                        logger.warning(f"⚠️ VEO generation failed for clip {i+1}: {e}")
-                        self._last_veo_error = str(e)  # Store error for hierarchical fallback
+                            
+                            if veo_attempt == 1:  # Last attempt
+                                logger.warning(f"⚠️ All VEO attempts failed for clip {i+1}, moving to fallback")
+                                print(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1} after 2 attempts - using fallback")
+                    
+                    # Check if we got a successful clip
+                    if clip_path and os.path.exists(clip_path):
+                        # Continue with the existing success logic
+                        actual_clip_duration = self._get_video_duration(clip_path) if 'actual_clip_duration' not in locals() else actual_clip_duration
+                        if actual_clip_duration:
+                            if actual_clip_duration > clip_duration * 1.1:  # More than 10% over
+                                logger.info(f"📏 VEO clip {i+1} is {actual_clip_duration:.1f}s (requested: {clip_duration:.1f}s) - keeping full duration for sync")
+                            else:
+                                logger.info(f"✅ VEO clip {i+1} duration: {actual_clip_duration:.1f}s")
+                        logger.info(f"✅ Generated VEO clip {i+1}/{num_clips}")
+                        
+                        # Extract last frame for next clip if frame continuity is enabled
+                        if use_frame_continuity and i < num_clips - 1:
+                            last_frame_image = self._extract_last_frame(clip_path, f"clip_{i+1}", session_context)
+                            if last_frame_image:
+                                # Save to session for debugging
+                                frame_filename = f"frame_continuity_{i+1}_to_{i+2}.jpg"
+                                session_frame_path = session_context.get_output_path("images", frame_filename)
+                                os.makedirs(os.path.dirname(session_frame_path), exist_ok=True)
+                                
+                                import shutil
+                                shutil.copy2(last_frame_image, session_frame_path)
+                                logger.info(f"💾 Saved continuity frame: {frame_filename}")
+                    else:
+                        logger.warning(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1}, using fallback")
+                        print(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1} - using fallback with reduced quality")
                         clip_path = None
                 
                 # If VEO failed, implement hierarchical fallback
@@ -4289,15 +4310,15 @@ This is a placeholder file. In a full implementation, this would be a complete M
     def _get_video_dimensions(self, platform: str) -> tuple:
         """Get video dimensions based on target platform"""
         platform_dimensions = {
-            'tiktok': (720, 1280),      # 9:16 portrait
-            'instagram': (720, 1280),   # 9:16 portrait  
-            'youtube': (1280, 720),     # 16:9 landscape
-            'facebook': (1280, 720),    # 16:9 landscape
+            'tiktok': (1080, 1920),      # 9:16 portrait
+            'instagram': (1080, 1920),   # 9:16 portrait  
+            'youtube': (1920, 1080),     # 16:9 landscape
+            'facebook': (1920, 1080),    # 16:9 landscape
             'twitter': (1280, 720),     # 16:9 landscape
-            'linkedin': (1280, 720)     # 16:9 landscape
+            'linkedin': (1920, 1080)     # 16:9 landscape
         }
         
-        return platform_dimensions.get(platform.lower(), (720, 1280))  # Default to portrait for modern social media
+        return platform_dimensions.get(platform.lower(), (1080, 1920))  # Default to portrait for modern social media
     
     def _get_platform_aspect_ratio(self, platform: str) -> str:
         """Get aspect ratio string for platform"""
@@ -4386,7 +4407,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 width = int(video_stream['width'])
                 height = int(video_stream['height'])
             else:
-                width, height = 720, 1280  # Default
+                width, height = 1080, 1920  # Default
             
             # CRITICAL FIX: Create fadeout within the existing video duration (no extra time)
             fade_duration = video_config.animation.fade_out_duration
@@ -4436,7 +4457,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 width, height = self._get_video_dimensions(platform)
                 logger.info(f"📱 Using platform dimensions for {platform}: {width}x{height}")
             else:
-                width, height = 720, 1280  # Default to portrait
+                width, height = 1080, 1920  # Default to portrait
                 logger.info(f"📱 Using default portrait dimensions: {width}x{height}")
             
             # Generate random colors for variety
@@ -4476,10 +4497,12 @@ This is a placeholder file. In a full implementation, this would be a complete M
                                         config: GeneratedVideoConfig, session_context: SessionContext,
                                         style_decision: Dict[str, Any], use_frame_continuity: bool = False,
                                         last_frame_image: Optional[str] = None) -> Optional[str]:
-        """Implement hierarchical fallback: VEO (2x) → Image Generation (2x) → Color Fallback"""
+        """Implement hierarchical fallback: Image Generation (2x) → Color Fallback
+        Note: VEO is already tried 2x in the main generation loop"""
         logger.info(f"🔄 Starting hierarchical fallback for clip {clip_number}")
         
-        # Step 1: Try VEO again with rephrased prompt
+        # Since VEO was already tried twice in the main loop, skip VEO retry here
+        # Step 1: Try image generation (2 attempts)
         error_str = ""
         if hasattr(self, '_last_veo_error'):
             error_str = str(getattr(self, '_last_veo_error', '')).lower()
@@ -4592,10 +4615,102 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 - No text or overlays
                 """
                 
-                # Note: This is a placeholder for actual image generation
-                # You would need to implement actual image generation here
-                logger.warning("⚠️ Image generation not yet implemented - placeholder")
-                return None
+                # Use Vertex AI Imagen to generate image
+                try:
+                    from src.generators.vertex_imagen_client import VertexImagenClient
+                    
+                    # Initialize Vertex AI Imagen client
+                    imagen_client = VertexImagenClient()
+                    
+                    # Create output path
+                    image_filename = f"image_clip_{clip_number}_attempt_{attempt}.png"
+                    output_path = session_context.get_output_path("temp_files", image_filename)
+                    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                    
+                    # Try original prompt first, then rephrased if needed
+                    prompts_to_try = [image_prompt]
+                    
+                    # If attempt > 1, try rephrased prompt for content filtering
+                    if attempt > 1:
+                        rephrased_prompt = self._rephrase_problematic_prompt(
+                            image_prompt,
+                            platform="instagram"
+                        )
+                        prompts_to_try.append(rephrased_prompt)
+                        logger.info(f"🔄 Using rephrased prompt for image generation attempt {attempt}")
+                    
+                    for prompt_idx, current_prompt in enumerate(prompts_to_try):
+                        try:
+                            logger.info(f"🎨 Generating image with Vertex AI Imagen (prompt {prompt_idx + 1}/{len(prompts_to_try)})...")
+                            
+                            image_path = imagen_client.generate_image(
+                                prompt=current_prompt,
+                                output_path=output_path,
+                                aspect_ratio="9:16"  # Instagram portrait
+                            )
+                            
+                            if image_path and os.path.exists(image_path):
+                                logger.info(f"✅ Image generated successfully: {image_path}")
+                                return image_path
+                        except Exception as img_error:
+                            error_str = str(img_error).lower()
+                            if 'filter' in error_str or 'policy' in error_str or 'safety' in error_str:
+                                logger.warning(f"⚠️ Image content filtered: {img_error}")
+                                continue  # Try next prompt
+                            else:
+                                logger.warning(f"⚠️ Image generation error: {img_error}")
+                                continue
+                    
+                    logger.warning(f"⚠️ All image generation attempts failed")
+                    return None
+                        
+                except Exception as img_error:
+                    logger.warning(f"⚠️ Imagen generation failed: {img_error}, trying alternative approach")
+                    
+                    # Fallback to creating a styled text image
+                    from PIL import Image, ImageDraw, ImageFont
+                    import textwrap
+                    
+                    # Create image with prompt visualization
+                    img_width, img_height = 1080, 1920
+                    img = Image.new('RGB', (img_width, img_height), color=(30, 30, 30))
+                    draw = ImageDraw.Draw(img)
+                    
+                    # Add gradient background
+                    for y in range(img_height):
+                        color_value = int(30 + (y / img_height) * 50)
+                        draw.rectangle([(0, y), (img_width, y+1)], fill=(color_value, color_value, color_value + 20))
+                    
+                    # Add text
+                    try:
+                        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 60)
+                    except:
+                        font = ImageFont.load_default()
+                    
+                    # Wrap text
+                    wrapped_text = textwrap.fill(prompt[:200], width=30)
+                    
+                    # Calculate text position
+                    bbox = draw.textbbox((0, 0), wrapped_text, font=font)
+                    text_width = bbox[2] - bbox[0]
+                    text_height = bbox[3] - bbox[1]
+                    x = (img_width - text_width) // 2
+                    y = (img_height - text_height) // 2
+                    
+                    # Draw text with shadow
+                    shadow_offset = 4
+                    draw.text((x + shadow_offset, y + shadow_offset), wrapped_text, 
+                             font=font, fill=(0, 0, 0), align='center')
+                    draw.text((x, y), wrapped_text, 
+                             font=font, fill=(255, 255, 255), align='center')
+                    
+                    # Save image
+                    image_filename = f"text_image_clip_{clip_number}_attempt_{attempt}.png"
+                    image_path = session_context.get_output_path("temp_files", image_filename)
+                    img.save(image_path)
+                    
+                    logger.info(f"✅ Created text-based image fallback: {image_path}")
+                    return image_path
                 
         except Exception as e:
             logger.error(f"❌ Image generation failed: {e}")
@@ -4649,7 +4764,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             if aspect_ratio == '16:9':
                 width, height = 1280, 720  # Use lower resolution for minimal fallback
             else:
-                width, height = 720, 1280
+                width, height = 1080, 1920
             
             # Create simple solid color video
             cmd = [
@@ -5239,8 +5354,11 @@ This is a placeholder file. In a full implementation, this would be a complete M
         else:
             # For RTL, be more careful with punctuation removal
             escaped = escaped.replace("'", "׳").replace('"', '״')  # Hebrew quotes
+            escaped = escaped.replace(':', ' - ')  # Replace colon with dash to avoid FFmpeg parsing issues
+            escaped = escaped.replace('=', '-').replace(',', ' ')  # Also escape equals and comma
             escaped = escaped.replace('\\', '').replace('/', '')
             escaped = escaped.replace('{', '').replace('}', '')
+            escaped = escaped.replace('!', '').replace('?', '')  # Remove exclamation and question marks
         
         # Convert newlines to spaces and clean up whitespace
         escaped = escaped.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
@@ -6521,8 +6639,14 @@ This is a placeholder file. In a full implementation, this would be a complete M
                         font_color = overlay.get('color', '#FFFFFF')
                         font_size = overlay.get('font_size', 48)
                         font_family = overlay.get('font_family', 'Impact')
-                        background_color = overlay.get('background_color', '#000000')
-                        background_opacity = overlay.get('opacity', 0.9)
+                        # Fix: FFmpeg doesn't support 'transparent' as a color
+                        raw_bg_color = overlay.get('background_color', '#000000')
+                        if raw_bg_color.lower() == 'transparent':
+                            background_color = '#000000'  # Use black instead
+                            background_opacity = 0.0  # Fully transparent
+                        else:
+                            background_color = raw_bg_color
+                            background_opacity = overlay.get('opacity', 0.9)
                         stroke_width = overlay.get('stroke_width', 2)
                         
                         # Use custom y_position if available (for subtitle avoidance)

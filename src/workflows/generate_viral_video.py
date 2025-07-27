@@ -70,8 +70,10 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
     logger.info(f"🤖 AI System: 🎯 {discussions.title()} ({_get_agent_count(mode)} agents with discussions, best viral content)")
     
     # Cost-saving mode information
+    logger.info(f"🔍 Debug - cheap_mode value: {cheap_mode} (type: {type(cheap_mode)})")
     if cheap_mode:
         logger.info("💰 CHEAP MODE: Enabled (saves costs - no VEO, basic TTS, minimal AI)")
+        logger.info(f"💰 Cheap mode level: {cheap_mode_level}")
         logger.info("💡 Use --no-cheap to disable and use premium features")
     else:
         logger.info("💎 PREMIUM MODE: Using VEO video generation and premium voices")

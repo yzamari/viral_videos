@@ -176,7 +176,7 @@ class BaseVeoClient(ABC):
             safe_text = prompt[:30].replace("'", "").replace('"', '').replace(':', '').replace('!', '').replace('?', '').replace(',', '')
             
             # Use portrait dimensions (9:16) to match VEO output
-            video_dimensions = "720x1280"
+            video_dimensions = "1080x1920"
             
             cmd = [
                 'ffmpeg', '-f', 'lavfi', 
@@ -207,7 +207,7 @@ class BaseVeoClient(ABC):
             
             # Create simple solid color video
             # Use portrait dimensions (9:16) to match VEO output
-            video_dimensions = "720x1280"
+            video_dimensions = "1080x1920"
             
             cmd = [
                 'ffmpeg', '-f', 'lavfi', 

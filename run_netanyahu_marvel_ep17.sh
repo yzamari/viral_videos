@@ -14,14 +14,14 @@ echo ""
 SESSION_ID="netanyahu_marvel_ep17_$(date +%Y%m%d_%H%M%S)"
 
 # Run the generation
-python3 -m src.workflows.generate_viral_video \
+python3 main.py generate \
   --mission "Marvel Comics explosion! Benjamin Netanyahu with lightning effects crashes through Knesset walls. CRASH! 'I am eternal!' Opposition parties vanish in comic smoke. WHOOSH! Coalition deals with exploding panels. BOOM! Juggling multiple corruption trials while texting. ZAP! Building settlements with energy beams. THWACK! Judicial reform controversy splits the nation. CRACK! 'Bibi will return... again!' WHAM! Israeli flag with lightning bolts." \
-  --languages he,en \
+  --languages he --languages en \
   --duration 55 \
   --platform instagram \
   --character "Benjamin Netanyahu with gray hair, determined expression, dark suit with lightning aura, Marvel superhero style" \
   --session-id "$SESSION_ID" \
-  --category comedy \
+  --category Comedy \
   --style marvel \
   --tone satirical \
   --no-cheap
