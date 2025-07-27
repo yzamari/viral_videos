@@ -36,6 +36,56 @@ class PNGOverlayHandler:
         
         logger.info("✅ PNG Overlay Handler initialized")
     
+    def create_text_logo(self, text: str, output_path: str, 
+                        width: int = 400, height: int = 150,
+                        bg_color: str = '#CC0000', text_color: str = '#FFFFFF') -> Optional[str]:
+        """Create a text-based logo as PNG when logo file doesn't exist"""
+        try:
+            from PIL import Image, ImageDraw, ImageFont
+            import os
+            
+            # Create image with background
+            img = Image.new('RGBA', (width, height), color=(0, 0, 0, 0))
+            draw = ImageDraw.Draw(img)
+            
+            # Draw rounded rectangle background
+            padding = 10
+            draw.rounded_rectangle(
+                [(padding, padding), (width-padding, height-padding)],
+                radius=15,
+                fill=bg_color
+            )
+            
+            # Try to use a nice font, fallback to default
+            try:
+                # Try to use Arial or system font
+                font_size = int(height * 0.3)
+                font = ImageFont.truetype("Arial.ttf", font_size)
+            except:
+                # Use default font
+                font = ImageFont.load_default()
+            
+            # Draw text
+            text_bbox = draw.textbbox((0, 0), text, font=font)
+            text_width = text_bbox[2] - text_bbox[0]
+            text_height = text_bbox[3] - text_bbox[1]
+            
+            x = (width - text_width) // 2
+            y = (height - text_height) // 2
+            
+            draw.text((x, y), text, fill=text_color, font=font)
+            
+            # Save
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            img.save(output_path, 'PNG')
+            
+            logger.info(f"✅ Created text logo: {output_path}")
+            return output_path
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to create text logo: {e}")
+            return None
+    
     def add_png_overlay(self, 
                        video_path: str, 
                        png_path: str, 

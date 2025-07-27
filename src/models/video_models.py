@@ -142,6 +142,10 @@ class GeneratedVideoConfig:
     # Character and scene settings
     character: Optional[str] = None  # Character ID or description for consistent appearance
     scene: Optional[str] = None  # Scene description for character placement
+    
+    # Language settings
+    language: Optional['Language'] = None  # Primary language for content generation
+    languages: Optional[List['Language']] = None  # All languages for multi-language support
 
     # Inspiration and scoring
     inspired_by_videos: Optional[List[str]] = None

@@ -57,9 +57,9 @@ class ScriptWriterAgent:
         # Ensure script is a dictionary
         if isinstance(script, str):
             try:
-                script = eval(script)
-            except BaseException:
-                self.monitoring_service.log("ScriptWriterAgent: Failed to parse script from string. Using fallback.")
+                script = json.loads(script)
+            except (json.JSONDecodeError, ValueError) as e:
+                self.monitoring_service.log(f"ScriptWriterAgent: Failed to parse script from string: {e}. Using fallback.")
                 script = self._get_fallback_script(topic, sentiment, style)
 
         self.file_service.save_json("script.json", script)

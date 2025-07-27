@@ -1168,35 +1168,29 @@ The last frame of this scene connects to the next.
             audio_files = sorted([f for f in os.listdir(audio_dir) if f.startswith('audio_segment_') and f.endswith('.mp3')])
             logger.info(f"🎵 Found {len(audio_files)} audio segments in session")
         
-        # CRITICAL: Determine number of clips based on actual segments that will generate audio
-        # Priority: audio segments > script segments > core decisions > fallback
-        if audio_files:
-            num_clips = len(audio_files)
-            logger.info(f"🎯 Using {num_clips} video clips to match {num_clips} audio segments")
-        elif script_segments:
-            # Count actual segments that will generate audio (one per sentence)
-            if isinstance(script_segments, list) and len(script_segments) > 0:
-                # If segments have been processed for audio, use that count
-                if script_segments[0].get('text'):
-                    num_clips = len(script_segments)
-                    logger.info(f"🎬 Using {num_clips} video clips to match {num_clips} script segments")
-                else:
-                    # Count sentences in the script for more accurate prediction
-                    full_script = ' '.join([s.get('text', '') for s in script_segments])
-                    import re
-                    sentences = [s.strip() for s in re.split(r'[.!?]+', full_script) if s.strip()]
-                    num_clips = len(sentences)
-                    logger.info(f"📝 Detected {num_clips} sentences, will generate {num_clips} video clips")
+        # CRITICAL: Always use optimal video clip count (5-8s each)
+        # Calculate optimal number of clips based on duration
+        target_clip_duration = 6.0  # Aim for 6-second clips
+        optimal_num_clips = max(2, int(config.duration_seconds / target_clip_duration))
+        
+        # Check core decisions first
+        if hasattr(config, 'num_clips') and config.num_clips is not None:
+            # Use core decisions but validate it's reasonable
+            if 4 <= config.num_clips <= 10 and config.duration_seconds <= 60:
+                num_clips = config.num_clips
+                logger.info(f"🎯 Using core decisions: {num_clips} clips from centralized decision framework")
             else:
-                num_clips = len(script_segments)
-                logger.info(f"🎬 Using script segments: {num_clips} clips")
-        elif hasattr(config, 'num_clips') and config.num_clips is not None:
-            num_clips = config.num_clips
-            logger.info(f"🎯 Using core decisions: {num_clips} clips from centralized decision framework")
+                num_clips = optimal_num_clips
+                logger.info(f"🎯 Core decisions had {config.num_clips} clips, using optimal: {num_clips} clips")
         else:
-            # Fallback to duration-based calculation
-            num_clips = max(3, int(config.duration_seconds / 5))
-            logger.warning(f"⚠️ No script segments found, using duration-based clips: {num_clips}")
+            num_clips = optimal_num_clips
+            logger.info(f"🎯 Using optimal clip count: {num_clips} clips for {config.duration_seconds}s video")
+        
+        # Log audio/script segment count for reference only
+        if audio_files:
+            logger.info(f"📊 Note: {len(audio_files)} audio segments will be distributed across {num_clips} video clips")
+        elif script_segments and isinstance(script_segments, list):
+            logger.info(f"📊 Note: {len(script_segments)} script segments will be distributed across {num_clips} video clips")
         
         # Log audio durations for reference but DO NOT use them for video clips
         if audio_files:
@@ -6769,8 +6763,12 @@ This is a placeholder file. In a full implementation, this would be a complete M
                          session_context: SessionContext) -> str:
         """Add PNG overlays (flags, logos, etc.) based on mission content"""
         try:
-            # Check if mission contains Israeli flag request
+            # Check if mission contains overlay requests
             mission_lower = config.mission.lower() if config.mission else ""
+            
+            # Track if we've added any overlays
+            current_video = video_path
+            overlay_added = False
             
             # Look for flag requests in mission
             if any(flag in mission_lower for flag in ['israeli flag', 'israel flag', 'flag in corner', 'flag in top']):
@@ -6789,7 +6787,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 
                 # Add Israeli flag
                 result = self.png_overlay_handler.add_israeli_flag(
-                    video_path=video_path,
+                    video_path=current_video,
                     output_path=flag_output,
                     position=position,
                     scale=0.08  # 8% of video size
@@ -6797,17 +6795,94 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 
                 if result and os.path.exists(result):
                     logger.info(f"✅ Israeli flag added at {position}")
-                    return result
+                    current_video = result
+                    overlay_added = True
                 else:
                     logger.warning("⚠️ Failed to add Israeli flag, continuing without it")
+            
+            # Check for news logo requests
+            news_channels = {
+                'water crisis news': ('assets/logos/water_crisis_news.png', 'top-right', 0.12),
+                'thirsty times': ('assets/logos/thirsty_times.png', 'top-right', 0.12),
+                'desert dispatch': ('assets/logos/desert_dispatch.png', 'top-right', 0.12),
+                'parched persian news': ('assets/logos/parched_persian.png', 'top-right', 0.12),
+                'dry news network': ('assets/logos/dry_news.png', 'top-right', 0.12),
+                'dehydration daily': ('assets/logos/dehydration_daily.png', 'top-right', 0.12),
+                'iran international': ('assets/logos/iran_international.png', 'top-right', 0.12),
+            }
+            
+            # Check if any news channel is mentioned
+            for channel_name, (logo_path, position, scale) in news_channels.items():
+                if channel_name in mission_lower:
+                    logger.info(f"📺 Adding {channel_name.title()} logo overlay")
+                    
+                    # Check if logo exists or use a generated one
+                    if not os.path.exists(logo_path):
+                        logger.info(f"🎨 Generating news logo for {channel_name.title()}")
+                        # Create text-based logo
+                        temp_logo_path = os.path.join(session_context.session_dir, 'temp_files', f'{channel_name.replace(" ", "_")}_logo.png')
+                        
+                        # Choose colors based on channel theme
+                        logo_colors = {
+                            'water crisis news': ('#0066CC', '#FFFFFF'),  # Blue water theme
+                            'thirsty times': ('#FF6B35', '#FFFFFF'),  # Orange desert theme
+                            'desert dispatch': ('#D4A574', '#000000'),  # Sandy brown
+                            'parched persian news': ('#8B4513', '#FFFFFF'),  # Saddle brown
+                            'dry news network': ('#CD853F', '#000000'),  # Peru color
+                            'dehydration daily': ('#B22222', '#FFFFFF'),  # Fire brick red
+                            'iran international': ('#CC0000', '#FFFFFF'),  # News red
+                        }
+                        
+                        bg_color, text_color = logo_colors.get(channel_name, ('#CC0000', '#FFFFFF'))
+                        
+                        # Create the logo
+                        generated_logo = self.png_overlay_handler.create_text_logo(
+                            text=channel_name.upper().replace('NEWS', '\nNEWS'),
+                            output_path=temp_logo_path,
+                            width=400,
+                            height=150,
+                            bg_color=bg_color,
+                            text_color=text_color
+                        )
+                        
+                        if generated_logo:
+                            logo_path = generated_logo
+                        else:
+                            continue
+                    
+                    # Create output path
+                    logo_output = os.path.join(session_context.session_dir, 'temp_files', 'video_with_logo.mp4')
+                    os.makedirs(os.path.dirname(logo_output), exist_ok=True)
+                    
+                    # Add news logo
+                    result = self.png_overlay_handler.add_png_overlay(
+                        video_path=current_video,
+                        png_path=logo_path,
+                        output_path=logo_output,
+                        position=position,
+                        scale=scale,
+                        opacity=0.9
+                    )
+                    
+                    if result and os.path.exists(result):
+                        logger.info(f"✅ {channel_name.title()} logo added at {position}")
+                        current_video = result
+                        overlay_added = True
+                        break  # Only add one news logo
+            
+            # Check for style-based logos
+            if config.style == 'news' and not overlay_added:
+                # Add generic news logo if no specific channel mentioned
+                logger.info("📺 Adding generic news overlay for news style video")
+                # Could add generic news graphics here
             
             # Check for other overlay requests (marvel logo, etc.)
             if 'marvel' in mission_lower and any(word in mission_lower for word in ['logo', 'watermark']):
                 logger.info("🦸 Marvel logo requested but not available")
                 # Could add Marvel-style overlay here if we had the asset
             
-            # Return original video if no overlays added
-            return video_path
+            # Return current video (with overlays if any were added)
+            return current_video
             
         except Exception as e:
             logger.error(f"❌ Failed to add PNG overlays: {e}")

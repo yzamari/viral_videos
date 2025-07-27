@@ -1,0 +1,76 @@
+#!/bin/bash
+# Pre-push hook for ViralAI
+# Runs comprehensive tests before pushing
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo -e "${BLUE}🚀 Running pre-push checks...${NC}"
+
+# Get the remote name and URL
+remote="$1"
+url="$2"
+
+# Check if pushing to main/master branch
+protected_branches="main master"
+current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+
+is_protected=false
+for branch in $protected_branches; do
+    if [ "$current_branch" = "$branch" ]; then
+        is_protected=true
+        break
+    fi
+done
+
+# Determine test level based on branch
+if [ "$is_protected" = true ]; then
+    echo -e "${YELLOW}🔒 Pushing to protected branch: $current_branch${NC}"
+    echo -e "${BLUE}Running full test suite...${NC}"
+    test_mode="full"
+else
+    echo -e "${BLUE}Running integration tests for branch: $current_branch${NC}"
+    test_mode="integration"
+fi
+
+# Run appropriate tests
+./scripts/run_tests.sh $test_mode
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ Pre-push tests failed!${NC}"
+    echo "Push aborted. Please fix the failing tests."
+    exit 1
+fi
+
+# Additional checks for protected branches
+if [ "$is_protected" = true ]; then
+    echo -e "${BLUE}📋 Running additional checks for protected branch...${NC}"
+    
+    # Check for merge conflicts markers
+    if grep -r "<<<<<<< HEAD\|=======" src/ --include="*.py"; then
+        echo -e "${RED}❌ Found merge conflict markers!${NC}"
+        exit 1
+    fi
+    
+    # Check for debugger statements
+    if grep -r "import pdb\|pdb.set_trace()\|breakpoint()" src/ --include="*.py" | grep -v "# noqa"; then
+        echo -e "${RED}❌ Found debugger statements!${NC}"
+        exit 1
+    fi
+    
+    # Verify no large files
+    large_files=$(find src/ -type f -size +1M)
+    if [ ! -z "$large_files" ]; then
+        echo -e "${YELLOW}⚠️  Large files detected (>1MB):${NC}"
+        echo "$large_files"
+        echo "Consider using Git LFS for large files"
+    fi
+fi
+
+echo -e "${GREEN}✅ Pre-push checks passed!${NC}"
+echo -e "${GREEN}🚀 Push authorized${NC}"
+exit 0

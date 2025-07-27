@@ -1,0 +1,454 @@
+[32m2025-07-27 08:02:32 - __main__ - INFO - 🔐 Checking authentication...[0m
+[32m2025-07-27 08:02:36 - __main__ - INFO - ✅ Authentication already configured[0m
+[32m2025-07-27 08:02:36 - src.workflows.generate_viral_video - INFO - 🎯 Generating None video for mission: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה.[0m
+[32m2025-07-27 08:02:36 - src.workflows.generate_viral_video - INFO - 📱 Platform: instagram[0m
+[32m2025-07-27 08:02:36 - src.workflows.generate_viral_video - INFO - ⏱️ Duration: 50 seconds[0m
+[32m2025-07-27 08:02:36 - src.workflows.generate_viral_video - INFO - 🎭 Mode: enhanced (7 agents with discussions)[0m
+[32m2025-07-27 08:02:36 - src.workflows.generate_viral_video - INFO - 🎬 Visual Continuity: ✅ Enabled[0m
+[32m2025-07-27 08:02:36 - src.workflows.generate_viral_video - INFO - 📝 Content Continuity: ✅ Enabled[0m
+[32m2025-07-27 08:02:36 - src.workflows.generate_viral_video - INFO - 🤖 AI System: 🎯 Enhanced (7 agents with discussions, best viral content)[0m
+[32m2025-07-27 08:02:36 - src.workflows.generate_viral_video - INFO - 💎 PREMIUM MODE: Using VEO video generation and premium voices[0m
+[33m2025-07-27 08:02:36 - src.utils.session_context - WARNING - No active session found for israeli_pm_marvel_ep1_he_test[0m
+[32m2025-07-27 08:02:36 - src.utils.session_context - INFO - ✅ Session context initialized for israeli_pm_marvel_ep1_he_test at outputs/israeli_pm_marvel_ep1_he_test[0m
+[32m2025-07-27 08:02:36 - src.utils.session_context - INFO - Created session metadata file for israeli_pm_marvel_ep1_he_test[0m
+[32m2025-07-27 08:02:36 - src.frameworks.content_credibility_system - INFO - 🔍 Content Credibility System initialized[0m
+[32m2025-07-27 08:02:36 - src.frameworks.audience_intelligence_system - INFO - 🧠 Audience Intelligence System initialized[0m
+[32m2025-07-27 08:02:36 - src.frameworks.ethical_optimization_system - INFO - 🎯 Ethical Optimization System initialized[0m
+[32m2025-07-27 08:02:36 - src.agents.mission_planning_agent - INFO - 🎯 Enhanced Mission Planning Agent initialized with None[0m
+[32m2025-07-27 08:02:36 - src.agents.mission_planning_agent - INFO - 🔍 Content credibility system enabled[0m
+[32m2025-07-27 08:02:36 - src.agents.mission_planning_agent - INFO - 🧠 Audience intelligence system enabled[0m
+[32m2025-07-27 08:02:36 - src.agents.mission_planning_agent - INFO - 🎯 Ethical optimization system enabled[0m
+[32m2025-07-27 08:02:36 - src.core.decision_framework - INFO - 🎯 Decision Framework initialized with Mission Planning Agent[0m
+[32m2025-07-27 08:02:36 - src.core.decision_framework - INFO - 🎯 Making all core decisions upfront...[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: duration_seconds = 50 (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: platform = instagram (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: category = Entertainment (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: category_string = Entertainment (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: target_audience = general audience (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: language = he (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: all_languages = ['he'] (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: style = cinematic (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: style_string = cinematic (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: tone = darkly_humorous (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: tone_string = darkly_humorous (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: visual_style = marvel comics (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: visual_style_string = marvel comics (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: theme_id = None (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: style_reference_id = None (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: character_id = דוד בן-גוריון עם שיער לבן פרוע איקוני בסגנון איינשטיין זורם בדרמטיות, פנים עגולות, הבעה נחושה, לובש חולצת חאקי פשוטה כמו מייסד ישראל האמיתי (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: character_scene = None (source: user_cli, confidence: 1.00)[0m
+Vertex AI libraries not installed. Run: pip install google-cloud-aiplatform
+[32m2025-07-27 08:02:36 - src.core.decision_framework - INFO - Character description provided instead of stored ID: דוד בן-גוריון עם שיער לבן פרוע איקוני בסגנון איינש...[0m
+[32m2025-07-27 08:02:36 - src.core.decision_framework - INFO - Character consistency will be handled by video generation prompts[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: frame_continuity = True (source: ai_agent, confidence: 0.95)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: continuous_generation = True (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: mode = enhanced (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: cheap_mode = False (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: cheap_mode_level = full (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: mission = פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה. (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: hook = Amazing content ahead! (source: ai_agent, confidence: 0.80)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: call_to_action = Follow for more! (source: ai_agent, confidence: 0.80)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: voice_strategy = variety (source: ai_agent, confidence: 0.80)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: color_palette = marvel comics palette (source: system_default, confidence: 0.50)[0m
+[36m2025-07-27 08:02:36 - src.core.decision_framework - DEBUG - 🎯 Decision: background_music_style = ambient (source: ai_agent, confidence: 0.80)[0m
+[32m2025-07-27 08:02:36 - src.core.decision_framework - INFO - 📏 Pre-calculating clip constraints:[0m
+[32m2025-07-27 08:02:36 - src.core.decision_framework - INFO -    Total duration: 50s[0m
+[32m2025-07-27 08:02:36 - src.core.decision_framework - INFO -    Max clip duration: 8.0s[0m
+[32m2025-07-27 08:02:36 - src.core.decision_framework - INFO -    Minimum clips required: 7[0m
+[32m2025-07-27 08:02:36 - src.agents.mission_planning_agent - INFO - 🎯 Analyzing mission: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשט...[0m
+[36m2025-07-27 08:02:38 - src.agents.mission_planning_agent - DEBUG - AI response text: ```json
+{
+  "mission_type": "persuade",
+  "is_strategic_mission": true,
+  "confidence": 0.9,
+  "reasoning": "The statement uses a humorous and unconventional approach (a Marvel comic book style depiction of David Ben-Gurion) to portray a narrative of Israeli independence.  It's not simply informing; it aims to persuade the audience to view Ben-Gurion and the creation of Israel in a positive, almost heroic light. The use of comic book tropes (kapow, energy effects) is a deliberate stylistic choic...[0m
+[32m2025-07-27 08:02:38 - src.agents.mission_planning_agent - INFO - 🎯 AI Mission Detection: persuade (strategic: True)[0m
+[32m2025-07-27 08:02:38 - src.agents.mission_planning_agent - INFO -    Confidence: 0.90[0m
+[32m2025-07-27 08:02:38 - src.agents.mission_planning_agent - INFO -    Reasoning: The statement uses a humorous and unconventional approach (a Marvel comic book style depiction of David Ben-Gurion) to portray a narrative of Israeli independence.  It's not simply informing; it aims to persuade the audience to view Ben-Gurion and the creation of Israel in a positive, almost heroic light. The use of comic book tropes (kapow, energy effects) is a deliberate stylistic choice to engage the audience emotionally and influence their perception.  While it doesn't explicitly call for a specific action, the overall intent is to shape the audience's understanding and appreciation of a historical event, making it a strategic persuasive mission.[0m
+[36m2025-07-27 08:02:44 - src.agents.mission_planning_agent - DEBUG - Raw JSON from AI: {
+  "target_outcome": "Achieve 10,000 views and a 5% engagement rate (likes, comments, shares) within 24 hours of posting on Instagram, showcasing the humorous and dynamic portrayal of Ben-Gurion as a superhero.",
+  "strategic_approach": "Humorous, fast-paced superhero parody using vibrant visuals and iconic imagery to create a memorable and shareable Instagram video.",
+  "success_metrics": ["Views", "Engagement Rate (likes, comments, shares)", "Reach"],
+  "content_strategy": {
+    "main_argumen...[0m
+[32m2025-07-27 08:02:44 - src.agents.mission_planning_agent - INFO - 🔍 Performing content credibility analysis...[0m
+[32m2025-07-27 08:02:44 - src.frameworks.content_credibility_system - INFO - 🔍 Evaluating content credibility for topic: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה.[0m
+[32m2025-07-27 08:02:45 - src.frameworks.content_credibility_system - INFO - 🔍 Extracted 0 factual claims[0m
+[32m2025-07-27 08:02:46 - src.frameworks.content_credibility_system - INFO - 🎯 Bias analysis complete: MEDIUM bias level bias level[0m
+[32m2025-07-27 08:02:46 - src.frameworks.content_credibility_system - INFO - ✅ Credibility evaluation complete: 5.1/10[0m
+[32m2025-07-27 08:02:46 - src.agents.mission_planning_agent - INFO - 🧠 Performing audience intelligence analysis...[0m
+[32m2025-07-27 08:02:46 - src.frameworks.audience_intelligence_system - INFO - 🧠 Analyzing audience for topic: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה. on instagram[0m
+[32m2025-07-27 08:02:47 - src.frameworks.audience_intelligence_system - INFO - 🧠 Audience analysis complete: 0.95 confidence[0m
+[32m2025-07-27 08:02:47 - src.agents.mission_planning_agent - INFO - 🎯 Performing ethical optimization analysis...[0m
+[32m2025-07-27 08:02:47 - src.frameworks.ethical_optimization_system - INFO - 🎯 Performing ethical optimization for: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשט...[0m
+[32m2025-07-27 08:02:50 - src.frameworks.ethical_optimization_system - INFO - 🎯 Ethical optimization complete: NEEDS_IMPROVEMENT rating[0m
+[32m2025-07-27 08:02:50 - src.frameworks.ethical_optimization_system - INFO -    Compliance Score: 3.52/10[0m
+[32m2025-07-27 08:02:50 - src.frameworks.ethical_optimization_system - INFO -    Transparency: 1.75/10[0m
+[32m2025-07-27 08:02:50 - src.frameworks.ethical_optimization_system - INFO -    Educational Value: 4.50/10[0m
+[32m2025-07-27 08:02:50 - src.frameworks.ethical_optimization_system - INFO -    Positive Engagement: 5.00/10[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO - 🎯 Strategic Mission Plan:[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO -    Target Outcome: Achieve 10,000 views and a 5% engagement rate (likes, comments, shares) within 24 hours of posting on Instagram, showcasing the humorous and dynamic portrayal of Ben-Gurion as a superhero.[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO -    Strategic Approach: Humorous, fast-paced superhero parody using vibrant visuals and iconic imagery to create a memorable and shareable Instagram video.[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO -    Recommended Clips: 2[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO -    Confidence Score: 0.95[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO - 🔍 Content Credibility: 5.1/10 (QUESTIONABLE - Significant credibility concerns)[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO - 🧠 Audience Intelligence: 0.95 confidence[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO -    Primary Age Group: millennial[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO -    Engagement Prediction: 0.6[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO -    Optimization Recommendations: 3 provided[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO - 🎯 Ethical Optimization: NEEDS_IMPROVEMENT rating[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO -    Compliance Score: 3.52/10[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO -    Transparency: 1.75/10[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO -    Educational Value: 4.50/10[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO -    Positive Engagement: 5.00/10[0m
+[32m2025-07-27 08:02:50 - src.agents.mission_planning_agent - INFO - ✅ Strategic mission plan created: persuade[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO - 🔧 Enforcing 8-second maximum clip duration constraint[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Original: 2 clips, durations: ['25.0s', '25.0s'][0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Adjusted: 7 clips, durations: ['7.1s', '7.1s', '7.1s', '7.1s', '7.1s', '7.1s', '7.1s'][0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Reason: VEO generation has 8-second maximum per clip[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Updated Cost Efficiency: 0.70[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Updated Content Quality: 1.00[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Updated Balance Score: 0.85[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO - 🎯 Mission-Based Clip Structure:[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Mission Type: persuade[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Strategic Mission: True[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Target Outcome: Achieve 10,000 views and a 5% engagement rate (likes, comments, shares) within 24 hours of posting on Instagram, showcasing the humorous and dynamic portrayal of Ben-Gurion as a superhero.[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Recommended Clips: 7[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Strategic Reasoning: Two clips allow for a clear narrative arc: setup and climax.  More clips would compromise pacing and...[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Cost Efficiency: 0.70[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Content Quality: 1.00[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO - 💾 Mission plan saved to session: outputs/israeli_pm_marvel_ep1_he_test/decisions/mission_plan.json[0m
+[36m2025-07-27 08:02:50 - src.core.decision_framework - DEBUG - 🎯 Decision: num_clips = 7 (source: ai_agent, confidence: 0.90)[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO - 💾 Decisions saved to session: outputs/israeli_pm_marvel_ep1_he_test/decisions/core_decisions.json[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO - ✅ All core decisions made and saved[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Duration: 50s[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Platform: instagram[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Style: cinematic[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Tone: darkly_humorous[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Visual Style: marvel comics[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Voice Strategy: variety[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Clips: 7 clips[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Clip Durations: [7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143][0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Cost Efficiency: 0.70[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Content Quality: 1.00[0m
+[32m2025-07-27 08:02:50 - src.core.decision_framework - INFO -    Balance Score: 0.85[0m
+[32m2025-07-27 08:02:50 - src.workflows.generate_viral_video - INFO - ✅ All decisions made upfront - propagating to system[0m
+[32m2025-07-27 08:02:50 - src.agents.working_orchestrator - INFO - ✅ Core decisions received: 7 clips, [7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143][0m
+[32m2025-07-27 08:02:50 - src.agents.working_orchestrator - INFO - 🔄 Activating existing session: israeli_pm_marvel_ep1_he_test[0m
+[36m2025-07-27 08:02:50 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-27 08:02:50 - src.agents.voice_director_agent - INFO - 🎭 Voice Director Agent initialized with AI-powered voice selection[0m
+[32m2025-07-27 08:02:50 - src.utils.text_validator - INFO - ✅ Text Validator initialized[0m
+[32m2025-07-27 08:02:50 - src.generators.enhanced_script_processor - INFO - ✅ Enhanced Script Processor initialized[0m
+[32m2025-07-27 08:02:50 - src.generators.rtl_validator - INFO - ✅ RTL Validator initialized with Gemini AI[0m
+[36m2025-07-27 08:02:51 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-27 08:02:51 - src.agents.voice_director_agent - INFO - 🎭 Voice Director Agent initialized with AI-powered voice selection[0m
+[32m2025-07-27 08:02:51 - src.generators.enhanced_multilang_tts - INFO - ✅ Enhanced Multilingual TTS client initialized[0m
+[32m2025-07-27 08:02:51 - src.generators.integrated_multilang_generator - INFO - ✅ Integrated Multilingual Generator initialized with AI agents[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO - 🎬 WorkingOrchestrator initialized[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Mission: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה.[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Platform: instagram[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Duration: 50s[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Mode: enhanced[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Style: cinematic[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Tone: darkly_humorous[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Target Audience: general audience[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Visual Style: marvel comics[0m
+[32m2025-07-27 08:02:51 - src.generators.director - INFO - Director initialized with model: gemini-2.5-flash-lite[0m
+[36m2025-07-27 08:02:51 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-27 08:02:51 - src.agents.voice_director_agent - INFO - 🎭 Voice Director Agent initialized with AI-powered voice selection[0m
+[32m2025-07-27 08:02:51 - src.utils.text_validator - INFO - ✅ Text Validator initialized[0m
+[32m2025-07-27 08:02:51 - src.generators.enhanced_script_processor - INFO - ✅ Enhanced Script Processor initialized[0m
+[32m2025-07-27 08:02:51 - src.utils.session_manager - INFO - 📁 Created missing subdirectory: agent_discussions[0m
+[32m2025-07-27 08:02:51 - src.agents.multi_agent_discussion - INFO - ✅ Session-managed discussions: israeli_pm_marvel_ep1_he_test[0m
+[32m2025-07-27 08:02:51 - src.agents.multi_agent_discussion - INFO - 🎭 Discussion visualizer initialized with session dir: outputs/israeli_pm_marvel_ep1_he_test[0m
+[32m2025-07-27 08:02:51 - src.agents.multi_agent_discussion - INFO - 🎭 Multi-agent discussion system initialized[0m
+[32m2025-07-27 08:02:51 - src.agents.multi_agent_discussion - INFO -    Session: israeli_pm_marvel_ep1_he_test[0m
+[32m2025-07-27 08:02:51 - src.agents.multi_agent_discussion - INFO -    Agents available: 22[0m
+[32m2025-07-27 08:02:51 - src.agents.multi_agent_discussion - INFO -    Session-managed discussions: ✅[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO - 🎬 Enhanced Working Orchestrator initialized (enhanced)[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Mission: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה.[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Platform: instagram[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Duration: 50s[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Session: israeli_pm_marvel_ep1_he_test[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Mode: enhanced[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO -    Agents: 7[0m
+[32m2025-07-27 08:02:51 - src.workflows.generate_viral_video - INFO - 🌍 Languages: he[0m
+[32m2025-07-27 08:02:51 - src.workflows.generate_viral_video - INFO - 📝 RTL languages detected - will handle right-to-left text properly[0m
+[32m2025-07-27 08:02:51 - src.workflows.generate_viral_video - INFO - 🎬 Starting enhanced AI agent video generation[0m
+[32m2025-07-27 08:02:51 - src.agents.working_orchestrator - INFO - 🎬 Starting enhanced AI agent video generation[0m
+[32m2025-07-27 08:02:52 - src.agents.working_orchestrator - INFO - 🎬 Frame Continuity Decision: ❌ DISABLED[0m
+[32m2025-07-27 08:02:52 - src.agents.working_orchestrator - INFO -    Confidence: 0.80[0m
+[32m2025-07-27 08:02:52 - src.agents.working_orchestrator - INFO -    Reason: The content, described with 'comic book explosion,' 'popping out,' and 'energy effects,' strongly suggests a fast-paced, stylized, and non-realistic visual approach that benefits from dynamic jump cuts to emphasize impact and comedic timing.[0m
+[32m2025-07-27 08:02:52 - src.agents.working_orchestrator - INFO - 🤝 Conducting AI agent discussions...[0m
+[32m2025-07-27 08:02:52 - src.agents.multi_agent_discussion - INFO - 🎭 Starting agent discussion: Duration & Timing Validation[0m
+[32m2025-07-27 08:02:52 - src.agents.multi_agent_discussion - INFO - 👥 Participating agents: AudioMaster, CutMaster, SyncMaster[0m
+[32m2025-07-27 08:02:52 - src.agents.discussion_visualizer - INFO - 🎭 Starting discussion: Duration & Timing Validation[0m
+[32m2025-07-27 08:02:52 - src.agents.multi_agent_discussion - INFO - 🔄 Discussion round 1/10[0m
+[32m2025-07-27 08:02:54 - src.agents.discussion_visualizer - INFO - 💬 AudioMaster: To make this Marvel-esque comic explosion of Ben-Gurion engaging on Instagram, we need punchy, dynam...[0m
+[32m2025-07-27 08:02:54 - src.agents.multi_agent_discussion - INFO - 💬 AudioMaster: To make this Marvel-esque comic explosion of Ben-Gurion engaging on Instagram, we need punchy, dynam...[0m
+[32m2025-07-27 08:02:56 - src.agents.discussion_visualizer - INFO - 💬 CutMaster: For this dynamic 'Marvel comic explosion' of Ben-Gurion, we must precisely time each visual cue and ...[0m
+[32m2025-07-27 08:02:56 - src.agents.multi_agent_discussion - INFO - 💬 CutMaster: For this dynamic 'Marvel comic explosion' of Ben-Gurion, we must precisely time each visual cue and ...[0m
+[32m2025-07-27 08:02:57 - src.agents.discussion_visualizer - INFO - 💬 SyncMaster: To maximize engagement on Instagram for this 'Marvel comic explosion' of Ben-Gurion, we need to sync...[0m
+[32m2025-07-27 08:02:57 - src.agents.multi_agent_discussion - INFO - 💬 SyncMaster: To maximize engagement on Instagram for this 'Marvel comic explosion' of Ben-Gurion, we need to sync...[0m
+[32m2025-07-27 08:02:57 - src.agents.multi_agent_discussion - INFO - 📊 Consensus level: 1.00[0m
+[32m2025-07-27 08:02:57 - src.agents.discussion_visualizer - INFO - 📊 Consensus level: 1.00 (Round 1)[0m
+[32m2025-07-27 08:02:57 - src.agents.multi_agent_discussion - INFO - ✅ Consensus reached![0m
+[32m2025-07-27 08:02:57 - src.agents.discussion_visualizer - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds (4.9s)[0m
+[32m2025-07-27 08:02:57 - src.agents.discussion_visualizer - INFO - 📊 Discussion report saved: outputs/israeli_pm_marvel_ep1_he_test/agent_discussions/report_duration_timing_validation.md[0m
+[32m2025-07-27 08:02:57 - src.utils.session_manager - INFO - 💾 Saved discussion to session: duration_validation[0m
+[32m2025-07-27 08:02:57 - src.agents.multi_agent_discussion - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds[0m
+[32m2025-07-27 08:02:57 - src.agents.multi_agent_discussion - INFO - 🎭 Starting agent discussion: Script Strategy & Viral Optimization[0m
+[32m2025-07-27 08:02:57 - src.agents.multi_agent_discussion - INFO - 👥 Participating agents: StoryWeaver, VisionCraft, AudioMaster[0m
+[32m2025-07-27 08:02:57 - src.agents.discussion_visualizer - INFO - 🎭 Starting discussion: Script Strategy & Viral Optimization[0m
+[32m2025-07-27 08:02:57 - src.agents.multi_agent_discussion - INFO - 🔄 Discussion round 1/10[0m
+[32m2025-07-27 08:02:59 - src.agents.discussion_visualizer - INFO - 💬 StoryWeaver: To make this 'Marvel comic explosion' of Ben-Gurion engaging on Instagram, we need to lean heavily i...[0m
+[32m2025-07-27 08:02:59 - src.agents.multi_agent_discussion - INFO - 💬 StoryWeaver: To make this 'Marvel comic explosion' of Ben-Gurion engaging on Instagram, we need to lean heavily i...[0m
+[32m2025-07-27 08:03:00 - src.agents.discussion_visualizer - INFO - 💬 VisionCraft: To make this 'Marvel comic explosion' of Ben-Gurion engaging on Instagram, we must deliver rapid-fir...[0m
+[32m2025-07-27 08:03:00 - src.agents.multi_agent_discussion - INFO - 💬 VisionCraft: To make this 'Marvel comic explosion' of Ben-Gurion engaging on Instagram, we must deliver rapid-fir...[0m
+[32m2025-07-27 08:03:02 - src.agents.discussion_visualizer - INFO - 💬 AudioMaster: To create an engaging Instagram video for this 'Marvel comic explosion' of Ben-Gurion, we must prior...[0m
+[32m2025-07-27 08:03:02 - src.agents.multi_agent_discussion - INFO - 💬 AudioMaster: To create an engaging Instagram video for this 'Marvel comic explosion' of Ben-Gurion, we must prior...[0m
+[32m2025-07-27 08:03:02 - src.agents.multi_agent_discussion - INFO - 📊 Consensus level: 1.00[0m
+[32m2025-07-27 08:03:02 - src.agents.discussion_visualizer - INFO - 📊 Consensus level: 1.00 (Round 1)[0m
+[32m2025-07-27 08:03:02 - src.agents.multi_agent_discussion - INFO - ✅ Consensus reached![0m
+[32m2025-07-27 08:03:02 - src.agents.discussion_visualizer - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds (4.8s)[0m
+[32m2025-07-27 08:03:02 - src.agents.discussion_visualizer - INFO - 📊 Discussion report saved: outputs/israeli_pm_marvel_ep1_he_test/agent_discussions/report_script_strategy_viral_optimization.md[0m
+[32m2025-07-27 08:03:02 - src.utils.session_manager - INFO - 💾 Saved discussion to session: script_strategy[0m
+[32m2025-07-27 08:03:02 - src.agents.multi_agent_discussion - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds[0m
+[32m2025-07-27 08:03:02 - src.agents.multi_agent_discussion - INFO - 🎭 Starting agent discussion: Visual Composition & Technical Approach[0m
+[32m2025-07-27 08:03:02 - src.agents.multi_agent_discussion - INFO - 👥 Participating agents: PixelForge, CutMaster, AudioMaster[0m
+[32m2025-07-27 08:03:02 - src.agents.discussion_visualizer - INFO - 🎭 Starting discussion: Visual Composition & Technical Approach[0m
+[32m2025-07-27 08:03:02 - src.agents.multi_agent_discussion - INFO - 🔄 Discussion round 1/10[0m
+[32m2025-07-27 08:03:04 - src.agents.discussion_visualizer - INFO - 💬 PixelForge: To achieve optimal engagement for the 'Marvel comic explosion' of Ben-Gurion on Instagram, the visua...[0m
+[32m2025-07-27 08:03:04 - src.agents.multi_agent_discussion - INFO - 💬 PixelForge: To achieve optimal engagement for the 'Marvel comic explosion' of Ben-Gurion on Instagram, the visua...[0m
+[32m2025-07-27 08:03:06 - src.agents.discussion_visualizer - INFO - 💬 CutMaster: To make this 'Marvel comic explosion' of David Ben-Gurion truly pop on Instagram, we need to lean he...[0m
+[32m2025-07-27 08:03:06 - src.agents.multi_agent_discussion - INFO - 💬 CutMaster: To make this 'Marvel comic explosion' of David Ben-Gurion truly pop on Instagram, we need to lean he...[0m
+[32m2025-07-27 08:03:07 - src.agents.discussion_visualizer - INFO - 💬 AudioMaster: To make this 'Marvel comic explosion' of Ben-Gurion engaging on Instagram, we need punchy, dynamic a...[0m
+[32m2025-07-27 08:03:07 - src.agents.multi_agent_discussion - INFO - 💬 AudioMaster: To make this 'Marvel comic explosion' of Ben-Gurion engaging on Instagram, we need punchy, dynamic a...[0m
+[32m2025-07-27 08:03:07 - src.agents.multi_agent_discussion - INFO - 📊 Consensus level: 1.00[0m
+[32m2025-07-27 08:03:07 - src.agents.discussion_visualizer - INFO - 📊 Consensus level: 1.00 (Round 1)[0m
+[32m2025-07-27 08:03:07 - src.agents.multi_agent_discussion - INFO - ✅ Consensus reached![0m
+[32m2025-07-27 08:03:07 - src.agents.discussion_visualizer - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds (4.9s)[0m
+[32m2025-07-27 08:03:07 - src.agents.discussion_visualizer - INFO - 📊 Discussion report saved: outputs/israeli_pm_marvel_ep1_he_test/agent_discussions/report_visual_composition_technical_approach.md[0m
+[32m2025-07-27 08:03:07 - src.utils.session_manager - INFO - 💾 Saved discussion to session: visual_strategy[0m
+[32m2025-07-27 08:03:07 - src.agents.multi_agent_discussion - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds[0m
+[32m2025-07-27 08:03:07 - src.agents.multi_agent_discussion - INFO - 🎭 Starting agent discussion: Audio Production & Voice Strategy[0m
+[32m2025-07-27 08:03:07 - src.agents.multi_agent_discussion - INFO - 👥 Participating agents: AudioMaster, CutMaster, SyncMaster[0m
+[32m2025-07-27 08:03:07 - src.agents.discussion_visualizer - INFO - 🎭 Starting discussion: Audio Production & Voice Strategy[0m
+[32m2025-07-27 08:03:07 - src.agents.multi_agent_discussion - INFO - 🔄 Discussion round 1/10[0m
+[32m2025-07-27 08:03:08 - src.agents.discussion_visualizer - INFO - 💬 AudioMaster: For this 'Marvel comic explosion' of Ben-Gurion on Instagram, we must deliver high-impact, precisely...[0m
+[32m2025-07-27 08:03:08 - src.agents.multi_agent_discussion - INFO - 💬 AudioMaster: For this 'Marvel comic explosion' of Ben-Gurion on Instagram, we must deliver high-impact, precisely...[0m
+[32m2025-07-27 08:03:09 - src.agents.discussion_visualizer - INFO - 💬 CutMaster: To truly nail this 'Marvel comic explosion' of Ben-Gurion for Instagram, we need a highly punchy and...[0m
+[32m2025-07-27 08:03:09 - src.agents.multi_agent_discussion - INFO - 💬 CutMaster: To truly nail this 'Marvel comic explosion' of Ben-Gurion for Instagram, we need a highly punchy and...[0m
+[32m2025-07-27 08:03:11 - src.agents.discussion_visualizer - INFO - 💬 SyncMaster: To make this "Marvel comic explosion" of Ben-Gurion truly engaging for Instagram, we need to amplify...[0m
+[32m2025-07-27 08:03:11 - src.agents.multi_agent_discussion - INFO - 💬 SyncMaster: To make this "Marvel comic explosion" of Ben-Gurion truly engaging for Instagram, we need to amplify...[0m
+[32m2025-07-27 08:03:11 - src.agents.multi_agent_discussion - INFO - 📊 Consensus level: 1.00[0m
+[32m2025-07-27 08:03:11 - src.agents.discussion_visualizer - INFO - 📊 Consensus level: 1.00 (Round 1)[0m
+[32m2025-07-27 08:03:11 - src.agents.multi_agent_discussion - INFO - ✅ Consensus reached![0m
+[32m2025-07-27 08:03:11 - src.agents.discussion_visualizer - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds (3.8s)[0m
+[32m2025-07-27 08:03:11 - src.agents.discussion_visualizer - INFO - 📊 Discussion report saved: outputs/israeli_pm_marvel_ep1_he_test/agent_discussions/report_audio_production_voice_strategy.md[0m
+[32m2025-07-27 08:03:11 - src.utils.session_manager - INFO - 💾 Saved discussion to session: audio_strategy[0m
+[32m2025-07-27 08:03:11 - src.agents.multi_agent_discussion - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds[0m
+[32m2025-07-27 08:03:11 - src.agents.working_orchestrator - INFO - ✅ Completed 4 enhanced discussions[0m
+[32m2025-07-27 08:03:11 - src.agents.working_orchestrator - INFO - 📝 Generating enhanced script...[0m
+[32m2025-07-27 08:03:11 - src.agents.working_orchestrator - INFO - 🌍 Generating script in Hebrew[0m
+[32m2025-07-27 08:03:11 - src.generators.director - INFO - Writing script for פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה.
+
+IMPORTANT: Generate all script content, dialogue, and text in Hebrew. Do not translate the mission statement itself, but create the script output in Hebrew. (50s) on instagram[0m
+[32m2025-07-27 08:03:12 - src.generators.director - INFO - ✅ Context retrieved on attempt 1[0m
+[32m2025-07-27 08:03:12 - src.generators.director - INFO - Incorporated current information from Gemini's internet access[0m
+[32m2025-07-27 08:03:12 - src.generators.director - INFO - ✅ AI generated hook on attempt 1: בן-גוריון במוד קומיקס? "אני בלתי נמנע!" קא-פאו!...[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO - ✅ Content generation succeeded on attempt 1[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO - Optimizing script for virality[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO - Script generation completed successfully[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO - 📝 Generated script preview:[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO -    Length: 4715 characters[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO -    First 300 chars: {
+  "hook": {
+    "text": "\u05d1\u05df-\u05d2\u05d5\u05e8\u05d9\u05d5\u05df \u05d1\u05de\u05d5\u05d3 \u05e7\u05d5\u05de\u05d9\u05e7\u05e1? \"\u05d0\u05e0\u05d9 \u05d1\u05dc\u05ea\u05d9 \u05e0\u05de\u05e0\u05e2!\" \u05e7\u05d0-\u05e4\u05d0\u05d5!",
+    "type": "ai_generated",
+    "duration_seconds":...[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO -    Segment 1 text: דוד בן-גוריון, עם שיער איינשטיין אייקוני, פורץ כגיבור על מחולות המדבר....[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO -    Segment 2 text: הוא מכריז: 'אני בלתי נמנע!', והמנדט הבריטי נעלם בעשן קומיקס....[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO -    Segment 3 text: הכרזת העצמאות מתפוצצת עם פאנלים דרמטיים, קא-פאו!...[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO -    Segment 4 text: בישיבות הממשלה, הוא מפגין עמידות ראש ביוגה....[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO -    Segment 5 text: בניית קיבוצים זוהרת באפקטי אנרגיה....[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO -    Segment 6 text: הוא פורש למדבר, אך זכרו נשאר....[0m
+[32m2025-07-27 08:03:13 - src.generators.director - INFO -    Segment 7 text: הקריאה מהדהדת: 'בן-גוריון יחזור!', דגל ישראל מתנופף....[0m
+[32m2025-07-27 08:03:13 - src.generators.enhanced_script_processor - INFO - 📝 Processing script for TTS optimization (he)[0m
+[32m2025-07-27 08:03:13 - src.generators.enhanced_script_processor - INFO - 🎯 Target duration: 50 seconds[0m
+[32m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - INFO - ✅ Duration match: 47.5s (target: 50s)[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Script text is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 0 is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 1 is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 2 is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 3 is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 4 is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 5 is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 6 is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 7 is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 8 is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 9 is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 10 is clean - no issues found[0m
+[36m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 11 is clean - no issues found[0m
+[32m2025-07-27 08:03:21 - src.generators.enhanced_script_processor - INFO - ✅ AI enhanced script: 84 words[0m
+[32m2025-07-27 08:03:21 - src.agents.working_orchestrator - INFO - ✅ Script generation completed successfully[0m
+[32m2025-07-27 08:03:21 - src.agents.working_orchestrator - INFO - 🧠 Making comprehensive AI decisions...[0m
+[32m2025-07-27 08:03:21 - src.agents.working_orchestrator - INFO - ✅ Using frame continuity decision: False[0m
+[32m2025-07-27 08:03:21 - src.agents.voice_director_agent - INFO - 🎭 AI analyzing content for voice selection: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה.[0m
+[32m2025-07-27 08:03:22 - src.agents.voice_director_agent - INFO - 🎭 AI Voice Strategy: single[0m
+[32m2025-07-27 08:03:22 - src.agents.voice_director_agent - INFO - 🗣️ Distinct Speakers: False[0m
+[32m2025-07-27 08:03:22 - src.agents.voice_director_agent - INFO - 👥 Speaker Count: 1[0m
+[32m2025-07-27 08:03:22 - src.agents.voice_director_agent - INFO - 🎤 Primary Personality: comedian[0m
+[32m2025-07-27 08:03:22 - src.agents.voice_director_agent - INFO - 👥 Multiple Voices: False[0m
+[32m2025-07-27 08:03:22 - src.agents.voice_director_agent - INFO - 🧠 AI Reasoning: The content is a comedic, entertaining piece with a single narrative voice. There are no distinct ch...[0m
+[32m2025-07-27 08:03:22 - src.agents.voice_director_agent - INFO - 🎤 Selected voice: he-IL-Wavenet-B (comedian, male, neutral)[0m
+[32m2025-07-27 08:03:22 - src.agents.voice_director_agent - INFO - 🎤 Generated voice config for 4 clips with 1 unique voices[0m
+[32m2025-07-27 08:03:32 - src.agents.working_orchestrator - INFO - ✅ Made 6 comprehensive AI decisions[0m
+[32m2025-07-27 08:03:32 - src.agents.working_orchestrator - INFO - ✅ Decision making completed successfully[0m
+[32m2025-07-27 08:03:32 - src.agents.working_orchestrator - INFO - 🔍 DEBUG: Languages in config: [<Language.HEBREW: 'he'>][0m
+[32m2025-07-27 08:03:32 - src.agents.working_orchestrator - INFO - 🔍 DEBUG: Language count: 1[0m
+[32m2025-07-27 08:03:32 - src.agents.working_orchestrator - INFO - 🔍 DEBUG: Multiple languages check: False[0m
+[32m2025-07-27 08:03:32 - src.agents.working_orchestrator - INFO - 🎬 Generating enhanced video with AI decisions...[0m
+[32m2025-07-27 08:03:32 - src.generators.director - INFO - Director initialized with model: gemini-2.5-flash-lite[0m
+[36m2025-07-27 08:03:32 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-27 08:03:32 - src.agents.voice_director_agent - INFO - 🎭 Voice Director Agent initialized with AI-powered voice selection[0m
+[36m2025-07-27 08:03:32 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-27 08:03:32 - src.agents.overlay_positioning_agent - INFO - 🎯 OverlayPositioningAgent initialized with colorful hooks support[0m
+[36m2025-07-27 08:03:32 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-27 08:03:32 - src.agents.visual_style_agent - INFO - 🎨 VisualStyleAgent initialized[0m
+[32m2025-07-27 08:03:32 - src.utils.text_validator - INFO - ✅ Text Validator initialized[0m
+[32m2025-07-27 08:03:32 - src.generators.enhanced_script_processor - INFO - ✅ Enhanced Script Processor initialized[0m
+[32m2025-07-27 08:03:32 - src.generators.png_overlay_handler - INFO - ✅ PNG Overlay Handler initialized[0m
+[32m2025-07-27 08:03:32 - src.generators.gemini_image_client - INFO - 🎨 Real AI Image Generation client initialized[0m
+[32m2025-07-27 08:03:32 - src.generators.gemini_image_client - INFO - 📁 Images directory: outputs/gemini_images[0m
+[32m2025-07-27 08:03:32 - src.generators.gemini_image_client - INFO - 🎬 Clips directory: outputs/gemini_clips[0m
+[32m2025-07-27 08:03:32 - src.generators.gemini_image_client - INFO - ✨ Using Gemini 2.0 Flash Preview Image Generation model[0m
+[36m2025-07-27 08:03:32 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-27 08:03:32 - src.agents.voice_director_agent - INFO - 🎭 Voice Director Agent initialized with AI-powered voice selection[0m
+[32m2025-07-27 08:03:32 - src.generators.enhanced_multilang_tts - INFO - ✅ Enhanced Multilingual TTS client initialized[0m
+[32m2025-07-27 08:03:32 - src.generators.hashtag_generator - INFO - 🏷️ HashtagGenerator initialized[0m
+[36m2025-07-27 08:03:32 - src.generators.base_veo_client - DEBUG - Initializing log file for session tracking[0m
+[36m2025-07-27 08:03:32 - src.utils.session_manager - DEBUG - Log file not yet created: logs/viral_video_20250727.log[0m
+[36m2025-07-27 08:03:32 - src.generators.vertex_ai_veo2_client - DEBUG - Initializing log file for session tracking[0m
+[36m2025-07-27 08:03:32 - src.utils.session_manager - DEBUG - Log file not yet created: logs/viral_video_20250727.log[0m
+[36m2025-07-27 08:03:33 - src.generators.base_veo_client - DEBUG - 🔑 Access token refreshed[0m
+[36m2025-07-27 08:03:35 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-27 08:03:35 - src.generators.base_veo_client - INFO - ✅ VertexAIVeo2Client initialized successfully[0m
+[36m2025-07-27 08:03:36 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-27 08:03:36 - src.generators.vertex_ai_veo2_client - INFO - ✅ VertexAIVeo2Client initialized successfully[0m
+[36m2025-07-27 08:03:37 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO - 🎬 VideoGenerator initialized with clean OOP architecture[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO -    VEO Models: [<VeoModel.VEO2: 'veo-2.0-generate-001'>][0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO -    Prefer VEO-3: ❌[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO -    Vertex AI: ✅[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO -    AI Agents: ✅ (Voice, Positioning, Style, Script)[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO -    Session-aware: ✅ (Files will be organized in session directories)[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO - 🔐 Authentication: ✅ SUCCESS[0m
+[32m2025-07-27 08:03:37 - src.agents.working_orchestrator - INFO - 🎯 Using core decisions: 7 clips, [7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143, 7.142857142857143][0m
+[32m2025-07-27 08:03:37 - src.agents.working_orchestrator - INFO - ✅ Created enhanced video config with 6 AI decisions[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO - 🎯 Stored mission context: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה.[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO - 📱 Stored platform context: instagram[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO - 🔄 Using existing session: israeli_pm_marvel_ep1_he_test[0m
+[32m2025-07-27 08:03:37 - src.utils.session_context - INFO - ✅ Session context initialized for israeli_pm_marvel_ep1_he_test at outputs/israeli_pm_marvel_ep1_he_test[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO - 🎬 Starting video generation for: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה.[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO -    Duration: 50s[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO -    Platform: instagram[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO -    Session: israeli_pm_marvel_ep1_he_test[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO -    Session Directory: outputs/israeli_pm_marvel_ep1_he_test/[0m
+[32m2025-07-27 08:03:37 - src.utils.session_manager - INFO - 📝 Logged generation step: video_generation_started - in_progress[0m
+[32m2025-07-27 08:03:37 - src.generators.video_generator - INFO - 🎯 Initialized Duration Coordinator with target: 50s[0m
+[36m2025-07-27 08:03:38 - src.generators.base_veo_client - DEBUG - 🔑 Access token refreshed[0m
+[36m2025-07-27 08:03:39 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-27 08:03:39 - src.generators.base_veo_client - INFO - ✅ VertexAIVeo2Client initialized successfully[0m
+[36m2025-07-27 08:03:40 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-27 08:03:40 - src.generators.vertex_ai_veo2_client - INFO - ✅ VertexAIVeo2Client initialized successfully[0m
+[36m2025-07-27 08:03:41 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-27 08:03:41 - src.generators.video_generator - INFO - 📝 Processing script with AI[0m
+[32m2025-07-27 08:03:41 - src.generators.video_generator - INFO - 🎬 Director generating narrative script for: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!...[0m
+[32m2025-07-27 08:03:41 - src.generators.director - INFO - Writing script for פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה. (50s) on instagram[0m
+[32m2025-07-27 08:03:42 - src.generators.director - INFO - ✅ AI generated hook on attempt 1: בן-גוריון, איינשטיין, קא-פאו! המנדט נעלם, העצמאות ...[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO - ✅ Content generation succeeded on attempt 1[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO - Optimizing script for virality[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO - Script generation completed successfully[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO - 📝 Generated script preview:[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO -    Length: 4335 characters[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO -    First 300 chars: {
+  "hook": {
+    "text": "\u05d1\u05df-\u05d2\u05d5\u05e8\u05d9\u05d5\u05df, \u05d0\u05d9\u05d9\u05e0\u05e9\u05d8\u05d9\u05d9\u05df, \u05e7\u05d0-\u05e4\u05d0\u05d5! \u05d4\u05de\u05e0\u05d3\u05d8 \u05e0\u05e2\u05dc\u05dd, \u05d4\u05e2\u05e6\u05de\u05d0\u05d5\u05ea \u05de\u05ea\u05e4\u05d5\u05e6\u0...[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO -    Segment 1 text: פיצוץ קומיקס מארוול! דוד בן-גוריון, עם שיער איינשטיין לבן איקוני....[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO -    Segment 2 text: הוא פורץ מחולות המדבר. 'אני בלתי נמנע!'...[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO -    Segment 3 text: המנדט הבריטי נעלם בעשן קומיקס....[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO -    Segment 4 text: הכרזת העצמאות מתפוצצת בפאנלים....[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO -    Segment 5 text: קא-פאו! עמידות ראש ביוגה בישיבות הממשלה....[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO -    Segment 6 text: בניית קיבוצים עם אפקטי אנרגיה....[0m
+[32m2025-07-27 08:03:43 - src.generators.director - INFO -    Segment 7 text: פרישה למדבר. 'בן-גוריון יחזור!' דגל ישראל בפינה....[0m
+[32m2025-07-27 08:03:43 - src.generators.video_generator - INFO - ✅ Director generated narrative script: פיצוץ קומיקס מארוול! דוד בן-גוריון, עם שיער איינשטיין לבן איקוני. הוא פורץ מחולות המדבר. 'אני בלתי נמנע!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות מתפוצצת בפאנלים. קא-פאו! עמידות ראש ביוגה בישיבות...[0m
+[32m2025-07-27 08:03:43 - src.generators.video_generator - INFO - 📝 Script to process: פיצוץ קומיקס מארוול! דוד בן-גוריון, עם שיער איינשטיין לבן איקוני. הוא פורץ מחולות המדבר. 'אני בלתי נ...[0m
+[32m2025-07-27 08:03:43 - src.generators.enhanced_script_processor - INFO - 📝 Processing script for TTS optimization (he)[0m
+[32m2025-07-27 08:03:43 - src.generators.enhanced_script_processor - INFO - 🎯 Target duration: 50 seconds[0m
+[32m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - INFO - ✅ Duration match: 49.3s (target: 50s)[0m
+[36m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Script text is clean - no issues found[0m
+[36m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 0 is clean - no issues found[0m
+[36m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 1 is clean - no issues found[0m
+[36m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 2 is clean - no issues found[0m
+[36m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 3 is clean - no issues found[0m
+[36m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 4 is clean - no issues found[0m
+[36m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 5 is clean - no issues found[0m
+[36m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 6 is clean - no issues found[0m
+[36m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 7 is clean - no issues found[0m
+[36m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 8 is clean - no issues found[0m
+[36m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 9 is clean - no issues found[0m
+[32m2025-07-27 08:03:49 - src.generators.enhanced_script_processor - INFO - ✅ AI enhanced script: 60 words[0m
+[32m2025-07-27 08:03:49 - src.generators.video_generator - INFO - 📝 Processed script: ‏פיצוץ קומיקס! דוד בן-גוריון, עם שיער לבן איינשטייני, פורץ מחולות המדבר. 'אני בלתי נמנע!' הוא מכריז....[0m
+[32m2025-07-27 08:03:49 - src.utils.session_manager - INFO - 💾 Saved original script to session[0m
+[32m2025-07-27 08:03:49 - src.utils.session_manager - INFO - 💾 Saved processed script to session[0m
+[32m2025-07-27 08:03:49 - src.generators.video_generator - INFO - 💾 Saved processed script to session[0m
+[32m2025-07-27 08:03:49 - src.utils.session_manager - INFO - 💾 Saved processing_result script to session[0m
+[32m2025-07-27 08:03:49 - src.generators.video_generator - INFO - ✅ Script processed: 60 words[0m
+[32m2025-07-27 08:03:49 - src.generators.video_generator - INFO - ✅ Session data saved: outputs/israeli_pm_marvel_ep1_he_test/session_data.json[0m
+[32m2025-07-27 08:03:49 - src.generators.video_generator - INFO - 📝 Script duration analysis: 27.9s[0m
+[32m2025-07-27 08:03:49 - src.generators.video_generator - INFO - 🎨 Getting AI visual style decision[0m
+[32m2025-07-27 08:03:49 - src.agents.visual_style_agent - INFO - 🎨 Analyzing optimal visual style for: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה.[0m
+[32m2025-07-27 08:03:49 - src.agents.visual_style_agent - INFO - 👥 Audience: general audience, Platform: instagram[0m
+[32m2025-07-27 08:03:50 - src.agents.visual_style_agent - INFO - 🎨 Style Decision: comic[0m
+[32m2025-07-27 08:03:50 - src.agents.visual_style_agent - INFO - 🎨 Color Palette: vibrant[0m
+[32m2025-07-27 08:03:50 - src.agents.visual_style_agent - INFO - 📊 Engagement Prediction: high[0m
+[32m2025-07-27 08:03:50 - src.agents.visual_style_agent - INFO - 💭 Reasoning: The prompt explicitly mentions 'Marvel comics explosion', 'comic smoke', and 'exploding panels', str...[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - ✅ Style decision: comic[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🎯 Getting AI positioning decision[0m
+[32m2025-07-27 08:03:50 - src.agents.overlay_positioning_agent - INFO - 🎯 Analyzing optimal positioning for: פיצוץ קומיקס מארוול\! דוד בן-גוריון עם שיער איינשטיין לבן איקוני פורץ מחולות המדבר. 'אני בלתי נמנע\!' המנדט הבריטי נעלם בעשן קומיקס. הכרזת העצמאות עם פאנלים מתפוצצים. קא-פאו\! עמידות ראש ביוגה בישיבות הממשלה. בניית קיבוצים עם אפקטי אנרגיה. פרישה למדבר. 'בן-גוריון יחזור\!' דגל ישראל בפינה השמאלית העליונה.[0m
+[32m2025-07-27 08:03:50 - src.agents.overlay_positioning_agent - INFO - 📱 Platform: instagram, Style: comic, Duration: 50.0s[0m
+[32m2025-07-27 08:03:50 - src.agents.overlay_positioning_agent - INFO - 🎯 Positioning Decision: top_left[0m
+[32m2025-07-27 08:03:50 - src.agents.overlay_positioning_agent - INFO - 📋 Strategy: static[0m
+[32m2025-07-27 08:03:50 - src.agents.overlay_positioning_agent - INFO - 💭 Reasoning: The instruction specifies '    ' (Israeli flag in the top left corner). This dictates the primary ov...[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - ✅ Positioning decision: bottom_third[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🎬 Generating video clips with VEO factory[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🎬 Continuous generation: ❌ DISABLED[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🎬 Frame continuity: ✅ ENABLED[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🎬 Generating standard video clips[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🎵 Found 0 audio segments in session[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🎯 Using core decisions: 7 clips from centralized decision framework[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 📊 Note: 10 script segments will be distributed across 7 video clips[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🎯 Using core decisions clip durations: ['7.1s', '7.1s', '7.1s', '7.1s', '7.1s', '7.1s', '7.1s'][0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - ⏱️ Total from core decisions: 50.0s (Target: 50s)[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🚀 Using veo-2.0-generate-001 for video generation[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🎨 Creating visual prompt from segment: '‏פיצוץ קומיקס...'[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🤖 Using AI to generate visual prompt from segment: '‏פיצוץ קומיקס...'[0m
+[32m2025-07-27 08:03:50 - src.generators.video_generator - INFO - 🎭 Using character from config: דוד בן-גוריון עם שיער לבן פרוע איקוני בסגנון איינשטיין זורם בדרמטיות, פנים עגולות, הבעה נחושה, לובש חולצת חאקי פשוטה כמו מייסד ישראל האמיתי[0m
+[32m2025-07-27 08:03:51 - src.generators.video_generator - INFO - 🎯 AI-generated visual prompt: 'David Ben-Gurion with his distinctive white Einstein-like hair flowing dramatically, a round face, and a determined expression, wearing a simple khaki shirt like the true founder of Israel, explodes out of desert sands in a comic book explosion with 'Kaboom!' sound effects, the British Mandate vanishing in comic book smoke, followed by the Declaration of Independence with explosive panels, while in the background, kibbutzim are being built with energy effects and a tenacious headstand is performed during a government session, all in a vibrant Marvel Comics style with the Israeli flag in the upper left corner., no text overlays'[0m
+[36m2025-07-27 08:03:51 - src.generators.video_generator - DEBUG - ⚠️ Character 'דוד בן-גוריון עם שיער לבן פרוע איקוני בסגנון איינשטיין זורם בדרמטיות, פנים עגולות, הבעה נחושה, לובש חולצת חאקי פשוטה כמו מייסד ישראל האמיתי' may not be explicitly mentioned in prompt[0m
+[32m2025-07-27 08:03:51 - src.generators.video_generator - INFO - ⏱️ Clip 1 Duration: 7.1s (optimal video duration)[0m
+[32m2025-07-27 08:03:51 - src.agents.visual_style_agent - INFO - 🎨 Found partial style match: 'marvel comics' → 'comic'[0m
+[32m2025-07-27 08:03:51 - src.generators.video_generator - INFO - 🎭 Preserved character description at start of prompt[0m
+[32m2025-07-27 08:03:51 - src.generators.video_generator - INFO - 💾 Saved VEO prompt for clip 1 to: outputs/israeli_pm_marvel_ep1_he_test/logs/veo_prompt_clip_1.json[0m
+[32m2025-07-27 08:03:51 - src.generators.video_generator - INFO - 🎬 Generating VEO clip 1/7: David Ben-Gurion with his distinctive white Einste... (duration: 7.1s)[0m
+[32m2025-07-27 08:03:51 - src.generators.video_generator - INFO - 📝 FULL VEO PROMPT for clip 1: David Ben-Gurion with his distinctive white Einstein-like hair flowing dramatically, a round face, and a determined expression, wearing a simple khaki shirt like the true founder of Israel, explodes out of desert sands in a comic book explosion with 'Kaboom!' sound effects, the British Mandate vanishing in comic book smoke, followed by the Declaration of Independence with explosive panels, while in the background, kibbutzim are being built with energy effects and a tenacious headstand is performed during a government session, all in a vibrant Marvel Comics style with the Israeli flag in the upper left corner., no text overlays, comic book style, bold colors, action-oriented[0m
+[32m2025-07-27 08:03:51 - src.generators.vertex_ai_veo2_client - INFO - 🎬 Starting VEO-2 generation for clip: clip_1[0m
+[32m2025-07-27 08:03:51 - src.generators.vertex_ai_veo2_client - INFO - ⏱️ VEO-2 Duration Requested: 7.142857142857143s[0m
+[32m2025-07-27 08:03:51 - src.generators.vertex_ai_veo2_client - INFO - 📝 VEO-2 Prompt: David Ben-Gurion with his distinctive white Einstein-like hair flowing dramatically, a round face, a...[0m
+[32m2025-07-27 08:03:51 - src.generators.vertex_ai_veo2_client - INFO - 📐 VEO-2 Aspect Ratio: 9:16[0m
+[32m2025-07-27 08:03:52 - src.generators.vertex_ai_veo2_client - INFO - ✅ VEO-2 request successful: {'name': 'projects/viralgen-464411/locations/us-central1/publishers/google/models/veo-2.0-generate-001/operations/edc67456-eb54-4e9b-9e42-f12c2aa0a49c'}[0m
+[32m2025-07-27 08:03:52 - src.generators.vertex_ai_veo2_client - INFO - ⏳ Polling VEO-2 operation using fetchPredictOperation: edc67456-eb54-4e9b-9e42-f12c2aa0a49c[0m
+[32m2025-07-27 08:03:53 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 1/60)[0m
+[32m2025-07-27 08:04:07 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 2/60)[0m
+[32m2025-07-27 08:04:20 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 3/60)[0m

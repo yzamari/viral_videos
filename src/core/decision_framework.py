@@ -320,8 +320,33 @@ class DecisionFramework:
     
     def _decide_language(self, cli_args: Dict[str, Any], user_config: Dict[str, Any]) -> Language:
         """Decide content language"""
-        language = Language.ENGLISH_US  # Default for now
+        # Check CLI args for languages
+        if cli_args.get('languages'):
+            languages = cli_args['languages']
+            if languages and len(languages) > 0:
+                # First language in the list is the primary language
+                primary_language = languages[0]
+                self._record_decision('language', primary_language.value, DecisionSource.USER_CLI, 1.0, f"Primary language from CLI: {primary_language.value}")
+                # Also record all languages for multi-language support
+                language_values = [lang.value for lang in languages]
+                self._record_decision('all_languages', language_values, DecisionSource.USER_CLI, 1.0, f"All languages: {', '.join(language_values)}")
+                return primary_language
+        
+        # Check user config
+        if user_config and user_config.get('languages'):
+            languages = user_config['languages']
+            if languages and len(languages) > 0:
+                primary_language = languages[0]
+                self._record_decision('language', primary_language.value, DecisionSource.USER_CONFIG, 0.9, f"Primary language from config: {primary_language.value}")
+                # Also record all languages
+                language_values = [lang.value for lang in languages]
+                self._record_decision('all_languages', language_values, DecisionSource.USER_CONFIG, 0.9, f"All languages: {', '.join(language_values)}")
+                return primary_language
+        
+        # Default to English
+        language = Language.ENGLISH_US
         self._record_decision('language', language.value, DecisionSource.SYSTEM_DEFAULT, 1.0, "Default language")
+        self._record_decision('all_languages', [language.value], DecisionSource.SYSTEM_DEFAULT, 1.0, "Default language only")
         return language
     
     def _decide_style(self, cli_args: Dict[str, Any], user_config: Dict[str, Any], ai_available: bool) -> str:
@@ -439,19 +464,46 @@ class DecisionFramework:
     
     def _decide_content_elements(self, mission: str, platform: Platform, ai_available: bool) -> tuple:
         """Decide hook and call-to-action"""
-        if ai_available:
-            # AI would generate these based on mission and platform
-            hook = "Amazing content ahead!"
-            cta = "Follow for more!"
-            self._record_decision('hook', hook, DecisionSource.AI_AGENT, 0.8, "AI-generated hook")
-            self._record_decision('call_to_action', cta, DecisionSource.AI_AGENT, 0.8, "AI-generated CTA")
+        # Check if we're generating Hebrew content
+        language = self.all_languages[0] if hasattr(self, 'all_languages') and self.all_languages else Language.ENGLISH_US
+        
+        if language == Language.HEBREW:
+            # Hebrew defaults
+            if ai_available:
+                hook = "גלו את הסיפור המדהים!"
+                cta = self._get_hebrew_cta_for_platform(platform)
+                self._record_decision('hook', hook, DecisionSource.AI_AGENT, 0.8, "AI-generated Hebrew hook")
+                self._record_decision('call_to_action', cta, DecisionSource.AI_AGENT, 0.8, "AI-generated Hebrew CTA")
+            else:
+                hook = "בואו לראות!"
+                cta = "עקבו לעוד!"
+                self._record_decision('hook', hook, DecisionSource.SYSTEM_DEFAULT, 0.5, "Default Hebrew hook")
+                self._record_decision('call_to_action', cta, DecisionSource.SYSTEM_DEFAULT, 0.5, "Default Hebrew CTA")
         else:
-            hook = "Check this out!"
-            cta = "Like and subscribe!"
-            self._record_decision('hook', hook, DecisionSource.SYSTEM_DEFAULT, 0.5, "Default hook")
-            self._record_decision('call_to_action', cta, DecisionSource.SYSTEM_DEFAULT, 0.5, "Default CTA")
+            # English defaults
+            if ai_available:
+                # AI would generate these based on mission and platform
+                hook = "Amazing content ahead!"
+                cta = "Follow for more!"
+                self._record_decision('hook', hook, DecisionSource.AI_AGENT, 0.8, "AI-generated hook")
+                self._record_decision('call_to_action', cta, DecisionSource.AI_AGENT, 0.8, "AI-generated CTA")
+            else:
+                hook = "Check this out!"
+                cta = "Like and subscribe!"
+                self._record_decision('hook', hook, DecisionSource.SYSTEM_DEFAULT, 0.5, "Default hook")
+                self._record_decision('call_to_action', cta, DecisionSource.SYSTEM_DEFAULT, 0.5, "Default CTA")
         
         return hook, cta
+    
+    def _get_hebrew_cta_for_platform(self, platform: Platform) -> str:
+        """Get Hebrew CTA based on platform"""
+        hebrew_ctas = {
+            Platform.YOUTUBE: "הירשמו לעוד תוכן!",
+            Platform.TIKTOK: "עקבו לחלק 2! 👀",
+            Platform.INSTAGRAM: "שמרו לאחר כך! ❤️",
+            Platform.FACEBOOK: "שתפו אם זה עזר לכם!"
+        }
+        return hebrew_ctas.get(platform, "עקבו לעוד!")
     
     def _decide_voice_strategy(self, mission: str, duration: int, platform: Platform, ai_available: bool) -> tuple:
         """Decide voice strategy"""

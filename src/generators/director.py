@@ -86,7 +86,9 @@ class Director:
             main_content = self._structure_content(
                 mission, duration, patterns, current_context
             )
-            cta = self._create_cta(platform, category, mission)
+            # Pass target_language from patterns to _create_cta
+            target_language = patterns.get('target_language') if patterns else None
+            cta = self._create_cta(platform, category, mission, target_language)
 
             # Assemble complete script
             script = self._assemble_script(
@@ -516,8 +518,39 @@ class Director:
         self,
         platform: Platform,
         category: VideoCategory,
-        mission: str = None) -> Dict[str, str]:
+        mission: str = None,
+        target_language = None) -> Dict[str, str]:
         """Create platform-optimized call-to-action that reinforces the mission"""
+        
+        # Import Language enum to check Hebrew
+        from ..models.video_models import Language
+        
+        # Check if we need Hebrew CTAs
+        if target_language and target_language == Language.HEBREW:
+            # Hebrew CTAs by platform
+            hebrew_cta_templates = {
+                Platform.YOUTUBE: {
+                    "text": "הירשמו לעוד תוכן!",
+                    "visual": "Subscribe button animation",
+                    "action": "subscribe"
+                },
+                Platform.TIKTOK: {
+                    "text": "עקבו לחלק 2! 👀",
+                    "visual": "Follow button highlight",
+                    "action": "follow"
+                },
+                Platform.INSTAGRAM: {
+                    "text": "שמרו לאחר כך! ❤️",
+                    "visual": "Heart animation",
+                    "action": "save"
+                },
+                Platform.FACEBOOK: {
+                    "text": "שתפו אם זה עזר לכם!",
+                    "visual": "Share button",
+                    "action": "share"
+                }
+            }
+            return hebrew_cta_templates.get(platform, hebrew_cta_templates[Platform.YOUTUBE])
         
         # Determine if this is a mission (action-oriented) or topic (informational)
         is_mission = mission and any(action_word in mission.lower() for action_word in [

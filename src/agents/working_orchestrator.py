@@ -872,7 +872,8 @@ class WorkingOrchestrator:
         if target_language != Language.ENGLISH_US:
             language_name = {
                 Language.HEBREW: "Hebrew",
-                Language.ARABIC: "Arabic", 
+                Language.ARABIC: "Arabic",
+                Language.PERSIAN: "Persian/Farsi",
                 Language.FRENCH: "French",
                 Language.SPANISH: "Spanish",
                 Language.GERMAN: "German",
@@ -880,7 +881,9 @@ class WorkingOrchestrator:
                 Language.PORTUGUESE: "Portuguese",
                 Language.RUSSIAN: "Russian",
                 Language.CHINESE: "Chinese",
-                Language.JAPANESE: "Japanese"
+                Language.JAPANESE: "Japanese",
+                Language.ENGLISH_UK: "British English",
+                Language.ENGLISH_IN: "Indian English"
             }.get(target_language, "the target language")
             
             mission_with_language = f"{self.mission}\n\nIMPORTANT: Generate all script content, dialogue, and text in {language_name}. Do not translate the mission statement itself, but create the script output in {language_name}."
@@ -934,6 +937,10 @@ class WorkingOrchestrator:
                                       frame_continuity_decision: Dict[str, Any]) -> Dict[str, Any]:
         """Make comprehensive AI decisions based on mode"""
         logger.info("🧠 Making comprehensive AI decisions...")
+        
+        # Get target language from config
+        languages = config.get('languages', [Language.ENGLISH_US])
+        target_language = languages[0] if languages else Language.ENGLISH_US
 
         decisions = {}
 
@@ -1768,6 +1775,10 @@ class WorkingOrchestrator:
                     pass
                 logger.info("✅ Applied platform optimization from professional discussions")
 
+        # Get languages from config
+        languages = config.get('languages', [Language.ENGLISH_US])
+        primary_language = languages[0] if languages else Language.ENGLISH_US
+        
         # Enhanced configuration with platform and category for AI timing
         enhanced_config = GeneratedVideoConfig(
             mission=mission,  # mission must be first parameter
@@ -1787,6 +1798,8 @@ class WorkingOrchestrator:
             frame_continuity=frame_continuity,
             character=config.get('character'),  # Add character from config
             scene=config.get('scene'),  # Add scene from config
+            language=primary_language,  # Add primary language
+            languages=languages,  # Add all languages
             voice=config.get('voice'),  # Add specific voice from config
             multiple_voices=config.get('multiple_voices', False),  # Add multiple voices flag
             use_real_veo2=config.get('force_generation') != 'force_image_gen',
@@ -1978,6 +1991,10 @@ class WorkingOrchestrator:
             if self.core_decisions:
                 video_generator.core_decisions = self.core_decisions
             
+            # Get languages from config
+            languages = config.get('languages', [Language.ENGLISH_US])
+            primary_language = languages[0] if languages else Language.ENGLISH_US
+            
             # Create config based on cheap mode level
             cheap_config = GeneratedVideoConfig(
                 mission=self.mission,
@@ -1997,6 +2014,8 @@ class WorkingOrchestrator:
                 transitions=["none"] if cheap_mode else None,
                 character=config.get('character'),  # Add character from config
                 scene=config.get('scene'),  # Add scene from config
+                language=primary_language,  # Add primary language
+                languages=languages,  # Add all languages
                 voice=config.get('voice'),  # Add specific voice from config
                 multiple_voices=config.get('multiple_voices', False),  # Add multiple voices flag
                 background_music_style="none" if cheap_mode else "upbeat",

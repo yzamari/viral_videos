@@ -133,55 +133,7 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             )
             session_context = create_session_context(session_id)
         
-        # Initialize decision framework with API key for Mission Planning Agent
-        api_key = os.getenv("GOOGLE_AI_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
-        decision_framework = DecisionFramework(session_context, api_key)
-        
-        # Make all decisions upfront
-        cli_args = {
-            'mission': mission,
-            'platform': platform,
-            'category': category,
-            'duration': duration,
-            'style': style,
-            'tone': tone,
-            'target_audience': target_audience,
-            'visual_style': visual_style,
-            'mode': mode,
-            'cheap_mode': cheap_mode,
-            'cheap_mode_level': cheap_mode_level,
-            'theme': theme,
-            'style_reference': style_template or reference_style,
-            'continuous': content_continuity,
-            'frame_continuity': visual_continuity,
-            'character': character,
-            'scene': scene
-        }
-        
-        # CRITICAL: Make all decisions before any generation
-        core_decisions = await decision_framework.make_all_decisions(cli_args, ai_agents_available=True)
-        
-        logger.info("✅ All decisions made upfront - propagating to system")
-        
-        # Initialize working orchestrator with decisions
-        orchestrator = WorkingOrchestrator(
-            api_key=api_key,
-            mission=core_decisions.mission,
-            platform=core_decisions.platform,
-            category=core_decisions.category,
-            duration=core_decisions.duration_seconds,
-            style=core_decisions.style,
-            tone=core_decisions.tone,
-            target_audience=core_decisions.target_audience,
-            visual_style=core_decisions.visual_style,
-            mode=OrchestratorMode(core_decisions.mode.lower()) if core_decisions.mode else OrchestratorMode.ENHANCED,
-            session_id=session_id,
-            cheap_mode=core_decisions.cheap_mode,
-            cheap_mode_level=core_decisions.cheap_mode_level,
-            core_decisions=core_decisions  # Pass all decisions to orchestrator
-        )
-
-        # Convert language strings to Language enums
+        # Convert language strings to Language enums FIRST
         language_enums = []
         if languages:
             for lang_str in languages:
@@ -216,6 +168,56 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
                     language_enums.append(Language.ENGLISH_US)
         else:
             language_enums = [Language.ENGLISH_US]
+        
+        # Initialize decision framework with API key for Mission Planning Agent
+        api_key = os.getenv("GOOGLE_AI_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+        decision_framework = DecisionFramework(session_context, api_key)
+        
+        # Make all decisions upfront
+        cli_args = {
+            'mission': mission,
+            'platform': platform,
+            'category': category,
+            'duration': duration,
+            'style': style,
+            'tone': tone,
+            'target_audience': target_audience,
+            'visual_style': visual_style,
+            'mode': mode,
+            'cheap_mode': cheap_mode,
+            'cheap_mode_level': cheap_mode_level,
+            'theme': theme,
+            'style_reference': style_template or reference_style,
+            'continuous': content_continuity,
+            'frame_continuity': visual_continuity,
+            'character': character,
+            'scene': scene,
+            'languages': language_enums  # Pass the Language enum objects
+        }
+        
+        # CRITICAL: Make all decisions before any generation
+        core_decisions = await decision_framework.make_all_decisions(cli_args, ai_agents_available=True)
+        
+        logger.info("✅ All decisions made upfront - propagating to system")
+        
+        # Initialize working orchestrator with decisions
+        orchestrator = WorkingOrchestrator(
+            api_key=api_key,
+            mission=core_decisions.mission,
+            platform=core_decisions.platform,
+            category=core_decisions.category,
+            duration=core_decisions.duration_seconds,
+            style=core_decisions.style,
+            tone=core_decisions.tone,
+            target_audience=core_decisions.target_audience,
+            visual_style=core_decisions.visual_style,
+            mode=OrchestratorMode(core_decisions.mode.lower()) if core_decisions.mode else OrchestratorMode.ENHANCED,
+            session_id=session_id,
+            cheap_mode=core_decisions.cheap_mode,
+            cheap_mode_level=core_decisions.cheap_mode_level,
+            core_decisions=core_decisions  # Pass all decisions to orchestrator
+        )
+
         
         # Log languages
         logger.info(f"🌍 Languages: {', '.join([lang.value for lang in language_enums])}")

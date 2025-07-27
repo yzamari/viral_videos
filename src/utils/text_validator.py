@@ -99,14 +99,14 @@ class TextValidator:
         if instruction_issues:
             issues_found.extend(instruction_issues)
             instructions_removed = True
-            logger.warning(f"⚠️ Removed instructions from {context}: {instruction_issues}")
+            logger.debug(f"📝 Removed instructions from {context}: {instruction_issues}")
         
         # Step 3: Remove metadata SECOND
         cleaned_text, metadata_issues = self._remove_metadata(cleaned_text)
         if metadata_issues:
             issues_found.extend(metadata_issues)
             metadata_removed = True
-            logger.warning(f"⚠️ Removed metadata from {context}: {metadata_issues}")
+            logger.debug(f"📝 Removed metadata from {context}: {metadata_issues}")
         
         # Step 4: Clean up text
         cleaned_text = self._clean_text(cleaned_text, is_rtl)
@@ -172,8 +172,12 @@ class TextValidator:
         cleaned = text
         issues = []
         
+        # Check if text is RTL (Hebrew/Arabic) - be less aggressive
+        is_rtl, _ = self._detect_language_and_rtl(text)
+        
         # First check if the entire text looks like metadata
-        if re.match(r'^\d+\s*,\s*[\'\"]', cleaned) or cleaned.count(':') > 2:
+        # BUT be careful with RTL text which might have different patterns
+        if not is_rtl and (re.match(r'^\d+\s*,\s*[\'\"]', cleaned) or cleaned.count(':') > 5):
             # This is likely corrupted metadata, not real text
             issues.append("Entire text appears to be metadata")
             return "", issues
@@ -254,7 +258,10 @@ class TextValidator:
     def _contains_invalid_patterns(self, text: str) -> bool:
         """Check if text still contains invalid patterns"""
         
-        # Check for remaining metadata
+        # Check if text is RTL to be less aggressive
+        is_rtl, _ = self._detect_language_and_rtl(text)
+        
+        # Check for remaining metadata (less aggressive for RTL)
         for pattern in self.metadata_patterns:
             if re.search(pattern, text, re.IGNORECASE):
                 return True
@@ -264,18 +271,26 @@ class TextValidator:
             if re.search(pattern, text, re.IGNORECASE):
                 return True
         
-        # Check for suspicious patterns
-        if text.count('{') > 0 or text.count('}') > 0:
-            return True
-        if text.count(':') > 2:
-            return True
-        if re.search(r'^\d+\s*,', text):  # Starts with number and comma
-            return True
+        # Check for suspicious patterns (less aggressive for RTL text)
+        if not is_rtl:
+            if text.count('{') > 0 or text.count('}') > 0:
+                return True
+            if text.count(':') > 2:
+                return True
+            if re.search(r'^\d+\s*,', text):  # Starts with number and comma
+                return True
         
         # Check if text is too short or contains only punctuation/quotes after cleaning
-        cleaned_for_check = re.sub(r'[^\w\s]', '', text).strip()
-        if len(cleaned_for_check) < 3:  # Too short to be meaningful
-            return True
+        # For RTL text, we need to handle Unicode properly
+        if is_rtl:
+            # Count actual Hebrew/Arabic characters
+            rtl_chars = sum(1 for c in text if any(start <= ord(c) <= end for start, end in self.rtl_ranges))
+            if rtl_chars < 2:  # Too few RTL characters
+                return True
+        else:
+            cleaned_for_check = re.sub(r'[^\w\s]', '', text).strip()
+            if len(cleaned_for_check) < 3:  # Too short to be meaningful
+                return True
         
         return False
     
