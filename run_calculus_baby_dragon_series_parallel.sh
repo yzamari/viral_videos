@@ -3,9 +3,12 @@
 # 🐉 Baby Dragon Teaches Calculus - Family Guy Style Educational Series
 # 13 Episodes covering Infinitesimal Calculus course
 # Each episode: 63-64 seconds, Instagram format, English only
+# PARALLEL VERSION - Can run multiple episodes simultaneously
 
 # Parse command line arguments
 EPISODES_TO_GENERATE=()
+MAX_PARALLEL=2  # Default to 2 parallel generations
+
 while [[ $# -gt 0 ]]; do
     case $1 in
         -e|--episodes)
@@ -16,17 +19,23 @@ while [[ $# -gt 0 ]]; do
                 shift
             done
             ;;
+        -p|--parallel)
+            shift
+            MAX_PARALLEL=$1
+            shift
+            ;;
         -h|--help)
             echo "Usage: $0 [OPTIONS]"
             echo "Options:"
             echo "  -e, --episodes <num1> <num2> ...  Generate specific episodes (1-13)"
+            echo "  -p, --parallel <num>              Number of parallel generations (default: 2)"
             echo "  -h, --help                        Show this help message"
             echo ""
             echo "Examples:"
-            echo "  $0                    # Generate all 13 episodes"
-            echo "  $0 -e 1              # Generate only episode 1"
-            echo "  $0 -e 1 5 7          # Generate episodes 1, 5, and 7"
-            echo "  $0 --episodes 10 11  # Generate episodes 10 and 11"
+            echo "  $0                    # Generate all 13 episodes, 2 at a time"
+            echo "  $0 -e 1 2 3 -p 3     # Generate episodes 1,2,3 all at once"
+            echo "  $0 -e 1 5 7 -p 2     # Generate episodes 1,5,7 with 2 running at a time"
+            echo "  $0 --parallel 4      # Generate all episodes, 4 at a time"
             exit 0
             ;;
         *)
@@ -42,14 +51,15 @@ if [ ${#EPISODES_TO_GENERATE[@]} -eq 0 ]; then
     EPISODES_TO_GENERATE=($(seq 1 13))
 fi
 
-echo "🐉 Baby Dragon's Calculus Adventures - Episode Generator"
-echo "======================================================"
+echo "🐉 Baby Dragon's Calculus Adventures - PARALLEL Episode Generator"
+echo "================================================================"
 echo "📚 Course: Infinitesimal Calculus 1"
 echo "🎨 Style: Family Guy Animation"
 echo "⏱️  Duration: 63-64 seconds per episode"
 echo "📱 Platform: Instagram (auto-posting enabled)"
 echo "🎯 Audience: High school & first-year engineering students"
 echo "📊 Level: AP Calculus / University Calculus I"
+echo "⚡ Parallel Generation: $MAX_PARALLEL episodes at once"
 echo ""
 echo "📺 Episodes to generate: ${EPISODES_TO_GENERATE[*]}"
 echo ""
@@ -66,50 +76,52 @@ if [ ! -f "$OVERLAY_PATH" ]; then
     python3 create_ai_university_logo.py
 fi
 
-# Function to generate episode
+# Function to generate episode (runs in background)
 generate_episode() {
     local ep_num=$1
     local title=$2
     local mission=$3
     local session_id="calculus_dragon_ep${ep_num}_$(date +%Y%m%d_%H%M%S)"
     
-    echo ""
-    echo "🐉 Episode $ep_num: $title"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    
-    python3 main.py generate \
-        --mission "$mission" \
-        --character "$CHARACTER" \
-        --scene "$SCENE" \
-        --platform instagram \
-        --duration 63 \
-        --visual-style "family guy animation" \
-        --category Educational \
-        --tone funny \
-        --style educational \
-        --voice "$VOICE" \
-        --session-id "$session_id" \
-        --languages en-US \
-        --no-cheap \
-        --auto-post \
-        --visual-continuity \
-        --content-continuity \
-        --theme preset_university
-    
-    if [ $? -eq 0 ]; then
-        echo "✅ Episode $ep_num completed!"
-        echo "📁 Output: outputs/$session_id/"
-    else
-        echo "❌ Episode $ep_num failed!"
-    fi
-    
-    # Brief pause between episodes
-    sleep 5
+    {
+        echo ""
+        echo "🐉 [PID $$] Starting Episode $ep_num: $title"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        
+        python3 main.py generate \
+            --mission "$mission" \
+            --character "$CHARACTER" \
+            --scene "$SCENE" \
+            --platform instagram \
+            --duration 63 \
+            --visual-style "family guy animation" \
+            --category Educational \
+            --tone funny \
+            --style educational \
+            --voice "$VOICE" \
+            --session-id "$session_id" \
+            --languages en-US \
+            --no-cheap \
+            --auto-post \
+            --visual-continuity \
+            --content-continuity \
+            --theme preset_university 2>&1 | tee "logs/episode_${ep_num}_$(date +%Y%m%d_%H%M%S).log"
+        
+        if [ ${PIPESTATUS[0]} -eq 0 ]; then
+            echo "✅ [PID $$] Episode $ep_num completed!"
+            echo "📁 Output: outputs/$session_id/"
+        else
+            echo "❌ [PID $$] Episode $ep_num failed!"
+        fi
+    } &
 }
 
-# Define all episode titles and missions
-declare -A EPISODE_TITLES
-declare -A EPISODE_MISSIONS
+# Create logs directory if it doesn't exist
+mkdir -p logs
+
+# Define all episode titles and missions using regular arrays
+declare -a EPISODE_TITLES
+declare -a EPISODE_MISSIONS
 
 EPISODE_TITLES[1]="Numbers Are My Friends!"
 EPISODE_MISSIONS[1]="Family Guy cutaway: Baby dragon in magical number land! 'Hey kids, I'm Epsilon the Dragon! Let's explore NUMBER SETS!' POOF! Natural numbers 1,2,3 appear as counting cookies. 'These are for counting dragon treats!' But wait - Zero appears! 'I'm special!' Then negative numbers show up as ice cubes: -1,-2,-3. 'Together we're INTEGERS!' WHOOSH! Fractions fly in as pizza slices: 1/2, 3/4. 'We're RATIONAL numbers - any fraction!' Suddenly, √2 appears as an infinite spiral dragon. 'I'm IRRATIONAL - my decimal never repeats!' Pi flies by leaving infinite trail. Together they form the REAL NUMBER LINE - a beautiful rainbow path! 'ABSOLUTE VALUE |x| measures distance from zero - like dragon hugs, always positive!' Example: |-5| = 5. INTERVALS are dragon territories: [1,3] includes endpoints, (1,3) doesn't! BOUNDED sets have limits - like dragon playpen with walls. SUPREMUM is the smallest upper bound - the ceiling dragons can't pass! Epsilon chicks demonstrate: 'For any ε>0, we can get closer than ε to any real number!'"
@@ -150,20 +162,57 @@ EPISODE_MISSIONS[12]="Family Guy fortune teller dragon with crystal ball! 'TAYLO
 EPISODE_TITLES[13]="Dragon Detective Agency!"
 EPISODE_MISSIONS[13]="Baby dragon detective with magnifying glass and notebook! 'COMPLETE FUNCTION INVESTIGATION - Let's solve the case!' Step 1 - DOMAIN: 'Where does function live?' Check denominators≠0, square roots≥0, logarithms>0. Step 2 - CRITICAL POINTS: Solve f'(x)=0. 'Potential extrema locations!' Step 3 - FIRST DERIVATIVE TEST: Check f' sign changes. (+) to (-) = LOCAL MAX! (-) to (+) = LOCAL MIN! No change = neither! Example: f(x)=x³-3x has f'(x)=3x²-3=0 at x=±1. Step 4 - SECOND DERIVATIVE: f''(x)>0 means CONCAVE UP (happy dragon smile ∪). f''(x)<0 means CONCAVE DOWN (sad dragon frown ∩). At critical point: f''(c)>0 ⟹ local min, f''(c)<0 ⟹ local max. Step 5 - INFLECTION POINTS: Where f'' changes sign. 'Dragon mood swings!' Concavity flips! Step 6 - ASYMPTOTES: VERTICAL at domain boundaries (denominator→0). HORIZONTAL: lim[x→±∞] f(x) = L gives y=L. SLANT: If lim f(x)/x = m≠0, do polynomial division! Example: f(x)=(x²+1)/x has vertical at x=0, slant y=x. Step 7 - SKETCH: Plot critical points, inflections, asymptotes. Connect smoothly using derivative info! COMPLETE EXAMPLE: f(x)=x³/(x²-1). Domain: x≠±1. Vertical asymptotes at x=±1. Critical points, concavity analysis, full sketch! Epsilon chicks create function portrait gallery!"
 
-# Generate selected episodes
+# Function to wait for available job slots
+wait_for_job_slot() {
+    while [ $(jobs -r | wc -l) -ge $MAX_PARALLEL ]; do
+        sleep 2
+    done
+}
+
+# Progress tracking
+TOTAL_EPISODES=${#EPISODES_TO_GENERATE[@]}
+COMPLETED=0
+
+# Generate selected episodes with parallel control
+echo "🚀 Starting parallel generation..."
+echo ""
+
 for ep in "${EPISODES_TO_GENERATE[@]}"; do
     if [[ $ep -ge 1 && $ep -le 13 ]]; then
-        generate_episode "$ep" "${EPISODE_TITLES[$ep]}" "${EPISODE_MISSIONS[$ep]}"
+        # Wait for an available slot
+        wait_for_job_slot
+        
+        # Check if episode data exists
+        if [ -n "${EPISODE_TITLES[$ep]}" ]; then
+            # Start the episode generation in background
+            generate_episode "$ep" "${EPISODE_TITLES[$ep]}" "${EPISODE_MISSIONS[$ep]}"
+            
+            # Small delay to avoid overwhelming the system
+            sleep 1
+        else
+            echo "⚠️  Episode $ep data not found"
+        fi
     else
         echo "⚠️  Skipping invalid episode number: $ep (must be 1-13)"
     fi
 done
 
+# Wait for all background jobs to complete
+echo ""
+echo "⏳ Waiting for all episodes to complete..."
+wait
+
+# Count log files to see how many completed
+COMPLETED=$(ls logs/episode_*.log 2>/dev/null | wc -l)
+
 echo ""
 echo "🎉 Baby Dragon's Calculus Adventure Series Generation Complete!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "📺 Generated ${#EPISODES_TO_GENERATE[@]} episodes: ${EPISODES_TO_GENERATE[*]}"
+echo "📺 Generation Summary:"
+echo "  - Requested: ${TOTAL_EPISODES} episodes"
+echo "  - Completed: Check individual logs in logs/ directory"
+echo "  - Parallel: Up to $MAX_PARALLEL episodes at once"
 echo ""
 echo "📚 Educational Goals Achieved:"
 echo "  ✓ AP Calculus / University Calculus I concepts"
@@ -179,3 +228,5 @@ echo "  - 'Dragon Calculus Academy' branding"
 echo ""
 echo "💡 Perfect for AP Calculus students and engineering freshmen!"
 echo "📱 Auto-posting to Instagram: @yalla.chaos.ai"
+echo ""
+echo "📋 Check individual episode logs in: logs/"

@@ -16,6 +16,7 @@ from ..presets.tech_theme import TechTheme
 from ..presets.entertainment_theme import EntertainmentTheme
 from ..presets.iran_international_news import IranInternationalNewsTheme
 from ..presets.nuclear_news import NuclearNewsTheme
+from ..presets.university_theme import UniversityTheme
 from ...utils.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -83,7 +84,8 @@ class ThemeManager:
             "preset_tech": TechTheme(),
             "preset_entertainment": EntertainmentTheme(),
             "preset_iran_international_news": IranInternationalNewsTheme(),
-            "preset_nuclear_news": NuclearNewsTheme()
+            "preset_nuclear_news": NuclearNewsTheme(),
+            "preset_university": UniversityTheme()
         }
         
         logger.info(f"Loaded {len(presets)} preset themes")

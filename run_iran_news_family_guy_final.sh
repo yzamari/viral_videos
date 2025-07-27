@@ -108,23 +108,43 @@ generate_news_episode() {
     return 0
 }
 
-# Episode 1: Water Crisis Breaking News
-generate_news_episode 1 \
-    "Water Crisis - Breaking News" \
-    "Family Guy style animated news. Professional news overlay graphics. Iran International logo top-right. News anchor Maryam (Persian Lois Griffin with hijab, huge eyes) reports: 'BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address.' Show cartoon map of Iran with water droplets running away with suitcases. News ticker: 'WATER CRISIS DAY 1,847'. Peter Griffin-style official: 'Water? Never heard of her.' Citizens licking morning dew. Lower third: 'EXCLUSIVE: Dew Licking Tutorial at 11'" \
-    "חדשות בסגנון פמילי גאי. גרפיקת חדשות מקצועית. לוגו איראן אינטרנשיונל מימין למעלה. קריינית החדשות מרים (לויס גריפין פרסית עם חיג'אב, עיניים ענקיות) מדווחת: 'מבזק: מדענים מאשרים שהמים נטשו את איראן. לא השאירו כתובת להעברת דואר.' מפת איראן מצוירת עם טיפות מים בורחות עם מזוודות. טיקר חדשות: 'יום 1,847 למשבר המים'. פקיד בסגנון פיטר גריפין: 'מים? לא מכיר אותה.' אזרחים מלקקים טל. כותרת תחתונה: 'בלעדי: מדריך ללקק טל ב-11'" \
-    "Animated news anchor Maryam - Family Guy style Persian woman with oversized hijab, huge expressive eyes, Lois Griffin body type but Persian features, professional blazer" \
-    "קריינית חדשות מצוירת מרים - אישה פרסית בסגנון פמילי גאי עם חיג'אב גדול מדי, עיניים ענקיות ומבעיות, מבנה גוף של לויס גריפין אך עם תווי פנים פרסיים, בלייזר מקצועי" \
-    "iran_news_family_guy"
+# Define all episode data
+declare -a EPISODE_TITLES
+declare -a EPISODE_MISSIONS_EN
+declare -a EPISODE_MISSIONS_HE
+declare -a EPISODE_CHARACTERS_EN
+declare -a EPISODE_CHARACTERS_HE
 
-# Episode 2: Committee Crisis (uncomment to run)
-# generate_news_episode 2 \
-#     "Committee Committee Committee" \
-#     "Family Guy news continues. Same anchor Maryam announces: 'BREAKING: Government unveils master plan - Committee to form committee about committees.' Professional news graphics show organizational chart exploding. Cutaway: Stewie-style minister: 'I propose we form a sub-committee!' Room of identical officials nodding. News ticker: 'COMMITTEE COUNT: ∞'. Lower third: 'EXCLUSIVE INTERVIEW: Chairman of Nothing Committee'. Maryam's eye twitches. Map shows committee buildings multiplying like cancer cells. 'This is fine' meme in corner." \
-#     "חדשות פמילי גאי ממשיכות. אותה קריינית מרים מכריזה: 'מבזק: הממשלה חושפת תוכנית - ועדה להקמת ועדה על ועדות.' גרפיקת חדשות מציגה תרשים ארגוני מתפוצץ. קטאוויי: שר בסגנון סטואי: 'אני מציע שנקים תת-ועדה!' חדר מלא פקידים זהים מהנהנים. טיקר: 'ספירת ועדות: ∞'. כותרת: 'ראיון בלעדי: יו״ר ועדת הכלום'. העין של מרים מתעוותת. מפה מראה בנייני ועדות מתרבים כמו סרטן." \
-#     "Same Maryam - consistent Family Guy Persian anchor, hijab slightly disheveled from stress, eye twitching, professional but losing patience" \
-#     "אותה מרים - קריינית פרסית עקבית בסגנון פמילי גאי, חיג'אב מעט פרוע מלחץ, עין מתעוותת, מקצועית אך מאבדת סבלנות" \
-#     "iran_news_family_guy"
+# Episode 1: Water Crisis Breaking News
+EPISODE_TITLES[1]="Water Crisis - Breaking News"
+EPISODE_MISSIONS_EN[1]="Family Guy style animated news. Professional news overlay graphics. Iran International logo top-right. News anchor Maryam (Persian Lois Griffin with hijab, huge eyes) reports: 'BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address.' Show cartoon map of Iran with water droplets running away with suitcases. News ticker: 'WATER CRISIS DAY 1,847'. Peter Griffin-style official: 'Water? Never heard of her.' Citizens licking morning dew. Lower third: 'EXCLUSIVE: Dew Licking Tutorial at 11'"
+EPISODE_MISSIONS_HE[1]="חדשות בסגנון פמילי גאי. גרפיקת חדשות מקצועית. לוגו איראן אינטרנשיונל מימין למעלה. קריינית החדשות מרים (לויס גריפין פרסית עם חיג'אב, עיניים ענקיות) מדווחת: 'מבזק: מדענים מאשרים שהמים נטשו את איראן. לא השאירו כתובת להעברת דואר.' מפת איראן מצוירת עם טיפות מים בורחות עם מזוודות. טיקר חדשות: 'יום 1,847 למשבר המים'. פקיד בסגנון פיטר גריפין: 'מים? לא מכיר אותה.' אזרחים מלקקים טל. כותרת תחתונה: 'בלעדי: מדריך ללקק טל ב-11'"
+EPISODE_CHARACTERS_EN[1]="Animated news anchor Maryam - Family Guy style Persian woman with oversized hijab, huge expressive eyes, Lois Griffin body type but Persian features, professional blazer"
+EPISODE_CHARACTERS_HE[1]="קריינית חדשות מצוירת מרים - אישה פרסית בסגנון פמילי גאי עם חיג'אב גדול מדי, עיניים ענקיות ומבעיות, מבנה גוף של לויס גריפין אך עם תווי פנים פרסיים, בלייזר מקצועי"
+
+# Episode 2: Committee Committee Committee
+EPISODE_TITLES[2]="Committee Committee Committee"
+EPISODE_MISSIONS_EN[2]="Family Guy news continues. Same anchor Maryam announces: 'BREAKING: Government unveils master plan - Committee to form committee about committees.' Professional news graphics show organizational chart exploding. Cutaway: Stewie-style minister: 'I propose we form a sub-committee!' Room of identical officials nodding. News ticker: 'COMMITTEE COUNT: ∞'. Lower third: 'EXCLUSIVE INTERVIEW: Chairman of Nothing Committee'. Maryam's eye twitches. Map shows committee buildings multiplying like cancer cells. 'This is fine' meme in corner."
+EPISODE_MISSIONS_HE[2]="חדשות פמילי גאי ממשיכות. אותה קריינית מרים מכריזה: 'מבזק: הממשלה חושפת תוכנית - ועדה להקמת ועדה על ועדות.' גרפיקת חדשות מציגה תרשים ארגוני מתפוצץ. קטאוויי: שר בסגנון סטואי: 'אני מציע שנקים תת-ועדה!' חדר מלא פקידים זהים מהנהנים. טיקר: 'ספירת ועדות: ∞'. כותרת: 'ראיון בלעדי: יו״ר ועדת הכלום'. העין של מרים מתעוותת. מפה מראה בנייני ועדות מתרבים כמו סרטן."
+EPISODE_CHARACTERS_EN[2]="Same Maryam - consistent Family Guy Persian anchor, hijab slightly disheveled from stress, eye twitching, professional but losing patience"
+EPISODE_CHARACTERS_HE[2]="אותה מרים - קריינית פרסית עקבית בסגנון פמילי גאי, חיג'אב מעט פרוע מלחץ, עין מתעוותת, מקצועית אך מאבדת סבלנות"
+
+# Add more episodes here as needed...
+
+# Generate selected episodes
+for ep in "${EPISODES_TO_GENERATE[@]}"; do
+    if [ -n "${EPISODE_TITLES[$ep]}" ]; then
+        generate_news_episode "$ep" \
+            "${EPISODE_TITLES[$ep]}" \
+            "${EPISODE_MISSIONS_EN[$ep]}" \
+            "${EPISODE_MISSIONS_HE[$ep]}" \
+            "${EPISODE_CHARACTERS_EN[$ep]}" \
+            "${EPISODE_CHARACTERS_HE[$ep]}" \
+            "iran_news_family_guy"
+    else
+        echo "⚠️  Episode $ep not defined yet. Available episodes: 1, 2"
+    fi
+done
 
 echo ""
 echo "🎬 News Generation Complete!"

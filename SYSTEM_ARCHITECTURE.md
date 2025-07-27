@@ -4,7 +4,7 @@
 
 ViralAI is a comprehensive AI-powered video generation system that uses multiple AI agents, centralized decision-making, and advanced generation models to create viral content for social media platforms. The system now features a Universal AI Provider Interface that allows seamless switching between different AI providers (Gemini, Vertex AI, OpenAI, Anthropic) without code changes.
 
-## Current Architecture (v3.0+)
+## Current Architecture (v3.2+)
 
 ### 1. **Centralized Decision Framework** 🎯
 
@@ -25,7 +25,24 @@ CLI Input → Decision Framework → Core Decisions → All Components
 - Technical settings (frame continuity, cheap mode)
 - Content elements (hook, CTA, mission)
 
-### 2. **Multi-Agent Discussion System** 🤖
+### 2. **Theme System** 🎨
+
+The system includes a comprehensive theme management system:
+
+**Theme Components:**
+- Pre-built themes (News, Sports, Tech, Entertainment, University)
+- Custom theme creation and management
+- Logo overlay integration
+- Brand consistency across videos
+- Platform-specific optimizations
+
+**University Theme Features:**
+- Academic color palette and typography
+- Automatic logo overlay positioning
+- Educational content optimization
+- Professional lower thirds and captions
+
+### 3. **Multi-Agent Discussion System** 🤖
 
 22 specialized AI agents collaborate to create optimal content:
 

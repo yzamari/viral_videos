@@ -2,12 +2,34 @@
 
 🚀 **Production-ready AI video generation system with 22 specialized agents, centralized decision-making, and comprehensive social media integration.**
 
-[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.1.0)
+[![Version](https://img.shields.io/badge/version-3.2.0--rc1-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.2.0-rc1)
 [![Status](https://img.shields.io/badge/status-Production%20Ready-green.svg)](https://github.com/yourusername/viral-video-generator)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 
-## ✨ **What's New in v3.1.0**
+## ✨ **What's New in v3.2.0-rc1**
+
+### 🎓 **University Theme & Custom Overlays** ✅ **NEW!**
+- **Academic Theme Preset**: Professional university theme for educational content
+- **Custom Logo Overlays**: Add PNG logos to any video with automatic positioning
+- **AI University Branding**: Complete branding kit for educational series
+- **Smart Logo Placement**: Automatic top-right positioning with fade-in effects
+- **Theme-Based Overlays**: Logo management integrated into theme system
+
+### 📺 **Episode Selection for Series** ✅ **ENHANCED!**
+- **Selective Generation**: Generate specific episodes with `-e` flag
+- **Batch Control**: Choose multiple episodes (e.g., `-e 1 3 5`)
+- **Series Management**: Better control over large series generation
+- **Applied to All Scripts**: Israeli PM, News, and Educational series
+- **Parallel Support**: Episode selection works with parallel generation
+
+### 🔧 **Script Improvements** ✅ **OPTIMIZED!**
+- **Bash Compatibility**: Fixed associative array issues for older bash versions
+- **Parallel Generation**: Fixed and optimized for concurrent episode creation
+- **Error Handling**: Better error reporting and recovery mechanisms
+- **Progress Tracking**: Improved logging for multi-episode generation
+
+## ✨ **Previous Updates (v3.1.0)**
 
 ### 🔌 **Universal AI Provider Interface** ✅ **GAME CHANGER!**
 - **Multi-Provider Support**: Seamlessly switch between Gemini, Vertex AI, OpenAI, and Anthropic
