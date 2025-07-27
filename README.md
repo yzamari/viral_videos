@@ -2,12 +2,27 @@
 
 🚀 **Production-ready AI video generation system with 22 specialized agents, centralized decision-making, and comprehensive social media integration.**
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.0.0)
+[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.1.0)
 [![Status](https://img.shields.io/badge/status-Production%20Ready-green.svg)](https://github.com/yourusername/viral-video-generator)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 
-## ✨ **What's New in v3.0.0**
+## ✨ **What's New in v3.1.0**
+
+### 🔌 **Universal AI Provider Interface** ✅ **GAME CHANGER!**
+- **Multi-Provider Support**: Seamlessly switch between Gemini, Vertex AI, OpenAI, and Anthropic
+- **Unified Interface**: Same code works with all providers - no changes needed
+- **Automatic Fallback**: If one provider fails, automatically switch to backup
+- **Cost Optimization**: Choose providers based on cost/quality requirements
+- **Easy Configuration**: Change providers via environment variables or config files
+- **Future-Proof**: Add new providers without changing core code
+
+### 🌐 **Enhanced Configuration System** ✅ **ZERO HARDCODING!**
+- **Complete Configuration**: ALL hardcoded values moved to configuration system
+- **Platform-Aware Settings**: Auto-adjust FPS, dimensions, quality per platform
+- **Dynamic Font Sizing**: Intelligent text scaling based on video dimensions
+- **Flexible Defaults**: Platform-specific hooks, CTAs, and branding
+- **Live Reloading**: Change configurations without code restarts
 
 ### 🔧 **Critical Bug Fixes (July 2025)** ✅ **FIXED**
 - **Fixed VEO Generation**: Resolved `cheap_mode_level` forcing cheap mode even with `--no-cheap`
@@ -111,22 +126,41 @@
 ### Prerequisites
 - Python 3.8+
 - Google Cloud Project with Vertex AI enabled
-- Google AI API key
+- API keys for your chosen providers:
+  - Google AI API key (for Gemini)
+  - OpenAI API key (optional)
+  - Anthropic API key (optional)
+  - Vertex AI credentials (optional)
 
 ### 🚀 **Latest Release: v3.1.0**
+- **Universal AI Provider Interface**: Switch between AI providers without code changes
 - **Zero Hardcoding**: Complete configuration system - all values configurable
+- **Multi-Provider Support**: Gemini, Vertex AI, OpenAI, Anthropic ready
 - **AI Model Flexibility**: Easy switching between AI models (gemini-2.5-flash-lite default)
 - **Enhanced Continuity**: Improved content and visual continuity flags
 - **Mission-Based System**: Replaced "topic" with "mission" throughout codebase
 - **Character Extraction**: Automatic character description extraction from missions
 - **Script Processing**: Fixed duplication issues in script generation
-- **Previous v3.0.0**: Style references, themes, modular architecture
 
 ### Installation
 ```bash
 git clone <repository-url>
 cd viralAi
 pip install -r requirements.txt
+```
+
+### AI Provider Configuration
+```bash
+# Set your preferred AI providers (optional - defaults to Gemini)
+export AI_TEXT_PROVIDER=gemini  # or openai, anthropic, vertex
+export AI_IMAGE_PROVIDER=gemini  # or vertex
+export AI_VIDEO_PROVIDER=gemini  # or vertex
+export AI_SPEECH_PROVIDER=google  # or elevenlabs (planned)
+
+# Set API keys for your providers
+export GOOGLE_AI_API_KEY=your-gemini-key
+export OPENAI_API_KEY=your-openai-key  # if using OpenAI
+export ANTHROPIC_API_KEY=your-anthropic-key  # if using Anthropic
 ```
 
 ### Authentication Setup
@@ -185,6 +219,37 @@ python main.py generate \
   --platform youtube \
   --duration 20 \
   --cheap full
+```
+
+### 🆕 **Advanced Features**
+
+#### AI Provider Switching
+```bash
+# Use OpenAI for text generation
+python main.py generate \
+  --mission "Create viral content" \
+  --platform instagram \
+  --ai-text-provider openai
+
+# Use Anthropic Claude for enhanced creativity
+python main.py generate \
+  --mission "Tell a creative story" \
+  --platform tiktok \
+  --ai-text-provider anthropic
+```
+
+#### Configuration Override
+```python
+# Modify configurations on the fly
+from src.config.video_config import video_config
+
+# Change platform-specific settings
+video_config.encoding.fps_by_platform['youtube'] = 60
+video_config.text_overlay.title_font_size_percentage = 0.08
+
+# Get dynamic values
+fps = video_config.get_fps('instagram')  # Returns 30
+font_size = video_config.get_font_size('title', 1920)  # Returns 153px
 ```
 
 ### 🌍 **Multi-Language Support with RTL**

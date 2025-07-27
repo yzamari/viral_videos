@@ -2,9 +2,9 @@
 
 ## Overview
 
-ViralAI is a comprehensive AI-powered video generation system that uses multiple AI agents, centralized decision-making, and advanced generation models to create viral content for social media platforms.
+ViralAI is a comprehensive AI-powered video generation system that uses multiple AI agents, centralized decision-making, and advanced generation models to create viral content for social media platforms. The system now features a Universal AI Provider Interface that allows seamless switching between different AI providers (Gemini, Vertex AI, OpenAI, Anthropic) without code changes.
 
-## Current Architecture (v2.5+)
+## Current Architecture (v3.0+)
 
 ### 1. **Centralized Decision Framework** 🎯
 
@@ -112,7 +112,16 @@ outputs/session_YYYYMMDD_HHMMSS/
 python main.py generate --mission "Your mission" --platform instagram --duration 10 --mode professional
 ```
 
-### 2. **Decision Making Phase**
+### 2. **AI Provider Initialization** (NEW!)
+```
+AIServiceManager → AIServiceFactory → Provider Initialization
+```
+- Loads AI configuration from environment and config files
+- Initializes selected providers for each service type
+- Sets up fallback chains for reliability
+- Validates API keys and credentials
+
+### 3. **Decision Making Phase**
 ```
 CLI Arguments → DecisionFramework.make_all_decisions() → CoreDecisions
 ```
@@ -121,7 +130,7 @@ CLI Arguments → DecisionFramework.make_all_decisions() → CoreDecisions
 - Records decision source and confidence
 - Saves decisions to session
 
-### 3. **AI Agent Discussions**
+### 4. **AI Agent Discussions**
 ```
 CoreDecisions → WorkingOrchestrator → MultiAgentDiscussion
 ```
@@ -130,7 +139,7 @@ CoreDecisions → WorkingOrchestrator → MultiAgentDiscussion
 - Consensus-based decision refinement
 - Platform-specific optimizations
 
-### 4. **Content Generation**
+### 5. **Content Generation**
 ```
 AI Strategies → Script Processing → Video/Audio Generation
 ```
@@ -139,7 +148,7 @@ AI Strategies → Script Processing → Video/Audio Generation
 - VEO-2/VEO-3 video generation
 - Clip-based generation with precise durations
 
-### 5. **Video Assembly**
+### 6. **Video Assembly**
 ```
 Video Clips + Audio + Subtitles + Overlays → Final Video
 ```
@@ -148,7 +157,7 @@ Video Clips + Audio + Subtitles + Overlays → Final Video
 - Dynamic overlays and hooks
 - Platform-specific formatting
 
-### 6. **Social Media Integration**
+### 7. **Social Media Integration**
 ```
 Final Video → Hashtag Generation → Auto-posting
 ```
@@ -168,6 +177,13 @@ Final Video → Hashtag Generation → Auto-posting
 - Professional mode with comprehensive agent coverage
 - Specialized roles for different aspects
 - Consensus-based collaboration
+
+### ✅ **Universal AI Provider Interface** (NEW!)
+- Unified interface for all AI services (text, image, video, speech)
+- Easy provider switching without code changes
+- Support for multiple providers: Gemini, Vertex AI, OpenAI, Anthropic
+- Automatic fallback and error handling
+- Cost optimization through provider selection
 
 ### ✅ **Flexible Generation**
 - Multiple generation models (VEO-2, VEO-3, fallback)
@@ -199,6 +215,12 @@ Final Video → Hashtag Generation → Auto-posting
 - `AnimationTimingConfig` - Animation and timing settings
 - `DefaultTextConfig` - Default text templates
 - `LayoutConfig` - Layout and positioning
+
+**AI Provider Layer:** (NEW!)
+- `UniversalAIProviderInterface` - Unified interface for all AI services
+- `AIServiceManager` - Central manager for AI service access
+- `AIServiceFactory` - Factory for creating AI service instances
+- Provider adapters for Gemini, Vertex AI, OpenAI, Anthropic, Google Cloud
 
 **Orchestration Layer:**
 - `WorkingOrchestrator` - Main coordination
@@ -292,6 +314,47 @@ font_size = video_config.get_font_size('title', 1920)  # Returns 115px for 1920 
 # Get platform-specific text
 hook = video_config.get_default_hook('instagram')  # Returns "You won't believe this!"
 ```
+
+### 🔌 **Universal AI Provider Interface** (NEW!)
+
+The system now supports multiple AI providers through a unified interface:
+
+**Supported Providers:**
+- **Text Generation**: Gemini, Vertex AI, OpenAI, Anthropic
+- **Image Generation**: Gemini, Vertex AI (Imagen)
+- **Video Generation**: Gemini (VEO-2/VEO-3), Vertex AI
+- **Speech Synthesis**: Google Cloud TTS, ElevenLabs (planned)
+
+**Provider Configuration:**
+```python
+from src.ai.service_manager import AIServiceManager
+from src.ai.interfaces.base import AIServiceType, AIProvider
+
+# Get service manager instance
+manager = AIServiceManager()
+
+# Use specific provider
+text_service = manager.get_service(
+    AIServiceType.TEXT_GENERATION,
+    provider=AIProvider.OPENAI
+)
+
+# Generate text
+response = await text_service.generate_text(
+    TextGenerationRequest(
+        prompt="Create a viral video script",
+        max_tokens=1000,
+        temperature=0.7
+    )
+)
+```
+
+**Benefits:**
+- Easy provider switching for cost optimization
+- Automatic fallback handling
+- Unified error handling across providers
+- Consistent interface for all AI services
+- Future-proof architecture for new providers
 
 ### Environment Variables
 - `GOOGLE_AI_API_KEY` - Gemini API key

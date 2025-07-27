@@ -14,8 +14,32 @@ main.py → AutoAuthHandler → Google Cloud Setup → API Verification
 - Automatically configures Google Cloud authentication
 - Enables required APIs (Vertex AI, TTS, Storage)
 - Verifies access tokens and permissions
+- Initializes Universal AI Provider Interface
+- Loads provider configurations from environment
 
-### 3. **Decision Making Phase** 🎯
+### 3. **AI Provider Initialization** 🔌 (NEW!)
+```
+AIServiceManager → AIServiceFactory → Provider Setup
+```
+
+**What Happens:**
+- Loads AI provider configuration
+- Initializes selected providers (Gemini, Vertex, OpenAI, etc.)
+- Sets up fallback chains for reliability
+- Validates API keys and credentials
+- Configures service-specific settings
+
+**Example Provider Config:**
+```json
+{
+  "text_generation": "gemini",
+  "image_generation": "gemini",
+  "video_generation": "gemini",
+  "speech_synthesis": "google"
+}
+```
+
+### 4. **Decision Making Phase** 🎯
 ```
 CLI Args → DecisionFramework.make_all_decisions() → CoreDecisions
 ```
@@ -41,7 +65,7 @@ CLI Args → DecisionFramework.make_all_decisions() → CoreDecisions
 }
 ```
 
-### 4. **Session Creation**
+### 5. **Session Creation**
 ```
 DecisionFramework → SessionManager → Session Directory Structure
 ```
@@ -62,20 +86,21 @@ outputs/session_20250718_123456/
 └── metadata/           # Session metadata
 ```
 
-### 5. **Orchestrator Initialization**
+### 6. **Orchestrator Initialization**
 ```
 CoreDecisions → WorkingOrchestrator → AI Components Setup
 ```
 
 **Components Initialized:**
 - 22 AI agents system
-- VEO client factory
+- Universal AI Provider Interface
+- VEO client factory (via AI Provider Interface)
 - Enhanced script processor
 - Voice director agent
-- Multilingual TTS client
+- Multilingual TTS client (via AI Provider Interface)
 - Hashtag generator
 
-### 6. **AI Agent Discussions** 🤖
+### 7. **AI Agent Discussions** 🤖
 ```
 WorkingOrchestrator → MultiAgentDiscussion → 7 Comprehensive Discussions
 ```
@@ -110,14 +135,14 @@ WorkingOrchestrator → MultiAgentDiscussion → 7 Comprehensive Discussions
 - Detailed reasoning and recommendations
 - Performance metrics and confidence scores
 
-### 7. **Script Generation**
+### 8. **Script Generation**
 ```
 AI Strategies → Director → Enhanced Script Processing
 ```
 
 **Script Processing Flow:**
 ```
-Mission → Mission Detection → AI Script Generation → Enhancement → TTS Optimization
+Mission → Mission Detection → AI Script Generation (via Provider) → Enhancement → TTS Optimization
 ```
 
 **What Happens:**
@@ -127,7 +152,7 @@ Mission → Mission Detection → AI Script Generation → Enhancement → TTS O
 - Optimizes for TTS and timing
 - Saves multiple script versions
 
-### 8. **Voice Strategy**
+### 9. **Voice Strategy**
 ```
 Script + CoreDecisions → VoiceDirectorAgent → Voice Configuration
 ```
@@ -138,7 +163,7 @@ Script + CoreDecisions → VoiceDirectorAgent → Voice Configuration
 - Configures voice personality and variety
 - Optimizes for content type and platform
 
-### 9. **Video Generation**
+### 10. **Video Generation**
 ```
 Script + Voice Config → VideoGenerator → VEO Generation
 ```
@@ -160,7 +185,7 @@ Script + Voice Config → VideoGenerator → VEO Generation
 ✅ Generated VEO clip 1/5
 ```
 
-### 10. **Audio Generation**
+### 11. **Audio Generation**
 ```
 Script Segments → EnhancedMultilingualTTS → Audio Files
 ```
@@ -171,7 +196,7 @@ Script Segments → EnhancedMultilingualTTS → Audio Files
 - Matches clip durations exactly
 - Saves audio files to session
 
-### 11. **Video Assembly**
+### 12. **Video Assembly**
 ```
 Video Clips + Audio + Subtitles → Final Video Composition
 ```
@@ -186,7 +211,7 @@ Video Clips + Audio + Subtitles → Final Video Composition
 6. Duration Enforcement (trim to exact target)
 ```
 
-### 12. **Hashtag Generation**
+### 13. **Hashtag Generation**
 ```
 Final Video + Script → HashtagGenerator → Trending Hashtags
 ```
@@ -197,7 +222,7 @@ Final Video + Script → HashtagGenerator → Trending Hashtags
 - Optimizes for trending potential
 - Saves hashtag files to session
 
-### 13. **Social Media Integration**
+### 14. **Social Media Integration**
 ```
 Final Video + Hashtags → InstagramAutoPoster → Platform Posting
 ```
@@ -209,7 +234,7 @@ Final Video + Hashtags → InstagramAutoPoster → Platform Posting
 - Tracks posting success
 - Returns video URL/ID
 
-### 14. **Session Completion**
+### 15. **Session Completion**
 ```
 All Components → Session Summary → Output
 ```
@@ -250,6 +275,12 @@ CLI → DecisionFramework → CoreDecisions → All components use same decision
 
 ## Configuration Options
 
+### AI Provider Configuration (NEW!)
+- **Text Generation**: Gemini (default), Vertex AI, OpenAI, Anthropic
+- **Image Generation**: Gemini (default), Vertex AI Imagen
+- **Video Generation**: Gemini VEO (default), Vertex AI
+- **Speech Synthesis**: Google Cloud TTS (default), ElevenLabs (planned)
+
 ### Generation Modes
 - **Simple**: Basic generation, minimal AI (fast, cheap)
 - **Enhanced**: 7 agents with discussions (balanced)
@@ -278,6 +309,9 @@ CLI → DecisionFramework → CoreDecisions → All components use same decision
 - Instagram auto-posting
 - Comprehensive session management
 - Duration flow consistency
+- Universal AI Provider Interface
+- Multi-provider support
+- Configuration-based system (no hardcoded values)
 
 ### ✅ **Recently Fixed (July 2025)**
 - Duration conflicts resolved
@@ -288,6 +322,13 @@ CLI → DecisionFramework → CoreDecisions → All components use same decision
 - **cheap_mode_level bug**: Fixed to only activate with explicit `--cheap` flag
 - **Audio-subtitle sync**: Fixed to exclude pause files from timing calculations
 - **Script duration**: Fixed by providing narrative content, not just visual descriptions
+
+### ✅ **New Features (v3.0+)**
+- **Universal AI Provider Interface**: Switch between AI providers without code changes
+- **Enhanced Configuration System**: All hardcoded values moved to configuration
+- **Multi-Provider Support**: Gemini, Vertex AI, OpenAI, Anthropic support
+- **Improved Error Handling**: Automatic provider fallback
+- **Cost Optimization**: Select providers based on cost/quality requirements
 
 ### 🔄 **In Progress**
 - Testing centralized decision flow

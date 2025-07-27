@@ -26,18 +26,25 @@
 - Use proper error handling and logging
 - Maintain clean separation of concerns
 
-### 5. Configuration System (NEW!)
+### 5. Configuration System
 - ALL hardcoded values must be moved to `src/config/video_config.py`
 - Use configuration methods instead of hardcoding values
 - Access configuration through the global `video_config` instance
 - Platform-aware configuration is automatically applied
 - Never hardcode: FPS, dimensions, font sizes, colors, text, durations
 
+### 6. AI Provider System (NEW!)
+- Use `AIServiceManager` to access AI services
+- Never directly instantiate AI clients
+- Always use the unified interface methods
+- Handle provider-specific errors gracefully
+- Support automatic fallback to alternative providers
+
 ## Architecture Guidelines
 
 ### Decision Making Flow
 ```
-CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All Components
+CLI Input → AI Provider Init → DecisionFramework.make_all_decisions() → CoreDecisions → All Components
 ```
 
 ### Component Responsibilities
@@ -58,6 +65,9 @@ CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All C
 - `AnimationTimingConfig`: Animation and transition timings
 - `DefaultTextConfig`: Platform-specific default texts
 - `LayoutConfig`: Positioning and layout parameters
+- `AIServiceManager`: Central manager for all AI services (NEW!)
+- `AIServiceFactory`: Factory for creating AI service instances (NEW!)
+- `UniversalAIProviderInterface`: Unified interface for AI providers (NEW!)
 
 ## Development Rules
 
@@ -102,6 +112,8 @@ CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All C
 5. Implement proper error handling
 6. Use `video_config` for all configurable parameters
 7. Never hardcode values - add to configuration instead
+8. Use `AIServiceManager` for all AI operations
+9. Implement provider-agnostic interfaces
 
 ### Modifying Existing Components
 1. Check if component uses centralized decisions
@@ -137,11 +149,16 @@ CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All C
 - Character description extraction from missions
 - Enhanced script processing without duplication
 - Content and visual continuity flags
+- Universal AI Provider Interface (NEW!)
+- Multi-provider support: Gemini, Vertex AI, OpenAI, Anthropic (NEW!)
+- Automatic provider fallback and error handling (NEW!)
 
 ### 🔄 In Progress
 - Testing full Israeli PM series generation
 - Performance optimization
 - Enhanced error handling
+- ElevenLabs speech synthesis integration
+- Additional AI provider integrations
 
 ### 📋 Architecture Files
 - `README.md` - User guide and quick start
@@ -166,6 +183,8 @@ CLI Input → DecisionFramework.make_all_decisions() → CoreDecisions → All C
 - **Audio-subtitle sync**: Fixed by excluding pause files from subtitle segment counting
 - **Script duration**: Provide detailed narrative content, not just visual descriptions
 - **VEO generation**: Remove `--cheap` flag to enable VEO video generation
+- **Provider switching**: Implemented Universal AI Provider Interface for seamless provider changes
+- **Configuration system**: Eliminated all hardcoded values throughout the codebase
 
 ### Duration Management
 - Duration is decided once in `DecisionFramework`
@@ -240,7 +259,32 @@ outputs/session_YYYYMMDD_HHMMSS/
    # Don't hardcode it in the component
    ```
 
+### AI Provider Best Practices
+1. **Always use AIServiceManager:**
+   ```python
+   # Good
+   manager = AIServiceManager()
+   text_service = manager.get_service(AIServiceType.TEXT_GENERATION)
+   
+   # Bad
+   client = GeminiTextClient()  # Don't instantiate directly
+   ```
+
+2. **Handle provider failures gracefully:**
+   ```python
+   try:
+       response = await text_service.generate_text(request)
+   except Exception as e:
+       # Provider will automatically fallback
+       logger.warning(f"Provider failed, using fallback: {e}")
+   ```
+
+3. **Use unified interfaces:**
+   - Same request/response models for all providers
+   - Provider-specific features via optional parameters
+   - Consistent error handling across providers
+
 ## Generation Order
 - The video generation order is: video generation -> image generation -> colored fallback (this is the fallbacks order)
 
-This system provides a robust, scalable, and maintainable architecture for AI-powered video generation with comprehensive social media integration and ZERO hardcoded values.
+This system provides a robust, scalable, and maintainable architecture for AI-powered video generation with comprehensive social media integration, ZERO hardcoded values, and seamless AI provider switching.

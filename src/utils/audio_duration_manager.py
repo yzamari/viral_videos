@@ -123,26 +123,28 @@ class AudioDurationManager:
         duration_penalty = abs(duration_difference) / target_duration
         quality_score = max(0, 1 - (quality_issues_count * 0.1 + duration_penalty))
         
-        # Determine if must regenerate
+        # Determine if must regenerate - be more lenient to allow quiet time
         must_regenerate = (
-            not is_within_tolerance or
-            duration_ratio < 0.8 or  # Less than 80% of target
-            duration_ratio > 1.2 or  # More than 120% of target
-            quality_score < 0.6      # Poor quality
+            duration_ratio < 0.5 or  # Less than 50% of target (very short)
+            duration_ratio > 1.5 or  # More than 150% of target (very long)
+            quality_score < 0.3      # Very poor quality
         )
         
         # Generate recommendation
         if is_within_tolerance and quality_score >= 0.8:
             recommendation = "Audio duration is optimal - proceed with video generation"
         elif must_regenerate:
-            if total_duration < min_duration:
-                recommendation = f"Audio is {abs(duration_difference):.1f}s too short - MUST regenerate with slower speech or more content"
-            elif total_duration > max_duration:
-                recommendation = f"Audio is {abs(duration_difference):.1f}s too long - MUST regenerate with faster speech or less content"
+            if duration_ratio < 0.5:
+                recommendation = f"Audio is critically short ({duration_ratio:.0%} of target) - regenerate with more content"
+            elif duration_ratio > 1.5:
+                recommendation = f"Audio is excessively long ({duration_ratio:.0%} of target) - regenerate with less content"
             else:
-                recommendation = f"Audio has quality issues (score: {quality_score:.2f}) - MUST regenerate"
+                recommendation = f"Audio has severe quality issues (score: {quality_score:.2f}) - regenerate"
         else:
-            recommendation = f"Audio duration acceptable but could be improved (diff: {duration_difference:+.1f}s)"
+            if total_duration < target_duration:
+                recommendation = f"Audio is {abs(duration_difference):.1f}s shorter than target - quiet time will be added"
+            else:
+                recommendation = f"Audio duration acceptable (diff: {duration_difference:+.1f}s) - proceed with generation"
         
         # Log analysis results
         logger.info(f"📊 Audio Duration Analysis:")

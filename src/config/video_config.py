@@ -238,7 +238,7 @@ class LayoutConfig:
 class AudioConfig:
     """Audio generation and validation parameters"""
     # Duration tolerance
-    duration_tolerance_percent: float = 5.0  # Accept ±5% duration variance
+    duration_tolerance_percent: float = 20.0  # Accept ±20% duration variance (allows quiet time)
     
     # Segment duration constraints
     min_segment_duration: float = 2.0       # Minimum 2 seconds per segment
