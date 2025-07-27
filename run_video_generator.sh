@@ -100,7 +100,7 @@ elif [ "$CLI_MODE" = true ]; then
         echo "Usage: $0 cli --mission 'your mission here'"
         exit 1
     fi
-    python main.py generate --mission "$MISSION" --duration "$DURATION" --platform "$PLATFORM" --category "$CATEGORY" --discussions "$DISCUSSIONS"
+    python main.py generate --mission "$MISSION" --duration "$DURATION" --platform "$PLATFORM" --category "$CATEGORY" --discussions "$DISCUSSIONS" --no-cheap
 else
     echo "Usage: $0 [ui|cli] [options]"
     echo ""

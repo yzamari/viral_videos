@@ -23,7 +23,8 @@ python3 -m src.workflows.generate_viral_video \
   --session-id "$SESSION_ID" \
   --category comedy \
   --style marvel \
-  --tone satirical
+  --tone satirical \
+  --no-cheap
 
 # Check if generation was successful
 if [ $? -eq 0 ]; then

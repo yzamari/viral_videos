@@ -1,0 +1,147 @@
+🎬 Starting Netanyahu Marvel Episode 17 Generation
+📊 Languages: Hebrew and English
+⏱️  Duration: 55 seconds
+📱 Platform: Instagram
+🎨 Style: Marvel Comics with dark humor
+
+[32m2025-07-27 09:00:33 - __main__ - INFO - 🎯 Generating Comedy video for mission: Create a funny video about cats learning to use computers[0m
+[32m2025-07-27 09:00:33 - __main__ - INFO - 📱 Platform: youtube[0m
+[32m2025-07-27 09:00:33 - __main__ - INFO - ⏱️ Duration: 20 seconds[0m
+[32m2025-07-27 09:00:33 - __main__ - INFO - 🎭 Mode: enhanced (7 agents with discussions)[0m
+[32m2025-07-27 09:00:33 - __main__ - INFO - 🎬 Visual Continuity: ✅ Enabled[0m
+[32m2025-07-27 09:00:33 - __main__ - INFO - 📝 Content Continuity: ✅ Enabled[0m
+[32m2025-07-27 09:00:33 - __main__ - INFO - 🤖 AI System: 🎯 Enhanced (7 agents with discussions, best viral content)[0m
+[32m2025-07-27 09:00:33 - __main__ - INFO - 💰 CHEAP MODE: Enabled (saves costs - no VEO, basic TTS, minimal AI)[0m
+[32m2025-07-27 09:00:33 - __main__ - INFO - 💡 Use --no-cheap to disable and use premium features[0m
+[32m2025-07-27 09:00:33 - __main__ - INFO - 💰 Applied cheap mode optimizations: fallback_only=True, discussions=off, mode=simple[0m
+[36m2025-07-27 09:00:33 - src.utils.comprehensive_logger - DEBUG - Initializing log file for session tracking[0m
+[32m2025-07-27 09:00:33 - src.utils.session_manager - INFO - 📁 Tracked log file: viral_video_20250727.log -> logs/[0m
+[32m2025-07-27 09:00:33 - src.utils.comprehensive_logger - INFO - 📊 Comprehensive logging initialized for session session_20250727_090033[0m
+[32m2025-07-27 09:00:33 - src.utils.session_manager - INFO - 📊 Comprehensive logger initialized for session[0m
+[32m2025-07-27 09:00:33 - src.utils.session_manager - INFO - 📁 Created session: session_20250727_090033[0m
+[32m2025-07-27 09:00:33 - src.utils.session_manager - INFO - 📂 Session directory: outputs/session_20250727_090033[0m
+[32m2025-07-27 09:00:33 - src.utils.session_manager - INFO - 📊 Subdirectories created: 21[0m
+[32m2025-07-27 09:00:33 - src.utils.session_context - INFO - ✅ Session context initialized for session_20250727_090033 at outputs/session_20250727_090033[0m
+[32m2025-07-27 09:00:33 - src.frameworks.content_credibility_system - INFO - 🔍 Content Credibility System initialized[0m
+[32m2025-07-27 09:00:33 - src.frameworks.audience_intelligence_system - INFO - 🧠 Audience Intelligence System initialized[0m
+[32m2025-07-27 09:00:33 - src.frameworks.ethical_optimization_system - INFO - 🎯 Ethical Optimization System initialized[0m
+[32m2025-07-27 09:00:33 - src.agents.mission_planning_agent - INFO - 🎯 Enhanced Mission Planning Agent initialized with None[0m
+[32m2025-07-27 09:00:33 - src.agents.mission_planning_agent - INFO - 🔍 Content credibility system enabled[0m
+[32m2025-07-27 09:00:33 - src.agents.mission_planning_agent - INFO - 🧠 Audience intelligence system enabled[0m
+[32m2025-07-27 09:00:33 - src.agents.mission_planning_agent - INFO - 🎯 Ethical optimization system enabled[0m
+[32m2025-07-27 09:00:33 - src.core.decision_framework - INFO - 🎯 Decision Framework initialized with Mission Planning Agent[0m
+[32m2025-07-27 09:00:33 - src.core.decision_framework - INFO - 🎯 Making all core decisions upfront...[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: duration_seconds = 20 (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: platform = youtube (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: category = Comedy (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: category_string = Comedy (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: target_audience = general audience (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: language = en-US (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: all_languages = ['en-US'] (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: style = viral (source: ai_agent, confidence: 0.80)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: style_string = viral (source: ai_agent, confidence: 0.80)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: tone = engaging (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: tone_string = engaging (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: visual_style = dynamic (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: visual_style_string = dynamic (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: theme_id = None (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: style_reference_id = None (source: system_default, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: frame_continuity = True (source: ai_agent, confidence: 0.95)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: continuous_generation = True (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: mode = simple (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: cheap_mode = True (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: cheap_mode_level = full (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: mission = Create a funny video about cats learning to use computers (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: hook = Amazing content ahead! (source: ai_agent, confidence: 0.80)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: call_to_action = Follow for more! (source: ai_agent, confidence: 0.80)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: voice_strategy = variety (source: ai_agent, confidence: 0.80)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: color_palette = dynamic palette (source: system_default, confidence: 0.50)[0m
+[36m2025-07-27 09:00:33 - src.core.decision_framework - DEBUG - 🎯 Decision: background_music_style = upbeat (source: ai_agent, confidence: 0.80)[0m
+[32m2025-07-27 09:00:33 - src.core.decision_framework - INFO - 📏 Pre-calculating clip constraints:[0m
+[32m2025-07-27 09:00:33 - src.core.decision_framework - INFO -    Total duration: 20s[0m
+[32m2025-07-27 09:00:33 - src.core.decision_framework - INFO -    Max clip duration: 8.0s[0m
+[32m2025-07-27 09:00:33 - src.core.decision_framework - INFO -    Minimum clips required: 3[0m
+[32m2025-07-27 09:00:33 - src.agents.mission_planning_agent - INFO - 🎯 Analyzing mission: Create a funny video about cats learning to use co...[0m
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 686, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/yahavzamari/viralAi/src/workflows/generate_viral_video.py", line 199, in async_main
+    core_decisions = await decision_framework.make_all_decisions(cli_args, ai_agents_available=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yahavzamari/viralAi/src/core/decision_framework.py", line 203, in make_all_decisions
+    clip_structure = await self._decide_clip_structure_with_scores(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yahavzamari/viralAi/src/core/decision_framework.py", line 608, in _decide_clip_structure_with_scores
+    clip_structure = await self._ai_optimize_clip_structure(duration, voice_strategy)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yahavzamari/viralAi/src/core/decision_framework.py", line 652, in _ai_optimize_clip_structure
+    mission_plan = await self.mission_planning_agent.analyze_mission(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yahavzamari/viralAi/src/agents/mission_planning_agent.py", line 155, in analyze_mission
+    mission_type, is_strategic = await self._detect_mission_type(mission_statement)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yahavzamari/viralAi/src/agents/mission_planning_agent.py", line 182, in _detect_mission_type
+    ai_mission_type, is_strategic = await self._ai_mission_detection(mission_statement)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yahavzamari/viralAi/src/agents/mission_planning_agent.py", line 234, in _ai_mission_detection
+    response = await text_service.generate(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yahavzamari/viralAi/src/ai/providers/gemini/text_generation.py", line 47, in generate
+    response = await loop.run_in_executor(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/yahavzamari/viralAi/src/workflows/generate_viral_video.py", line 303, in <module>
+    main(
+  File "/Users/yahavzamari/viralAi/src/workflows/generate_viral_video.py", line 299, in main
+    return asyncio.run(async_main(*args, **kwargs))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 193, in run
+    with Runner(debug=debug, loop_factory=loop_factory) as runner:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 62, in __exit__
+    self.close()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/runners.py", line 72, in close
+    loop.run_until_complete(
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 673, in run_until_complete
+    self.run_forever()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 640, in run_forever
+    self._run_once()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/asyncio/base_events.py", line 1954, in _run_once
+    event_list = self._selector.select(timeout)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/selectors.py", line 566, in select
+    kev_list = self._selector.control(None, max_ev, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Exception ignored in: <module 'threading' from '/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/threading.py'>
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/threading.py", line 1594, in _shutdown
+    atexit_call()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/concurrent/futures/thread.py", line 31, in _python_exit
+    t.join()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/threading.py", line 1149, in join
+    self._wait_for_tstate_lock()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/threading.py", line 1169, in _wait_for_tstate_lock
+    if lock.acquire(block, timeout):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt: 

@@ -28,6 +28,7 @@ python main.py generate \
   --episode-title "Renewable Energy Revolution" \
   --style news \
   --model veo-3 \
+  --no-cheap \
   --post
 
 # Step 3: Generate Episode 2 (same series, different topic)
@@ -38,6 +39,7 @@ python main.py generate \
   --episode-title "Medical Breakthrough" \
   --style news \
   --model veo-3 \
+  --no-cheap \
   --post
 
 # Step 4: Generate Episode 3
@@ -48,6 +50,7 @@ python main.py generate \
   --episode-title "AI in Education" \
   --style news \
   --model veo-3 \
+  --no-cheap \
   --post
 
 # View series info

@@ -6099,6 +6099,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Use default offset if not provided
             if bottom_offset is None:
                 bottom_offset = video_config.get_subtitle_offset('default')
+            
+            # Determine video width based on height (assuming portrait mode for cheap mode)
+            video_width = 1080 if video_height == 1920 else 1920
             from moviepy.editor import TextClip, AudioFileClip
             import re
             
@@ -6193,7 +6196,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 # Create subtitle clip
                 subtitle_clip = TextClip(
                     sentence,
-                    fontsize=video_config.get_font_size('subtitle', width),
+                    fontsize=video_config.get_font_size('subtitle', video_width),
                     color=video_config.text_overlay.default_text_color,
                     font=video_config.text_overlay.default_font,
                     stroke_color=video_config.text_overlay.default_stroke_color,
