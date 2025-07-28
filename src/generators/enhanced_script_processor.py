@@ -401,6 +401,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 })
             
             # Apply minimum segment duration thresholds only if not using one sentence per segment
+            from ..config import video_config
             if not video_config.audio.one_sentence_per_segment:
                 segments = self._apply_minimum_segment_durations(segments)
             else:
@@ -510,6 +511,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 total_words += sentence_words
             
             # Apply minimum segment duration thresholds only if not using one sentence per segment
+            from ..config import video_config
             if not video_config.audio.one_sentence_per_segment:
                 segments = self._apply_minimum_segment_durations(segments)
             else:

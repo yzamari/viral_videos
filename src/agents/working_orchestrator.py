@@ -899,7 +899,7 @@ class WorkingOrchestrator:
             from ..generators.separated_script_generator import SeparatedScriptGenerator
             
             separated_generator = SeparatedScriptGenerator(self.api_key)
-            character_desc = config.get('character_description', self.character)
+            character_desc = config.get('character_description', config.get('character', None))
             
             script_data = await separated_generator.generate_separated_script(
                 mission=mission_with_language,
