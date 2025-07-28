@@ -1,0 +1,152 @@
+{
+  "discussion_summary": {
+    "topic": "Marketing Strategy & Brand Alignment",
+    "participants": [
+      "MarketMind",
+      "BrandGuard",
+      "SocialSavvy",
+      "AudienceAce"
+    ],
+    "duration_seconds": 6.128204107284546,
+    "total_rounds": 1,
+    "final_consensus": 1.0,
+    "target_consensus": 0.7,
+    "success": true
+  },
+  "round_by_round": [
+    {
+      "round": 1,
+      "contributions": [
+        {
+          "agent": "MarketMind",
+          "message": "To make this Instagram video engaging, we'll leverage rapid-fire visuals and punchy dialogue that blends Ben-Gurion's historical gravitas with unexpected superhero tropes and dark humor, ensuring a strong hook within the first few seconds.",
+          "vote": "agree",
+          "timestamp": "2025-07-28 08:48:54.837817"
+        },
+        {
+          "agent": "BrandGuard",
+          "message": "To best capture Ben-Gurion's essence with Marvel superhero flair and dark humor for Instagram, we must focus on visual parallels and witty, anachronistic dialogue that highlights his decisiveness and the immense, often morally ambiguous, challenges he faced.",
+          "vote": "agree",
+          "timestamp": "2025-07-28 08:48:56.372109"
+        },
+        {
+          "agent": "SocialSavvy",
+          "message": "To maximize engagement for Ben-Gurion's Marvel-style introduction, we need rapid, impactful visuals and dialogue that blend his decisive leadership with darkly humorous, anachronistic superhero tropes. The key is to lean into visual storytelling with quick cuts, dramatic lighting, and perhaps even stylized sound effects reminiscent of comic book panels, all while keeping the narrative sharp and punchy to maintain viewer attention.",
+          "vote": "agree",
+          "timestamp": "2025-07-28 08:48:58.014246"
+        },
+        {
+          "agent": "AudienceAce",
+          "message": "To effectively introduce David Ben-Gurion with Marvel superhero flair and dark humor on Instagram, we need to craft short, visually striking segments that highlight his decisive nature through anachronistic superhero metaphors and biting wit. The key is to create an \"origin story\" feel with rapid cuts, bold graphics, and a narrative that hints at the immense, often dark, challenges he navigated, appealing to a younger audience's interest in historical figures with a modern, edgy twist.",
+          "vote": "agree",
+          "timestamp": "2025-07-28 08:48:59.386301"
+        }
+      ],
+      "votes": {
+        "agree": 4,
+        "disagree": 0,
+        "neutral": 0
+      }
+    }
+  ],
+  "consensus_progression": [
+    {
+      "round": 1,
+      "consensus": 1.0,
+      "timestamp": "2025-07-28 08:48:59.387099"
+    }
+  ],
+  "agent_contributions": {
+    "MarketMind": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-28 08:48:54.837817",
+      "last_contribution": "2025-07-28 08:48:54.837817"
+    },
+    "BrandGuard": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-28 08:48:56.372109",
+      "last_contribution": "2025-07-28 08:48:56.372109"
+    },
+    "SocialSavvy": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-28 08:48:58.014246",
+      "last_contribution": "2025-07-28 08:48:58.014246"
+    },
+    "AudienceAce": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-28 08:48:59.386301",
+      "last_contribution": "2025-07-28 08:48:59.386301"
+    }
+  },
+  "timeline": [
+    {
+      "timestamp": "2025-07-28 08:48:53.260522",
+      "event": "discussion_started",
+      "description": "Discussion 'Marketing Strategy & Brand Alignment' started"
+    },
+    {
+      "timestamp": "2025-07-28 08:48:54.837817",
+      "event": "agent_contribution",
+      "agent": "MarketMind",
+      "round": 1,
+      "description": "MarketMind contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-28 08:48:56.372109",
+      "event": "agent_contribution",
+      "agent": "BrandGuard",
+      "round": 1,
+      "description": "BrandGuard contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-28 08:48:58.014246",
+      "event": "agent_contribution",
+      "agent": "SocialSavvy",
+      "round": 1,
+      "description": "SocialSavvy contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-28 08:48:59.386301",
+      "event": "agent_contribution",
+      "agent": "AudienceAce",
+      "round": 1,
+      "description": "AudienceAce contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-28 08:48:59.387099",
+      "event": "consensus_update",
+      "round": 1,
+      "consensus_level": 1.0,
+      "description": "Consensus updated to 100.0% in round 1"
+    },
+    {
+      "timestamp": "2025-07-28 08:48:59.388726",
+      "event": "discussion_completed",
+      "description": "Discussion completed with 100.0% consensus"
+    }
+  ]
+}

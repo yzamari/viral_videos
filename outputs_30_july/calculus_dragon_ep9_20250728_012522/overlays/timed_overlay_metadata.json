@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 5,
+  "hook_text": "[VISUAL: Lois Griffin voice: Peter, where is that dragon?] DIALOGUE: Extreme Value Theorem: Find treasure's max value!",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "A Family Guy-style comedy inherently requires a cartoon style for its visual humor and character designs. Vibrant colors are typical of the show and will appeal to a general Instagram audience, making the complex mathematical concepts more digestible and visually engaging. The chosen style allows for creative visual metaphors like treasure hunting and dragon velocity.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "Instagram's feed prioritizes content. Placing the overlay at the top center ensures it's visible without obstructing the core visual narrative of the cartoon, which will likely unfold in the main body of the screen. This also avoids the bottom 20% restriction for Instagram.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/calculus_dragon_ep9_20250728_012522/temp_files/base_video.mp4 -vf drawtext=text='Steady Climb \u26f0\ufe0f':fontcolor=#96CEB4:fontsize=40:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,7.0\\,9.5),drawtext=text='No Gaps Allowed \ud83d\udd17':fontcolor=#00D2D3:fontsize=45:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1.5:x=(w-text_w)/2:y=1152:enable=between(t\\,16.0\\,18.5),drawtext=text='Treasure Logic \ud83e\udde0':fontcolor=#4ECDC4:fontsize=40:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,25.0\\,27.5),drawtext=text='Follow for':fontcolor=#FFFF00:fontsize=56:font='Anton':box=1:boxcolor=#FF0000@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,28.810000000000002\\,30.21),drawtext=text='more':fontcolor=#FFFF00:fontsize=56:font='Anton':box=1:boxcolor=#FF0000@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,30.310000000000002\\,31.71) -c:a copy -y outputs/calculus_dragon_ep9_20250728_012522/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='Steady Climb \u26f0\ufe0f':fontcolor=#96CEB4:fontsize=40:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,7.0\\,9.5),drawtext=text='No Gaps Allowed \ud83d\udd17':fontcolor=#00D2D3:fontsize=45:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1.5:x=(w-text_w)/2:y=1152:enable=between(t\\,16.0\\,18.5),drawtext=text='Treasure Logic \ud83e\udde0':fontcolor=#4ECDC4:fontsize=40:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,25.0\\,27.5),drawtext=text='Follow for':fontcolor=#FFFF00:fontsize=56:font='Anton':box=1:boxcolor=#FF0000@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,28.810000000000002\\,30.21),drawtext=text='more':fontcolor=#FFFF00:fontsize=56:font='Anton':box=1:boxcolor=#FF0000@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,30.310000000000002\\,31.71)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 34.81,
+    "overlay_count": 5
+  }
+}

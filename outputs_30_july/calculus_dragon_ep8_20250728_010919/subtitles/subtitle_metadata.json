@@ -1,0 +1,22 @@
+{
+  "total_segments": 23,
+  "total_duration": 38.734694000000005,
+  "script_content": "Alright Lois, see this smooth flight path? That is a limit. We approach the destination without actually reaching it. If the dragon vanished and reappeared, that is not a limit; it is rude teleporting, Brian. We land from the left, we land from the right. Both directions must match, or the operation is chaotic. See that perfect landing? No sudden jolts. That is continuity. The flight is smooth. Even with altitude changes, the flight remains unbroken. It is all connected, like Stewie's evil plans, but with more precision",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_9.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_10.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_11.mp3",
+    "outputs/calculus_dragon_ep8_20250728_010919/audio/padded/padded_audio_segment_12.mp3"
+  ],
+  "target_duration": 39.034694,
+  "capped_to_target": false
+}

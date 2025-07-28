@@ -1,0 +1,24 @@
+{
+  "total_segments": 29,
+  "total_duration": 38.663999999999994,
+  "script_content": "All aboard the Sequence Express! Each car represents a , a\u2082, a\u2083\u2026 CHOO CHOO! We are headed to the limit. This train journey approaches station L. Convergence means approaching closer and closer. The Epsilon tunnel brings us within epsilon of L. What a feat! The unique limit theorem guarantees only one destination. No detours are permitted. Bounded sequences remain on track, never straying too far. They are dependable travelers. The arithmetic of limits functions , multiplication, all work perfectly. It is mathematical magic! The Sandwich theorem is a delightful delicious sequence sandwich! Even epsilon chicks converge beautifully",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_6.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_7.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_8.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_9.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_10.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_11.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_12.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_13.mp3",
+    "outputs/calculus_dragon_ep2_20250727_110754/audio/audio_segment_14.mp3"
+  ],
+  "target_duration": 38.663999999999994,
+  "capped_to_target": false
+}

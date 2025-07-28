@@ -46,6 +46,15 @@ from ..utils.professional_text_renderer import (
 from ..config import video_config
 from .png_overlay_handler import PNGOverlayHandler
 
+# RTL text support
+try:
+    import arabic_reshaper
+    from bidi.algorithm import get_display
+    RTL_SUPPORT = True
+except ImportError:
+    RTL_SUPPORT = False
+    print("⚠️ RTL support not available. Install with: pip install arabic-reshaper python-bidi")
+
 logger = get_logger(__name__)
 
 
@@ -533,6 +542,10 @@ The last frame of this scene connects to the next.
         self.overlay_enhancer = OverlayEnhancer()
         self.png_overlay_handler = PNGOverlayHandler()
         
+        # Initialize overlay strategist for dynamic overlays
+        from ..agents.overlay_strategist_agent import OverlayStrategistAgent
+        self.overlay_strategist = OverlayStrategistAgent(api_key)
+        
         # Initialize audio duration manager
         self.audio_duration_manager = AudioDurationManager()
         
@@ -805,8 +818,10 @@ The last frame of this scene connects to the next.
                 clips, audio_files, session_context
             )
             
-            # Step 6: Create subtitles
-            subtitle_files = self._create_subtitles(script_result, audio_files, session_context)
+            # Step 6: Create subtitles and get timing information
+            subtitle_data = self._create_subtitles_with_timings(script_result, audio_files, session_context)
+            subtitle_files = subtitle_data.get('files', {})
+            subtitle_timings = subtitle_data.get('timings', [])
             
             # Get optimal duration from coordinator
             optimal_duration = duration_coordinator.get_optimal_duration()
@@ -832,7 +847,7 @@ The last frame of this scene connects to the next.
             # Step 7: Compose final video with subtitles and overlays
             final_video_path = self._compose_final_video_with_subtitles(
                 clips, audio_files, script_result, style_decision, positioning_decision, 
-                config, session_context, duration_coordinator
+                config, session_context, duration_coordinator, subtitle_timings
             )
             
             generation_time = time.time() - start_time
@@ -1011,6 +1026,10 @@ The last frame of this scene connects to the next.
             
             # Get patterns for the Director (empty dict if not available)
             patterns = {}
+            
+            # Add target language to patterns if available
+            if hasattr(config, 'language') and config.language:
+                patterns['target_language'] = config.language
             
             # Generate the narrative script
             director_result = self.director.write_script(
@@ -1243,29 +1262,24 @@ The last frame of this scene connects to the next.
             audio_files = sorted([f for f in os.listdir(audio_dir) if f.startswith('audio_segment_') and f.endswith('.mp3')])
             logger.info(f"🎵 Found {len(audio_files)} audio segments in session")
         
-        # CRITICAL: Always use optimal video clip count (5-8s each)
-        # Calculate optimal number of clips based on duration
-        target_clip_duration = 6.0  # Aim for 6-second clips
-        optimal_num_clips = max(2, int(config.duration_seconds / target_clip_duration))
-        
-        # Check core decisions first
+        # CRITICAL: Video clips and audio segments are INDEPENDENT
+        # Use core decisions for video clips, NOT audio segment count
         if hasattr(config, 'num_clips') and config.num_clips is not None:
-            # Use core decisions but validate it's reasonable
-            if 4 <= config.num_clips <= 10 and config.duration_seconds <= 60:
-                num_clips = config.num_clips
-                logger.info(f"🎯 Using core decisions: {num_clips} clips from centralized decision framework")
-            else:
-                num_clips = optimal_num_clips
-                logger.info(f"🎯 Core decisions had {config.num_clips} clips, using optimal: {num_clips} clips")
+            # Always use core decisions for video clips
+            num_clips = config.num_clips
+            logger.info(f"🎯 Using core decisions: {num_clips} video clips")
         else:
+            # Fallback to optimal calculation if no core decisions
+            target_clip_duration = 5.0  # 5-second clips as configured
+            optimal_num_clips = max(2, int(config.duration_seconds / target_clip_duration))
             num_clips = optimal_num_clips
-            logger.info(f"🎯 Using optimal clip count: {num_clips} clips for {config.duration_seconds}s video")
+            logger.info(f"🎯 No core decisions, using optimal: {num_clips} clips for {config.duration_seconds}s video")
         
-        # Log audio/script segment count for reference only
+        # Log audio information separately - it's NOT related to video clips
         if audio_files:
-            logger.info(f"📊 Note: {len(audio_files)} audio segments will be distributed across {num_clips} video clips")
-        elif script_segments and isinstance(script_segments, list):
-            logger.info(f"📊 Note: {len(script_segments)} script segments will be distributed across {num_clips} video clips")
+            logger.info(f"🎵 Found {len(audio_files)} audio segments (independent from video clips)")
+        if script_segments and isinstance(script_segments, list):
+            logger.info(f"📝 Found {len(script_segments)} script segments (independent from video clips)")
         
         # Log audio durations for reference but DO NOT use them for video clips
         if audio_files:
@@ -1295,32 +1309,22 @@ The last frame of this scene connects to the next.
             logger.info(f"🎯 Using core decisions clip durations: {[f'{d:.1f}s' for d in clip_durations]}")
             logger.info(f"⏱️ Total from core decisions: {sum(clip_durations):.1f}s (Target: {config.duration_seconds}s)")
         else:
-            # Calculate optimal clip durations (5-8 seconds each)
-            # Don't use audio segment durations for video clips!
-            target_clip_duration = 6.0  # Aim for 6-second clips
-            min_clip_duration = 5.0
-            max_clip_duration = 8.0
-            
-            # Calculate how many clips we need
-            optimal_num_clips = max(2, int(config.duration_seconds / target_clip_duration))
-            
-            # Recalculate clip durations to be 5-8 seconds each
-            base_duration = config.duration_seconds / optimal_num_clips
+            # NEVER use audio durations for video clips - they are independent!
+            # Video clips have their own optimal durations (5 seconds each)
+            # Distribute duration evenly across clips
+            base_duration = config.duration_seconds / num_clips
             clip_durations = []
             
-            for i in range(optimal_num_clips):
+            for i in range(num_clips):
                 # Add slight variation for natural pacing
-                variation = (i % 3 - 1) * 0.5  # -0.5, 0, +0.5 variation
-                clip_duration = max(min_clip_duration, min(max_clip_duration, base_duration + variation))
+                variation = (i % 3 - 1) * 0.5  # -0.5, 0, +0.5 variation  
+                clip_duration = max(2.0, base_duration + variation)  # Min 2 seconds per clip
                 clip_durations.append(clip_duration)
             
             # Adjust last clip to match exact target duration
             total_so_far = sum(clip_durations[:-1])
             last_clip_duration = config.duration_seconds - total_so_far
-            clip_durations[-1] = max(min_clip_duration, min(max_clip_duration, last_clip_duration))
-            
-            # Update num_clips if it changed
-            num_clips = optimal_num_clips
+            clip_durations[-1] = max(2.0, last_clip_duration)
             
             logger.info(f"🎬 Duration: {config.duration_seconds}s, generating {num_clips} clips with optimal durations (5-8s each)")
             logger.info(f"⏱️ Individual Clip Durations: {[f'{d:.1f}s' for d in clip_durations]}")
@@ -1418,25 +1422,28 @@ The last frame of this scene connects to the next.
                 # Try VEO generation first (up to 3 attempts with smart rephrasing)
                 if veo_client:
                     max_veo_attempts = video_config.audio.max_regeneration_attempts
+                    # Clear any previous error before starting attempts for this clip
+                    if hasattr(self, '_last_veo_error'):
+                        delattr(self, '_last_veo_error')
+                    
                     for veo_attempt in range(max_veo_attempts):
                         try:
-                            logger.info(f"🎬 Generating VEO clip {i+1}/{num_clips} (attempt {veo_attempt + 1}/{max_veo_attempts}): {enhanced_prompt[:50]}... (duration: {clip_duration:.1f}s)")
-                            
                             # Use increasingly safer prompts for retries
                             current_prompt = enhanced_prompt
-                            if veo_attempt > 0 and hasattr(self, '_last_veo_error'):
-                                error_str = str(getattr(self, '_last_veo_error', '')).lower()
-                                if 'filter' in error_str or 'policy' in error_str or 'safety' in error_str or 'unknown reasons' in error_str:
-                                    # Progressive safety levels: 1=mild rephrase, 2=moderate, 3=safe
-                                    safety_level = min(veo_attempt + 1, 3)
-                                    current_prompt = self._rephrase_with_safety_level(
-                                        enhanced_prompt, 
-                                        safety_level,
-                                        config.mission,
-                                        i + 1,
-                                        platform=config.target_platform.value
-                                    )
-                                    logger.info(f"🔄 Using safety level {safety_level} rephrasing for attempt {veo_attempt + 1}")
+                            if veo_attempt > 0:
+                                # ALWAYS rephrase on retry attempts, not just when we have an error
+                                logger.info(f"🔄 Attempt {veo_attempt + 1} - applying safety rephrasing")
+                                safety_level = veo_attempt  # 1 for second attempt, 2 for third
+                                current_prompt = self._rephrase_with_safety_level(
+                                    enhanced_prompt, 
+                                    safety_level,
+                                    config.mission,
+                                    i + 1,
+                                    platform=config.target_platform.value
+                                )
+                                logger.info(f"🛡️ Using safety level {safety_level} rephrasing")
+                            
+                            logger.info(f"🎬 Generating VEO clip {i+1}/{num_clips} (attempt {veo_attempt + 1}/{max_veo_attempts}): {current_prompt[:50]}... (duration: {clip_duration:.1f}s)")
                             
                             # Log full prompt for debugging
                             logger.info(f"📝 FULL VEO PROMPT for clip {i+1} attempt {veo_attempt + 1}: {current_prompt}")
@@ -1467,9 +1474,9 @@ The last frame of this scene connects to the next.
                             self._last_veo_error = str(e)  # Store error for next attempt
                             clip_path = None
                             
-                            if veo_attempt == 1:  # Last attempt
+                            if veo_attempt == max_veo_attempts - 1:  # Last attempt
                                 logger.warning(f"⚠️ All VEO attempts failed for clip {i+1}, moving to fallback")
-                                print(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1} after 2 attempts - using fallback")
+                                print(f"⚠️ FALLBACK WARNING: VEO generation failed for clip {i+1} after {max_veo_attempts} attempts - using fallback")
                     
                     # Check if we got a successful clip
                     if clip_path and os.path.exists(clip_path):
@@ -2038,7 +2045,8 @@ The last frame of this scene connects to the next.
                                            script_result: Dict[str, Any], style_decision: Dict[str, Any],
                                            positioning_decision: Dict[str, Any], config: GeneratedVideoConfig,
                                            session_context: SessionContext, 
-                                           duration_coordinator: Optional[DurationCoordinator] = None) -> str:
+                                           duration_coordinator: Optional[DurationCoordinator] = None,
+                                           subtitle_timings: Optional[List[Dict[str, float]]] = None) -> str:
         """Compose final video with subtitles and overlays, plus additional versions"""
         try:
             logger.info("🎬 Composing final video with multiple output versions")
@@ -2063,9 +2071,10 @@ The last frame of this scene connects to the next.
                     logger.warning(f"   Audio: {audio_analysis.total_duration:.1f}s vs Target: {config.duration_seconds}s")
                     logger.warning("   Proceeding with assembly but output may have duration issues")
             
-            # Step 1: Create base video from clips
+            # Step 1: Create base video from clips with subtitle-aligned audio
             base_video_path = self._create_base_video_from_clips(clips, audio_files, session_context, config.duration_seconds, 
-                                                                platform=config.target_platform.value)
+                                                                platform=config.target_platform.value,
+                                                                subtitle_timings=subtitle_timings)
             
             if not base_video_path or not os.path.exists(base_video_path):
                 logger.error("❌ Failed to create base video")
@@ -2141,7 +2150,8 @@ The last frame of this scene connects to the next.
             audio_only_path = session_context.save_final_video(video_audio_only, suffix="_audio_only")
             logger.info(f"✅ VERSION 1 created: {audio_only_path}")
             
-            # Step 3: Add subtitle overlays
+            # Step 3: Generate subtitles from our known text and audio timing
+            logger.info("📝 Generating subtitles from script and audio timing")
             video_with_subtitles = self._add_subtitle_overlays(temp_video_path, config, session_context)
             
             # Step 4: Add text overlays and hooks
@@ -2152,10 +2162,10 @@ The last frame of this scene connects to the next.
             
             # Step 5: Create VERSION 2 - Video with overlays only (no subtitles)
             logger.info("🎬 Creating VERSION 2: Video with overlays only (no subtitles)")
-            # Ensure temp_video_path exists, fall back to base_video_path if not
+            # Ensure temp_video_path exists, fall back to original_base_video if not
             if not os.path.exists(temp_video_path):
-                logger.debug(f"Extended video not needed, using base video path for overlays")
-                temp_video_path = base_video_path
+                logger.debug(f"Extended video not needed, using original base video path for overlays")
+                temp_video_path = original_base_video
             # Use the trimmed/original video without subtitles for overlay-only version
             video_overlays_only = self._add_timed_text_overlays(temp_video_path, style_decision, positioning_decision, config, session_context)
             video_overlays_only = self._apply_platform_orientation(video_overlays_only, config.target_platform.value, session_context)
@@ -2332,7 +2342,6 @@ The last frame of this scene connects to the next.
                 '-i', audio_file,
                 '-c:v', video_config.encoding.video_codec,
                 '-c:a', video_config.encoding.audio_codec,
-                '-shortest',
                 '-pix_fmt', 'yuv420p',
                 output_path
             ]
@@ -2352,7 +2361,7 @@ The last frame of this scene connects to the next.
     
     def _create_base_video_from_clips(self, clips: List[str], audio_files: List[str], 
                                      session_context: SessionContext, target_duration: Optional[float] = None,
-                                     platform: Optional[str] = None) -> str:
+                                     platform: Optional[str] = None, subtitle_timings: Optional[List[Dict[str, float]]] = None) -> str:
         """Create base video from clips and audio files"""
         try:
             logger.info("🎬 Creating base video from clips")
@@ -2370,6 +2379,19 @@ The last frame of this scene connects to the next.
             if not audio_files:
                 logger.warning("⚠️ No audio files available")
                 return ""
+            
+            # CRITICAL: Use subtitle-aligned audio if timings are available
+            if subtitle_timings:
+                logger.info("🎯 Using subtitle-aligned audio composition for perfect sync")
+                result = self._compose_with_subtitle_aligned_audio(
+                    clips, audio_files, subtitle_timings, output_path, 
+                    session_context, target_duration, platform
+                )
+                if result and os.path.exists(result):
+                    logger.info("✅ Subtitle-aligned composition successful")
+                    return result
+                else:
+                    logger.warning("⚠️ Subtitle-aligned composition failed, falling back to standard methods")
             
             # ENHANCED: Always prefer frame continuity for better video quality
             if len(clips) > 1:
@@ -2557,7 +2579,8 @@ The last frame of this scene connects to the next.
 
     def _add_professional_text_overlays(self, video_path: str, config: GeneratedVideoConfig,
                                        video_width: int, video_height: int, video_duration: float,
-                                       session_context: SessionContext) -> str:
+                                       session_context: SessionContext,
+                                       script_result: Optional[Dict[str, Any]] = None) -> str:
         """Add text overlays using professional text renderer instead of FFmpeg drawtext"""
         try:
             import cv2
@@ -2642,6 +2665,216 @@ The last frame of this scene connects to the next.
                     fade_out_duration=video_config.animation.overlay_fade_duration
                 )
                 overlays.append(cta_overlay)
+            
+            # CRITICAL: Add business address as a persistent overlay throughout the video
+            if config.business_address and config.show_business_info:
+                logger.info(f"🏠 Adding persistent business address overlay: {config.business_address}")
+                
+                address_style = TextStyle(
+                    font_family="Arial",
+                    font_size=video_config.get_font_size('body', video_width),
+                    font_weight="bold",
+                    color=(255, 255, 255, 255),  # White
+                    stroke_color=(0, 0, 0, 255),
+                    stroke_width=2,
+                    background_color=(220, 20, 60, 200),  # Crimson red background
+                    background_padding=(15, 8, 15, 8),
+                    line_spacing=1.0
+                )
+                
+                address_layout = TextLayout(
+                    position=TextPosition.TOP_RIGHT,
+                    alignment=TextAlignment.RIGHT,
+                    max_width=int(video_width * 0.35),
+                    margin=(20, 80, 20, 20)  # Below the hook
+                )
+                
+                # Show address throughout most of the video
+                address_overlay = TextOverlay(
+                    text=f"📍 {config.business_address}",
+                    style=address_style,
+                    layout=address_layout,
+                    start_time=2.0,  # Start after 2 seconds
+                    end_time=video_duration - 5.5,  # Hide before business info appears
+                    fade_in_duration=0.5,
+                    fade_out_duration=0.3
+                )
+                overlays.append(address_overlay)
+                logger.info(f"✅ Added persistent address overlay from 2s to {video_duration - 5.5:.1f}s")
+            
+            # Business info overlay - Big and prominent at the end
+            if config.show_business_info and any([config.business_name, config.business_address, 
+                                                  config.business_phone, config.business_website,
+                                                  config.business_facebook, config.business_instagram]):
+                # Log what business info we have
+                logger.info(f"📍 Business info - Name: {config.business_name}, Address: {config.business_address}, Phone: {config.business_phone}")
+                
+                # Create business info text with proper emoji support
+                business_lines = []
+                if config.business_name:
+                    business_lines.append(f"🏪 {config.business_name}")
+                if config.business_address:
+                    business_lines.append(f"📍 {config.business_address}")
+                if config.business_phone:
+                    business_lines.append(f"📞 {config.business_phone}")
+                if config.business_website:
+                    business_lines.append(f"🌐 {config.business_website}")
+                if config.business_facebook:
+                    business_lines.append(f"👥 {config.business_facebook}")
+                if config.business_instagram:
+                    business_lines.append(f"📸 {config.business_instagram}")
+                
+                business_text = "\n".join(business_lines)
+                
+                # Large, prominent business info style for end of video
+                business_style = TextStyle(
+                    font_family="Arial",  # Use Arial as primary font
+                    font_size=int(video_config.get_font_size('title', video_width) * 0.8),  # Large font
+                    font_weight="bold",
+                    color=(255, 255, 255, 255),  # Bright white
+                    stroke_color=(0, 0, 0, 255),
+                    stroke_width=3,  # Thick stroke for visibility
+                    background_color=(0, 0, 0, 200),  # Semi-transparent black background
+                    background_padding=(25, 20, 25, 20),  # Large padding
+                    line_spacing=1.4
+                )
+                
+                # Position business info prominently in center-bottom
+                business_layout = TextLayout(
+                    position=TextPosition.BOTTOM_CENTER,
+                    alignment=TextAlignment.CENTER,
+                    max_width=int(video_width * 0.8),  # 80% of video width - big overlay
+                    margin=(20, 20, 40, 40)  # More margin from bottom
+                )
+                
+                # Show business info in the last portion of the video
+                # For shorter videos (under 30s), show for 5 seconds; otherwise 3 seconds
+                end_display_duration = 5.0 if video_duration < 30 else 3.0
+                # Make sure we don't start before the video begins
+                start_time = max(0.5, video_duration - end_display_duration)
+                
+                business_overlay = TextOverlay(
+                    text=business_text,
+                    style=business_style,
+                    layout=business_layout,
+                    start_time=start_time,
+                    end_time=video_duration - 0.2,  # End just before video ends
+                    fade_in_duration=0.3,
+                    fade_out_duration=0.2
+                )
+                overlays.append(business_overlay)
+                logger.info(f"✅ Added prominent business info overlay with {len(business_lines)} lines (shown in last {end_display_duration}s)")
+            
+            # CRITICAL: Add dynamic overlays using AI agent
+            if script_result and config.enable_dynamic_overlays != False:  # Only skip if explicitly disabled
+                try:
+                    from ..agents.overlay_strategist_agent import OverlayStrategistAgent, OverlayType
+                    from ..models.professional_text_models import TextPosition, TextAlignment
+                    
+                    logger.info("🎯 Generating dynamic overlays using AI agent")
+                    
+                    # Initialize overlay strategist
+                    overlay_agent = OverlayStrategistAgent(self.gemini_api_key)
+                    
+                    # Get script and segments
+                    script = script_result.get('final_script', script_result.get('optimized_script', ''))
+                    segments = script_result.get('segments', [])
+                    
+                    # Generate dynamic overlays
+                    dynamic_overlays = overlay_agent.analyze_script_for_overlays(
+                        script=script,
+                        video_duration=video_duration,
+                        platform=config.target_platform.value,
+                        style=config.visual_style or "dynamic",
+                        tone=config.tone or "engaging",
+                        mission=config.mission,
+                        segments=segments
+                    )
+                    
+                    # Convert dynamic overlays to TextOverlay objects
+                    for dyn_overlay in dynamic_overlays:
+                        # Map position strings to TextPosition enum
+                        position_map = {
+                            'top-left': TextPosition.TOP_LEFT,
+                            'top-center': TextPosition.TOP_CENTER,
+                            'top-right': TextPosition.TOP_RIGHT,
+                            'middle-left': TextPosition.MIDDLE_LEFT,
+                            'center': TextPosition.CENTER,
+                            'middle-right': TextPosition.MIDDLE_RIGHT,
+                            'bottom-left': TextPosition.BOTTOM_LEFT,
+                            'bottom-center': TextPosition.BOTTOM_CENTER,
+                            'bottom-right': TextPosition.BOTTOM_RIGHT
+                        }
+                        
+                        # Map style to font settings
+                        if dyn_overlay.style == 'bold':
+                            font_weight = 'bold'
+                            font_size_multiplier = 1.1
+                        elif dyn_overlay.style == 'subtle':
+                            font_weight = 'normal'
+                            font_size_multiplier = 0.9
+                        else:
+                            font_weight = 'bold'
+                            font_size_multiplier = 1.0
+                        
+                        # Map size to actual font size
+                        size_map = {'small': 0.8, 'medium': 1.0, 'large': 1.2}
+                        size_multiplier = size_map.get(dyn_overlay.size, 1.0)
+                        
+                        # Create style based on overlay type
+                        if dyn_overlay.overlay_type == OverlayType.FACT_BUBBLE:
+                            bg_color = (30, 144, 255, 200)  # Dodger blue
+                            text_color = (255, 255, 255, 255)
+                        elif dyn_overlay.overlay_type == OverlayType.CALL_TO_ACTION:
+                            bg_color = (255, 20, 147, 200)  # Deep pink
+                            text_color = (255, 255, 255, 255)
+                        elif dyn_overlay.overlay_type == OverlayType.WARNING:
+                            bg_color = (255, 69, 0, 200)  # Red orange
+                            text_color = (255, 255, 255, 255)
+                        elif dyn_overlay.overlay_type == OverlayType.TIP:
+                            bg_color = (50, 205, 50, 200)  # Lime green
+                            text_color = (255, 255, 255, 255)
+                        else:
+                            bg_color = (0, 0, 0, 180)  # Default semi-transparent black
+                            text_color = (255, 255, 255, 255)
+                        
+                        overlay_style = TextStyle(
+                            font_family=video_config.text_overlay.default_font,
+                            font_size=int(video_config.get_font_size('body', video_width) * font_size_multiplier * size_multiplier),
+                            font_weight=font_weight,
+                            color=text_color,
+                            stroke_color=(0, 0, 0, 255),
+                            stroke_width=2,
+                            background_color=bg_color,
+                            background_padding=(10, 6, 10, 6),
+                            line_spacing=1.1
+                        )
+                        
+                        overlay_layout = TextLayout(
+                            position=position_map.get(dyn_overlay.position, TextPosition.TOP_CENTER),
+                            alignment=TextAlignment.CENTER,
+                            max_width=int(video_width * 0.6),
+                            margin=(20, 20, 20, 20)
+                        )
+                        
+                        text_overlay = TextOverlay(
+                            text=dyn_overlay.text,
+                            style=overlay_style,
+                            layout=overlay_layout,
+                            start_time=dyn_overlay.start_time,
+                            end_time=dyn_overlay.start_time + dyn_overlay.duration,
+                            fade_in_duration=0.3,
+                            fade_out_duration=0.3
+                        )
+                        
+                        overlays.append(text_overlay)
+                        logger.info(f"   Added {dyn_overlay.overlay_type.value}: '{dyn_overlay.text}' at {dyn_overlay.start_time:.1f}s")
+                    
+                    logger.info(f"✅ Added {len(dynamic_overlays)} dynamic overlays")
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to generate dynamic overlays: {e}")
+                    # Continue without dynamic overlays
             
             if not overlays:
                 logger.info("No overlays to add, returning original video")
@@ -2734,6 +2967,25 @@ The last frame of this scene connects to the next.
                 try:
                     # Use full_text for subtitles if available (avoid truncated text), otherwise use text  
                     text = segment.get('full_text', segment.get('text', ''))
+                    
+                    # Add RTL mark for Hebrew, Arabic, and Persian text
+                    import re
+                    rtl_chars = re.compile(r'[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]')
+                    is_rtl = rtl_chars.search(text)
+                    if is_rtl:
+                        # Properly reshape RTL text for display
+                        if RTL_SUPPORT:
+                            reshaped_text = arabic_reshaper.reshape(text)
+                            text = get_display(reshaped_text)
+                            logger.debug(f"🔤 Reshaped RTL text for proper display")
+                        else:
+                            # Fallback: Add Right-to-Left Mark (RLM) at the beginning and end
+                            text = '\u200F' + text + '\u200F'
+                            logger.debug(f"🔤 Added RTL marks to subtitle (no reshaper available)")
+                    
+                    # Select appropriate font for RTL support
+                    subtitle_font = video_config.text_overlay.rtl_font if is_rtl else video_config.text_overlay.default_font
+                    
                     start_time = segment['start']
                     end_time = segment['end']
                     
@@ -2759,16 +3011,19 @@ The last frame of this scene connects to the next.
                     font_size = video_config.get_font_size('header', video_width)
                     
                     # Create text clip with modern styling
+                    # Set text alignment based on RTL detection
+                    text_align = 'right' if is_rtl else 'center'
+                    
                     text_clip = TextClip(
                         text,
                         fontsize=font_size,
                         color='white',
-                        font=video_config.text_overlay.default_font,
+                        font=subtitle_font,  # Use RTL font if needed
                         stroke_color='black',
                         stroke_width=video_config.text_overlay.stroke_widths['default'],
                         method='caption',
                         size=(int(video_width * video_config.layout.max_subtitle_width_percentage), None),
-                        align='center'
+                        align=text_align  # Use right alignment for RTL text
                     )
                     
                     # Create semi-transparent background for the text
@@ -2849,6 +3104,7 @@ The last frame of this scene connects to the next.
         except Exception as e:
             logger.error(f"❌ Subtitle overlay creation failed: {e}")
             return video_path
+    
     
     def _create_subtitle_segments(self, config: GeneratedVideoConfig, video_duration: float, 
                                  script_result: Dict[str, Any] = None, 
@@ -3679,8 +3935,7 @@ The last frame of this scene connects to the next.
                 '-c:v', video_config.encoding.video_codec,
                 '-c:a', video_config.encoding.audio_codec,
                 '-preset', video_config.get_encoding_preset(platform or 'default'),
-                '-crf', str(video_config.get_crf(platform or 'default')),
-                '-shortest'  # CRITICAL: Stop encoding when shortest stream ends
+                '-crf', str(video_config.get_crf(platform or 'default'))
             ]
             
             # CRITICAL: Add duration limit to prevent extending beyond target
@@ -3847,8 +4102,7 @@ The last frame of this scene connects to the next.
                 '-c:v', video_config.encoding.video_codec,
                 '-c:a', video_config.encoding.audio_codec,
                 '-preset', video_config.get_encoding_preset(platform or 'default'),
-                '-crf', str(video_config.get_crf(platform or 'default')),
-                '-shortest'  # CRITICAL: Stop encoding when shortest stream ends
+                '-crf', str(video_config.get_crf(platform or 'default'))
             ])
             
             # CRITICAL: Add duration limit to prevent extending beyond target
@@ -3879,6 +4133,142 @@ The last frame of this scene connects to the next.
         except Exception as e:
             logger.error(f"❌ Standard composition error: {e}")
             return ""
+    
+    def _compose_with_subtitle_aligned_audio(self, clips: List[str], audio_files: List[str],
+                                           subtitle_timings: List[Dict[str, float]],
+                                           output_path: str, session_context: SessionContext,
+                                           target_duration: Optional[float] = None,
+                                           platform: Optional[str] = None) -> str:
+        """Compose video with audio segments aligned to subtitle timings
+        
+        This method places each audio segment at the exact time specified in the subtitles,
+        ensuring perfect synchronization between audio and subtitles.
+        """
+        try:
+            import subprocess
+            
+            if not clips or not audio_files:
+                logger.error("❌ Missing clips or audio files for subtitle-aligned composition")
+                return ""
+            
+            logger.info(f"🎬 Composing video with subtitle-aligned audio")
+            logger.info(f"📝 Using {len(subtitle_timings)} subtitle timings for {len(audio_files)} audio files")
+            
+            # Ensure we have subtitle timings for each audio file
+            if len(subtitle_timings) != len(audio_files):
+                logger.warning(f"⚠️ Subtitle timings ({len(subtitle_timings)}) don't match audio files ({len(audio_files)})")
+                # Fall back to standard composition
+                return self._compose_with_standard_cuts(clips, audio_files, output_path, session_context, target_duration, platform)
+            
+            # Create input parts
+            input_parts = []
+            
+            # Add all video inputs
+            for clip in clips:
+                input_parts.extend(['-i', clip])
+            
+            # Add all audio inputs
+            for audio in audio_files:
+                input_parts.extend(['-i', audio])
+            
+            # Determine dimensions based on platform
+            aspect_ratio = self._get_platform_aspect_ratio(platform or 'youtube')
+            if aspect_ratio == '16:9':
+                width, height = 1920, 1080
+            else:
+                width, height = 1080, 1920
+            
+            # Create filters to normalize all videos
+            video_scale_filters = []
+            for i in range(len(clips)):
+                video_scale_filters.append(f"[{i}:v]scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1[v{i}]")
+            
+            scale_filter_str = ";".join(video_scale_filters)
+            
+            # Concatenate video clips
+            video_concat_inputs = "".join([f"[v{i}]" for i in range(len(clips))])
+            video_filter = f"{scale_filter_str};{video_concat_inputs}concat=n={len(clips)}:v=1:a=0[outv]"
+            
+            # Create properly timed audio by concatenating with silence gaps
+            # First, we need to create silence segments between audio clips
+            audio_concat_parts = []
+            last_end_time = 0.0
+            
+            for i, (audio_file, timing) in enumerate(zip(audio_files, subtitle_timings)):
+                input_idx = len(clips) + i
+                start_time = timing['start']
+                
+                # Calculate silence duration needed before this audio
+                silence_duration = start_time - last_end_time
+                
+                if i == 0 and silence_duration > 0:
+                    # Create initial silence
+                    audio_concat_parts.append(f"anullsrc=duration={silence_duration:.3f}:sample_rate=44100")
+                elif silence_duration > 0.1:  # Only add silence if gap is significant
+                    # Create silence between segments
+                    audio_concat_parts.append(f"anullsrc=duration={silence_duration:.3f}:sample_rate=44100")
+                
+                # Add the actual audio segment
+                audio_concat_parts.append(f"[{input_idx}:a]")
+                
+                # Update last end time (estimate based on typical segment duration)
+                # This will be more accurate if we had actual audio durations
+                estimated_duration = timing.get('duration', timing['end'] - timing['start'])
+                last_end_time = start_time + estimated_duration
+                
+                logger.info(f"🎵 Audio {i+1}: Positioned at {timing['start']:.2f}s with {silence_duration:.2f}s gap")
+            
+            # Add final silence if needed to reach target duration
+            if target_duration and last_end_time < target_duration:
+                final_silence = target_duration - last_end_time
+                if final_silence > 0.1:
+                    audio_concat_parts.append(f"anullsrc=duration={final_silence:.3f}:sample_rate=44100")
+                    logger.info(f"🔇 Adding {final_silence:.2f}s of silence at end")
+            
+            # Build the audio concatenation filter
+            if len(audio_concat_parts) > 1:
+                audio_concat = f"{';'.join(audio_concat_parts)};concat=n={len(audio_concat_parts)}:v=0:a=1[outa]"
+            else:
+                audio_concat = f"{audio_concat_parts[0]}[outa]"
+            
+            # Combine video and audio filters
+            filter_complex = f"{video_filter};{audio_concat}"
+            
+            # Build ffmpeg command
+            cmd = [
+                'ffmpeg', '-y'
+            ] + input_parts + [
+                '-filter_complex', filter_complex,
+                '-map', '[outv]',
+                '-map', '[outa]',
+                '-c:v', video_config.encoding.video_codec,
+                '-c:a', video_config.encoding.audio_codec,
+                '-preset', video_config.get_encoding_preset(platform or 'default'),
+                '-crf', str(video_config.get_crf(platform or 'default'))
+            ]
+            
+            # Add duration limit if specified
+            if target_duration:
+                cmd.extend(['-t', str(target_duration)])
+                logger.info(f"⏱️ Enforcing exact duration: {target_duration}s")
+            
+            cmd.append(output_path)
+            
+            logger.info("🎬 Running subtitle-aligned audio composition...")
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                logger.info("✅ Subtitle-aligned composition completed successfully")
+                return output_path
+            else:
+                logger.error(f"❌ Subtitle-aligned composition failed: {result.stderr}")
+                # Fall back to standard composition
+                return self._compose_with_standard_cuts(clips, audio_files, output_path, session_context, target_duration, platform)
+                
+        except Exception as e:
+            logger.error(f"❌ Subtitle-aligned composition error: {e}")
+            # Fall back to standard composition
+            return self._compose_with_standard_cuts(clips, audio_files, output_path, session_context, target_duration, platform)
     
     def _create_simple_fallback_composition(self, clips: List[str], audio_files: List[str], 
                                            output_path: str, session_context: SessionContext,
@@ -3974,7 +4364,6 @@ The last frame of this scene connects to the next.
                 '-i', audio_file,
                 '-c:v', video_config.encoding.video_codec,
                 '-c:a', video_config.encoding.audio_codec,
-                '-shortest',
                 '-pix_fmt', 'yuv420p',
                 output_path
             ]
@@ -4053,7 +4442,6 @@ The last frame of this scene connects to the next.
                 '-i', audio_file,
                 '-c:v', 'copy',
                 '-c:a', video_config.encoding.audio_codec,
-                '-shortest',
                 output_path
             ]
             
@@ -4228,105 +4616,177 @@ This is a placeholder file. In a full implementation, this would be a complete M
         except Exception as e:
             logger.warning(f"⚠️ Failed to save prompts: {e}")
     
+    def _create_subtitles_with_timings(self, script_result: Dict[str, Any], audio_files: List[str], 
+                                      session_context: SessionContext) -> Dict[str, Any]:
+        """Create subtitles and return both files and timing information"""
+        subtitle_files = self._create_subtitles(script_result, audio_files, session_context)
+        
+        # Extract timing information from the created subtitles
+        timings = []
+        try:
+            srt_path = subtitle_files.get('srt')
+            if srt_path and os.path.exists(srt_path):
+                with open(srt_path, 'r') as f:
+                    content = f.read()
+                    
+                # Parse SRT to extract timings
+                import re
+                pattern = r'(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n(.+?)(?=\n\n|\Z)'
+                matches = re.findall(pattern, content, re.DOTALL)
+                
+                for match in matches:
+                    start_time_str = match[1]
+                    end_time_str = match[2]
+                    text = match[3].strip()
+                    
+                    # Convert time strings to seconds
+                    start_seconds = self._srt_time_to_seconds(start_time_str)
+                    end_seconds = self._srt_time_to_seconds(end_time_str)
+                    
+                    timings.append({
+                        'start': start_seconds,
+                        'end': end_seconds,
+                        'text': text
+                    })
+                    
+                logger.info(f"📝 Extracted {len(timings)} subtitle timings from SRT file")
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to extract subtitle timings: {e}")
+        
+        return {
+            'files': subtitle_files,
+            'timings': timings
+        }
+    
+    def _srt_time_to_seconds(self, time_str: str) -> float:
+        """Convert SRT time format (HH:MM:SS,mmm) to seconds"""
+        parts = time_str.replace(',', '.').split(':')
+        hours = int(parts[0])
+        minutes = int(parts[1])
+        seconds = float(parts[2])
+        return hours * 3600 + minutes * 60 + seconds
+    
     def _create_subtitles(self, script_result: Dict[str, Any], audio_files: List[str], 
                          session_context: SessionContext) -> Dict[str, str]:
-        """Create subtitle files (SRT and VTT) from script and audio timing"""
+        """Create subtitle files (SRT and VTT) from script and audio timing
+        
+        Uses one-sentence-per-audio-segment approach for perfect sync:
+        - Each audio file contains exactly one sentence
+        - Each subtitle entry corresponds to exactly one audio file
+        - Timing is based on actual audio duration from ffprobe
+        """
         try:
-            # Get the actual script content
+            logger.info("📝 Creating subtitles with one-sentence-per-segment approach")
+            
+            # Get the actual script content and segments from script_result
             script_content = script_result.get('final_script', script_result.get('optimized_script', ''))
+            script_segments = script_result.get('segments', [])
             
             if not script_content:
                 logger.warning("⚠️ No script content available for subtitles")
                 return {}
             
-            # Split script into segments based on audio files
+            if not audio_files:
+                logger.warning("⚠️ No audio files available for subtitle timing")
+                return {}
+            
+            # Import video_config for padding value
+            from ..config import video_config
+            
+            # CRITICAL: With one-sentence-per-segment approach:
+            # - Each audio file should contain exactly one sentence
+            # - Each subtitle entry corresponds to exactly one audio file
+            # - We use actual audio duration from ffprobe for perfect timing
+            
             segments = []
-            if audio_files:
-                # Calculate timing based on audio files
-                current_time = 0.0
-                words = script_content.split()
-                words_per_segment = len(words) // len(audio_files)
+            current_time = 0.0
+            
+            # Get sentences from script if segments not available
+            if not script_segments or len(script_segments) != len(audio_files):
+                logger.info("📝 Extracting sentences from script for subtitle alignment")
+                # Split script into sentences
+                import re
+                sentences = re.split(r'([.!?:;]+)', script_content)
                 
-                for i, audio_file in enumerate(audio_files):
-                    segment_start_time = current_time
+                # Recombine sentences with their punctuation
+                complete_sentences = []
+                for i in range(0, len(sentences) - 1, 2):
+                    if i + 1 < len(sentences):
+                        sentence = sentences[i].strip() + sentences[i + 1].strip()
+                        if sentence.strip():
+                            complete_sentences.append(sentence.strip())
+                    elif sentences[i].strip():
+                        complete_sentences.append(sentences[i].strip())
+                
+                # Handle any remaining text
+                if len(sentences) % 2 == 1 and sentences[-1].strip():
+                    complete_sentences.append(sentences[-1].strip())
+            else:
+                # Use segments from script_result
+                complete_sentences = [seg.get('text', '') for seg in script_segments]
+            
+            logger.info(f"📝 Creating subtitles for {len(audio_files)} audio segments")
+            logger.info(f"📝 Found {len(complete_sentences)} sentences in script")
+            
+            # Create one subtitle per audio file
+            for i, audio_file in enumerate(audio_files):
+                segment_start_time = current_time
+                
+                # Get actual audio duration using ffprobe
+                try:
+                    import subprocess
+                    import json
+                    result = subprocess.run([
+                        'ffprobe', '-v', 'quiet', '-print_format', 'json', 
+                        '-show_format', audio_file
+                    ], capture_output=True, text=True)
                     
-                    # Get audio duration
-                    try:
-                        import subprocess
-                        result = subprocess.run([
-                            'ffprobe', '-v', 'quiet', '-print_format', 'json', 
-                            '-show_format', audio_file
-                        ], capture_output=True, text=True)
-                        
-                        if result.returncode == 0:
-                            import json
-                            data = json.loads(result.stdout)
-                            audio_duration = float(data['format']['duration'])
+                    if result.returncode == 0:
+                        data = json.loads(result.stdout)
+                        audio_duration = float(data['format']['duration'])
+                        logger.debug(f"✅ Audio {i+1} duration: {audio_duration:.2f}s")
+                    else:
+                        # Fallback duration based on word count
+                        if i < len(complete_sentences):
+                            word_count = len(complete_sentences[i].split())
+                            audio_duration = word_count / 2.5  # ~2.5 words per second
                         else:
                             audio_duration = 3.0  # Default duration
-                    except:
-                        audio_duration = 3.0  # Default duration
-                    
-                    segment_end_time = segment_start_time + audio_duration
-                    
-                    # Get text for this audio segment
-                    start_word = i * words_per_segment
-                    end_word = start_word + words_per_segment if i < len(audio_files) - 1 else len(words)
-                    segment_words = words[start_word:end_word]
-                    
-                    # Split this segment into smaller subtitle chunks respecting sentence boundaries
-                    segment_text = ' '.join(segment_words)
-                    
-                    # Split into sentences first (including colons and semicolons as sentence endings)
-                    import re
-                    sentences = re.split(r'([.!?:;]+)', segment_text)
-                    
-                    # Recombine sentences with their punctuation
-                    complete_sentences = []
-                    for i in range(0, len(sentences) - 1, 2):
-                        if i + 1 < len(sentences):
-                            sentence = sentences[i].strip() + sentences[i + 1].strip()
-                            if sentence.strip():
-                                complete_sentences.append(sentence.strip())
-                        elif sentences[i].strip():
-                            complete_sentences.append(sentences[i].strip())
-                    
-                    # Handle any remaining text
-                    if len(sentences) % 2 == 1 and sentences[-1].strip():
-                        complete_sentences.append(sentences[-1].strip())
-                    
-                    # Create subtitle segments from sentences - EXACTLY 1 SENTENCE PER SUBTITLE
-                    subtitle_start_time = segment_start_time
-                    total_sentence_words = sum(len(s.split()) for s in complete_sentences)
-                    
-                    for j, sentence in enumerate(complete_sentences):
-                        sentence_words = sentence.split()
-                        word_count = len(sentence_words)
-                        
-                        # Calculate duration based on word ratio
-                        if total_sentence_words > 0:
-                            words_ratio = word_count / total_sentence_words
-                        else:
-                            words_ratio = 1.0 / len(complete_sentences) if complete_sentences else 1.0
-                            
-                        subtitle_duration = audio_duration * words_ratio
-                        subtitle_end_time = min(
-                            subtitle_start_time + subtitle_duration,
-                            segment_end_time
-                        )
-                        
-                        # Ensure we don't exceed segment end time for last sentence
-                        if j == len(complete_sentences) - 1:
-                            subtitle_end_time = segment_end_time
-                        
-                        segments.append({
-                            'start': subtitle_start_time,
-                            'end': subtitle_end_time,
-                            'text': sentence.strip()
-                        })
-                        
-                        subtitle_start_time = subtitle_end_time
-                    
+                        logger.warning(f"⚠️ Using estimated duration for audio {i+1}: {audio_duration:.2f}s")
+                except Exception as e:
+                    # Fallback duration
+                    if i < len(complete_sentences):
+                        word_count = len(complete_sentences[i].split())
+                        audio_duration = word_count / 2.5
+                    else:
+                        audio_duration = 3.0
+                    logger.warning(f"⚠️ ffprobe failed for audio {i+1}: {e}")
+                
+                # Get the corresponding sentence text
+                if i < len(complete_sentences):
+                    subtitle_text = complete_sentences[i].strip()
+                else:
+                    # More audio files than sentences - this shouldn't happen with one-sentence-per-segment
+                    logger.warning(f"⚠️ Audio file {i+1} has no corresponding sentence")
+                    subtitle_text = f"[Audio {i+1}]"
+                
+                segment_end_time = segment_start_time + audio_duration
+                
+                # Create subtitle segment
+                segments.append({
+                    'start': segment_start_time,
+                    'end': segment_end_time,
+                    'text': subtitle_text
+                })
+                
+                logger.debug(f"📝 Subtitle {i+1}: {segment_start_time:.2f}s - {segment_end_time:.2f}s: {subtitle_text[:50]}...")
+                
+                # Add padding between segments (except after the last one)
+                if i < len(audio_files) - 1:
+                    padding = video_config.audio.padding_between_segments
+                    current_time = segment_end_time + padding
+                    logger.debug(f"📝 Added {padding}s padding after segment {i+1}")
+                else:
                     current_time = segment_end_time
             
             # CRITICAL FIX: Cap subtitles to the target video duration
@@ -5515,8 +5975,9 @@ Return ONLY the modified script text, no explanations."""
         # CRITICAL: Preserve original case and style
         sanitized = original_prompt
         
-        # Replace problematic words with safe alternatives
+        # Replace problematic words with safe alternatives (English + Hebrew)
         replacements = {
+            # English replacements
             'violence': 'conflict representation',
             'violent': 'intense',
             'fighting': 'opposing forces',
@@ -5534,7 +5995,22 @@ Return ONLY the modified script text, no explanations."""
             'bomb': 'dramatic device',
             'soldier': 'historical figure',
             'army': 'organized group',
-            'military': 'organized forces'
+            'military': 'organized forces',
+            
+            # Hebrew replacements (מלחמה = war, סיגריות = cigarettes, etc.)
+            'מלחמה': 'סכסוך היסטורי',  # war -> historical conflict
+            'מלחמת': 'תקופת',  # war of -> period of
+            'סיגריות': 'עישון',  # cigarettes -> smoking
+            'סיגריה': 'עישון',  # cigarette -> smoking
+            'לחימה': 'עמידה',  # fighting -> standing
+            'קרב': 'מפגש היסטורי',  # battle -> historical encounter
+            'נשק': 'כלי סמלי',  # weapon -> symbolic tool
+            'חייל': 'דמות היסטורית',  # soldier -> historical figure
+            'צבא': 'כוח מאורגן',  # army -> organized force
+            'צבאי': 'מאורגן',  # military -> organized
+            'הרג': 'ניצחון',  # killing -> victory
+            'מוות': 'סיום',  # death -> ending
+            'דם': 'אלמנטים אדומים',  # blood -> red elements
         }
         
         for problematic, safe in replacements.items():
@@ -5561,11 +6037,16 @@ Return ONLY the modified script text, no explanations."""
         
         escaped = text
         
-        # For RTL text, add RTL mark to ensure proper rendering
+        # For RTL text, properly reshape for rendering
         if is_rtl:
-            # Add Right-to-Left Mark (RLM) at the beginning
-            escaped = '\u200F' + escaped
-            logger.debug(f"🔤 Detected RTL text, adding RTL mark")
+            if RTL_SUPPORT:
+                reshaped = arabic_reshaper.reshape(escaped)
+                escaped = get_display(reshaped)
+                logger.debug(f"🔤 Reshaped RTL text for FFmpeg overlay")
+            else:
+                # Add Right-to-Left Mark (RLM) at the beginning
+                escaped = '\u200F' + escaped
+                logger.debug(f"🔤 Detected RTL text, adding RTL mark")
         
         # FIRST: Replace Unicode quotes with regular quotes to avoid double-escaping
         escaped = escaped.replace('"', '"').replace('"', '"').replace('"', '"')
@@ -6244,7 +6725,34 @@ Return ONLY the modified script text, no explanations."""
             tts = EnhancedMultilingualTTS(self.api_key)
             
             # Create simple script from config
-            script_text = f"{config.hook} {' '.join(config.main_content)} {config.call_to_action}"
+            # CRITICAL FIX: Limit script length based on target duration
+            # Approximate 150 words per minute for natural speech
+            target_word_count = int(config.duration_seconds * 2.5)  # ~150 words/min
+            
+            script_parts = []
+            if config.hook:
+                script_parts.append(config.hook)
+            
+            # Add main content but limit to target word count
+            current_word_count = len(config.hook.split()) if config.hook else 0
+            for content in config.main_content:
+                content_words = content.split()
+                if current_word_count + len(content_words) <= target_word_count:
+                    script_parts.append(content)
+                    current_word_count += len(content_words)
+                else:
+                    # Add partial content to reach target
+                    remaining_words = target_word_count - current_word_count
+                    if remaining_words > 0:
+                        script_parts.append(' '.join(content_words[:remaining_words]))
+                    break
+            
+            # Add call to action if there's room
+            if config.call_to_action and current_word_count < target_word_count:
+                script_parts.append(config.call_to_action)
+            
+            script_text = ' '.join(script_parts)
+            logger.info(f"💰 Cheap mode script: {len(script_text.split())} words for {config.duration_seconds}s video")
             
             # Generate cheap audio
             from ..models.video_models import Language
@@ -6271,7 +6779,7 @@ Return ONLY the modified script text, no explanations."""
             self._save_cheap_mode_audio_files(audio_files, session_context)
             
             # Create text-based video showing the prompts
-            video_path = self._create_text_video(config, audio_files[0], session_context)
+            video_path = self._create_text_video(config, audio_files[0], session_context, script_text)
             
             if video_path:
                 # Only add fadeout for videos 10s+ to avoid extending duration
@@ -6303,7 +6811,7 @@ Return ONLY the modified script text, no explanations."""
             logger.error(f"❌ Cheap mode video generation failed: {e}")
             return None
     
-    def _create_text_video(self, config: GeneratedVideoConfig, audio_file: str, session_context: SessionContext) -> str:
+    def _create_text_video(self, config: GeneratedVideoConfig, audio_file: str, session_context: SessionContext, script_text: str = None) -> str:
         """Create a simple text-based video with theme support"""
         try:
             from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip, AudioFileClip, ColorClip, ImageClip
@@ -6363,7 +6871,10 @@ Return ONLY the modified script text, no explanations."""
                 channel_text = None
             
             # Create the actual script content as subtitles
-            script_text = f"{config.hook} {' '.join(config.main_content)} {config.call_to_action}"
+            # Use the same limited script that was used for audio generation
+            if script_text is None:
+                # Fallback to creating from config if not provided
+                script_text = f"{config.hook} {' '.join(config.main_content)} {config.call_to_action}"
             
             # Create subtitle overlays with proper positioning for news theme
             if theme_id and 'news' in str(theme_id).lower():
@@ -6539,12 +7050,29 @@ Return ONLY the modified script text, no explanations."""
                 
                 current_time = end_time
                 
+                # Add RTL mark for Hebrew, Arabic, and Persian text
+                rtl_chars = re.compile(r'[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]')
+                is_rtl = rtl_chars.search(sentence)
+                if is_rtl:
+                    # Properly reshape RTL text for display
+                    if RTL_SUPPORT:
+                        reshaped_text = arabic_reshaper.reshape(sentence)
+                        sentence = get_display(reshaped_text)
+                        logger.debug(f"🔤 Reshaped RTL text for proper display in cheap mode")
+                    else:
+                        # Fallback: Add Right-to-Left Mark (RLM) at the beginning and end
+                        sentence = '\u200F' + sentence + '\u200F'
+                        logger.debug(f"🔤 Added RTL marks to cheap mode subtitle (no reshaper available)")
+                
+                # Select appropriate font for RTL support
+                subtitle_font = video_config.text_overlay.rtl_font if is_rtl else video_config.text_overlay.default_font
+                
                 # Create subtitle clip
                 subtitle_clip = TextClip(
                     sentence,
                     fontsize=video_config.get_font_size('subtitle', video_width),
                     color=video_config.text_overlay.default_text_color,
-                    font=video_config.text_overlay.default_font,
+                    font=subtitle_font,  # Use RTL font if needed
                     stroke_color=video_config.text_overlay.default_stroke_color,
                     stroke_width=video_config.get_stroke_width('subtitle'),
                     size=(1000, None),
@@ -7412,5 +7940,266 @@ All files are saved in the session directory: `outputs/{summary['session_id']}/`
         except Exception as e:
             logger.error(f"❌ Failed to create human-readable summary: {e}")
 
-
-
+    def _compose_video_with_synced_audio_and_subtitles(self, 
+                                                     silent_video_path: str,
+                                                     audio_segments: List[str],
+                                                     srt_file_path: str,
+                                                     config: GeneratedVideoConfig,
+                                                     session_context: SessionContext) -> str:
+        """
+        Compose video with perfectly synced audio and subtitles using SRT timing
+        
+        This method implements the proper sync approach:
+        1. Start with silent video
+        2. Add audio segments according to SRT timing with silence gaps
+        3. Add subtitles according to SRT file
+        
+        Args:
+            silent_video_path: Path to video without audio
+            audio_segments: List of paths to individual audio segment files
+            srt_file_path: Path to SRT subtitle file with timing
+            config: Video configuration
+            session_context: Session context for file management
+            
+        Returns:
+            Path to final video with synced audio and subtitles
+        """
+        try:
+            logger.info("🎵 Composing video with synced audio and subtitles using SRT timing")
+            
+            import subprocess
+            import tempfile
+            import os
+            from ..utils.subtitle_integration_tool import SubtitleIntegrationTool
+            
+            # Step 1: Parse SRT file to get timing information
+            srt_timings = self._parse_srt_timings(srt_file_path)
+            if not srt_timings:
+                logger.error("❌ Failed to parse SRT timings")
+                return silent_video_path
+            
+            logger.info(f"📝 Parsed {len(srt_timings)} subtitle segments from SRT")
+            
+            # Step 2: Create timed audio track with silence gaps
+            timed_audio_path = self._create_timed_audio_track(
+                audio_segments, srt_timings, config.duration_seconds, session_context
+            )
+            
+            if not timed_audio_path:
+                logger.error("❌ Failed to create timed audio track")
+                return silent_video_path
+            
+            # Step 3: Combine silent video with timed audio
+            video_with_audio_path = session_context.get_temp_path("video_with_synced_audio.mp4")
+            
+            cmd = [
+                'ffmpeg', '-y',
+                '-i', silent_video_path,  # Video input
+                '-i', timed_audio_path,   # Audio input
+                '-c:v', 'copy',           # Copy video stream
+                '-c:a', 'aac',            # Encode audio
+                '-map', '0:v:0',          # Map video from first input
+                '-map', '1:a:0',          # Map audio from second input
+                '-shortest',              # End when shortest input ends
+                video_with_audio_path
+            ]
+            
+            logger.info("🎬 Combining silent video with timed audio...")
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            
+            if result.returncode != 0:
+                logger.error(f"❌ Failed to combine video and audio: {result.stderr}")
+                return silent_video_path
+            
+            if not os.path.exists(video_with_audio_path):
+                logger.error("❌ Video with audio file was not created")
+                return silent_video_path
+            
+            logger.info("✅ Successfully combined video with timed audio")
+            
+            # Step 4: Add subtitles using SRT file timing
+            subtitle_tool = SubtitleIntegrationTool()
+            final_video_path = session_context.get_temp_path("final_synced_video.mp4")
+            
+            # Determine language for subtitle styling
+            languages = getattr(config, 'languages', [])
+            language = languages[0] if languages else None
+            
+            success = subtitle_tool.integrate_subtitles_with_ffmpeg(
+                video_path=video_with_audio_path,
+                subtitle_path=srt_file_path,
+                output_path=final_video_path,
+                language=language
+            )
+            
+            if success and os.path.exists(final_video_path):
+                logger.info("✅ Successfully added synced subtitles")
+                
+                # Validate the final sync
+                validation = subtitle_tool.validate_subtitle_sync(final_video_path, srt_file_path)
+                if validation.get('valid'):
+                    logger.info(f"✅ Subtitle sync validation passed: {validation}")
+                else:
+                    logger.warning(f"⚠️ Subtitle sync validation issues: {validation}")
+                
+                return final_video_path
+            else:
+                logger.error("❌ Failed to add subtitles, returning video with audio only")
+                return video_with_audio_path
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to compose video with synced audio and subtitles: {e}")
+            return silent_video_path
+    
+    def _parse_srt_timings(self, srt_file_path: str) -> List[Dict[str, float]]:
+        """
+        Parse SRT file to extract timing information
+        
+        Returns:
+            List of timing dictionaries with 'start' and 'end' in seconds
+        """
+        try:
+            if not os.path.exists(srt_file_path):
+                logger.error(f"❌ SRT file not found: {srt_file_path}")
+                return []
+            
+            with open(srt_file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            import re
+            # Match SRT timestamp format: 00:00:01,500 --> 00:00:04,200
+            timestamp_pattern = r'(\d{2}):(\d{2}):(\d{2}),(\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2}),(\d{3})'
+            matches = re.findall(timestamp_pattern, content)
+            
+            timings = []
+            for match in matches:
+                # Parse start time
+                start_h, start_m, start_s, start_ms = map(int, match[:4])
+                start_seconds = start_h * 3600 + start_m * 60 + start_s + start_ms / 1000.0
+                
+                # Parse end time
+                end_h, end_m, end_s, end_ms = map(int, match[4:])
+                end_seconds = end_h * 3600 + end_m * 60 + end_s + end_ms / 1000.0
+                
+                timings.append({
+                    'start': start_seconds,
+                    'end': end_seconds,
+                    'duration': end_seconds - start_seconds
+                })
+            
+            logger.info(f"📝 Parsed {len(timings)} timing entries from SRT")
+            return timings
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to parse SRT timings: {e}")
+            return []
+    
+    def _create_timed_audio_track(self, 
+                                audio_segments: List[str], 
+                                srt_timings: List[Dict[str, float]], 
+                                total_duration: float,
+                                session_context: SessionContext) -> str:
+        """
+        Create audio track with proper timing and silence gaps based on SRT
+        
+        Args:
+            audio_segments: List of paths to audio segment files
+            srt_timings: Timing information from SRT file
+            total_duration: Total duration of the video
+            session_context: Session context for file management
+            
+        Returns:
+            Path to the created timed audio file
+        """
+        try:
+            import subprocess
+            
+            if len(audio_segments) != len(srt_timings):
+                logger.error(f"❌ Mismatch: {len(audio_segments)} audio segments vs {len(srt_timings)} SRT timings")
+                return None
+            
+            # Create silence audio file for gaps
+            silence_path = session_context.get_temp_path("silence.wav")
+            cmd = [
+                'ffmpeg', '-y',
+                '-f', 'lavfi',
+                '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
+                '-t', '1',  # 1 second of silence (we'll adjust timing later)
+                '-acodec', 'pcm_s16le',
+                silence_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            if result.returncode != 0:
+                logger.error(f"❌ Failed to create silence audio: {result.stderr}")
+                return None
+            
+            # Build filter complex for ffmpeg to create timed audio
+            filter_parts = []
+            input_files = ['-i', silence_path]  # First input is silence template
+            
+            # Add all audio segments as inputs
+            for i, audio_path in enumerate(audio_segments):
+                input_files.extend(['-i', audio_path])
+            
+            # Create filter to place each audio segment at correct time
+            filter_segments = []
+            
+            for i, (audio_path, timing) in enumerate(zip(audio_segments, srt_timings)):
+                input_index = i + 1  # +1 because silence is input 0
+                start_time = timing['start']
+                
+                # Add delay filter to position audio at correct time
+                filter_segments.append(f"[{input_index}:a]adelay={int(start_time * 1000)}|{int(start_time * 1000)}[a{i}]")
+            
+            # Mix all delayed audio segments
+            if len(filter_segments) > 1:
+                inputs_to_mix = ''.join(f"[a{i}]" for i in range(len(filter_segments)))
+                mix_filter = f"{inputs_to_mix}amix=inputs={len(filter_segments)}:duration=longest[mixed]"
+                filter_segments.append(mix_filter)
+                output_label = "[mixed]"
+            else:
+                output_label = "[a0]"
+            
+            # Create silence for full duration and mix with positioned audio
+            full_filter = f"""anullsrc=channel_layout=stereo:sample_rate=44100:duration={total_duration}[silence];
+{';'.join(filter_segments)};
+[silence]{output_label}amix=inputs=2:duration=longest[final]"""
+            
+            # Output path
+            timed_audio_path = session_context.get_temp_path("timed_audio.wav")
+            
+            # Build complete ffmpeg command
+            cmd = ['ffmpeg', '-y'] + input_files + [
+                '-filter_complex', full_filter,
+                '-map', '[final]',
+                '-t', str(total_duration),
+                timed_audio_path
+            ]
+            
+            logger.info("🎵 Creating timed audio track with silence gaps...")
+            logger.debug(f"FFmpeg command: {' '.join(cmd)}")
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+            
+            if result.returncode != 0:
+                logger.error(f"❌ Failed to create timed audio: {result.stderr}")
+                return None
+            
+            if os.path.exists(timed_audio_path):
+                file_size = os.path.getsize(timed_audio_path)
+                logger.info(f"✅ Created timed audio track: {timed_audio_path} ({file_size/1024/1024:.1f}MB)")
+                
+                # Log timing summary
+                logger.info("📊 Audio timing summary:")
+                for i, timing in enumerate(srt_timings):
+                    logger.info(f"   Segment {i+1}: {timing['start']:.1f}s - {timing['end']:.1f}s ({timing['duration']:.1f}s)")
+                
+                return timed_audio_path
+            else:
+                logger.error("❌ Timed audio file was not created")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to create timed audio track: {e}")
+            return None

@@ -1,0 +1,66 @@
+{
+  "session_id": "netanyahu_marvel_ep17_20250727_233813",
+  "session_dir": "outputs/netanyahu_marvel_ep17_20250727_233813",
+  "subdirs": {
+    "logs": "outputs/netanyahu_marvel_ep17_20250727_233813/logs",
+    "scripts": "outputs/netanyahu_marvel_ep17_20250727_233813/scripts",
+    "audio": "outputs/netanyahu_marvel_ep17_20250727_233813/audio",
+    "video_clips": "outputs/netanyahu_marvel_ep17_20250727_233813/video_clips",
+    "images": "outputs/netanyahu_marvel_ep17_20250727_233813/images",
+    "ai_agents": "outputs/netanyahu_marvel_ep17_20250727_233813/ai_agents",
+    "discussions": "outputs/netanyahu_marvel_ep17_20250727_233813/discussions",
+    "final_output": "outputs/netanyahu_marvel_ep17_20250727_233813/final_output",
+    "metadata": "outputs/netanyahu_marvel_ep17_20250727_233813/metadata",
+    "comprehensive_logs": "outputs/netanyahu_marvel_ep17_20250727_233813/comprehensive_logs",
+    "temp_files": "outputs/netanyahu_marvel_ep17_20250727_233813/temp_files",
+    "fallback_content": "outputs/netanyahu_marvel_ep17_20250727_233813/fallback_content",
+    "debug_info": "outputs/netanyahu_marvel_ep17_20250727_233813/debug_info",
+    "performance_metrics": "outputs/netanyahu_marvel_ep17_20250727_233813/performance_metrics",
+    "user_configs": "outputs/netanyahu_marvel_ep17_20250727_233813/user_configs",
+    "error_logs": "outputs/netanyahu_marvel_ep17_20250727_233813/error_logs",
+    "success_metrics": "outputs/netanyahu_marvel_ep17_20250727_233813/success_metrics",
+    "decisions": "outputs/netanyahu_marvel_ep17_20250727_233813/decisions",
+    "subtitles": "outputs/netanyahu_marvel_ep17_20250727_233813/subtitles",
+    "overlays": "outputs/netanyahu_marvel_ep17_20250727_233813/overlays",
+    "agent_discussions": "outputs/netanyahu_marvel_ep17_20250727_233813/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-27T23:40:09.490845",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Marvel Comics explosion! Benjamin Netanyahu with lightning effects crashes through Knesset walls. CRASH! 'I am eternal!' Opposition parties vanish in comic smoke. WHOOSH! Coalition deals with exploding panels. BOOM! Juggling multiple corruption trials while texting. ZAP! Building settlements with energy beams. THWACK! Judicial reform controversy splits the nation. CRACK! 'Bibi will return... again!' WHAM! Israeli flag with lightning bolts.",
+        "platform": "instagram",
+        "duration": 35
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

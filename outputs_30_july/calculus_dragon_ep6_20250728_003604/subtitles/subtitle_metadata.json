@@ -1,0 +1,21 @@
+{
+  "total_segments": 23,
+  "total_duration": 37.442041,
+  "script_content": "Welcome to Sparky's Power-Up Workshop! Today, we master exponents. Imagine transforming a cute dragon into a fiery inferno using fractional powers - it is simply dividing the power-up! Real exponents are like infinite power-ups; we approach a number using limits. See the bubbles grow closer? Topology explores these spaces. Some points stand alone; others have boundaries. It is all about connections! This is the Cantor set, a fractal masterpiece, a perfect example of infinity within limits. Mind blown, humans",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_9.mp3",
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_10.mp3",
+    "outputs/calculus_dragon_ep6_20250728_003604/audio/padded/padded_audio_segment_11.mp3"
+  ],
+  "target_duration": 37.742041,
+  "capped_to_target": false
+}

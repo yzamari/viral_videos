@@ -234,7 +234,92 @@ class BaseVeoClient(ABC):
         try:
             logger.info("🖼️ Attempting image generation fallback...")
             
-            # Try to import and use Gemini image client
+            # Try Vertex Imagen 3 Fast first (cheapest at $0.02 per image)
+            try:
+                from .vertex_imagen_client import VertexImagenClient
+                import tempfile
+                
+                logger.info("🎨 Trying Imagen 3 Fast fallback ($0.02 per image)...")
+                imagen_client = VertexImagenClient()
+                
+                if imagen_client.initialized:
+                    # Calculate how many images to generate (2 images per second for smooth transitions)
+                    images_per_second = 2
+                    num_images = max(1, int(duration * images_per_second))
+                    
+                    logger.info(f"🎨 Generating {num_images} images for {duration}s video ({images_per_second} images/sec)")
+                    
+                    # Generate multiple images for scene progression
+                    image_paths = []
+                    for i in range(num_images):
+                        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp_file:
+                            image_path = tmp_file.name
+                        
+                        # Add progression hints to prompt
+                        progression = f"scene {i+1} of {num_images}, " if num_images > 1 else ""
+                        result = imagen_client.generate_image(
+                            prompt=progression + prompt + ", cinematic quality, no text overlays",
+                            output_path=image_path,
+                            aspect_ratio="9:16"  # Portrait for Instagram/TikTok
+                        )
+                        
+                        if result and os.path.exists(image_path):
+                            image_paths.append(image_path)
+                        else:
+                            # If image generation fails, reuse last image if available
+                            if image_paths:
+                                image_paths.append(image_paths[-1])
+                    
+                    if image_paths:
+                        # Create video from multiple images with crossfade transitions
+                        video_path = os.path.join(self.clips_dir, f"imagen_{clip_id}.mp4")
+                        frame_duration = duration / len(image_paths)
+                        
+                        # Build FFmpeg filter for crossfade between images
+                        filter_parts = []
+                        for i in range(len(image_paths)):
+                            filter_parts.append(f"[{i}:v]scale=1080:1920,setpts=PTS-STARTPTS[v{i}]")
+                        
+                        # Add crossfade transitions
+                        if len(image_paths) > 1:
+                            concat_filter = "[v0]"
+                            for i in range(1, len(image_paths)):
+                                offset = (i - 0.5) * frame_duration  # Start crossfade halfway through previous image
+                                concat_filter += f"[v{i}]xfade=transition=fade:duration=0.5:offset={offset:.2f}"
+                                if i < len(image_paths) - 1:
+                                    concat_filter += "[vt{i}];[vt{i}]"
+                            filter_complex = ";".join(filter_parts) + ";" + concat_filter
+                        else:
+                            filter_complex = filter_parts[0]
+                        
+                        # Build FFmpeg command
+                        cmd = ['ffmpeg']
+                        for img in image_paths:
+                            cmd.extend(['-loop', '1', '-t', str(frame_duration), '-i', img])
+                        cmd.extend([
+                            '-filter_complex', filter_complex,
+                            '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
+                            '-t', str(duration), '-y', video_path
+                        ])
+                        
+                        subprocess.run(cmd, capture_output=True)
+                        
+                        if os.path.exists(video_path):
+                            logger.info(f"✅ Imagen 3 Fast fallback succeeded with {len(image_paths)} images: {video_path}")
+                            # Clean up temp images
+                            for img in set(image_paths):  # Use set to avoid deleting duplicates
+                                try:
+                                    os.unlink(img)
+                                except:
+                                    pass
+                            return video_path
+                            
+            except ImportError:
+                logger.debug("⚠️ Vertex Imagen client not available")
+            except Exception as e:
+                logger.warning(f"⚠️ Imagen 3 Fast fallback failed: {e}")
+            
+            # Try to import and use Gemini image client as second fallback
             try:
                 from .gemini_image_client import GeminiImageClient
                 import os
@@ -268,13 +353,13 @@ class BaseVeoClient(ABC):
                 if clips and len(clips) > 0 and 'path' in clips[0]:
                     video_path = clips[0]['path']
                     if os.path.exists(video_path):
-                        logger.info(f"✅ Image generation fallback succeeded: {video_path}")
+                        logger.info(f"✅ Gemini image generation fallback succeeded: {video_path}")
                         return video_path
                     
             except ImportError:
                 logger.warning("⚠️ Gemini image client not available")
             except Exception as e:
-                logger.warning(f"⚠️ Image generation fallback failed: {e}")
+                logger.warning(f"⚠️ Gemini image generation fallback failed: {e}")
             
             return None
             

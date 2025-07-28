@@ -1,0 +1,23 @@
+{
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "The 'Family Guy style' directly points to a cartoon aesthetic. Vibrant colors are ideal for an Instagram audience and to make the educational content engaging and visually appealing, mirroring the exaggerated and colorful nature of shows like Family Guy. The visual metaphors of ninja training and secret scrolls lend themselves well to a bold, animated style.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "For an Instagram cartoon, placing the overlay at the bottom center is a safe and widely accepted position. It avoids the bottom 20% as per the rule, ensuring it's not cut off or obscured by Instagram's UI elements. This position also keeps the main visual action in the central and upper portions of the screen, allowing the content to breathe.",
+    "mobile_optimized": true
+  },
+  "timestamp": "2025-07-28T01:59:00.533952",
+  "config": {
+    "mission": "Create a Family Guy style comedy where baby dragon in ninja dojo learns secret calculus techniques. Teach Darboux theorem, L'H\u00f4pital's rule for various indeterminate forms, and advanced limit techniques. Use visual metaphors: ninja training, secret scrolls, ultimate techniques. Show how to handle 0/0, infinity/infinity, and other indeterminate forms with humor and clarity.",
+    "platform": "Platform.INSTAGRAM",
+    "category": "VideoCategory.EDUCATIONAL",
+    "duration": 35,
+    "visual_style": "family guy animation",
+    "tone": "funny"
+  }
+}

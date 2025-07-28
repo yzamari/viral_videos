@@ -35,7 +35,12 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
          theme: Optional[str] = None, style_template: Optional[str] = None, 
          reference_style: Optional[str] = None, character: Optional[str] = None,
          scene: Optional[str] = None, voice: Optional[str] = None, 
-         multiple_voices: bool = False, languages: List[str] = None, **kwargs):
+         multiple_voices: bool = False, languages: List[str] = None, 
+         veo_model_order: str = 'veo3-fast,veo3,veo2',
+         business_name: Optional[str] = None, business_address: Optional[str] = None,
+         business_phone: Optional[str] = None, business_website: Optional[str] = None,
+         business_facebook: Optional[str] = None, business_instagram: Optional[str] = None,
+         show_business_info: bool = True, **kwargs):
     """
     Main video generation workflow
 
@@ -79,6 +84,20 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
         logger.info("💎 PREMIUM MODE: Using VEO video generation and premium voices")
 
     try:
+        # Update VEO model preference order if provided
+        if veo_model_order and veo_model_order != 'veo3-fast,veo3,veo2':
+            try:
+                # Import settings using absolute path
+                import importlib.util
+                config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'config', 'config.py')
+                spec = importlib.util.spec_from_file_location("config", config_path)
+                config_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(config_module)
+                config_module.settings.veo_model_preference_order = veo_model_order
+                logger.info(f"🎯 VEO model preference order set to: {veo_model_order}")
+            except Exception as e:
+                logger.warning(f"⚠️ Could not update VEO model order: {e}")
+        
         # Create config dictionary for orchestrator
         config = {
             "topic": mission,
@@ -248,7 +267,14 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             'scene': scene,
             'session_id': session_id,
             'core_decisions': core_decisions,
-            'languages': language_enums  # Pass Language enums
+            'languages': language_enums,  # Pass Language enums
+            'business_name': business_name,
+            'business_address': business_address,
+            'business_phone': business_phone,
+            'business_website': business_website,
+            'business_facebook': business_facebook,
+            'business_instagram': business_instagram,
+            'show_business_info': show_business_info
         }
         
         # Generate video

@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep9_20250728_012522",
+  "mission": "Create a Family Guy style comedy where dragon treasure hunter teaches extreme value theorem, uniform continuity, and introduces derivatives. Cover finding max/min on closed intervals, monotonic bijections, Heine-Cantor theorem, and derivative as instantaneous rate of change. Use visual metaphors: treasure hunting, dragon velocity, measuring slopes. Show relationship between differentiability and continuity.",
+  "duration_seconds": 35,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: Peter Griffin as a dragon treasure hunter, holding a treasure map] DIALOGUE: Alright, Stewie, we're finding treasure on this closed interval of the map! [VISUAL: A graph showing the treasure's elevation with Peter pointing to the highest and lowest points] DIALOGUE: The Extreme Value Theorem means the best and worst loot are always at the edges or humps. [VISUAL: Peter riding a dragon, showing its smooth, consistent velocity] DIALOGUE: This dragon's velocity is uniformly continuous; it does not suddenly teleport like a bad math problem. [VISUAL: A compass needle measuring the slope of a mountain] DIALOGUE: Derivatives are dragon velocity; they show our exact speed at any point on this crazy treasure hunt. [VISUAL: Peter smoothly sliding down a dragon's back, then a jagged graph showing a sharp corner] DIALOGUE: If a function is differentiable, it is continuous, unlike this bumpy dragon ride versus a smooth slide.",
+    "final_script": "Alright, Stewie, we are finding treasure on this map section! The Extreme Value Theorem indicates the best and worst loot is at the edges or peaks. This dragon's velocity is uniformly continuous; it will not teleport. Derivatives represent dragon velocity; they show our speed at any point. If a function is differentiable, it is continuous, unlike this bumpy dragon ride. We must use this to our advantage during this treasure hunt. The map shows a clear path, let us follow it carefully. Remember, Stewie, patience is key to success. We do not want to anger the dragon. This treasure is worth the effort. Our success depends on precision and timing. Are you ready, Stewie? Let us proceed with caution",
+    "word_count": 100,
+    "tts_ready": false
+  }
+}

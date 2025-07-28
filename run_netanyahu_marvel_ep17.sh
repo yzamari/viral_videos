@@ -63,7 +63,7 @@ elif $GENERATE_ENGLISH; then
 elif $GENERATE_HEBREW; then
     echo "📊 Language: Hebrew only"
 fi
-echo "⏱️  Duration: 55 seconds"
+echo "⏱️  Duration: 35 seconds"
 echo "📱 Platform: Instagram"
 echo "🎨 Style: Marvel Comics with dark humor"
 echo ""
@@ -76,20 +76,17 @@ MISSION_EN="Marvel Comics explosion! Benjamin Netanyahu with lightning effects c
 MISSION_HE="פיצוץ קומיקס מארוול! בנימין נתניהו עם אפקטי ברקים מתרסק דרך קירות הכנסת. קראש! 'אני נצחי!' מפלגות האופוזיציה נעלמות בעשן קומיקס. וואוש! עסקאות קואליציה עם פאנלים מתפוצצים. בום! מלהטט במשפטי שחיתות מרובים תוך כדי סמסים. זאפ! בונה התנחלויות עם קרני אנרגיה. ת'וואק! מחלוקת הרפורמה המשפטית מפצלת את האומה. קראק! 'ביבי יחזור... שוב!' וואם! דגל ישראל עם ברקים."
 
 # Character descriptions
-CHARACTER_EN="Benjamin Netanyahu with gray hair, determined expression, dark suit with lightning aura, Marvel superhero style"
-CHARACTER_HE="בנימין נתניהו עם שיער אפור, הבעה נחושה, חליפה כהה עם הילת ברקים, בסגנון גיבור על של מארוול"
+CHARACTER_EN="Benjamin Netanyahu with gray hair, clean-shaven face with no mustache, determined expression, dark suit with lightning aura, Marvel superhero style"
+CHARACTER_HE="בנימין נתניהו עם שיער אפור, פנים מגולחות ללא שפם, הבעה נחושה, חליפה כהה עם הילת ברקים, בסגנון גיבור על של מארוול"
 
 # Build language list based on flags
 LANGUAGES=""
-if $GENERATE_HEBREW; then
+if $GENERATE_HEBREW && $GENERATE_ENGLISH; then
+    LANGUAGES="--languages he --languages en-US"
+elif $GENERATE_HEBREW; then
     LANGUAGES="--languages he"
-fi
-if $GENERATE_ENGLISH; then
-    if [ -n "$LANGUAGES" ]; then
-        LANGUAGES="$LANGUAGES --languages en"
-    else
-        LANGUAGES="--languages en"
-    fi
+elif $GENERATE_ENGLISH; then
+    LANGUAGES="--languages en-US"
 fi
 
 # Set appropriate mission and character based on languages
@@ -109,9 +106,10 @@ fi
 python3 main.py generate \
   --mission "$MISSION" \
   $LANGUAGES \
-  --duration 55 \
+  --duration 35 \
   --platform instagram \
   --character "$CHARACTER" \
+  --voice "en-US-Neural2-J" \
   --session-id "$SESSION_ID" \
   --category Comedy \
   --style marvel \
@@ -125,11 +123,14 @@ if [ $? -eq 0 ]; then
     echo "📁 Output location: outputs/$SESSION_ID"
     echo ""
     echo "📹 Videos generated:"
-    if $GENERATE_HEBREW; then
-        echo "  - Hebrew: outputs/$SESSION_ID/languages/he/final_video.mp4"
-    fi
-    if $GENERATE_ENGLISH; then
-        echo "  - English: outputs/$SESSION_ID/languages/en/final_video.mp4"
+    echo "  - Main video: outputs/$SESSION_ID/final_output/"
+    if $GENERATE_HEBREW && $GENERATE_ENGLISH; then
+        echo "  - Hebrew version: outputs/$SESSION_ID/languages/he/"
+        echo "  - English version: outputs/$SESSION_ID/languages/en_US/"
+    elif $GENERATE_HEBREW; then
+        echo "  - Hebrew version: outputs/$SESSION_ID/final_output/"
+    elif $GENERATE_ENGLISH; then
+        echo "  - English version: outputs/$SESSION_ID/final_output/"
     fi
 else
     echo ""

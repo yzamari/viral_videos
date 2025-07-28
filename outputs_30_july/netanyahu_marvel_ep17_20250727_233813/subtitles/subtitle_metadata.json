@@ -1,0 +1,18 @@
+{
+  "total_segments": 17,
+  "total_duration": 31.657142000000007,
+  "script_content": "I am eternal! Coalition members struggle amidst exploding panels, juggling multiple corruption trials while simultaneously texting updates. They build settlements using energy beams, a futuristic solution to rapid expansion. Bibi will return again. The chaos is immense; the stakes are high. Every second counts in this desperate fight for survival. The weight of responsibility is heavy. They must succeed",
+  "audio_files_used": [
+    "outputs/netanyahu_marvel_ep17_20250727_233813/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/netanyahu_marvel_ep17_20250727_233813/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/netanyahu_marvel_ep17_20250727_233813/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/netanyahu_marvel_ep17_20250727_233813/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/netanyahu_marvel_ep17_20250727_233813/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/netanyahu_marvel_ep17_20250727_233813/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/netanyahu_marvel_ep17_20250727_233813/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/netanyahu_marvel_ep17_20250727_233813/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/netanyahu_marvel_ep17_20250727_233813/audio/padded/padded_audio_segment_8.mp3"
+  ],
+  "target_duration": 31.957142000000008,
+  "capped_to_target": false
+}

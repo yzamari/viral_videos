@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep3_20250728_000317",
+  "mission": "Create a Family Guy style comedy where baby dragon with rocket pack explores special limits and divergence. Teach nth roots approaching 1, sequences diverging to infinity, ratio test, root test, and geometric sequences. Use visual metaphors: shrinking spells, rocket launches for divergence, growing plants for root test. Demonstrate how these tests reveal sequence behavior through growth rates. Make it engaging and humorous while explaining when sequences converge or diverge.",
+  "platform": "instagram",
+  "duration_seconds": 35,
+  "created_at": "2025-07-28T00:16:09.172320",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep3_20250728_000317/final_output/final_video_calculus_dragon_ep3_20250728_000317__final.mp4",
+      "file_size_mb": 67.53045654296875
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep3_20250728_000317/final_output/final_video_calculus_dragon_ep3_20250728_000317__audio_only.mp4",
+      "file_size_mb": 56.21261119842529
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep3_20250728_000317/final_output/final_video_calculus_dragon_ep3_20250728_000317__overlays_only.mp4",
+      "file_size_mb": 56.09415054321289
+    }
+  }
+}

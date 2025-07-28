@@ -217,7 +217,6 @@ def test_dynamic_overlay_positioning():
 ## Future Enhancements
 
 ### Planned Features
-- **Whisper Integration**: Speech-to-text for precise timing
 - **Advanced Animations**: 3D effects, particle systems
 - **A/B Testing**: Automatic optimization based on performance
 - **Real-time Preview**: Live animation preview during generation

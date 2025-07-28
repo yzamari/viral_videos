@@ -1,0 +1,63 @@
+{
+  "hook": {
+    "text": "[VISUAL: Blinding flash of light, morphing into a powerful silhouette.] DIALOGUE: Unleash the hero. Generate Marvel action.",
+    "type": "ai_generated",
+    "duration_seconds": 3
+  },
+  "segments": [
+    {
+      "text": "[VISUAL: A dynamic shot of a Marvel-style hero leaping across a cityscape.] DIALOGUE: Witness the impossible. Experience unparalleled action.",
+      "duration": 5,
+      "mission_purpose": "Establishes the 'Marvel style action hero' and 'amazing stunts' elements immediately, setting an engaging tone.",
+      "full_text": "[VISUAL: A dynamic shot of a Marvel-style hero leaping across a cityscape.] DIALOGUE: Witness the impossible. Experience unparalleled action.",
+      "display_text": "[VISUAL: A dynamic shot of a Marvel-style hero leaping across a cityscape.] DIALOGUE: Witness the..."
+    },
+    {
+      "text": "[VISUAL: Hero performing a gravity-defying flip while firing energy blasts.] DIALOGUE: We are pushing the boundaries of visual generation.",
+      "duration": 5,
+      "mission_purpose": "Directly addresses the 'test video generation' aspect, showcasing advanced capabilities.",
+      "full_text": "[VISUAL: Hero performing a gravity-defying flip while firing energy blasts.] DIALOGUE: We are pushing the boundaries of visual generation.",
+      "display_text": "[VISUAL: Hero performing a gravity-defying flip while firing energy blasts.] DIALOGUE: We are pus..."
+    },
+    {
+      "text": "[VISUAL: Close-up of the hero landing a powerful, impactful strike on an unseen enemy.] DIALOGUE: Our technology brings your heroic visions to vivid life.",
+      "duration": 5,
+      "mission_purpose": "Highlights the emotional impact of the visuals, connecting the technology to desired user outcomes.",
+      "full_text": "[VISUAL: Close-up of the hero landing a powerful, impactful strike on an unseen enemy.] DIALOGUE: Our technology brings your heroic visions to vivid life.",
+      "display_text": "[VISUAL: Close-up of the hero landing a powerful, impactful strike on an unseen enemy.] DIALOGUE:..."
+    },
+    {
+      "text": "[VISUAL: Hero soaring through the air, cape billowing dramatically.] DIALOGUE: Prepare for a new era of blockbuster-quality motion.",
+      "duration": 5,
+      "mission_purpose": "Builds anticipation and logical consequence \u2013 advanced generation leads to superior filmic experiences.",
+      "full_text": "[VISUAL: Hero soaring through the air, cape billowing dramatically.] DIALOGUE: Prepare for a new era of blockbuster-quality motion.",
+      "display_text": "[VISUAL: Hero soaring through the air, cape billowing dramatically.] DIALOGUE: Prepare for a new ..."
+    },
+    {
+      "text": "[VISUAL: Hero stands triumphant, fists clenched, bathed in golden light.] DIALOGUE: This is how you generate epic.",
+      "duration": 5,
+      "mission_purpose": "Concludes with a strong, actionable statement that encapsulates mission accomplishment, leaving a lasting impression.",
+      "full_text": "[VISUAL: Hero stands triumphant, fists clenched, bathed in golden light.] DIALOGUE: This is how you generate epic.",
+      "display_text": "[VISUAL: Hero stands triumphant, fists clenched, bathed in golden light.] DIALOGUE: This is how y..."
+    }
+  ],
+  "cta": {
+    "text": "Share this important message! \ud83d\udce2",
+    "visual": "Share animation",
+    "action": "share"
+  },
+  "total_duration": 35,
+  "platform": "instagram",
+  "created_at": "2025-07-28T10:08:05.593265",
+  "structure": {
+    "hook_duration": 3,
+    "content_duration": 30,
+    "cta_duration": 2
+  },
+  "full_text": "[VISUAL: Blinding flash of light, morphing into a powerful silhouette.] DIALOGUE: Unleash the hero. Generate Marvel action. [VISUAL: A dynamic shot of a Marvel-style hero leaping across a cityscape.] DIALOGUE: Witness the impossible. Experience unparalleled action. [VISUAL: Hero performing a gravity-defying flip while firing energy blasts.] DIALOGUE: We are pushing the boundaries of visual generation. [VISUAL: Close-up of the hero landing a powerful, impactful strike on an unseen enemy.] DIALOGUE: Our technology brings your heroic visions to vivid life. [VISUAL: Hero soaring through the air, cape billowing dramatically.] DIALOGUE: Prepare for a new era of blockbuster-quality motion. [VISUAL: Hero stands triumphant, fists clenched, bathed in golden light.] DIALOGUE: This is how you generate epic. Share this important message! \ud83d\udce2",
+  "viral_elements": {
+    "shareability_score": 0.5,
+    "emotional_arc": "complex",
+    "surprise_moments": []
+  }
+}

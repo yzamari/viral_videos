@@ -1,0 +1,302 @@
+{
+  "session_id": "calculus_dragon_ep1_20250727_163508",
+  "mission": "Family Guy cutaway: Baby dragon in magical number land! 'Hey kids, I'm Epsilon the Dragon! Let's explore NUMBER SETS!' POOF! Natural numbers 1,2,3 appear as counting cookies. 'These are for counting dragon treats!' But wait - Zero appears! 'I'm special!' Then negative numbers show up as ice cubes: -1,-2,-3. 'Together we're INTEGERS!' WHOOSH! Fractions fly in as pizza slices: 1/2, 3/4. 'We're RATIONAL numbers - any fraction!' Suddenly, \u221a2 appears as an infinite spiral dragon. 'I'm IRRATIONAL - my decimal never repeats!' Pi flies by leaving infinite trail. Together they form the REAL NUMBER LINE - a beautiful rainbow path! 'ABSOLUTE VALUE |x| measures distance from zero - like dragon hugs, always positive!' Example: |-5| = 5. INTERVALS are dragon territories: [1,3] includes endpoints, (1,3) doesn't! BOUNDED sets have limits - like dragon playpen with walls. SUPREMUM is the smallest upper bound - the ceiling dragons can't pass! Epsilon chicks demonstrate: 'For any \u03b5>0, we can get closer than \u03b5 to any real number!'",
+  "timestamp": "2025-07-27T16:52:03.653531",
+  "generation_metadata": {
+    "platform": "Platform.INSTAGRAM",
+    "category": "VideoCategory.EDUCATIONAL",
+    "duration_seconds": 63,
+    "visual_style": "family guy animation",
+    "tone": "funny"
+  },
+  "agents": {
+    "script_processor": {
+      "agent_name": "EnhancedScriptProcessor",
+      "role": "Script optimization and TTS preparation",
+      "input": {
+        "original_mission": "Family Guy cutaway: Baby dragon in magical number land! 'Hey kids, I'm Epsilon the Dragon! Let's explore NUMBER SETS!' POOF! Natural numbers 1,2,3 appear as counting cookies. 'These are for counting dragon treats!' But wait - Zero appears! 'I'm special!' Then negative numbers show up as ice cubes: -1,-2,-3. 'Together we're INTEGERS!' WHOOSH! Fractions fly in as pizza slices: 1/2, 3/4. 'We're RATIONAL numbers - any fraction!' Suddenly, \u221a2 appears as an infinite spiral dragon. 'I'm IRRATIONAL - my decimal never repeats!' Pi flies by leaving infinite trail. Together they form the REAL NUMBER LINE - a beautiful rainbow path! 'ABSOLUTE VALUE |x| measures distance from zero - like dragon hugs, always positive!' Example: |-5| = 5. INTERVALS are dragon territories: [1,3] includes endpoints, (1,3) doesn't! BOUNDED sets have limits - like dragon playpen with walls. SUPREMUM is the smallest upper bound - the ceiling dragons can't pass! Epsilon chicks demonstrate: 'For any \u03b5>0, we can get closer than \u03b5 to any real number!'",
+        "target_duration": 63,
+        "platform": "Platform.INSTAGRAM",
+        "hook": "Hey kids, I am Epsilon the Dragon! Let us explore number sets!",
+        "call_to_action": "Follow for more!"
+      },
+      "output": {
+        "optimized_script": "Hey kids, I am Epsilon the Dragon! Let us explore number sets. POOF! Natural numbers, one, two, three, appear as counting cookies for my dragon treats! But wait, zero appears - I am special! Negative numbers arrive as ice one, minus two, minus three. Together, we are integers! WHOOSH! Fractions fly in as pizza , three-quarters. We are rational numbers - any fraction! The square root of two appears as an infinite spiral dragon. I am irrational - my decimal never repeats! Pi flies by, leaving an infinite trail. They form the real number line. Absolute value measures distance from zero, like dragon hugs, always positive! Intervals are dragon territories - some include endpoints, others do not. Bounded sets have limits, like a dragon playpen. For any epsilon greater than zero, we can get closer than epsilon",
+        "segments": [
+          {
+            "text": "Hey kids, I am Epsilon the Dragon",
+            "duration": 2.2,
+            "word_count": 6,
+            "voice_suggestion": "enthusiastic"
+          },
+          {
+            "text": "Let us explore number sets",
+            "duration": 1.8,
+            "word_count": 5,
+            "voice_suggestion": "enthusiastic"
+          },
+          {
+            "text": "POOF! Natural numbers, one, two, three, appear as counting cookies for my dragon treats",
+            "duration": 6.0,
+            "word_count": 18,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "But wait, zero appears - I am special",
+            "duration": 2.7,
+            "word_count": 8,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "Negative numbers arrive as ice one, minus two, minus three",
+            "duration": 5.1,
+            "word_count": 15,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "Together, we are integers",
+            "duration": 1.8,
+            "word_count": 5,
+            "voice_suggestion": "enthusiastic"
+          },
+          {
+            "text": "WHOOSH! Fractions fly in as pizza , three-quarters",
+            "duration": 5.4,
+            "word_count": 16,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "We are rational numbers - any fraction",
+            "duration": 3.0,
+            "word_count": 8,
+            "voice_suggestion": "enthusiastic"
+          },
+          {
+            "text": "The square root of two appears as an infinite spiral dragon",
+            "duration": 4.8,
+            "word_count": 14,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "I am irrational - my decimal never repeats",
+            "duration": 3.6,
+            "word_count": 10,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "Pi flies by, leaving an infinite trail",
+            "duration": 3.0,
+            "word_count": 8,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "They form the real number line",
+            "duration": 2.4,
+            "word_count": 7,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "Absolute value measures distance from zero, like dragon hugs, always positive",
+            "duration": 6.3,
+            "word_count": 18,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "Intervals are dragon territories - some include endpoints, others do not",
+            "duration": 6.0,
+            "word_count": 17,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "Bounded sets have limits, like a dragon playpen",
+            "duration": 4.2,
+            "word_count": 12,
+            "voice_suggestion": "storyteller"
+          },
+          {
+            "text": "For any epsilon greater than zero, we can get closer than epsilon",
+            "duration": 5.4,
+            "word_count": 16,
+            "voice_suggestion": "calm"
+          }
+        ],
+        "total_duration": 62.2,
+        "word_count": 174,
+        "optimization_notes": "Removed redundant phrases, maintained core narrative, used more concise language, adjusted word count for 63 seconds,  added a few descriptive words to enhance the imagery.",
+        "duration_match": "close"
+      },
+      "reasoning": "AI-enhanced script processing with precise duration matching and TTS optimization",
+      "performance": {
+        "accuracy": "high",
+        "duration_precision": "exact",
+        "engagement_optimization": "enabled"
+      }
+    },
+    "visual_style": {
+      "agent_name": "VisualStyleAgent",
+      "role": "Visual aesthetics and engagement optimization",
+      "input": {
+        "mission": "Family Guy cutaway: Baby dragon in magical number land! 'Hey kids, I'm Epsilon the Dragon! Let's explore NUMBER SETS!' POOF! Natural numbers 1,2,3 appear as counting cookies. 'These are for counting dragon treats!' But wait - Zero appears! 'I'm special!' Then negative numbers show up as ice cubes: -1,-2,-3. 'Together we're INTEGERS!' WHOOSH! Fractions fly in as pizza slices: 1/2, 3/4. 'We're RATIONAL numbers - any fraction!' Suddenly, \u221a2 appears as an infinite spiral dragon. 'I'm IRRATIONAL - my decimal never repeats!' Pi flies by leaving infinite trail. Together they form the REAL NUMBER LINE - a beautiful rainbow path! 'ABSOLUTE VALUE |x| measures distance from zero - like dragon hugs, always positive!' Example: |-5| = 5. INTERVALS are dragon territories: [1,3] includes endpoints, (1,3) doesn't! BOUNDED sets have limits - like dragon playpen with walls. SUPREMUM is the smallest upper bound - the ceiling dragons can't pass! Epsilon chicks demonstrate: 'For any \u03b5>0, we can get closer than \u03b5 to any real number!'",
+        "audience": "general audience",
+        "platform": "Platform.INSTAGRAM",
+        "content_type": "VideoCategory.EDUCATIONAL"
+      },
+      "output": {
+        "primary_style": "cartoon",
+        "color_palette": "vibrant",
+        "engagement_score": "high",
+        "visual_elements": [],
+        "style_confidence": 0.85
+      },
+      "reasoning": "The description 'Family Guy cutaway' immediately suggests a humorous, exaggerated, and animated style. The subject matter (talking numbers, dragons, magical land) is inherently fantastical and lends itself well to a cartoon aesthetic. Vibrant colors will appeal to a general audience on Instagram and make the abstract concepts of number sets visually engaging and memorable. The 'Family Guy' reference also implies a certain irreverent humor and simplified, expressive character design, which is best achieved with cartoon.",
+      "performance": {
+        "trend_analysis": "enabled",
+        "platform_optimization": "active",
+        "engagement_prediction": "high"
+      }
+    },
+    "positioning": {
+      "agent_name": "OverlayPositioningAgent",
+      "role": "Subtitle and overlay positioning optimization",
+      "input": {
+        "mission": "Family Guy cutaway: Baby dragon in magical number land! 'Hey kids, I'm Epsilon the Dragon! Let's explore NUMBER SETS!' POOF! Natural numbers 1,2,3 appear as counting cookies. 'These are for counting dragon treats!' But wait - Zero appears! 'I'm special!' Then negative numbers show up as ice cubes: -1,-2,-3. 'Together we're INTEGERS!' WHOOSH! Fractions fly in as pizza slices: 1/2, 3/4. 'We're RATIONAL numbers - any fraction!' Suddenly, \u221a2 appears as an infinite spiral dragon. 'I'm IRRATIONAL - my decimal never repeats!' Pi flies by leaving infinite trail. Together they form the REAL NUMBER LINE - a beautiful rainbow path! 'ABSOLUTE VALUE |x| measures distance from zero - like dragon hugs, always positive!' Example: |-5| = 5. INTERVALS are dragon territories: [1,3] includes endpoints, (1,3) doesn't! BOUNDED sets have limits - like dragon playpen with walls. SUPREMUM is the smallest upper bound - the ceiling dragons can't pass! Epsilon chicks demonstrate: 'For any \u03b5>0, we can get closer than \u03b5 to any real number!'",
+        "style": "cartoon",
+        "platform": "Platform.INSTAGRAM",
+        "duration": 63
+      },
+      "output": {
+        "primary_position": "bottom_center",
+        "strategy": "static",
+        "safety_zones": [],
+        "positioning_confidence": 0.9
+      },
+      "reasoning": "The content is a narrative explanation of number sets with visual cues that would benefit from a stable position. Instagram's rule of avoiding the bottom 20% allows for a bottom-center placement which is still easily readable, and this position is often used for captions or explanatory text in video content.",
+      "performance": {
+        "platform_compliance": "verified",
+        "readability_score": "high",
+        "accessibility": "optimized"
+      }
+    },
+    "voice_director": {
+      "agent_name": "VoiceDirectorAgent",
+      "role": "Voice selection and audio strategy optimization",
+      "input": {
+        "mission": "Family Guy cutaway: Baby dragon in magical number land! 'Hey kids, I'm Epsilon the Dragon! Let's explore NUMBER SETS!' POOF! Natural numbers 1,2,3 appear as counting cookies. 'These are for counting dragon treats!' But wait - Zero appears! 'I'm special!' Then negative numbers show up as ice cubes: -1,-2,-3. 'Together we're INTEGERS!' WHOOSH! Fractions fly in as pizza slices: 1/2, 3/4. 'We're RATIONAL numbers - any fraction!' Suddenly, \u221a2 appears as an infinite spiral dragon. 'I'm IRRATIONAL - my decimal never repeats!' Pi flies by leaving infinite trail. Together they form the REAL NUMBER LINE - a beautiful rainbow path! 'ABSOLUTE VALUE |x| measures distance from zero - like dragon hugs, always positive!' Example: |-5| = 5. INTERVALS are dragon territories: [1,3] includes endpoints, (1,3) doesn't! BOUNDED sets have limits - like dragon playpen with walls. SUPREMUM is the smallest upper bound - the ceiling dragons can't pass! Epsilon chicks demonstrate: 'For any \u03b5>0, we can get closer than \u03b5 to any real number!'",
+        "script": "Hey kids, I am Epsilon the Dragon! Let us explore number sets. POOF! Natural numbers, one, two, three, appear as counting cookies for my dragon treats! But wait, zero appears - I am special! Negative numbers arrive as ice one, minus two, minus three. Together, we are integers! WHOOSH! Fractions fly in as pizza , three-quarters. We are rational numbers - any fraction! The square root of two appears as an infinite spiral dragon. I am irrational - my decimal never repeats! Pi flies by, leaving an infinite trail. They form the real number line. Absolute value measures distance from zero, like dragon hugs, always positive! Intervals are dragon territories - some include endpoints, others do not. Bounded sets have limits, like a dragon playpen. For any epsilon greater than zero, we can get closer than epsilon",
+        "platform": "Platform.INSTAGRAM",
+        "duration": 63
+      },
+      "output": {
+        "strategy": "single",
+        "voices": [
+          {
+            "clip_index": 0,
+            "voice": "en-US-Wavenet-C",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 1,
+            "voice": "en-US-Wavenet-C",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 2,
+            "voice": "en-US-Wavenet-C",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 3,
+            "voice": "en-US-Wavenet-C",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 4,
+            "voice": "en-US-Wavenet-C",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 5,
+            "voice": "en-US-Wavenet-C",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 6,
+            "voice": "en-US-Wavenet-C",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 7,
+            "voice": "en-US-Wavenet-C",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          }
+        ],
+        "primary_personality": "custom",
+        "voice_variety": false,
+        "total_voices": 8
+      },
+      "reasoning": "User specified voice: en-US-Wavenet-C",
+      "performance": {
+        "voice_matching": "optimal",
+        "engagement_optimization": "active",
+        "personality_alignment": "high"
+      }
+    }
+  },
+  "discussion_summary": {
+    "consensus": "All agents achieved optimal consensus for viral video generation",
+    "key_decisions": [
+      "Visual style: cartoon with vibrant colors",
+      "Positioning: bottom_center using static strategy",
+      "Voice strategy: single with custom personality",
+      "Script optimization: 174 words optimized for 63s duration"
+    ],
+    "performance_metrics": {
+      "total_agents": 4,
+      "decisions_made": 4,
+      "consensus_achieved": true,
+      "optimization_level": "high",
+      "processing_time": "optimized",
+      "ai_confidence": 0.92
+    },
+    "technical_details": {
+      "veo_model": "veo-2.0-generate-001",
+      "tts_engine": "enhanced_multilingual",
+      "script_processor": "ai_enhanced",
+      "session_tracking": "comprehensive"
+    }
+  },
+  "generation_insights": {
+    "content_analysis": {
+      "mission_relevance": "high",
+      "viral_potential": "optimized",
+      "engagement_factors": [
+        "visual_appeal",
+        "audio_quality",
+        "script_optimization",
+        "platform_targeting"
+      ]
+    },
+    "optimization_summary": {
+      "script_enhancement": "Optimized from basic mission to 174 words",
+      "duration_matching": "Achieved close duration alignment",
+      "style_optimization": "Selected cartoon style for maximum engagement",
+      "voice_optimization": "Configured single voice strategy"
+    }
+  }
+}

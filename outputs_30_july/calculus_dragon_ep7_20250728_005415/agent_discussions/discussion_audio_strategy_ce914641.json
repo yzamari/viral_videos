@@ -1,0 +1,157 @@
+{
+  "topic": {
+    "topic_id": "audio_strategy",
+    "title": "Audio Production & Voice Strategy",
+    "description": "CRITICAL: Audio MUST be EXACTLY 35s \u00b15%. Ensure perfect sync!",
+    "context": {
+      "mission": "Create a Family Guy style comedy where baby dragon shape-shifter teaches functions. Explain transformation rules, domain and range, one-to-one and onto functions, bijections, function composition, even/odd functions, and periodic functions. Use visual metaphors: dragon transformation machine, territory maps, mirror and rotational symmetry. Make abstract function concepts concrete and entertaining.",
+      "duration": 35,
+      "platform": "instagram",
+      "target_audience": "general audience",
+      "duration_constraints": {
+        "topic": "Duration & Timing Validation",
+        "final_approach": "Based on agent discussion, the recommended approach combines: Use the 'dragon transformation machine' as a recurring visual gag that directly illustrates function rules and compositions, perhaps with hilarious failed transformations., Map the domain and range of functions onto colorful, easily recognizable 'territory maps' that the dragon can interact with, emphasizing the dragon's shape-shifting limitations., For transformation rules and domain/range, use the 'dragon transformation machine' as a prop. Show the dragon attempting to transform into something outside its allowed forms (domain) and failing spectacularly, perhaps turning into a pile of goo, with the 'territory map' visual clearly showing what's allowed.",
+        "key_considerations": [
+          "The biggest concern is cramming all the specified function concepts (domain/range, one-to-one, onto, bijections, composition, even/odd, periodic) into a very short Instagram format without losing clarity or the comedic tone.",
+          "The sheer number of function concepts to cover (transformation rules, domain/range, one-to-one, onto, bijections, composition, even/odd, periodic) within a very short timeframe (35 seconds \u00b15%) presents a significant synchronization challenge. We risk either rushing the explanations or being unable to cover all required elements effectively.",
+          "The biggest concern is cramming all these distinct function types (one-to-one, onto, bijections, composition, even/odd, periodic) into a short, digestible format without losing comedic impact or clarity. The visual metaphors need to be instantly understandable."
+        ],
+        "recommended_actions": [
+          "Allocate roughly 3-4 seconds per function concept to maintain pace, ensuring the dragon's transformation is the punchline for each explanation.",
+          "Depict one-to-one/onto functions and bijections using dragon forms. For one-to-one, show the dragon transforming into distinct objects for distinct inputs. For onto, ensure every possible 'output' form is reachable. A bijection would be a perfect one-to-one correspondence of dragon forms.",
+          "For transformation rules and domain/range, use the 'dragon transformation machine' as a prop. Show the dragon attempting to transform into something outside its allowed forms (domain) and failing spectacularly, perhaps turning into a pile of goo, with the 'territory map' visual clearly showing what's allowed.",
+          "Use the 'dragon transformation machine' as a recurring visual gag that directly illustrates function rules and compositions, perhaps with hilarious failed transformations.",
+          "Map the domain and range of functions onto colorful, easily recognizable 'territory maps' that the dragon can interact with, emphasizing the dragon's shape-shifting limitations.",
+          "Prioritize visual metaphors like the 'dragon transformation machine' for transformation rules and 'territory maps' for domain/range, making them central to the humor and learning."
+        ],
+        "consensus_points": [
+          "To make this Family Guy-style comedy about functions engaging for Instagram, we need to lean heavily into rapid-fire visual gags and concise, punchy explanations delivered by the dragon. The abstract function concepts must be instantly grounded in the dragon's transformations and the visual metaphors provided.",
+          "To nail the Family Guy-style comedy for functions on Instagram, we must translate each abstract concept into a rapid, visual gag featuring the baby dragon's transformations.  The key is making these analogies so absurdly concrete and quick that they land as jokes while teaching the math.",
+          "To synchronize the ambitious scope of teaching functions with Family Guy-style humor on Instagram, we must prioritize hyper-condensed visual metaphors that directly illustrate each concept. The baby dragon's transformations will serve as the core engine for these rapid-fire explanations, ensuring all content is digestible and entertaining within the platform's constraints."
+        ],
+        "implementation_notes": [
+          "Consider instagram specific requirements",
+          "Ensure coordination between all agents during implementation",
+          "Monitor consensus points during execution"
+        ]
+      },
+      "script_duration": 35,
+      "max_audio_duration": 36.75,
+      "min_audio_duration": 33.25
+    },
+    "required_decisions": [
+      "voice_style",
+      "audio_approach",
+      "sound_design",
+      "audio_duration_compliance"
+    ],
+    "max_rounds": 10,
+    "min_consensus": 0.7
+  },
+  "discussion_log": [
+    {
+      "type": "context",
+      "topic_id": "audio_strategy",
+      "title": "Audio Production & Voice Strategy",
+      "description": "CRITICAL: Audio MUST be EXACTLY 35s \u00b15%. Ensure perfect sync!",
+      "context": {
+        "mission": "Create a Family Guy style comedy where baby dragon shape-shifter teaches functions. Explain transformation rules, domain and range, one-to-one and onto functions, bijections, function composition, even/odd functions, and periodic functions. Use visual metaphors: dragon transformation machine, territory maps, mirror and rotational symmetry. Make abstract function concepts concrete and entertaining.",
+        "duration": 35,
+        "platform": "instagram",
+        "target_audience": "general audience",
+        "duration_constraints": {
+          "topic": "Duration & Timing Validation",
+          "final_approach": "Based on agent discussion, the recommended approach combines: Use the 'dragon transformation machine' as a recurring visual gag that directly illustrates function rules and compositions, perhaps with hilarious failed transformations., Map the domain and range of functions onto colorful, easily recognizable 'territory maps' that the dragon can interact with, emphasizing the dragon's shape-shifting limitations., For transformation rules and domain/range, use the 'dragon transformation machine' as a prop. Show the dragon attempting to transform into something outside its allowed forms (domain) and failing spectacularly, perhaps turning into a pile of goo, with the 'territory map' visual clearly showing what's allowed.",
+          "key_considerations": [
+            "The biggest concern is cramming all the specified function concepts (domain/range, one-to-one, onto, bijections, composition, even/odd, periodic) into a very short Instagram format without losing clarity or the comedic tone.",
+            "The sheer number of function concepts to cover (transformation rules, domain/range, one-to-one, onto, bijections, composition, even/odd, periodic) within a very short timeframe (35 seconds \u00b15%) presents a significant synchronization challenge. We risk either rushing the explanations or being unable to cover all required elements effectively.",
+            "The biggest concern is cramming all these distinct function types (one-to-one, onto, bijections, composition, even/odd, periodic) into a short, digestible format without losing comedic impact or clarity. The visual metaphors need to be instantly understandable."
+          ],
+          "recommended_actions": [
+            "Allocate roughly 3-4 seconds per function concept to maintain pace, ensuring the dragon's transformation is the punchline for each explanation.",
+            "Depict one-to-one/onto functions and bijections using dragon forms. For one-to-one, show the dragon transforming into distinct objects for distinct inputs. For onto, ensure every possible 'output' form is reachable. A bijection would be a perfect one-to-one correspondence of dragon forms.",
+            "For transformation rules and domain/range, use the 'dragon transformation machine' as a prop. Show the dragon attempting to transform into something outside its allowed forms (domain) and failing spectacularly, perhaps turning into a pile of goo, with the 'territory map' visual clearly showing what's allowed.",
+            "Use the 'dragon transformation machine' as a recurring visual gag that directly illustrates function rules and compositions, perhaps with hilarious failed transformations.",
+            "Map the domain and range of functions onto colorful, easily recognizable 'territory maps' that the dragon can interact with, emphasizing the dragon's shape-shifting limitations.",
+            "Prioritize visual metaphors like the 'dragon transformation machine' for transformation rules and 'territory maps' for domain/range, making them central to the humor and learning."
+          ],
+          "consensus_points": [
+            "To make this Family Guy-style comedy about functions engaging for Instagram, we need to lean heavily into rapid-fire visual gags and concise, punchy explanations delivered by the dragon. The abstract function concepts must be instantly grounded in the dragon's transformations and the visual metaphors provided.",
+            "To nail the Family Guy-style comedy for functions on Instagram, we must translate each abstract concept into a rapid, visual gag featuring the baby dragon's transformations.  The key is making these analogies so absurdly concrete and quick that they land as jokes while teaching the math.",
+            "To synchronize the ambitious scope of teaching functions with Family Guy-style humor on Instagram, we must prioritize hyper-condensed visual metaphors that directly illustrate each concept. The baby dragon's transformations will serve as the core engine for these rapid-fire explanations, ensuring all content is digestible and entertaining within the platform's constraints."
+          ],
+          "implementation_notes": [
+            "Consider instagram specific requirements",
+            "Ensure coordination between all agents during implementation",
+            "Monitor consensus points during execution"
+          ]
+        },
+        "script_duration": 35,
+        "max_audio_duration": 36.75,
+        "min_audio_duration": 33.25
+      },
+      "required_decisions": [
+        "voice_style",
+        "audio_approach",
+        "sound_design",
+        "audio_duration_compliance"
+      ],
+      "timestamp": "2025-07-28T00:54:58.728774"
+    },
+    {
+      "agent_role": "AgentRole.SOUNDMAN",
+      "agent_name": "AudioMaster",
+      "message": "To make this Family Guy-style comedy about functions engaging on Instagram, we need a hyper-condensed, visually driven approach where the baby dragon's absurd transformations directly illustrate each function concept within tight timing. The 'dragon transformation machine' and 'territory maps' are key to grounding abstract math in hilarious, immediate visuals.",
+      "timestamp": "2025-07-28 00:55:00.050217",
+      "message_id": "834d82b6",
+      "reasoning": "Given the platform and duration, visual gags and rapid-fire explanations are crucial.  Each function concept must be paired with an instant, comedic transformation or map interaction to maintain viewer interest and ensure comprehension.",
+      "suggestions": [
+        "Prioritize the 'dragon transformation machine' for demonstrating transformation rules, domain/range (with failed transformations), and function composition. Each transformation attempt should be a quick, visual gag.",
+        "Use 'territory maps' to visually represent domain and range, highlighting allowed and disallowed transformations with comical failures.  For one-to-one, show distinct dragon forms for distinct map regions; for onto, ensure all map regions can be reached by a dragon form.  A bijection would be a perfect, one-to-one mapping of map regions to dragon forms.",
+        "For even/odd functions, use mirror symmetry (even) and rotational symmetry (odd) applied to the dragon's forms or the 'territory maps' with a quick visual gag. Periodic functions can be shown by the dragon repeating a sequence of transformations on a cyclical map."
+      ],
+      "concerns": [
+        "The biggest concern is cramming all the specified function concepts (domain/range, one-to-one, onto, bijections, composition, even/odd, periodic) into a very short Instagram format without losing clarity or the comedic tone. The visual metaphors need to be instantly understandable and the timing extremely precise to avoid confusion."
+      ],
+      "vote": "agree"
+    },
+    {
+      "agent_role": "AgentRole.EDITOR",
+      "agent_name": "CutMaster",
+      "message": "To make this Family Guy-style function comedy on Instagram engaging, we need to prioritize hyper-visual gags where the baby dragon's absurd transformations directly illustrate each function concept, ensuring every moment is punchy and memorable. The 'dragon transformation machine' and 'territory maps' are crucial for grounding abstract math in hilarious, immediate visuals that fit the platform's fast pace.",
+      "timestamp": "2025-07-28 00:55:01.379044",
+      "message_id": "9bc65f88",
+      "reasoning": "The core challenge is translating complex mathematical functions into rapid, comedic visual metaphors understandable within a 35-second Instagram reel. By making the dragon's transformations the central visual gag for each concept, we maximize engagement and comprehension.",
+      "suggestions": [
+        "For the 'dragon transformation machine' segments, ensure the failed transformations are increasingly absurd and visually distinct for each function concept. For example, a domain error might turn the dragon into a puddle of goo, while a composition error could result in a bizarre hybrid creature.",
+        "Map the domain and range onto distinct 'territory maps' that the dragon interacts with. For one-to-one, show the dragon mapping unique territory squares to unique dragon forms. For onto, ensure the dragon can transform into a creature that occupies every territory on the map."
+      ],
+      "concerns": [
+        "The primary concern is the sheer density of concepts (domain/range, one-to-one, onto, bijections, composition, even/odd, periodic) that need to be explained, visualized, and made comedic within a very tight 35-second window without feeling rushed or losing clarity."
+      ],
+      "vote": "agree"
+    },
+    {
+      "agent_role": "AgentRole.ORCHESTRATOR",
+      "agent_name": "SyncMaster",
+      "message": "To ensure the 35-second Instagram video effectively teaches functions with a Family Guy style comedy, we must prioritize rapid, visually driven explanations of each concept through the dragon's shape-shifting. The 'dragon transformation machine' and 'territory maps' are vital for grounding abstract mathematical ideas in concrete, humorous visual metaphors that are instantly understandable on the platform.",
+      "timestamp": "2025-07-28 00:55:02.814052",
+      "message_id": "4e8af29b",
+      "reasoning": "The core challenge is synchronizing the delivery of eight distinct function concepts with compelling comedy and visual metaphors within a strict 35-second timeframe, demanding a highly efficient and visually-led narrative.",
+      "suggestions": [
+        "Allocate a maximum of 3-4 seconds per function concept, ensuring the dragon's transformation directly illustrates the concept, with the 'dragon transformation machine' and 'territory maps' serving as consistent visual anchors for rules, domain/range, and various function types.",
+        "For one-to-one, onto, and bijections, visually depict the dragon transforming into distinct forms for distinct inputs (one-to-one), ensuring all possible 'output' forms are reachable (onto), and then a perfect correspondence (bijection), all while maintaining the comedic tone with quick cuts and absurd transformations.",
+        "To maximize viral potential, integrate quick, punchy jokes about failed transformations or unexpected outcomes from the 'dragon transformation machine', making the learning aspect secondary to the entertainment, but still present.",
+        "Strictly adhere to the 35-second limit by pre-timing all dialogue and visual cues, ensuring the audio production and visual cuts are perfectly synchronized to land each gag and explanation within their allotted time slice."
+      ],
+      "concerns": [
+        "The primary concern is the sheer density of information required for eight distinct mathematical concepts to be covered comprehensibly within such a short duration, potentially leading to rushed explanations that undermine both the comedy and educational value."
+      ],
+      "vote": "agree"
+    }
+  ],
+  "current_round": 1,
+  "consensus_level": 1.0,
+  "timestamp": "2025-07-28T00:55:02.816440",
+  "session_id": "calculus_dragon_ep7_20250728_005415"
+}

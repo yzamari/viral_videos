@@ -44,9 +44,16 @@ class VertexImagenClient:
                 location=self.location
             )
 
-            # Load Imagen model - use imagegeneration@002 which is available
+            # Load Imagen model - use Imagen 3 Fast for cost efficiency ($0.02 per image)
             # TODO: Migrate to new Generative AI SDK before June 2025
-            self.model = ImageGenerationModel.from_pretrained("imagegeneration@002")
+            try:
+                # Try Imagen 3 Fast first
+                self.model = ImageGenerationModel.from_pretrained("imagen-3-fast")
+                logger.info("✅ Using Imagen 3 Fast model ($0.02 per image)")
+            except Exception:
+                # Fallback to imagegeneration@002 if Imagen 3 Fast not available
+                self.model = ImageGenerationModel.from_pretrained("imagegeneration@002")
+                logger.info("✅ Using Imagen 2 model (fallback)")
             self.initialized = True
 
             logger.info(f"✅ Vertex AI Imagen initialized for project: {self.project_id}")

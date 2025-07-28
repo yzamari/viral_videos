@@ -288,6 +288,8 @@ Return JSON:
                 'family guy animation': 'Family Guy cartoon style, Seth MacFarlane animation, distinctive character design, bold outlines, flat colors, adult animated comedy style',
                 'family guy': 'Family Guy cartoon style, Seth MacFarlane animation, distinctive character design, bold outlines, flat colors, adult animated comedy style',
                 'disney': 'Disney animation style, magical, family-friendly',
+                'studio_ghibli': 'Studio Ghibli animation style, magical realism, hand-drawn, whimsical, nature-focused, dreamy, Japanese animation aesthetic',
+                'ghibli': 'Studio Ghibli animation style, magical realism, hand-drawn, whimsical, nature-focused, dreamy, Japanese animation aesthetic',
                 'pixar': 'Pixar 3D animation style, vibrant, heartwarming',
                 'anime': 'anime style, expressive, dramatic, Japanese animation',
                 'manga': 'manga style, black and white, detailed linework',
@@ -434,20 +436,90 @@ Return JSON:
             
             # If no exact match, try partial matches
             if not style_description:
-                for key, value in style_mappings.items():
-                    if style_lower in key or key in style_lower:
-                        style_description = value
-                        logger.info(f"🎨 Found partial style match: '{style}' → '{key}'")
-                        break
+                # Special handling for complex style strings
+                if 'ghibli' in style_lower:
+                    style_description = style_mappings.get('ghibli')
+                    logger.info(f"🎨 Detected Ghibli style in: '{style}'")
+                elif 'family guy' in style_lower:
+                    style_description = style_mappings.get('family guy')
+                    logger.info(f"🎨 Detected Family Guy style in: '{style}'")
+                else:
+                    for key, value in style_mappings.items():
+                        if style_lower in key or key in style_lower:
+                            style_description = value
+                            logger.info(f"🎨 Found partial style match: '{style}' → '{key}'")
+                            break
             
             # If we have a style description, use it
             if style_description:
                 return f"{base_prompt}, {style_description}"
             else:
-                # For unknown styles, just append the style as-is (it's a valid string)
-                logger.info(f"🎨 Using custom style: {style}")
-                return f"{base_prompt}, {style} style"
+                # For unknown styles, use LLM to generate description
+                logger.info(f"🎨 Style '{style}' not recognized, asking LLM to generate description...")
+                llm_description = self._generate_style_description_with_llm(style)
+                if llm_description:
+                    logger.info(f"🎨 LLM generated style description for '{style}': {llm_description}")
+                    return f"{base_prompt}, {llm_description}"
+                else:
+                    # Final fallback: use the style as-is
+                    logger.info(f"🎨 LLM failed, using custom style as-is: {style}")
+                    return f"{base_prompt}, {style} style"
                 
         except Exception as e:
             logger.error(f"❌ Simple style enhancement failed: {e}")
             return base_prompt
+    
+    def _generate_style_description_with_llm(self, style: str) -> Optional[str]:
+        """
+        Use LLM to generate a description for unknown visual styles
+        
+        Args:
+            style: The unrecognized style string
+            
+        Returns:
+            LLM-generated style description or None if failed
+        """
+        try:
+            if not self.model:
+                logger.warning("⚠️ No AI model available for style description generation")
+                return None
+            
+            # Create prompt for LLM to describe the visual style
+            style_prompt = f"""
+You are a visual style expert. Convert this style name into a detailed visual description for AI image/video generation.
+
+Style name: "{style}"
+
+Provide a concise, descriptive phrase that captures the visual characteristics, techniques, colors, mood, and artistic elements of this style. Focus on visual details that would help an AI understand how to render content in this style.
+
+Examples:
+- "cyberpunk" → "futuristic neon lighting, dark urban environments, high-tech elements, purple and blue color palette, digital aesthetic"
+- "impressionist" → "soft brush strokes, light and shadow play, pastel colors, dreamy atmosphere, artistic painting style"
+
+Return only the descriptive phrase, no explanations:"""
+
+            response = self.model.generate_content(style_prompt)
+            
+            if response and response.text:
+                description = response.text.strip()
+                # Clean up the response - remove quotes and extra text
+                description = description.replace('"', '').replace("'", "")
+                if description.lower().startswith(style.lower()):
+                    # Remove redundant style name from beginning
+                    description = description[len(style):].strip()
+                    if description.startswith('→'):
+                        description = description[1:].strip()
+                
+                # Validate the description is reasonable
+                if len(description) > 10 and len(description) < 200:
+                    return description
+                else:
+                    logger.warning(f"⚠️ LLM generated unusual style description: {description}")
+                    return None
+            else:
+                logger.warning("⚠️ Empty response from LLM for style description")
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ LLM style description generation failed: {e}")
+            return None

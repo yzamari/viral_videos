@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep1_20250727_163508",
+  "mission": "Family Guy cutaway: Baby dragon in magical number land! 'Hey kids, I'm Epsilon the Dragon! Let's explore NUMBER SETS!' POOF! Natural numbers 1,2,3 appear as counting cookies. 'These are for counting dragon treats!' But wait - Zero appears! 'I'm special!' Then negative numbers show up as ice cubes: -1,-2,-3. 'Together we're INTEGERS!' WHOOSH! Fractions fly in as pizza slices: 1/2, 3/4. 'We're RATIONAL numbers - any fraction!' Suddenly, \u221a2 appears as an infinite spiral dragon. 'I'm IRRATIONAL - my decimal never repeats!' Pi flies by leaving infinite trail. Together they form the REAL NUMBER LINE - a beautiful rainbow path! 'ABSOLUTE VALUE |x| measures distance from zero - like dragon hugs, always positive!' Example: |-5| = 5. INTERVALS are dragon territories: [1,3] includes endpoints, (1,3) doesn't! BOUNDED sets have limits - like dragon playpen with walls. SUPREMUM is the smallest upper bound - the ceiling dragons can't pass! Epsilon chicks demonstrate: 'For any \u03b5>0, we can get closer than \u03b5 to any real number!'",
+  "duration_seconds": 63,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "Hey kids, I am Epsilon the Dragon! Let us explore number sets together! POOF! Natural numbers one, two, three appear as counting cookies. These are for counting my dragon treats! But wait, Zero appears. I am special! Then negative numbers show up as ice cubes, minus one, minus two, minus three. Together, we are Integers! WHOOSH! Fractions fly in as pizza slices, one half, three quarters. We are Rational numbers \u2013 any fraction! Suddenly, the square root of two appears as an infinite spiral dragon. I am Irrational \u2013 my decimal never repeats! Pi flies by, leaving an infinite trail. Together they form the Real Number Line. Absolute value measures distance from zero, like dragon hugs, always positive! Intervals are dragon territories \u2013 some include endpoints, others do not! Bounded sets have limits, like a dragon playpen with walls. For any epsilon greater than zero, we can get closer than epsilon!",
+    "final_script": "Hey kids, I am Epsilon the Dragon! Let us explore number sets. POOF! Natural numbers, one, two, three, appear as counting cookies for my dragon treats! But wait, zero appears - I am special! Negative numbers arrive as ice one, minus two, minus three. Together, we are integers! WHOOSH! Fractions fly in as pizza , three-quarters. We are rational numbers - any fraction! The square root of two appears as an infinite spiral dragon. I am irrational - my decimal never repeats! Pi flies by, leaving an infinite trail. They form the real number line. Absolute value measures distance from zero, like dragon hugs, always positive! Intervals are dragon territories - some include endpoints, others do not. Bounded sets have limits, like a dragon playpen. For any epsilon greater than zero, we can get closer than epsilon",
+    "word_count": 174,
+    "tts_ready": false
+  }
+}

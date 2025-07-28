@@ -255,6 +255,54 @@ class TestVEO3ClientPortrait(unittest.TestCase):
 
     @unittest.skipIf(os.getenv('SKIP_INTEGRATION_TESTS') == 'true', 
                      "Integration tests skipped")
+    def test_real_veo3_fast_generation(self):
+        """Integration test: Generate actual video using VEO-3-FAST"""
+        client = VertexAIVeo3Client(
+            project_id=self.project_id,
+            location=self.location,
+            gcs_bucket=self.gcs_bucket,
+            output_dir=self.output_dir
+        )
+        
+        # Enable VEO-3-FAST mode
+        client.is_veo3_fast = True
+        
+        prompt = "A simple 5-second video of a red car driving on a highway"
+        
+        try:
+            # Generate video with VEO-3-FAST (no audio)
+            result = client.generate_video(
+                prompt=prompt,
+                duration=5.0,
+                aspect_ratio="9:16",
+                enable_audio=False,  # VEO-3-FAST doesn't support audio
+                clip_id="test_veo3_fast"
+            )
+            
+            # Verify file was created
+            self.assertTrue(os.path.exists(result))
+            self.assertTrue(result.endswith('.mp4'))
+            
+            # Verify it's a valid video file
+            file_size = os.path.getsize(result)
+            self.assertGreater(file_size, 1000, "Video file should be larger than 1KB")
+            
+            logger.info(f"✅ Generated VEO-3-FAST video: {result} ({file_size} bytes)")
+            
+            # Clean up
+            if os.path.exists(result):
+                os.remove(result)
+                
+        except Exception as e:
+            # If VEO-3-FAST is not available, this is expected
+            if "VEO3 service unavailable" in str(e):
+                logger.warning("VEO-3-FAST service unavailable, skipping integration test")
+                self.skipTest("VEO-3-FAST service unavailable")
+            else:
+                self.fail(f"VEO-3-FAST generation failed: {e}")
+
+    @unittest.skipIf(os.getenv('SKIP_INTEGRATION_TESTS') == 'true', 
+                     "Integration tests skipped")
     def test_real_veo3_portrait_generation(self):
         """Integration test: Generate actual portrait video using VEO3"""
         client = VertexAIVeo3Client(

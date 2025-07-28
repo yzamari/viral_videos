@@ -1,0 +1,15 @@
+{
+  "total_segments": 10,
+  "total_duration": 28.040409000000004,
+  "script_content": "Young Ignis, the ancient texts reveal limits beyond imagination. Mastering '0 divided by 0' requires the L'H\u00f4pital's swift strike. This 'infinity over infinity' knot, we untangle with derivatives' might. The Darboux double-check, a precise vanishing act for unseen bounds. These calculus secrets, you have truly claimed, my fiery prot\u00e9g\u00e9. Young Ignis, the ancient texts reveal limits beyo",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep11_20250728_015214/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep11_20250728_015214/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep11_20250728_015214/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep11_20250728_015214/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep11_20250728_015214/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep11_20250728_015214/audio/padded/padded_audio_segment_5.mp3"
+  ],
+  "target_duration": 28.340409000000005,
+  "capped_to_target": false
+}

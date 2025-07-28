@@ -1,0 +1,21 @@
+{
+  "total_segments": 22,
+  "total_duration": 37.624897,
+  "script_content": "This case is a complete mess! My dragon senses pinpoint a function needing analysis. We first establish its domain: where it can roam. Next, identify critical points \u2013 potential ups and downs. The first derivative reveals its mood swings, showing increases and decreases. The second derivative indicates concavity, the curve's emotional state. We seek asymptotes, the function's boundaries. Inflection points mark significant attitude shifts. Finally, we sketch the complete picture. Case closed: another function's mystery solved",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_9.mp3",
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_10.mp3",
+    "outputs/calculus_dragon_ep13_20250728_021055/audio/padded/padded_audio_segment_11.mp3"
+  ],
+  "target_duration": 37.924896999999994,
+  "capped_to_target": false
+}

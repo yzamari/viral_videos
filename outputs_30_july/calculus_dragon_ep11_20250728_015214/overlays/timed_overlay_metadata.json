@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 7,
+  "hook_text": "Can a baby dragon master calculus ninja secrets?",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "The 'Family Guy style' directly points to a cartoon aesthetic. Vibrant colors are ideal for an Instagram audience and to make the educational content engaging and visually appealing, mirroring the exaggerated and colorful nature of shows like Family Guy. The visual metaphors of ninja training and secret scrolls lend themselves well to a bold, animated style.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "For an Instagram cartoon, placing the overlay at the bottom center is a safe and widely accepted position. It avoids the bottom 20% as per the rule, ensuring it's not cut off or obscured by Instagram's UI elements. This position also keeps the main visual action in the central and upper portions of the screen, allowing the content to breathe.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/calculus_dragon_ep11_20250728_015214/temp_files/base_video.mp4 -vf drawtext=text='Ninja Math \ud83e\udd4b':fontcolor=#5F2CD3:fontsize=50:font='Arial-Bold':box=1:boxcolor=#96CEB4@0.85:boxborderw=1:x=(w-text_w)/2:y=200:enable=between(t\\,3.5\\,6.0),drawtext=text='Infinity Hacks':fontcolor=#00D2D3:fontsize=55:font='Georgia-Bold':box=1:boxcolor=#C44569@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,9.5\\,12.0),drawtext=text='LH\u00f4pitals Power':fontcolor=#E74C3C:fontsize=65:font='Trebuchet-Bold':box=1:boxcolor=#4ECDC4@1.0:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,15.5\\,18.0),drawtext=text='Limit Mastery \ud83c\udfc6':fontcolor=#96CEB4:fontsize=55:font='Helvetica-Bold':box=1:boxcolor=#5F27CD@0.9:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,18.5\\,21.0),drawtext=text='Subscribe Now':fontcolor=#45B7D1:fontsize=60:font='Impact':box=1:boxcolor=#FFFFFF@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,24.5\\,26.28),drawtext=text='Follow for':fontcolor=#FF00C8:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#FFFF00@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,20.28\\,21.68),drawtext=text='more':fontcolor=#FF00C8:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#FFFF00@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,21.78\\,23.18) -c:a copy -y outputs/calculus_dragon_ep11_20250728_015214/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='Ninja Math \ud83e\udd4b':fontcolor=#5F2CD3:fontsize=50:font='Arial-Bold':box=1:boxcolor=#96CEB4@0.85:boxborderw=1:x=(w-text_w)/2:y=200:enable=between(t\\,3.5\\,6.0),drawtext=text='Infinity Hacks':fontcolor=#00D2D3:fontsize=55:font='Georgia-Bold':box=1:boxcolor=#C44569@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,9.5\\,12.0),drawtext=text='LH\u00f4pitals Power':fontcolor=#E74C3C:fontsize=65:font='Trebuchet-Bold':box=1:boxcolor=#4ECDC4@1.0:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,15.5\\,18.0),drawtext=text='Limit Mastery \ud83c\udfc6':fontcolor=#96CEB4:fontsize=55:font='Helvetica-Bold':box=1:boxcolor=#5F27CD@0.9:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,18.5\\,21.0),drawtext=text='Subscribe Now':fontcolor=#45B7D1:fontsize=60:font='Impact':box=1:boxcolor=#FFFFFF@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,24.5\\,26.28),drawtext=text='Follow for':fontcolor=#FF00C8:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#FFFF00@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,20.28\\,21.68),drawtext=text='more':fontcolor=#FF00C8:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#FFFF00@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,21.78\\,23.18)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 26.28,
+    "overlay_count": 7
+  }
+}

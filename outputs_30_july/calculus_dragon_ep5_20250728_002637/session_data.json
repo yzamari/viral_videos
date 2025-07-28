@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep5_20250728_002637",
+  "mission": "Create a Family Guy style comedy where baby dragon army teaches Cauchy sequences. Show how Cauchy sequences cluster together within epsilon distance. Explain the fundamental theorem that Cauchy equals convergent in real numbers, upper and lower limits, Heine-Borel theorem for compactness, Dedekind cuts, and Cauchy completion. Use visual metaphors: dragon formations, flight records, covering with blankets. Make it entertaining while explaining completeness of real numbers.",
+  "duration_seconds": 35,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: Baby dragon army doing synchronized formations.] DIALOGUE: These little dragons make close formations, just like Cauchy sequences approach their limit. [VISUAL: Dragons flying close, then closer within a tiny box.] DIALOGUE: They always cluster within any tiny epsilon box we give them. [VISUAL: A large dragon (representing a real number) with smaller dragons orbiting it.] DIALOGUE: For real numbers, being Cauchy means they are guaranteed to converge to something. [VISUAL: Dragons covering a space with blankets, no gaps left.] DIALOGUE: Compactness, like Heine-Borel, means we can cover everything with finite blankets, no holes! [VISUAL: Two groups of dragons on a number line, representing Dedekind cuts.] DIALOGUE: Dedekind cuts define real numbers, showing how Cauchy completion makes our number line whole.",
+    "final_script": "These little dragons make close formations, just like Cauchy sequences approach their limit. They always cluster within any tiny epsilon box we give them. For real numbers, being Cauchy means they are guaranteed to converge to something. Compactness, like Heine-Borel, means we can cover everything with finite blankets, no holes! Dedekind cuts define real numbers, showing how Cauchy completion makes our number line whole",
+    "word_count": 64,
+    "tts_ready": false
+  }
+}

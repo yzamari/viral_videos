@@ -1,0 +1,66 @@
+{
+  "session_id": "test_full_20250728_101016",
+  "session_dir": "outputs/test_full_20250728_101016",
+  "subdirs": {
+    "logs": "outputs/test_full_20250728_101016/logs",
+    "scripts": "outputs/test_full_20250728_101016/scripts",
+    "audio": "outputs/test_full_20250728_101016/audio",
+    "video_clips": "outputs/test_full_20250728_101016/video_clips",
+    "images": "outputs/test_full_20250728_101016/images",
+    "ai_agents": "outputs/test_full_20250728_101016/ai_agents",
+    "discussions": "outputs/test_full_20250728_101016/discussions",
+    "final_output": "outputs/test_full_20250728_101016/final_output",
+    "metadata": "outputs/test_full_20250728_101016/metadata",
+    "comprehensive_logs": "outputs/test_full_20250728_101016/comprehensive_logs",
+    "temp_files": "outputs/test_full_20250728_101016/temp_files",
+    "fallback_content": "outputs/test_full_20250728_101016/fallback_content",
+    "debug_info": "outputs/test_full_20250728_101016/debug_info",
+    "performance_metrics": "outputs/test_full_20250728_101016/performance_metrics",
+    "user_configs": "outputs/test_full_20250728_101016/user_configs",
+    "error_logs": "outputs/test_full_20250728_101016/error_logs",
+    "success_metrics": "outputs/test_full_20250728_101016/success_metrics",
+    "decisions": "outputs/test_full_20250728_101016/decisions",
+    "subtitles": "outputs/test_full_20250728_101016/subtitles",
+    "overlays": "outputs/test_full_20250728_101016/overlays",
+    "agent_discussions": "outputs/test_full_20250728_101016/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-28T10:12:02.115627",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "David Ben-Gurion founding Israel with Marvel superhero powers",
+        "platform": "instagram",
+        "duration": 35
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

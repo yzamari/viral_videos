@@ -1,0 +1,6 @@
+{
+  "mode": "cheap_mode",
+  "discussions_skipped": true,
+  "reason": "Cheap mode enabled - skipped AI agent discussions for cost efficiency",
+  "fallback_used": false
+}

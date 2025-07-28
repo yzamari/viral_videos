@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep13_20250728_021055",
+  "mission": "Create a Family Guy style comedy where dragon detective investigates functions completely. Teach systematic function analysis: finding domain, critical points, using first and second derivative tests, finding inflection points, asymptotes, and sketching curves. Use visual metaphors: detective investigation, solving cases, mood swings for concavity. Make the complete function investigation process entertaining and memorable.",
+  "duration_seconds": 35,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: A fire-breathing dragon detective in a trench coat examining a graph like a crime scene.] DIALOGUE: This case is a mess! My dragon senses detect a function in need of some serious analysis. [VISUAL: The dragon detective marking points on a graph, zooming in on specific areas.] DIALOGUE: First, we establish the domain: where can this suspect roam? Then, critical points \u2013 our prime suspects for ups and downs. [VISUAL: Animated graphs showing the function's slope and curvature changing, with the dragon observing.] DIALOGUE: The first derivative test reveals our suspect's mood swings, defining increases and decreases. The second derivative? That\u2019s concavity, the curve\u2019s emotional state. [VISUAL: The dragon detective drawing dotted lines for asymptotes and marking inflection points with an 'X'.] DIALOGUE: We hunt for asymptotes, the boundaries this function respects. Inflection points are where its attitude truly changes. [VISUAL: The dragon detective confidently sketching the complete function curve based on all the evidence.] DIALOGUE: With all the evidence gathered, we sketch the complete picture. Case closed: another function\u2019s mystery solved!",
+    "final_script": "This case is a complete mess! My dragon senses pinpoint a function needing analysis. We first establish its domain: where it can roam. Next, identify critical points \u2013 potential ups and downs. The first derivative reveals its mood swings, showing increases and decreases. The second derivative indicates concavity, the curve's emotional state. We seek asymptotes, the function's boundaries. Inflection points mark significant attitude shifts. Finally, we sketch the complete picture. Case closed: another function's mystery solved",
+    "word_count": 82,
+    "tts_ready": false
+  }
+}

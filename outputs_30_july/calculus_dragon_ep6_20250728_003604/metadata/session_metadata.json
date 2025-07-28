@@ -1,0 +1,66 @@
+{
+  "session_id": "calculus_dragon_ep6_20250728_003604",
+  "session_dir": "outputs/calculus_dragon_ep6_20250728_003604",
+  "subdirs": {
+    "logs": "outputs/calculus_dragon_ep6_20250728_003604/logs",
+    "scripts": "outputs/calculus_dragon_ep6_20250728_003604/scripts",
+    "audio": "outputs/calculus_dragon_ep6_20250728_003604/audio",
+    "video_clips": "outputs/calculus_dragon_ep6_20250728_003604/video_clips",
+    "images": "outputs/calculus_dragon_ep6_20250728_003604/images",
+    "ai_agents": "outputs/calculus_dragon_ep6_20250728_003604/ai_agents",
+    "discussions": "outputs/calculus_dragon_ep6_20250728_003604/discussions",
+    "final_output": "outputs/calculus_dragon_ep6_20250728_003604/final_output",
+    "metadata": "outputs/calculus_dragon_ep6_20250728_003604/metadata",
+    "comprehensive_logs": "outputs/calculus_dragon_ep6_20250728_003604/comprehensive_logs",
+    "temp_files": "outputs/calculus_dragon_ep6_20250728_003604/temp_files",
+    "fallback_content": "outputs/calculus_dragon_ep6_20250728_003604/fallback_content",
+    "debug_info": "outputs/calculus_dragon_ep6_20250728_003604/debug_info",
+    "performance_metrics": "outputs/calculus_dragon_ep6_20250728_003604/performance_metrics",
+    "user_configs": "outputs/calculus_dragon_ep6_20250728_003604/user_configs",
+    "error_logs": "outputs/calculus_dragon_ep6_20250728_003604/error_logs",
+    "success_metrics": "outputs/calculus_dragon_ep6_20250728_003604/success_metrics",
+    "decisions": "outputs/calculus_dragon_ep6_20250728_003604/decisions",
+    "subtitles": "outputs/calculus_dragon_ep6_20250728_003604/subtitles",
+    "overlays": "outputs/calculus_dragon_ep6_20250728_003604/overlays",
+    "agent_discussions": "outputs/calculus_dragon_ep6_20250728_003604/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-28T00:37:44.169733",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Create a Family Guy style comedy where baby dragon in power-up workshop teaches rational and real exponents, then explores topology. Cover fractional powers, real exponents as limits, accumulation points, isolated points, open and closed sets, interior and closure, and the Cantor set. Use visual metaphors: power transformations, dragon gatherings, bubble zones, fractal magic. Make topology concepts accessible and fun.",
+        "platform": "instagram",
+        "duration": 35
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

@@ -514,9 +514,11 @@ class MultiLanguageVideoGenerator:
             # Add audio
             final_video_with_audio = final_video_with_overlays.set_audio(audio_clip)
 
-            # Save
-            video_filename = f"viral_video_{language.value}_{video_id}.mp4"
-            output_path = os.path.join(session_dir, video_filename)
+            # Save to final_output directory (all languages in same folder)
+            final_output_dir = os.path.join(session_dir, "final_output")
+            os.makedirs(final_output_dir, exist_ok=True)
+            video_filename = f"final_video_{language.value}_{video_id}.mp4"
+            output_path = os.path.join(final_output_dir, video_filename)
 
             logger.info(f"🎬 Rendering {lang_name} video: {output_path}")
             final_video_with_audio.write_videofile(

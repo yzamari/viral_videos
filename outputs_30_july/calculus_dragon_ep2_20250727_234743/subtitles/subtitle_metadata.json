@@ -1,0 +1,19 @@
+{
+  "total_segments": 18,
+  "total_duration": 28.378366000000003,
+  "script_content": "Welcome aboard the Number Train. Our baby dragon conductor leads us to a special station. Each train car shows a sequence number, getting closer. This demonstrates convergence. See the tiny epsilon tunnels? They illustrate how numbers approach the limit. Bounds keep our train on track, within limits. No derailing is allowed. These math lessons make sequences and limits clear. We have learned about sequences and their limits",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep2_20250727_234743/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep2_20250727_234743/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep2_20250727_234743/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep2_20250727_234743/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep2_20250727_234743/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep2_20250727_234743/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep2_20250727_234743/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/calculus_dragon_ep2_20250727_234743/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/calculus_dragon_ep2_20250727_234743/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/calculus_dragon_ep2_20250727_234743/audio/padded/padded_audio_segment_9.mp3"
+  ],
+  "target_duration": 28.678366000000004,
+  "capped_to_target": false
+}

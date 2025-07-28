@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep2_20250727_165211",
+  "mission": "Family Guy style: Baby dragon conductor on magical number train! 'All aboard the SEQUENCE EXPRESS!' Each train car shows a term: a\u2081=1, a\u2082=1/2, a\u2083=1/3... CHOO CHOO! 'Watch the pattern - each term follows a rule!' The train heads toward LIMIT STATION at L=0. 'CONVERGENCE means we get closer and closer to L!' Dragon demonstrates: 'Pick ANY tiny distance \u03b5>0.' Magic epsilon tunnel appears! 'After some point N, ALL terms stay within \u03b5 of L!' Shows |a\u2099-L|<\u03b5 visually. 'The UNIQUE LIMIT THEOREM says only ONE destination possible!' Two tracks can't lead to different stations! BOUNDED sequences have safety rails - can't go to infinity. 'If -M \u2264 a\u2099 \u2264 M for all n, we're bounded!' ARITHMETIC OF LIMITS: Two trains approaching L and M. 'Their sum approaches L+M!' Product approaches L\u00d7M! Dragon makes sequence sandwich: If a\u2099 \u2264 b\u2099 \u2264 c\u2099 and outer sequences \u2192 L, then b\u2099 \u2192 L too! 'SQUEEZE THEOREM!' Epsilon chicks line up showing 1, 1/2, 1/3, 1/4... converging to 0!",
+  "duration_seconds": 63,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "All aboard the SEQUENCE EXPRESS! Our first car is a\u2081=1, then a\u2082=1/2, a\u2083=1/3. CHOO CHOO! Watch the pattern \u2013 each term follows a rule! We are heading toward LIMIT STATION, which is at L=0. CONVERGENCE means we get closer and closer to L! After some point N, all terms stay within epsilon of L! The UNIQUE LIMIT THEOREM says only one destination is possible! If minus M is less than or equal to a sub n, we are bounded!",
+    "final_script": "All aboard the SEQUENCE EXPRESS! Our first number is one. Next, one-half. Then, one-third. CHOO CHOO! Notice the pattern - each term follows a simple rule. We are approaching LIMIT STATION, zero. Convergence means we get increasingly closer to zero. After a certain point, all terms remain extremely close to zero. The UNIQUE LIMIT THEOREM guarantees only one possible destination. If minus M is less than or equal to a sub n, the sequence is bounded. This convergence is fascinating, is it not? The elegance of mathematics is on full display here. We see the power of limits in action, approaching the destination with unwavering precision. The journey itself is as remarkable as the destination. Observe how each step brings us closer, illustrating the concept flawlessly. The precision is truly astounding. It is a beautiful illustration of mathematical convergence",
+    "word_count": 172,
+    "tts_ready": false
+  }
+}

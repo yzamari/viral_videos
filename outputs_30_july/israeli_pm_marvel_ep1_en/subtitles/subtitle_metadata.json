@@ -1,0 +1,17 @@
+{
+  "total_segments": 15,
+  "total_duration": 32.898366,
+  "script_content": "From the sands, a titan emerges. I am inevitable, he declares with mighty power. With a snap, the Mandate vanishes in comic smoke and exploding panels. He leads the cabinet with yoga, building kibbutzim with pure energy. Though now in retirement, he promises, Ben-Gurion will return. His legacy endures, a testament to his unwavering vision and revolutionary spirit. The sands whisper his name, a legend etched in time. His impact resonates, echoing through generations",
+  "audio_files_used": [
+    "outputs/israeli_pm_marvel_ep1_en/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/israeli_pm_marvel_ep1_en/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/israeli_pm_marvel_ep1_en/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/israeli_pm_marvel_ep1_en/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/israeli_pm_marvel_ep1_en/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/israeli_pm_marvel_ep1_en/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/israeli_pm_marvel_ep1_en/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/israeli_pm_marvel_ep1_en/audio/padded/padded_audio_segment_7.mp3"
+  ],
+  "target_duration": 33.198366,
+  "capped_to_target": false
+}

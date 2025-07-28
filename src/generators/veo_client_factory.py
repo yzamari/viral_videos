@@ -14,16 +14,24 @@ if 'src' not in sys.path:
 
 try:
     from ..utils.logging_config import get_logger
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     from config.config import Settings
 except ImportError:
     try:
         from utils.logging_config import get_logger
+        import sys
+        import os
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
         from config.config import Settings
     except ImportError:
         # Fallback settings if config not available
         class Settings:
-            disable_veo3 = True
+            disable_veo3 = True  # VEO-3 disabled in fallback too
             prefer_veo2_over_veo3 = True
+            prefer_veo3_fast = False
+            veo_model_preference_order = "veo2"  # VEO-2 only
         
         # Simple logger fallback
         import logging
@@ -36,6 +44,7 @@ class VeoModel(Enum):
     """Available VEO models"""
     VEO2 = "veo-2.0-generate-001"
     VEO3 = "veo-3.0-generate-preview"
+    VEO3_FAST = "veo-3.0-fast-generate-preview"  # Official Veo 3 Fast model - faster and cheaper
 
 class VeoClientFactory:
     """Factory for creating and managing VEO clients"""
@@ -76,6 +85,8 @@ class VeoClientFactory:
                     model = VeoModel.VEO2
                 elif model_name in ['VEO3', 'VEO30']:
                     model = VeoModel.VEO3
+                elif model_name in ['VEO3FAST', 'VEO3_FAST']:
+                    model = VeoModel.VEO3_FAST
                 else:
                     raise ValueError(f"Unsupported VEO model: {model}")
 
@@ -125,6 +136,21 @@ class VeoClientFactory:
                 gcs_bucket=self.gcs_bucket,
                 output_dir=output_dir
             )
+        elif model == VeoModel.VEO3_FAST:
+            # VEO3-fast is VEO3 without audio
+            try:
+                from src.generators.vertex_veo3_client import VertexAIVeo3Client
+            except ImportError:
+                from generators.vertex_veo3_client import VertexAIVeo3Client
+
+            client = VertexAIVeo3Client(
+                project_id=self.project_id,
+                location=self.location,
+                gcs_bucket=self.gcs_bucket,
+                output_dir=output_dir
+            )
+            # Mark this as VEO3-fast for special handling
+            client.is_veo3_fast = True
         else:
             raise ValueError(f"Unsupported VEO model: {model}")
 
@@ -139,23 +165,47 @@ class VeoClientFactory:
         return self.create_client(model, output_dir)
 
     def get_best_available_client(self, output_dir: str, prefer_veo3: bool = True):
-        """Get the best available VEO client"""
+        """Get the best available VEO client based on configured preference order"""
         try:
-            # CRITICAL: Override prefer_veo3 if VEO3 is disabled or VEO2 is preferred
-            if self.settings.disable_veo3 or self.settings.prefer_veo2_over_veo3:
-                prefer_veo3 = False
-                logger.info("🎯 Forcing VEO2 preference due to configuration")
+            # Parse the model preference order from settings
+            model_order = self.settings.veo_model_preference_order.lower().split(',')
+            model_order = [m.strip() for m in model_order]
             
-            if prefer_veo3 and not self.settings.disable_veo3:
-                veo3_client = self.create_client(VeoModel.VEO3, output_dir)
-                if hasattr(veo3_client, 'is_available') and veo3_client.is_available:
-                    logger.info("🚀 Using VEO-3 (preferred)")
-                    return veo3_client
-
-            veo2_client = self.create_client(VeoModel.VEO2, output_dir)
-            if hasattr(veo2_client, 'is_available') and veo2_client.is_available:
-                logger.info("🎬 Using VEO-2")
-                return veo2_client
+            logger.info(f"🎯 Trying VEO models in order: {model_order}")
+            
+            # Map string names to VeoModel enums
+            model_map = {
+                'veo3-fast': VeoModel.VEO3_FAST,
+                'veo3_fast': VeoModel.VEO3_FAST,
+                'veo3fast': VeoModel.VEO3_FAST,
+                'veo3': VeoModel.VEO3,
+                'veo2': VeoModel.VEO2
+            }
+            
+            # Try each model in the configured order
+            for model_name in model_order:
+                model_enum = model_map.get(model_name)
+                if not model_enum:
+                    logger.warning(f"⚠️ Unknown model in preference order: {model_name}")
+                    continue
+                
+                # Skip VEO3 models if disabled
+                if model_enum in [VeoModel.VEO3, VeoModel.VEO3_FAST] and self.settings.disable_veo3:
+                    logger.debug(f"🚫 Skipping {model_name} - VEO3 is disabled")
+                    continue
+                
+                try:
+                    client = self.create_client(model_enum, output_dir)
+                    if hasattr(client, 'is_available') and client.is_available:
+                        model_info = {
+                            VeoModel.VEO3_FAST: "⚡ Using VEO3-FAST (fastest, cheapest, no audio)",
+                            VeoModel.VEO3: "🚀 Using VEO-3 (with audio support)",
+                            VeoModel.VEO2: "🎬 Using VEO-2"
+                        }
+                        logger.info(model_info.get(model_enum, f"Using {model_name}"))
+                        return client
+                except Exception as e:
+                    logger.debug(f"{model_name} not available: {e}")
 
             logger.warning("❌ No VEO models available")
             return None

@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep2_20250728_080742",
+  "mission": "EPISODE 2: Sequence Dragon Express!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! INSANE Family Guy parody! Dragon conductor's MAGICAL TRAIN is HIJACKED by epsilon-delta BANDITS! Each train car is a sequence term RACING toward limit station while bandits throw MATHEMATICAL OBSTACLES! Dragon must FIGHT OFF convergence villains, blast through epsilon tunnels with FIRE BREATH, and use the SQUEEZE THEOREM as a WEAPON! Include train EXPLOSIONS, ridiculous chase scenes, and the dragon using bounded sequences as SHIELDS! Make students SCREAM with laughter while mastering limits!",
+  "platform": "instagram",
+  "duration_seconds": 35,
+  "created_at": "2025-07-28T08:23:40.577096",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep2_20250728_080742/final_output/final_video_calculus_dragon_ep2_20250728_080742__final.mp4",
+      "file_size_mb": 66.8504695892334
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep2_20250728_080742/final_output/final_video_calculus_dragon_ep2_20250728_080742__audio_only.mp4",
+      "file_size_mb": 54.3106632232666
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep2_20250728_080742/final_output/final_video_calculus_dragon_ep2_20250728_080742__overlays_only.mp4",
+      "file_size_mb": 54.36216926574707
+    }
+  }
+}

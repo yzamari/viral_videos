@@ -1,0 +1,22 @@
+{
+  "total_segments": 23,
+  "total_duration": 41.856,
+  "script_content": "Behold, a baby dragon perched atop an endless staircase! Monotonic means always ascending or always descending. This dragon is never falling. Bounded and monotonic implies convergence. The dragon is trapped, caught in a time loop! Each step in this recursive sequence depends on the previous one. We can determine the limits of these sequences. It mirrors the dragon's journey. The number *e* symbol of natural dragon growth, a key mathematical constant. Observe Cantor's dragon boxes, each smaller than the last. Subsequences are like the dragon's kin, related yet distinct. The Bolzano-Weierstrass theorem assures bounded sequence possesses a convergent subsequence. The dragon always finds its way",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_6.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_7.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_8.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_9.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_10.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_11.mp3",
+    "outputs/calculus_dragon_ep4_20250727_114450/audio/audio_segment_12.mp3"
+  ],
+  "target_duration": 41.856,
+  "capped_to_target": false
+}

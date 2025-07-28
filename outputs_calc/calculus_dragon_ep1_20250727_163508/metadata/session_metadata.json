@@ -1,0 +1,66 @@
+{
+  "session_id": "calculus_dragon_ep1_20250727_163508",
+  "session_dir": "outputs/calculus_dragon_ep1_20250727_163508",
+  "subdirs": {
+    "logs": "outputs/calculus_dragon_ep1_20250727_163508/logs",
+    "scripts": "outputs/calculus_dragon_ep1_20250727_163508/scripts",
+    "audio": "outputs/calculus_dragon_ep1_20250727_163508/audio",
+    "video_clips": "outputs/calculus_dragon_ep1_20250727_163508/video_clips",
+    "images": "outputs/calculus_dragon_ep1_20250727_163508/images",
+    "ai_agents": "outputs/calculus_dragon_ep1_20250727_163508/ai_agents",
+    "discussions": "outputs/calculus_dragon_ep1_20250727_163508/discussions",
+    "final_output": "outputs/calculus_dragon_ep1_20250727_163508/final_output",
+    "metadata": "outputs/calculus_dragon_ep1_20250727_163508/metadata",
+    "comprehensive_logs": "outputs/calculus_dragon_ep1_20250727_163508/comprehensive_logs",
+    "temp_files": "outputs/calculus_dragon_ep1_20250727_163508/temp_files",
+    "fallback_content": "outputs/calculus_dragon_ep1_20250727_163508/fallback_content",
+    "debug_info": "outputs/calculus_dragon_ep1_20250727_163508/debug_info",
+    "performance_metrics": "outputs/calculus_dragon_ep1_20250727_163508/performance_metrics",
+    "user_configs": "outputs/calculus_dragon_ep1_20250727_163508/user_configs",
+    "error_logs": "outputs/calculus_dragon_ep1_20250727_163508/error_logs",
+    "success_metrics": "outputs/calculus_dragon_ep1_20250727_163508/success_metrics",
+    "decisions": "outputs/calculus_dragon_ep1_20250727_163508/decisions",
+    "subtitles": "outputs/calculus_dragon_ep1_20250727_163508/subtitles",
+    "overlays": "outputs/calculus_dragon_ep1_20250727_163508/overlays",
+    "agent_discussions": "outputs/calculus_dragon_ep1_20250727_163508/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-27T16:36:54.606096",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Family Guy cutaway: Baby dragon in magical number land! 'Hey kids, I'm Epsilon the Dragon! Let's explore NUMBER SETS!' POOF! Natural numbers 1,2,3 appear as counting cookies. 'These are for counting dragon treats!' But wait - Zero appears! 'I'm special!' Then negative numbers show up as ice cubes: -1,-2,-3. 'Together we're INTEGERS!' WHOOSH! Fractions fly in as pizza slices: 1/2, 3/4. 'We're RATIONAL numbers - any fraction!' Suddenly, \u221a2 appears as an infinite spiral dragon. 'I'm IRRATIONAL - my decimal never repeats!' Pi flies by leaving infinite trail. Together they form the REAL NUMBER LINE - a beautiful rainbow path! 'ABSOLUTE VALUE |x| measures distance from zero - like dragon hugs, always positive!' Example: |-5| = 5. INTERVALS are dragon territories: [1,3] includes endpoints, (1,3) doesn't! BOUNDED sets have limits - like dragon playpen with walls. SUPREMUM is the smallest upper bound - the ceiling dragons can't pass! Epsilon chicks demonstrate: 'For any \u03b5>0, we can get closer than \u03b5 to any real number!'",
+        "platform": "instagram",
+        "duration": 63
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

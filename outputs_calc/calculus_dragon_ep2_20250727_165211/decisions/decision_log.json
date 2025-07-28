@@ -1,0 +1,236 @@
+{
+  "duration_seconds": {
+    "key": "duration_seconds",
+    "value": 63,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-27T16:52:20.783742"
+  },
+  "platform": {
+    "key": "platform",
+    "value": "instagram",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Platform: instagram",
+    "timestamp": "2025-07-27T16:52:20.783891"
+  },
+  "category": {
+    "key": "category",
+    "value": "Educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Category: Educational",
+    "timestamp": "2025-07-27T16:52:20.784023"
+  },
+  "category_string": {
+    "key": "category_string",
+    "value": "Educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original category string: Educational",
+    "timestamp": "2025-07-27T16:52:20.784142"
+  },
+  "target_audience": {
+    "key": "target_audience",
+    "value": "general audience",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Target audience: general audience",
+    "timestamp": "2025-07-27T16:52:20.784263"
+  },
+  "language": {
+    "key": "language",
+    "value": "en-US",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Primary language from CLI: en-US",
+    "timestamp": "2025-07-27T16:52:20.784390"
+  },
+  "all_languages": {
+    "key": "all_languages",
+    "value": [
+      "en-US"
+    ],
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "All languages: en-US",
+    "timestamp": "2025-07-27T16:52:20.784506"
+  },
+  "style": {
+    "key": "style",
+    "value": "educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-27T16:52:20.784629"
+  },
+  "style_string": {
+    "key": "style_string",
+    "value": "educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original style string: educational",
+    "timestamp": "2025-07-27T16:52:20.784755"
+  },
+  "tone": {
+    "key": "tone",
+    "value": "funny",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Tone: funny",
+    "timestamp": "2025-07-27T16:52:20.784868"
+  },
+  "tone_string": {
+    "key": "tone_string",
+    "value": "funny",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original tone string: funny",
+    "timestamp": "2025-07-27T16:52:20.784976"
+  },
+  "visual_style": {
+    "key": "visual_style",
+    "value": "family guy animation",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Visual style: family guy animation",
+    "timestamp": "2025-07-27T16:52:20.785085"
+  },
+  "visual_style_string": {
+    "key": "visual_style_string",
+    "value": "family guy animation",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original visual style string: family guy animation",
+    "timestamp": "2025-07-27T16:52:20.785191"
+  },
+  "theme_id": {
+    "key": "theme_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No theme specified",
+    "timestamp": "2025-07-27T16:52:20.785301"
+  },
+  "style_reference_id": {
+    "key": "style_reference_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No style reference specified",
+    "timestamp": "2025-07-27T16:52:20.785410"
+  },
+  "character_id": {
+    "key": "character_id",
+    "value": "Baby dragon with big cute eyes, chubby cheeks, tiny wings, purple scales, wearing tiny glasses, Family Guy animation style, holding a tiny calculus book",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character specified by user: Baby dragon with big cute eyes, chubby cheeks, tiny wings, purple scales, wearing tiny glasses, Family Guy animation style, holding a tiny calculus book",
+    "timestamp": "2025-07-27T16:52:20.785538"
+  },
+  "character_scene": {
+    "key": "character_scene",
+    "value": "Animated classroom with chalkboard, Family Guy style, colorful math symbols floating around, epsilon chicks (\u03b5) thinking in the background",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character scene: Animated classroom with chalkboard, Family Guy style, colorful math symbols floating around, epsilon chicks (\u03b5) thinking in the background",
+    "timestamp": "2025-07-27T16:52:20.785646"
+  },
+  "frame_continuity": {
+    "key": "frame_continuity",
+    "value": true,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.95,
+    "reasoning": "AI decision: 63s duration on instagram - continuity preferred for quality",
+    "timestamp": "2025-07-27T16:52:32.185473"
+  },
+  "continuous_generation": {
+    "key": "continuous_generation",
+    "value": true,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified continuous: True",
+    "timestamp": "2025-07-27T16:52:32.185798"
+  },
+  "mode": {
+    "key": "mode",
+    "value": "enhanced",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mode: enhanced",
+    "timestamp": "2025-07-27T16:52:32.186063"
+  },
+  "cheap_mode": {
+    "key": "cheap_mode",
+    "value": false,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode: False",
+    "timestamp": "2025-07-27T16:52:32.186330"
+  },
+  "cheap_mode_level": {
+    "key": "cheap_mode_level",
+    "value": "full",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode level: full",
+    "timestamp": "2025-07-27T16:52:32.186590"
+  },
+  "mission": {
+    "key": "mission",
+    "value": "Family Guy style: Baby dragon conductor on magical number train! 'All aboard the SEQUENCE EXPRESS!' Each train car shows a term: a\u2081=1, a\u2082=1/2, a\u2083=1/3... CHOO CHOO! 'Watch the pattern - each term follows a rule!' The train heads toward LIMIT STATION at L=0. 'CONVERGENCE means we get closer and closer to L!' Dragon demonstrates: 'Pick ANY tiny distance \u03b5>0.' Magic epsilon tunnel appears! 'After some point N, ALL terms stay within \u03b5 of L!' Shows |a\u2099-L|<\u03b5 visually. 'The UNIQUE LIMIT THEOREM says only ONE destination possible!' Two tracks can't lead to different stations! BOUNDED sequences have safety rails - can't go to infinity. 'If -M \u2264 a\u2099 \u2264 M for all n, we're bounded!' ARITHMETIC OF LIMITS: Two trains approaching L and M. 'Their sum approaches L+M!' Product approaches L\u00d7M! Dragon makes sequence sandwich: If a\u2099 \u2264 b\u2099 \u2264 c\u2099 and outer sequences \u2192 L, then b\u2099 \u2192 L too! 'SQUEEZE THEOREM!' Epsilon chicks line up showing 1, 1/2, 1/3, 1/4... converging to 0!",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mission: Family Guy style: Baby dragon conductor on magical...",
+    "timestamp": "2025-07-27T16:52:32.186829"
+  },
+  "hook": {
+    "key": "hook",
+    "value": "Amazing content ahead!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated hook",
+    "timestamp": "2025-07-27T16:52:32.187237"
+  },
+  "call_to_action": {
+    "key": "call_to_action",
+    "value": "Follow for more!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated CTA",
+    "timestamp": "2025-07-27T16:52:32.187466"
+  },
+  "voice_strategy": {
+    "key": "voice_strategy",
+    "value": "variety",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: 63s duration",
+    "timestamp": "2025-07-27T16:52:32.187676"
+  },
+  "color_palette": {
+    "key": "color_palette",
+    "value": "family guy animation palette",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 0.5,
+    "reasoning": "Style-based fallback",
+    "timestamp": "2025-07-27T16:52:32.187884"
+  },
+  "background_music_style": {
+    "key": "background_music_style",
+    "value": "ambient",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: educational style, funny tone",
+    "timestamp": "2025-07-27T16:52:32.188087"
+  },
+  "num_clips": {
+    "key": "num_clips",
+    "value": 8,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.9,
+    "reasoning": "Two clips allow for a clear visual introduction and a more detailed explanation without overwhelming the audience within the 63-second limit.  One clip focuses on the visual introduction and the other on the core concept. [ADJUSTED: Enforced 8-second maximum clip duration constraint - increased from 2 to 8 clips]",
+    "timestamp": "2025-07-27T16:52:55.428932"
+  }
+}

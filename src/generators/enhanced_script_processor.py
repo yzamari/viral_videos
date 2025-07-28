@@ -45,6 +45,10 @@ class EnhancedScriptProcessor:
         from ..config import video_config
         self.min_segment_duration = video_config.audio.min_segment_duration
         self.max_segment_duration = video_config.audio.max_segment_duration
+        
+        # Initialize AI Content Analyzer for intelligent analysis
+        from .ai_content_analyzer import AIContentAnalyzer
+        self.content_analyzer = AIContentAnalyzer(api_key or "dummy")
 
         # TTS optimization rules by language
         self.language_rules = {
@@ -119,7 +123,16 @@ class EnhancedScriptProcessor:
             logger.info(f"📝 Processing script for TTS optimization ({language_value})")
             
             # Clean visual descriptions first
+            original_length = len(script_content)
             script_content = self._clean_visual_descriptions(script_content)
+            cleaned_length = len(script_content)
+            
+            if cleaned_length < original_length / 2:
+                logger.warning(f"⚠️ Script significantly reduced: {original_length} → {cleaned_length} chars")
+                logger.warning(f"⚠️ Cleaned script preview: {script_content[:200]}...")
+            else:
+                logger.info(f"✅ Script cleaned: {original_length} → {cleaned_length} chars")
+            
             if target_duration:
                 logger.info(f"🎯 Target duration: {target_duration} seconds")
 
@@ -143,6 +156,14 @@ TARGET DURATION: {target_duration} seconds (STRICT LIMIT - DO NOT EXCEED!)
 TARGET SEGMENTS: {target_segment_count if target_segment_count else 'Auto (1 sentence per segment)'}
 
 TASK: Optimize this script to FIT EXACTLY {target_duration} seconds - no more, no less.
+
+IMPORTANT: The script may contain tagged content in the format:
+[VISUAL: visual description] DIALOGUE: spoken text
+
+If you see this format:
+- ONLY include the DIALOGUE: portions in the processed script
+- COMPLETELY IGNORE anything marked with [VISUAL:]
+- Visual descriptions should NEVER be in the audio
 
 REQUIREMENTS:
 1. DURATION CONTROL: Target is EXACTLY {target_duration}s - aim for {int(tts_config.get_target_word_range(target_duration)[0])} to {int(tts_config.get_target_word_range(target_duration)[1])} words MAXIMUM
@@ -379,8 +400,11 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                     "voice_suggestion": None  # Will be determined by AI
                 })
             
-            # Apply minimum segment duration thresholds
-            segments = self._apply_minimum_segment_durations(segments)
+            # Apply minimum segment duration thresholds only if not using one sentence per segment
+            if not video_config.audio.one_sentence_per_segment:
+                segments = self._apply_minimum_segment_durations(segments)
+            else:
+                logger.info("📝 One sentence per segment mode - NOT merging segments")
             
             # Handle sound effects intelligently
             segments = self._handle_sound_effects_in_segments(segments)
@@ -485,8 +509,11 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 })
                 total_words += sentence_words
             
-            # Apply minimum segment duration thresholds
-            segments = self._apply_minimum_segment_durations(segments)
+            # Apply minimum segment duration thresholds only if not using one sentence per segment
+            if not video_config.audio.one_sentence_per_segment:
+                segments = self._apply_minimum_segment_durations(segments)
+            else:
+                logger.info("📝 One sentence per segment mode - NOT merging segments")
             
             # Handle sound effects intelligently
             segments = self._handle_sound_effects_in_segments(segments)
@@ -864,7 +891,7 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
         return script
 
     def _clean_visual_descriptions(self, text: str) -> str:
-        """Remove visual descriptions and stage directions from script text.
+        """Remove visual descriptions and stage directions from script text using AI analysis.
         
         Args:
             text: Raw script text that may contain visual descriptions
@@ -872,6 +899,68 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
         Returns:
             Cleaned text suitable for TTS
         """
+        # Handle new tagging format: [VISUAL: description] DIALOGUE: spoken text
+        if '[VISUAL:' in text and 'DIALOGUE:' in text:
+            # Extract only the DIALOGUE parts
+            dialogue_parts = []
+            segments = text.split('DIALOGUE:')
+            for segment in segments[1:]:  # Skip first part before any DIALOGUE:
+                # Find the next [VISUAL: or end of segment
+                visual_start = segment.find('[VISUAL:')
+                if visual_start > 0:
+                    dialogue_text = segment[:visual_start].strip()
+                else:
+                    dialogue_text = segment.strip()
+                if dialogue_text:
+                    dialogue_parts.append(dialogue_text)
+            
+            # If we extracted dialogue, check if it's reasonable
+            if dialogue_parts:
+                cleaned_dialogue = ' '.join(dialogue_parts)
+                original_length = len(text)
+                cleaned_length = len(cleaned_dialogue)
+                reduction_ratio = cleaned_length / original_length
+                
+                # Log if reduction seems aggressive but NEVER include visual descriptions in audio
+                if reduction_ratio < 0.3:
+                    logger.info(f"📝 Dialogue extraction: {original_length} → {cleaned_length} chars ({reduction_ratio:.1%})")
+                    logger.info("✅ Using pure dialogue only (visual descriptions excluded from audio)")
+                
+                logger.info(f"✅ Extracted {len(dialogue_parts)} dialogue segments from tagged script")
+                return cleaned_dialogue
+        
+        # CRITICAL FIX: For plain narrative text (like Hebrew missions), don't over-clean
+        # Check if text appears to be a narrative mission rather than structured script
+        if not ('[' in text or 'VISUAL:' in text or 'DIALOGUE:' in text):
+            # This is likely a narrative mission text - minimal cleaning only
+            logger.info("📝 Processing narrative text with minimal cleaning")
+            # Only remove obvious stage directions in parentheses/brackets
+            cleaned_text = re.sub(r'\([^)]*\)', '', text)  # Remove (stage directions)
+            cleaned_text = re.sub(r'\[[^\]]*\]', '', cleaned_text)  # Remove [visual descriptions]
+            cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()  # Normalize whitespace
+            
+            # If cleaning didn't reduce content significantly, use it
+            if len(cleaned_text) > len(text) * 0.7:  # Keep if >70% of original remains
+                logger.info(f"✅ Minimal cleaning preserved narrative content: {len(text)} → {len(cleaned_text)} chars")
+                return cleaned_text
+        
+        # ONLY use AI Content Analyzer if no tags are present
+        # This prevents the AI from incorrectly removing tagged dialogue
+        try:
+            logger.info("📝 No tags found, using AI Content Analyzer for visual element separation")
+            visual_analysis = self.content_analyzer.analyze_visual_elements(text)
+            
+            # If AI successfully separated visual from dialogue
+            if visual_analysis and 'dialogue' in visual_analysis:
+                dialogue_elements = visual_analysis['dialogue']
+                if dialogue_elements:
+                    cleaned_text = ' '.join(dialogue_elements)
+                    logger.info(f"🤖 AI separated {len(visual_analysis.get('visual', []))} visual elements from dialogue")
+                    return cleaned_text
+        except Exception as e:
+            logger.warning(f"AI visual analysis failed, using fallback: {e}")
+        
+        # Fallback to basic cleaning for backward compatibility
         # Remove content in brackets [visual description]
         text = re.sub(r'\[.*?\]', '', text)
         
@@ -881,20 +970,11 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
         # Remove lines starting with Scene:, Visual:, SCENE:, VISUAL:
         text = re.sub(r'^(Scene|Visual|SCENE|VISUAL):.*$', '', text, flags=re.MULTILINE)
         
-        # Remove lines that are obviously visual descriptions
-        lines = text.split('\n')
-        cleaned_lines = []
-        for line in lines:
-            # Skip lines that describe visual elements
-            if not any(keyword in line.lower() for keyword in 
-                      ['panel:', 'shot:', 'cut to:', 'fade:', 'zoom:', 'camera:', 
-                       'establishing shot', 'close-up', 'wide shot', 'montage']):
-                cleaned_lines.append(line)
-        
-        text = '\n'.join(cleaned_lines)
-        
-        # Clean up extra whitespace
-        text = re.sub(r'\s+', ' ', text).strip()
+        # Clean up extra whitespace and multiple punctuation
+        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r'[.!?]+', '.', text)  # Normalize multiple punctuation
+        text = re.sub(r'\s+([.!?,])', r'\1', text)  # Remove space before punctuation
+        text = text.strip()
         
         return text
 

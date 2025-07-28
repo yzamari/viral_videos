@@ -174,6 +174,15 @@ class GeneratedVideoConfig:
     # NEW: Subtitle overlay settings
     use_subtitle_overlays: bool = True  # Use audio-based subtitle overlays instead of generic text overlays
 
+    # NEW: Business information overlay
+    business_name: Optional[str] = None
+    business_address: Optional[str] = None
+    business_phone: Optional[str] = None
+    business_website: Optional[str] = None
+    business_facebook: Optional[str] = None
+    business_instagram: Optional[str] = None
+    show_business_info: bool = True  # Whether to display business info overlay
+
     # Generation mode settings
     image_only_mode: bool = False
     fallback_only: bool = False

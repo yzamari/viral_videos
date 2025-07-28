@@ -1,0 +1,235 @@
+{
+  "hashtags": [
+    {
+      "tag": "#DavidBenGurion",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Directly names the main character and historical figure, crucial for search.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MarvelComics",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Connects the content to the popular Marvel universe, increasing discoverability.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#SuperheroHistory",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Blends historical context with the superhero theme.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ComicBookArt",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Highlights the visual style and artistic element of the content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#IsraeliHistory",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Targets audiences interested in Israeli history and culture.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#Inevitable",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "References the popular Thanos quote, a strong cultural touchstone.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#ThanosSnap",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Directly references the iconic Marvel moment that inspired the content.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#MarvelMeme",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Positions the content as humorous and shareable within meme culture.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#PopCultureMashup",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the unique combination of historical and fictional elements.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#WhatIfMarvel",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Invites speculation and alternative universe thinking, a popular Marvel fan concept.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#SuperheroYoga",
+      "category": "trending",
+      "estimated_reach": "low",
+      "reasoning": "Unique and quirky, referencing a specific unusual element in the script.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#DesertPower",
+      "category": "trending",
+      "estimated_reach": "low",
+      "reasoning": "Evocative of the desert setting and the character's strength.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#ComicExplosion",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Captures the visual impact and action of comic books.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#HistoryBuff",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets individuals with a specific interest in history.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#IsraeliCulture",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Connects with a demographic interested in Israeli culture and heritage.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#SuperpowerNation",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Suggests a powerful and imaginative interpretation of national identity.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#HistoricalFigures",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Broadens the historical appeal beyond just Ben-Gurion.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MythologyMonday",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "If posted on a Monday, capitalizes on a popular content theme for ancient or powerful figures.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#KibbutzLife",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Specific to the Israeli context and a key element of the historical narrative.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#VintageComics",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Appeals to collectors and fans of older comic book aesthetics.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#ArtOfInstagram",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General art tag for visual discoverability.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#InstaGood",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Popular, broad tag for general visibility.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#PhotoOfTheDay",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Classic broad tag for daily reach.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Discover",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Encourages exploration and discovery by users.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ForYouPage",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Aims to get content featured on the user's personalized feed.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ShareYourThoughts",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Directly asks for audience interaction and opinions.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Prompts discussion and comment engagement.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#TagAFriend",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Encourages virality through sharing and peer-to-peer engagement.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ComicFansUnite",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Builds community among comic book enthusiasts.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#HistoryMeetsFantasy",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Invites audience participation in exploring the intersection of genres.",
+      "trend_score": 0.7
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "Instagram",
+    "trend_analysis": "Leveraged current Marvel Cinematic Universe popularity, specific iconic Marvel quotes like 'I am inevitable' and Thanos's snap, and general meme culture. Also incorporated historical and Israeli cultural trends for niche audience reach. The 'What If' Marvel trend is particularly relevant for alternate history scenarios.",
+    "engagement_strategy": "Employs direct calls-to-action like 'ShareYourThoughts', 'WhatDoYouThink', and 'TagAFriend' to encourage comments and shares. Community-building tags like 'ComicFansUnite' and 'HistoryMeetsFantasy' foster interaction and create a sense of belonging."
+  },
+  "usage_tips": [
+    "Mix and match hashtag categories for optimal reach. Aim for a combination of high, medium, and low reach hashtags.",
+    "Place the most important and specific hashtags first.",
+    "Consider the visual aspect of your post; ensure the hashtags align with the imagery.",
+    "Monitor the performance of your hashtags and adjust your strategy based on what drives engagement and reach.",
+    "For Instagram Stories, use fewer but more targeted hashtags, or place them in a smaller font or behind an emoji to avoid clutter."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-27T23:53:59.286758",
+    "topic": "Marvel Comics explosion! David Ben-Gurion with iconic white Einstein hair bursts from desert sands. 'I am INEVITABLE!' SNAP! British Mandate vanishes in comic smoke. Declaration of Independence with exploding panels. KA-POW! Yoga headstands during cabinet meetings. Building kibbutzim with energy effects. Desert retirement. 'Ben-Gurion will return!' Israeli flag in top-left corner.",
+    "platform": "instagram",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

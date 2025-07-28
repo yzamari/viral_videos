@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 4,
+  "hook_text": "Baby dragon with rocket pack: \"Let us explore crazy limits!",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "The prompt's playful and imaginative concepts like 'baby dragon with rocket pack,' 'shrinking spell,' and 'epsilon chicks' lend themselves perfectly to a vibrant, engaging cartoon style. This style is highly accessible and appealing to a general audience on Instagram, allowing for clear visual representation of abstract mathematical ideas in a fun, memorable way.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "The text content is extensive and covers multiple points related to mathematical concepts. Placing it at the bottom center allows for a good balance with the cartoon visuals, especially for a platform like Instagram where content is often viewed on mobile. It avoids the bottom 20% rule for Instagram, while keeping the text accessible and readable. Static positioning is suitable as the phrases are meant to complement the visuals throughout the duration, rather than requiring specific dynamic placement for each phrase.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/calculus_dragon_ep3_20250727_112504/temp_files/base_video.mp4 -vf drawtext=text='Magic Stab \u2728':fontcolor=#C44569:fontsize=38:font='Georgia-Bold':box=1:boxcolor=#000000@0.0:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,7.2\\,10.0),drawtext=text='Compare \ud83d\udc40':fontcolor=#96CEB4:fontsize=35:font='Trebuchet-Bold':box=1:boxcolor=#000000@0.0:boxborderw=1.5:x=(w-text_w)/2:y=1152:enable=between(t\\,17.0\\,19.5),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,51.816\\,53.216),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,53.316\\,54.716) -c:a copy -y outputs/calculus_dragon_ep3_20250727_112504/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='Magic Stab \u2728':fontcolor=#C44569:fontsize=38:font='Georgia-Bold':box=1:boxcolor=#000000@0.0:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,7.2\\,10.0),drawtext=text='Compare \ud83d\udc40':fontcolor=#96CEB4:fontsize=35:font='Trebuchet-Bold':box=1:boxcolor=#000000@0.0:boxborderw=1.5:x=(w-text_w)/2:y=1152:enable=between(t\\,17.0\\,19.5),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,51.816\\,53.216),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00CC@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,53.316\\,54.716)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 57.816,
+    "overlay_count": 4
+  }
+}

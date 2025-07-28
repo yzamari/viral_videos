@@ -1,0 +1,128 @@
+1
+00:00:00,000 --> 00:00:02,847
+Hey kids, I am Epsilon the Dragon!
+
+2
+00:00:02,847 --> 00:00:04,396
+Let us explore number sets.
+
+3
+00:00:04,396 --> 00:00:04,705
+POOF!
+
+4
+00:00:04,705 --> 00:00:05,015
+Natural
+
+5
+00:00:05,015 --> 00:00:05,825
+numbers, one, two, three, appear as
+counting
+
+6
+00:00:05,825 --> 00:00:09,034
+cookies for my dragon treats!
+
+7
+00:00:09,034 --> 00:00:10,318
+But wait,
+
+8
+00:00:10,318 --> 00:00:12,445
+zero appears - I am special!
+
+9
+00:00:12,445 --> 00:00:12,799
+Negative
+
+10
+00:00:12,799 --> 00:00:17,319
+numbers arrive as ice one, minus two,
+
+11
+00:00:17,319 --> 00:00:17,990
+minus three.
+
+12
+00:00:17,990 --> 00:00:19,334
+Together, we are integers!
+
+13
+00:00:19,334 --> 00:00:19,670
+WHOOSH!
+
+14
+00:00:19,670 --> 00:00:20,871
+Fractions fly in as pizza ,
+three-quarters.
+
+15
+00:00:20,871 --> 00:00:23,954
+We are rational numbers - any fraction!
+
+16
+00:00:23,954 --> 00:00:26,514
+The square root of two appears as
+
+17
+00:00:26,514 --> 00:00:28,589
+an infinite spiral dragon.
+
+18
+00:00:28,589 --> 00:00:30,145
+I am irrational
+
+19
+00:00:30,145 --> 00:00:32,403
+- my decimal never repeats!
+
+20
+00:00:32,403 --> 00:00:33,306
+Pi flies
+
+21
+00:00:33,306 --> 00:00:35,153
+by, leaving an infinite trail.
+
+22
+00:00:35,153 --> 00:00:35,892
+They form
+
+23
+00:00:35,892 --> 00:00:37,146
+the real number line.
+
+24
+00:00:37,146 --> 00:00:38,086
+Absolute value measures
+
+25
+00:00:38,086 --> 00:00:43,572
+distance from zero, like dragon hugs,
+always
+
+26
+00:00:43,572 --> 00:00:44,173
+positive!
+
+27
+00:00:44,173 --> 00:00:47,777
+Intervals are dragon territories - some
+
+28
+00:00:47,777 --> 00:00:49,849
+include endpoints, others do not.
+
+29
+00:00:49,849 --> 00:00:50,677
+Bounded sets
+
+30
+00:00:50,677 --> 00:00:52,027
+have limits, like a dragon playpen.
+
+31
+00:00:52,027 --> 00:00:54,726
+For any epsilon greater than zero, we can
+get closer than epsilon
+

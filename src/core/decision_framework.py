@@ -268,23 +268,48 @@ class DecisionFramework:
         return self.core_decisions
     
     def _decide_duration(self, cli_args: Dict[str, Any], user_config: Dict[str, Any]) -> int:
-        """Decide video duration"""
+        """Decide video duration with 8-second clip constraint"""
+        # Get base duration request
+        requested_duration = None
+        
         # CLI takes absolute priority
         if cli_args.get('duration'):
-            duration = int(cli_args['duration'])
-            self._record_decision('duration_seconds', duration, DecisionSource.USER_CLI, 1.0, "User specified via CLI")
-            return duration
-        
+            requested_duration = int(cli_args['duration'])
+            source = DecisionSource.USER_CLI
+            source_desc = "User specified via CLI"
         # User config second priority
-        if user_config and user_config.get('duration_seconds'):
-            duration = int(user_config['duration_seconds'])
-            self._record_decision('duration_seconds', duration, DecisionSource.USER_CONFIG, 0.9, "User specified in config")
-            return duration
-        
+        elif user_config and user_config.get('duration_seconds'):
+            requested_duration = int(user_config['duration_seconds'])
+            source = DecisionSource.USER_CONFIG
+            source_desc = "User specified in config"
         # System default
-        duration = 20
-        self._record_decision('duration_seconds', duration, DecisionSource.SYSTEM_DEFAULT, 0.5, "System default")
-        return duration
+        else:
+            requested_duration = 20
+            source = DecisionSource.SYSTEM_DEFAULT
+            source_desc = "System default"
+        
+        # Apply 8-second clip constraint: duration must be multiple of 8
+        # Plus 1.5 seconds for fadeout
+        CLIP_DURATION = 8
+        FADEOUT_DURATION = 1.5
+        
+        # Calculate number of clips needed - use ceiling to ensure we have enough clips
+        import math
+        num_clips = max(1, math.ceil(requested_duration / CLIP_DURATION))
+        actual_content_duration = num_clips * CLIP_DURATION
+        total_duration = actual_content_duration + FADEOUT_DURATION
+        
+        logger.info(f"📏 Duration calculation:")
+        logger.info(f"   Requested: {requested_duration}s")
+        logger.info(f"   Clips: {num_clips} x {CLIP_DURATION}s = {actual_content_duration}s")
+        logger.info(f"   Fadeout: {FADEOUT_DURATION}s")
+        logger.info(f"   Total: {total_duration}s")
+        
+        # Record the actual content duration (without fadeout)
+        self._record_decision('duration_seconds', actual_content_duration, source, 1.0, 
+                            f"{source_desc} - Adjusted to {num_clips} x {CLIP_DURATION}s clips")
+        
+        return actual_content_duration
     
     def _decide_platform(self, cli_args: Dict[str, Any], user_config: Dict[str, Any]) -> Platform:
         """Decide target platform"""
@@ -627,13 +652,20 @@ class DecisionFramework:
     async def _ai_optimize_clip_structure(self, duration: int, voice_strategy: str) -> Dict[str, Any]:
         """AI-driven clip structure optimization using Mission Planning Agent"""
         # CRITICAL: Pre-calculate clip constraints BEFORE AI optimization
-        MAX_CLIP_DURATION = 8.0
-        min_clips_needed = max(1, int(np.ceil(duration / MAX_CLIP_DURATION)))
+        # Force 8-second clips as per user requirement
+        import math
+        CLIP_DURATION = 8.0
+        num_clips = max(1, math.ceil(duration / CLIP_DURATION))
+        
+        # Ensure duration is exactly multiple of 8
+        if duration != num_clips * CLIP_DURATION:
+            logger.warning(f"⚠️ Duration {duration}s is not multiple of 8. Adjusting to {num_clips * CLIP_DURATION}s")
+            duration = int(num_clips * CLIP_DURATION)
         
         logger.info(f"📏 Pre-calculating clip constraints:")
         logger.info(f"   Total duration: {duration}s")
-        logger.info(f"   Max clip duration: {MAX_CLIP_DURATION}s")
-        logger.info(f"   Minimum clips required: {min_clips_needed}")
+        logger.info(f"   Clip duration: {CLIP_DURATION}s")
+        logger.info(f"   Number of clips: {num_clips}")
         
         try:
             # Use Mission Planning Agent if available
@@ -655,14 +687,15 @@ class DecisionFramework:
                     platform=platform_enum,
                     category=category_enum,
                     target_audience="general audience",
-                    min_clips=min_clips_needed  # Pass constraint to agent
+                    min_clips=num_clips  # Pass constraint to agent
                 )
                 
                 # Get clip recommendations from mission plan
                 clip_recommendation = self.mission_planning_agent.get_clip_recommendation(mission_plan)
                 
-                # CRITICAL: Validate and enforce 8-second maximum clip duration constraint
-                clip_recommendation = self._enforce_max_clip_duration(clip_recommendation, duration)
+                # Force 8-second clips
+                clip_recommendation['num_clips'] = num_clips
+                clip_recommendation['clip_durations'] = [CLIP_DURATION] * num_clips
                 
                 logger.info(f"🎯 Mission-Based Clip Structure:")
                 logger.info(f"   Mission Type: {mission_plan.mission_type.value}")
@@ -680,9 +713,10 @@ class DecisionFramework:
             
             # Fallback to basic AI optimization if Mission Planning Agent not available
             logger.info("🤖 Using basic AI optimization (Mission Planning Agent not available)")
-            clip_recommendation = self._basic_ai_optimize_clip_structure(duration, voice_strategy, min_clips_needed)
-            # CRITICAL: Validate and enforce 8-second maximum clip duration constraint
-            clip_recommendation = self._enforce_max_clip_duration(clip_recommendation, duration)
+            clip_recommendation = self._basic_ai_optimize_clip_structure(duration, voice_strategy, num_clips)
+            # Force 8-second clips
+            clip_recommendation['num_clips'] = num_clips
+            clip_recommendation['clip_durations'] = [CLIP_DURATION] * num_clips
             return clip_recommendation
             
         except Exception as e:
@@ -690,14 +724,16 @@ class DecisionFramework:
             logger.info("📋 Falling back to heuristic-based optimization")
         
         # Fallback to smart heuristic-based optimization
-        clip_recommendation = self._heuristic_optimize_clip_structure(duration, voice_strategy, min_clips_needed)
-        # CRITICAL: Validate and enforce 8-second maximum clip duration constraint
-        clip_recommendation = self._enforce_max_clip_duration(clip_recommendation, duration)
+        clip_recommendation = self._heuristic_optimize_clip_structure(duration, voice_strategy, num_clips)
+        # Force 8-second clips
+        clip_recommendation['num_clips'] = num_clips
+        clip_recommendation['clip_durations'] = [CLIP_DURATION] * num_clips
         return clip_recommendation
     
     def _enforce_max_clip_duration(self, clip_recommendation: Dict[str, Any], total_duration: int) -> Dict[str, Any]:
-        """Enforce the 8-second maximum clip duration constraint for VEO generation"""
-        MAX_CLIP_DURATION = 8.0
+        """Enforce the clip duration constraint for VEO generation"""
+        # Force 8-second clips as per requirement
+        CLIP_DURATION = 8.0
         
         original_clips = clip_recommendation['num_clips']
         original_durations = clip_recommendation['clip_durations']
@@ -730,7 +766,7 @@ class DecisionFramework:
             
             # Update reasoning
             original_reasoning = clip_recommendation.get('reasoning', '')
-            clip_recommendation['reasoning'] = f"{original_reasoning} [ADJUSTED: Enforced 8-second maximum clip duration constraint - increased from {original_clips} to {new_num_clips} clips]"
+            clip_recommendation['reasoning'] = f"{original_reasoning} [ADJUSTED: Enforced 5-second maximum clip duration constraint - increased from {original_clips} to {new_num_clips} clips]"
             
             # Adjust scores for the constraint enforcement
             if new_num_clips > original_clips:
@@ -749,41 +785,16 @@ class DecisionFramework:
         
         return clip_recommendation
     
-    def _heuristic_optimize_clip_structure(self, duration: int, voice_strategy: str, min_clips_needed: int = 1) -> Dict[str, Any]:
-        """Heuristic-based clip structure optimization"""
+    def _heuristic_optimize_clip_structure(self, duration: int, voice_strategy: str, num_clips: int = 1) -> Dict[str, Any]:
+        """Heuristic-based clip structure optimization with fixed 8-second clips"""
         
-        # Smart heuristic rules for optimal clip structure
-        if duration <= 10:
-            # Very short videos: 2 clips for cost efficiency
-            num_clips = max(2, min_clips_needed)
-            reasoning = f"Short {duration}s video: {num_clips} clips for cost efficiency while maintaining quality"
-        elif duration <= 20:
-            # Short-medium videos: optimize based on content flow
-            if voice_strategy == "variety":
-                num_clips = max(3, min_clips_needed)  # More clips for voice variety
-                reasoning = f"Medium {duration}s video with variety voice: {num_clips} clips for voice transitions"
-            else:
-                num_clips = max(2, min_clips_needed)  # Fewer clips for single voice
-                reasoning = f"Medium {duration}s video with single voice: {num_clips} clips for cost efficiency"
-        elif duration <= 40:
-            # Medium videos: balance content flow and cost
-            if voice_strategy == "variety":
-                num_clips = max(4, min_clips_needed)  # More clips for voice variety
-                reasoning = f"Long {duration}s video with variety voice: {num_clips} clips for optimal pacing"
-            else:
-                num_clips = max(3, min_clips_needed)  # Moderate clips for single voice
-                reasoning = f"Long {duration}s video with single voice: {num_clips} clips for balanced content flow"
-        else:
-            # Long videos: more clips for better pacing
-            num_clips = max(5, min_clips_needed)  # Maximum clips for long content
-            reasoning = f"Very long {duration}s video: {num_clips} clips for optimal pacing and engagement"
+        # We're using fixed 8-second clips
+        CLIP_DURATION = 8.0
         
-        # Add note if min_clips_needed constraint was applied
-        if num_clips == min_clips_needed and num_clips > 2:
-            reasoning += f" (adjusted to meet 8-second clip duration limit)"
+        reasoning = f"Using {num_clips} fixed {CLIP_DURATION}-second clips for {duration}s video"
         
-        # Calculate clip durations
-        clip_durations = [duration / num_clips] * num_clips
+        # Calculate clip durations (all 8 seconds)
+        clip_durations = [CLIP_DURATION] * num_clips
         
         # Calculate heuristic scores
         cost_efficiency_score = max(0, 1 - (num_clips - 2) * 0.2)  # Fewer clips = higher score
@@ -957,7 +968,7 @@ class DecisionFramework:
         except Exception as e:
             logger.error(f"❌ Failed to save mission plan: {e}")
     
-    def _basic_ai_optimize_clip_structure(self, duration: int, voice_strategy: str, min_clips_needed: int = 1) -> Dict[str, Any]:
+    def _basic_ai_optimize_clip_structure(self, duration: int, voice_strategy: str, num_clips: int = 1) -> Dict[str, Any]:
         """Basic AI optimization without Mission Planning Agent"""
         try:
             import google.generativeai as genai
@@ -968,29 +979,23 @@ class DecisionFramework:
             
             # Simple AI prompt for clip structure optimization
             prompt = f"""
-You are an expert video production optimizer. Determine the optimal clip structure for a {duration}-second video.
+You are an expert video production optimizer. Provide strategic reasoning for a {duration}-second video.
 
 CONSTRAINTS:
 - Duration: {duration} seconds
+- Number of clips: {num_clips} (fixed at 8 seconds each)
 - Voice Strategy: {voice_strategy}
-- Cost Optimization: Fewer clips = lower cost, but may impact content quality
-- Content Quality: More clips = better transitions, but higher cost
-- Minimum clips: {max(2, min_clips_needed)}, Maximum clips: 5
-- CRITICAL: Maximum clip duration is 8 seconds (VEO generation limit)
-- IMPORTANT: You MUST use at least {min_clips_needed} clips to ensure no clip exceeds 8 seconds
 
-DECISION CRITERIA:
-- Short videos (≤15s): Prefer fewer, longer clips for cost efficiency
-- Medium videos (16-30s): Balance clips for content flow
-- Long videos (31s+): More clips for better pacing
-- Single voice strategy: Can use longer clips
-- Variety voice strategy: Benefits from shorter clips
+VIDEO STRUCTURE:
+- Each clip is exactly 8 seconds long
+- Total content duration: {num_clips} x 8 = {duration} seconds
+- A 1.5-second fadeout will be added after the final clip
 
-Provide your decision in this exact JSON format:
+Provide strategic reasoning in this exact JSON format:
 {{
-    "num_clips": <integer>,
-    "clip_durations": [<float>, <float>, ...],
-    "reasoning": "<detailed explanation of your decision>",
+    "num_clips": {num_clips},
+    "clip_durations": {[8.0] * num_clips},
+    "reasoning": "<explain how to best use these {num_clips} 8-second clips>",
     "cost_efficiency_score": <float 0-1>,
     "content_quality_score": <float 0-1>,
     "optimal_balance_score": <float 0-1>

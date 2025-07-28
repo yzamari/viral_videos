@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from ..utils.logging_config import get_logger
 from ..models.video_models import Language
 from ..config.video_config import video_config
+from ..generators.ai_content_analyzer import AIContentAnalyzer
 
 logger = get_logger(__name__)
 
@@ -29,35 +30,34 @@ class TextValidationResult:
 class TextValidator:
     """Comprehensive text validation and cleaning"""
     
-    def __init__(self):
-        """Initialize text validator with patterns"""
+    def __init__(self, api_key: str = None):
+        """Initialize text validator with AI capabilities"""
         
-        # Metadata patterns that should never appear in user-visible text
-        self.metadata_patterns = [
-            r'emotional_arc', r'surprise_moments', r'shareability_score',
-            r'viral_elements', r'script_data', r'config\[', r'config\.',
-            r'engagement_score', r'platform_optimization', r'trending_score',
-            r'_id\s*:', r'created_at\s*:', r'updated_at\s*:',
-            r'^\d+\s*,\s*[\'"]', r'}\s*}$', r'{\s*{',  # Dictionary patterns
-            r'None\s*,', r'True\s*,', r'False\s*,',  # Python literals
-            # Note: Removed 'visual' as it conflicts with instruction patterns
+        # Initialize AI Content Analyzer for intelligent pattern detection
+        try:
+            self.ai_analyzer = AIContentAnalyzer(api_key or "dummy")
+            self.use_ai = True
+            logger.info("✅ Text Validator initialized with AI capabilities")
+        except Exception as e:
+            logger.warning(f"AI analyzer unavailable, using fallback patterns: {e}")
+            self.ai_analyzer = None
+            self.use_ai = False
+        
+        # Fallback patterns only used when AI is unavailable
+        # These are minimal patterns for basic functionality
+        self.fallback_metadata_patterns = [
+            r'^\d+\s*,\s*[\'"]',  # Dictionary-like structures
+            r'}\s*}$', r'{\s*{',   # Nested braces
+            r'_id\s*:', r'created_at\s*:', r'updated_at\s*:',  # Database fields
         ]
         
-        # Instruction patterns (stage directions, camera instructions, etc.)
-        self.instruction_patterns = [
-            r'\([^)]*(?:visual|scene|audio|camera|shot|effect|zoom|fade|cut to|angle|transition|music)[^)]*\)',
-            r'visual\s*:\s*[^.!?]*[.!?]?', r'scene\s*:\s*[^.!?]*[.!?]?', 
-            r'cut to\s*:\s*[^.!?]*[.!?]?', r'fade\s*:\s*[^.!?]*[.!?]?', 
-            r'zoom\s*:\s*[^.!?]*[.!?]?', r'camera\s*:\s*[^.!?]*[.!?]?', 
-            r'angle\s*:\s*[^.!?]*[.!?]?', r'shot\s*:\s*[^.!?]*[.!?]?', 
-            r'transition\s*:\s*[^.!?]*[.!?]?', r'effect\s*:\s*[^.!?]*[.!?]?',
-            r'show\s*:\s*[^.!?]*[.!?]?', r'display\s*:\s*[^.!?]*[.!?]?', 
-            r'pan to\s*:\s*[^.!?]*[.!?]?', r'focus on\s*:\s*[^.!?]*[.!?]?',
-            r'this concludes', r'this ends', r'segment ends', r'scene ends',
-            r'end of', r'conclusion of', r'wrapping up', r'to summarize',
+        # Basic instruction patterns for fallback
+        self.fallback_instruction_patterns = [
+            r'\[VISUAL:[^\]]*\]',  # New tagging format
+            r'^(Scene|Visual|SCENE|VISUAL):.*$',  # Scene markers
         ]
         
-        # RTL character ranges
+        # RTL character ranges (still needed for language detection)
         self.rtl_ranges = [
             (0x0590, 0x05FF),  # Hebrew
             (0x0600, 0x06FF),  # Arabic
@@ -66,8 +66,6 @@ class TextValidator:
             (0xFB50, 0xFDFF),  # Arabic Presentation Forms-A
             (0xFE70, 0xFEFF),  # Arabic Presentation Forms-B
         ]
-        
-        logger.info("✅ Text Validator initialized")
     
     def validate_text(self, text: str, context: str = "general", 
                      expected_language: Optional[Language] = None) -> TextValidationResult:
@@ -136,8 +134,32 @@ class TextValidator:
         )
     
     def _detect_language_and_rtl(self, text: str) -> Tuple[bool, Optional[Language]]:
-        """Detect if text is RTL and identify language"""
+        """Detect if text is RTL and identify language using AI or fallback"""
         
+        # Try AI detection first if available
+        if self.use_ai and self.ai_analyzer:
+            try:
+                lang_info = self.ai_analyzer.detect_language_intent(text)
+                if lang_info:
+                    is_rtl = lang_info.get('is_rtl', False)
+                    language_code = lang_info.get('language_code', '').lower()
+                    
+                    # Map language codes to our Language enum
+                    language_map = {
+                        'he': Language.HEBREW,
+                        'ar': Language.ARABIC,
+                        'en': Language.ENGLISH_US,
+                        'fr': Language.FRENCH,
+                        'es': Language.SPANISH,
+                        'de': Language.GERMAN,
+                    }
+                    
+                    detected_language = language_map.get(language_code[:2])
+                    return is_rtl, detected_language
+            except Exception as e:
+                logger.debug(f"AI language detection failed, using fallback: {e}")
+        
+        # Fallback to character-based detection
         # Count RTL characters
         rtl_count = 0
         for char in text:
@@ -167,46 +189,67 @@ class TextValidator:
         return is_rtl, detected_language
     
     def _remove_metadata(self, text: str) -> Tuple[str, List[str]]:
-        """Remove metadata patterns from text"""
+        """Remove metadata patterns from text using AI or fallback patterns"""
         
         cleaned = text
         issues = []
         
+        # Try AI-powered metadata detection first
+        if self.use_ai and self.ai_analyzer:
+            try:
+                # Ask AI to identify and remove metadata
+                prompt = f"""
+                Analyze this text and identify any metadata, configuration values, or non-content elements:
+                
+                Text: "{text}"
+                
+                Return JSON:
+                {{
+                    "is_metadata": true/false,
+                    "cleaned_text": "text with metadata removed",
+                    "metadata_found": ["list of metadata elements found"]
+                }}
+                """
+                
+                # Use the AI's text service directly for quick analysis
+                from ..ai.interfaces.text_generation import TextGenerationRequest
+                text_service = self.ai_analyzer.model
+                if text_service:
+                    response = text_service.generate_content(prompt)
+                    result = self.ai_analyzer._extract_json(response.text)
+                    
+                    if result and result.get('is_metadata'):
+                        cleaned = result.get('cleaned_text', '')
+                        metadata_found = result.get('metadata_found', [])
+                        for item in metadata_found:
+                            issues.append(f"AI detected metadata: {item}")
+                        return cleaned.strip(), issues
+                    elif result:
+                        cleaned = result.get('cleaned_text', text)
+            except Exception as e:
+                logger.debug(f"AI metadata detection failed, using fallback: {e}")
+        
+        # Fallback to basic pattern matching
         # Check if text is RTL (Hebrew/Arabic) - be less aggressive
         is_rtl, _ = self._detect_language_and_rtl(text)
         
         # First check if the entire text looks like metadata
-        # BUT be careful with RTL text which might have different patterns
         if not is_rtl and (re.match(r'^\d+\s*,\s*[\'\"]', cleaned) or cleaned.count(':') > 5):
             # This is likely corrupted metadata, not real text
             issues.append("Entire text appears to be metadata")
             return "", issues
         
-        # Check each metadata pattern
-        for pattern in self.metadata_patterns:
+        # Use minimal fallback patterns
+        for pattern in self.fallback_metadata_patterns:
             if re.search(pattern, cleaned, re.IGNORECASE):
                 issues.append(f"Found metadata pattern: {pattern}")
                 cleaned = re.sub(pattern, ' ', cleaned, flags=re.IGNORECASE)
         
-        # Remove dictionary-like structures more aggressively
+        # Remove dictionary-like structures
         if '{' in cleaned or '}' in cleaned:
-            # Remove everything between braces and the braces themselves
             cleaned = re.sub(r'\{[^}]*\}', ' ', cleaned)
-            # Also remove any remaining braces
             cleaned = cleaned.replace('{', ' ').replace('}', ' ')
             issues.append("Removed dictionary structures")
-        
-        # Remove key:value patterns more aggressively
-        if ':' in cleaned:
-            # Remove patterns like 'key': 'value' or key: value
-            cleaned = re.sub(r"[\'\"]?\w+[\'\"]?\s*:\s*[\'\"]?[^,\'\"\s]+[\'\"]?", ' ', cleaned)
-            # If still too many colons, it's probably all metadata
-            if cleaned.count(':') > 1:
-                cleaned = re.sub(r'\w+\s*:\s*[^,\s]+', ' ', cleaned)
-                issues.append("Removed key:value patterns")
-        
-        # Remove quotes that might be from dict values
-        cleaned = re.sub(r"[\'\"]\s*[:,]\s*[\'\"]", ' ', cleaned)
         
         # Clean up any resulting mess
         cleaned = ' '.join(cleaned.split())
@@ -214,26 +257,53 @@ class TextValidator:
         return cleaned.strip(), issues
     
     def _remove_instructions(self, text: str) -> Tuple[str, List[str]]:
-        """Remove instruction patterns from text"""
+        """Remove instruction patterns from text using AI or fallback patterns"""
         
         cleaned = text
         issues = []
         
-        # Remove parenthetical instructions first (most common)
-        paren_pattern = r'\([^)]*\)'
-        paren_matches = re.findall(paren_pattern, cleaned)
-        for match in paren_matches:
-            # Check if it contains instruction keywords
-            if any(keyword in match.lower() for keyword in ['visual', 'scene', 'audio', 'camera', 'shot', 'effect', 'zoom', 'fade', 'cut to', 'angle', 'transition', 'music']):
-                cleaned = cleaned.replace(match, ' ')
-                issues.append(f"Removed parenthetical instruction: {match}")
+        # Skip ALL instruction removal if text appears to be already cleaned
+        has_visual_markers = '[VISUAL:' in text or 'DIALOGUE:' in text or any(
+            marker in text.lower() for marker in ['scene:', 'visual:', 'cut to:', 'fade:', '(', '[']
+        )
         
-        # Check each instruction pattern
-        for pattern in self.instruction_patterns:
-            matches = re.finditer(pattern, cleaned, re.IGNORECASE)
+        if not has_visual_markers:
+            # Text is already clean, no instructions to remove
+            logger.debug("Text appears to be already cleaned - skipping instruction removal")
+            return cleaned, issues
+        
+        # Try AI-powered instruction detection first
+        if self.use_ai and self.ai_analyzer:
+            try:
+                # Use AI to separate visual instructions from dialogue
+                visual_analysis = self.ai_analyzer.analyze_visual_elements(text)
+                
+                if visual_analysis and 'dialogue' in visual_analysis:
+                    dialogue_parts = visual_analysis['dialogue']
+                    visual_parts = visual_analysis.get('visual', [])
+                    
+                    if dialogue_parts:
+                        cleaned = ' '.join(dialogue_parts)
+                        for visual in visual_parts[:3]:  # Show first 3 visual elements
+                            issues.append(f"AI removed visual: {visual[:50]}...")
+                        if len(visual_parts) > 3:
+                            issues.append(f"And {len(visual_parts) - 3} more visual elements")
+                        return cleaned.strip(), issues
+            except Exception as e:
+                logger.debug(f"AI instruction detection failed, using fallback: {e}")
+        
+        # Fallback to basic pattern matching
+        # Check for new tagging format first
+        if '[VISUAL:' in cleaned:
+            cleaned = re.sub(r'\[VISUAL:[^\]]*\]', '', cleaned)
+            issues.append("Removed [VISUAL:] tags")
+        
+        # Remove basic instruction patterns
+        for pattern in self.fallback_instruction_patterns:
+            matches = re.finditer(pattern, cleaned, re.IGNORECASE | re.MULTILINE)
             for match in matches:
                 issues.append(f"Found instruction: {match.group()[:30]}...")
-                cleaned = cleaned[:match.start()] + ' ' + cleaned[match.end():]
+                cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE | re.MULTILINE)
         
         # Clean up any resulting double spaces
         cleaned = ' '.join(cleaned.split())
@@ -256,40 +326,60 @@ class TextValidator:
         return cleaned
     
     def _contains_invalid_patterns(self, text: str) -> bool:
-        """Check if text still contains invalid patterns"""
+        """Check if text still contains invalid patterns using AI or fallback"""
         
+        # Try AI-powered validation first
+        if self.use_ai and self.ai_analyzer:
+            try:
+                # Ask AI to validate the text
+                prompt = f"""
+                Analyze if this text contains any metadata, instructions, or invalid patterns:
+                
+                Text: "{text}"
+                
+                Return JSON:
+                {{
+                    "is_valid": true/false,
+                    "invalid_patterns_found": ["list of issues found"],
+                    "confidence": 0.0-1.0
+                }}
+                """
+                
+                # Use the AI's text service directly
+                from ..ai.interfaces.text_generation import TextGenerationRequest
+                text_service = self.ai_analyzer.model
+                if text_service:
+                    response = text_service.generate_content(prompt)
+                    result = self.ai_analyzer._extract_json(response.text)
+                    
+                    if result and 'is_valid' in result:
+                        # If AI is confident, use its judgment
+                        if result.get('confidence', 0) > 0.7:
+                            return not result['is_valid']
+            except Exception as e:
+                logger.debug(f"AI validation failed, using fallback: {e}")
+        
+        # Fallback to basic checks
         # Check if text is RTL to be less aggressive
         is_rtl, _ = self._detect_language_and_rtl(text)
         
-        # Check for remaining metadata (less aggressive for RTL)
-        for pattern in self.metadata_patterns:
-            if re.search(pattern, text, re.IGNORECASE):
-                return True
+        # Check for obvious invalid patterns
+        if text.count('{') > 0 or text.count('}') > 0:
+            return True
         
-        # Check for remaining instructions
-        for pattern in self.instruction_patterns:
-            if re.search(pattern, text, re.IGNORECASE):
-                return True
+        # Check for metadata indicators
+        if not is_rtl and text.count(':') > 3:
+            return True
         
-        # Check for suspicious patterns (less aggressive for RTL text)
-        if not is_rtl:
-            if text.count('{') > 0 or text.count('}') > 0:
-                return True
-            if text.count(':') > 2:
-                return True
-            if re.search(r'^\d+\s*,', text):  # Starts with number and comma
-                return True
-        
-        # Check if text is too short or contains only punctuation/quotes after cleaning
-        # For RTL text, we need to handle Unicode properly
+        # Check if text is too short
         if is_rtl:
-            # Count actual Hebrew/Arabic characters
+            # Count actual RTL characters
             rtl_chars = sum(1 for c in text if any(start <= ord(c) <= end for start, end in self.rtl_ranges))
-            if rtl_chars < 2:  # Too few RTL characters
+            if rtl_chars < 2:
                 return True
         else:
             cleaned_for_check = re.sub(r'[^\w\s]', '', text).strip()
-            if len(cleaned_for_check) < 3:  # Too short to be meaningful
+            if len(cleaned_for_check) < 3:
                 return True
         
         return False

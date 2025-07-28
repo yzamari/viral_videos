@@ -1,0 +1,228 @@
+{
+  "hashtags": [
+    {
+      "tag": "#SequenceExpress",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly references the core concept and creative framing of the content.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#FamilyGuyMath",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Connects the content to a popular and recognizable animated style, increasing discoverability and relatability.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#BabyDragonLearns",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the cute and educational aspect of the content, appealing to a broad audience interested in learning.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MathIsFun",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "A popular and evergreen hashtag that signals the educational and enjoyable nature of the content.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#CalculusAdventures",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Specifically targets users interested in calculus and mathematical exploration.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#AIArtMagic",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the current trend of AI-generated art and animation, attracting a wide audience.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#GenerativeArt",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A popular hashtag within the AI art community, driving discoverability among enthusiasts.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#LearnOnTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A popular hashtag for educational content on TikTok, aligning with the platform's user behavior.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#EduTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A widely recognized hashtag for educational content on TikTok, promoting broad reach.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#MathTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Targets the growing community of math enthusiasts and educators on TikTok.",
+      "trend_score": 0.93
+    },
+    {
+      "tag": "#AnimationExplosion",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the visual and animated aspect, appealing to animation fans.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#CuteAI",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Combines the appeal of AI with the 'cute' factor, which is highly shareable.",
+      "trend_score": 0.87
+    },
+    {
+      "tag": "#ConceptArtStyle",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to users who appreciate the artistic style and design elements.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MathArt",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Connects mathematics with art, a niche interest that can yield engaged viewers.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#LimitTheorems",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets users specifically searching for mathematical concepts like limit theorems.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#SequenceConvergence",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Highly specific to the mathematical topic, attracting a knowledgeable audience.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#EpsilonDelta",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "A technical term that will attract calculus students and mathematicians.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#MathematicalSequences",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "More descriptive than just 'sequences', targeting those interested in the mathematical properties.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#SandwichTheorem",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "A specific theorem mentioned, allowing for targeted search results.",
+      "trend_score": 0.45
+    },
+    {
+      "tag": "#NumberTrain",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "A creative framing that can be searched for by those who appreciate its novelty.",
+      "trend_score": 0.4
+    },
+    {
+      "tag": "#STEMeducation",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Broad appeal to anyone interested in Science, Technology, Engineering, and Mathematics.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Edutainment",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Highlights the blend of education and entertainment, attracting a wider audience.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#CreativeLearning",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to a general interest in innovative educational methods.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#DigitalArt",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A very broad category that will capture a large audience interested in digital visuals.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Animation",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A foundational hashtag for anyone interested in animated content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#InstaLearn",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "A popular hashtag for educational content specifically on Instagram.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#LearnSomethingNew",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Encourages active learning and discovery, prompting viewers to engage with the content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#MathFacts",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Invites users to discover interesting mathematical insights, prompting engagement.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#WhatsYourFavoriteTheorem",
+      "category": "engagement",
+      "estimated_reach": "low",
+      "reasoning": "A direct question that prompts comments and discussion from those familiar with the concepts.",
+      "trend_score": 0.5
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The strategy incorporates current trends in AI-generated art and animation (#AIArtMagic, #GenerativeArt, #CuteAI), educational content on social media (#LearnOnTikTok, #EduTok, #MathTok), and the evergreen popularity of creative educational formats (#MathIsFun, #Edutainment). It also leverages popular, relatable cultural references like Family Guy to increase immediate interest.",
+    "engagement_strategy": "Engagement is driven by a mix of discoverability hashtags that put the content in front of a large audience and 'call-to-action' style hashtags that encourage interaction like #LearnSomethingNew and #MathFacts. Niche hashtags target a more specific, often more engaged, audience who are actively searching for these topics. The creative framing of #SequenceExpress and #FamilyGuyMath is designed to be inherently engaging and shareable."
+  },
+  "usage_tips": [
+    "On Instagram, mix a variety of hashtag sizes (large, medium, and small) to maximize reach. Aim for 10-20 hashtags per post.",
+    "Place hashtags in the first comment if you prefer a cleaner caption, but ensure they are still visible.",
+    "Monitor which hashtags perform best for your content and adjust your strategy accordingly.",
+    "Engage with posts that use your primary and niche hashtags to build community and increase visibility.",
+    "Consider creating a unique branded hashtag for your educational series to build recognition over time."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-27T11:24:56.689546",
+    "topic": "Family Guy style: Baby dragon conductor on number train! 'All aboard the Sequence Express!' Each car is a term: a₁, a₂, a₃... CHOO CHOO! 'Where we going?' TO THE LIMIT! Train approaches station L. 'Convergence means getting closer!' Epsilon tunnel - we get within ε of L! Unique limit theorem: 'Only ONE destination!' Bounded sequences stay on track. Arithmetic of limits: 'Add, multiply, it all works!' Sandwich theorem: Dragon sandwich with sequences! Epsilon chicks form convergent sequence!",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 29
+  }
+}

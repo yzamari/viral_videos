@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 5,
+  "hook_text": "Exponents and topology with a Family Guy dragon? Get ready for fractal magic!",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "Family Guy's established visual language is cartoon. Vibrant colors are essential for making educational concepts visually engaging and fun for a general audience on Instagram, aligning with the platform's preference for creative and animated styles. The metaphors like 'power transformations' and 'fractal magic' lend themselves well to a lively, exaggerated cartoon aesthetic.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "For Instagram, avoiding the bottom 20% is key. Placing the overlay in the bottom center provides good visibility while staying within the safe zone. This position is also effective for displaying text overlays related to the video content without obstructing crucial visual elements.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/calculus_dragon_ep6_20250728_003604/temp_files/base_video.mp4 -vf drawtext=text='Real Exponents \u2728':fontcolor=#96CEB4:fontsize=55:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1.5:x=(w-text_w)/2:y=1152:enable=between(t\\,6.5\\,9.0),drawtext=text='InsideOutside \ud83d\udeaa':fontcolor=#5F27CD:fontsize=50:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1.5:x=(w-text_w)/2:y=1152:enable=between(t\\,15.5\\,18.0),drawtext=text='Learn More \ud83d\udca1':fontcolor=#96CEB4:fontsize=50:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1.5:x=(w-text_w)/2:y=1152:enable=between(t\\,24.5\\,27.0),drawtext=text='Follow for':fontcolor=#FFFF00:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#E60073@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,27.67\\,29.07),drawtext=text='more':fontcolor=#FFFF00:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#E60073@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,29.17\\,30.57) -c:a copy -y outputs/calculus_dragon_ep6_20250728_003604/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='Real Exponents \u2728':fontcolor=#96CEB4:fontsize=55:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1.5:x=(w-text_w)/2:y=1152:enable=between(t\\,6.5\\,9.0),drawtext=text='InsideOutside \ud83d\udeaa':fontcolor=#5F27CD:fontsize=50:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1.5:x=(w-text_w)/2:y=1152:enable=between(t\\,15.5\\,18.0),drawtext=text='Learn More \ud83d\udca1':fontcolor=#96CEB4:fontsize=50:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1.5:x=(w-text_w)/2:y=1152:enable=between(t\\,24.5\\,27.0),drawtext=text='Follow for':fontcolor=#FFFF00:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#E60073@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,27.67\\,29.07),drawtext=text='more':fontcolor=#FFFF00:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#E60073@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,29.17\\,30.57)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 33.67,
+    "overlay_count": 5
+  }
+}

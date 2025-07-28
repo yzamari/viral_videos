@@ -55,17 +55,22 @@ class VertexAIVeo3Client(BaseVeoClient):
 
         # VEO-3 model configuration
         self.veo3_model = "veo-3.0-generate-preview"
+        
+        # Flag for VEO3-fast mode (no audio)
+        self.is_veo3_fast = False
 
         # Initialize base client
         super().__init__(project_id, location, output_dir)
 
     def get_model_name(self) -> str:
         """Get the model name"""
+        if self.is_veo3_fast:
+            return "veo-3.0-fast-generate-preview"  # Official Veo 3 Fast model
         return self.veo3_model
 
     def generate_video(self, prompt: str, duration: float,
                       clip_id: str = "clip", image_path: Optional[str] = None,
-                      enable_audio: bool = True, aspect_ratio: str = "9:16") -> str:
+                      enable_audio: bool = False, aspect_ratio: str = "9:16") -> str:
         """
         Generate video using VEO-3 with native audio support
 
@@ -96,6 +101,16 @@ class VertexAIVeo3Client(BaseVeoClient):
                 logger.error(f"❌ VEO-2 fallback failed: {e}")
                 return self._create_fallback_clip(prompt, duration, clip_id)
 
+        # Cost optimization: Disable audio for VEO-3 (expensive)
+        if enable_audio:
+            logger.info(f"💰 VEO-3 audio generation disabled for cost optimization")
+            enable_audio = False
+            
+        # Override enable_audio for VEO3-fast mode
+        if self.is_veo3_fast:
+            enable_audio = False
+            logger.info(f"⚡ VEO3-FAST mode: Audio generation disabled")
+        
         logger.info(f"🎬 Starting VEO-3 generation for clip: {clip_id}")
         logger.info(f"⏱️ VEO-3 Duration Requested: {duration}s")
 
@@ -104,21 +119,27 @@ class VertexAIVeo3Client(BaseVeoClient):
             enhanced_prompt = self._enhance_prompt_for_veo3(prompt, enable_audio)
 
             # Submit generation request to Vertex AI VEO-3
-            gcs_uri = self._submit_veo3_generation_request(
+            video_result = self._submit_veo3_generation_request(
                 enhanced_prompt,
                 duration,
                 image_path,
                 enable_audio,
                 aspect_ratio)
 
-            if gcs_uri:
-                # Download video from GCS
-                local_path = self._download_video_from_gcs(gcs_uri, clip_id)
+            if video_result:
+                # video_result can be either a GCS URI or a local file path (from base64)
+                if video_result.startswith('gs://'):
+                    # Download video from GCS
+                    local_path = self._download_video_from_gcs(video_result, clip_id)
+                else:
+                    # Already a local file path (from base64 video)
+                    local_path = video_result
+                
                 if local_path and os.path.exists(local_path):
                     logger.info(f"✅ VEO-3 generation completed: {local_path}")
                     return local_path
                 else:
-                    logger.error("❌ Failed to download VEO-3 video")
+                    logger.error("❌ Failed to process VEO-3 video")
                     return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
             else:
                 logger.error("❌ VEO-3 generation failed")
@@ -131,8 +152,10 @@ class VertexAIVeo3Client(BaseVeoClient):
     def _check_availability(self) -> bool:
         """Check if VEO-3 is available for this project using CORRECT URL format"""
         try:
+            # Use correct model name based on mode
+            model_name = self.get_model_name()
             # CORRECT URL format for VEO-3 predictLongRunning endpoint
-            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{self.veo3_model}:predictLongRunning"
+            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{model_name}:predictLongRunning"
             headers = self._get_auth_headers()
 
             # Make a minimal test request
@@ -255,7 +278,8 @@ class VertexAIVeo3Client(BaseVeoClient):
         """Submit video generation request to Vertex AI VEO-3"""
         try:
             # Build the request URL - Use predictLongRunning for VEO models
-            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{self.veo3_model}:predictLongRunning"
+            model_name = self.get_model_name()
+            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{model_name}:predictLongRunning"
 
             headers = self._get_auth_headers()
 
@@ -325,40 +349,195 @@ class VertexAIVeo3Client(BaseVeoClient):
             return None
 
     def _poll_operation_status(self, operation_name: str) -> str:
-        """Poll the operation status until completion or failure"""
-        url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/operations/{operation_name}"
-        headers = self._get_auth_headers()
-        logger.info(f"Polling operation status for {operation_name}...")
-
-        while True:
+        """Poll the operation status until completion or failure using fetchPredictOperation"""
+        import time
+        import requests
+        from requests.exceptions import ConnectionError, Timeout
+        
+        operation_id = operation_name.split('/')[-1]
+        logger.info(f"⏳ Polling VEO-3 operation using fetchPredictOperation: {operation_id}")
+        
+        max_attempts = 180  # 30 minutes with 10-second intervals
+        for attempt in range(max_attempts):
             try:
-                response = requests.get(url, headers=headers, timeout=60)
+                # Use fetchPredictOperation endpoint like VEO-2
+                model_name = self.get_model_name()
+                url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{model_name}:fetchPredictOperation"
+                
+                headers = {
+                    "Authorization": f"Bearer {self.access_token}",
+                    "Content-Type": "application/json"
+                }
+                
+                # Use POST method with operation name in request body
+                request_data = {
+                    "operationName": operation_name
+                }
+                
+                response = requests.post(url, headers=headers, json=request_data, timeout=60)
                 if response.status_code == 200:
                     result = response.json()
                     state = result.get("done")
                     if state:
                         if result.get("error"):
-                            logger.error(f"Operation {operation_name} failed: {result['error']['message']}")
+                            logger.error(f"❌ VEO-3 operation {operation_id} failed: {result['error']['message']}")
                             return None
                         else:
-                            logger.info(f"Operation {operation_name} completed successfully.")
+                            logger.info(f"✅ VEO-3 operation {operation_id} completed successfully.")
                             if "response" in result:
-                                gcs_uri = result["response"]["gcsUri"]
-                                logger.info(f"Operation {operation_name} completed with GCS URI: {gcs_uri}")
-                                return gcs_uri
+                                response_data = result["response"]
+                                
+                                # VEO-3 can return either GCS URI or base64 encoded video
+                                if "generatedVideo" in response_data and "gcsUri" in response_data["generatedVideo"]:
+                                    gcs_uri = response_data["generatedVideo"]["gcsUri"]
+                                    logger.info(f"✅ VEO-3 operation completed with GCS URI: {gcs_uri}")
+                                    return gcs_uri
+                                elif "videos" in response_data and len(response_data["videos"]) > 0:
+                                    # Handle base64 encoded video response
+                                    video_data = response_data["videos"][0]
+                                    if "bytesBase64Encoded" in video_data:
+                                        logger.info(f"✅ VEO-3 operation completed with base64 encoded video")
+                                        return self._save_base64_video(video_data["bytesBase64Encoded"], operation_id)
+                                    else:
+                                        logger.error(f"❌ VEO-3 video data format not recognized")
+                                        return None
+                                else:
+                                    logger.error(f"❌ VEO-3 operation completed but no video data in response.")
+                                    logger.error(f"Response structure: {result}")
+                                    return None
                             else:
-                                logger.error(f"Operation {operation_name} completed but no GCS URI in response.")
+                                logger.error(f"❌ VEO-3 operation completed but no response data.")
                                 return None
                     else:
-                        logger.info(f"Operation {operation_name} not done yet. Waiting...")
-                        time.sleep(10) # Wait 10 seconds before polling again
+                        if attempt % 3 == 0:  # Log every 3rd attempt to reduce noise
+                            logger.info(f"⏳ VEO-3 generation in progress... (attempt {attempt+1}/{max_attempts})")
+                        time.sleep(10)  # Wait 10 seconds before polling again
+                        continue
                 else:
-                    logger.error(f"Failed to poll operation status: {response.status_code}")
+                    logger.error(f"❌ Failed to poll VEO-3 operation status: {response.status_code}")
                     logger.error(f"Response: {response.text}")
                     return None
-            except requests.exceptions.RequestException as e:
-                logger.error(f"Error polling operation status: {e}")
+                    
+            except (ConnectionError, Timeout) as e:
+                logger.warning(f"⚠️ Network error polling VEO-3 operation (attempt {attempt+1}): {e}")
+                if attempt < max_attempts - 1:
+                    time.sleep(10)
+                    continue
+                else:
+                    logger.error(f"❌ Maximum network retries exceeded for VEO-3 operation")
+                    return None
+                    
+            except Exception as e:
+                logger.error(f"❌ Unexpected error polling VEO-3 operation: {e}")
                 return None
+        
+        # If we reach here, we've exceeded max attempts
+        logger.error(f"❌ VEO-3 operation timed out after {max_attempts} attempts")
+        return None
+
+    def _save_base64_video(self, base64_data: str, operation_id: str) -> str:
+        """Save base64 encoded video data to local file"""
+        import base64
+        
+        try:
+            # Decode base64 data
+            video_bytes = base64.b64decode(base64_data)
+            
+            # Create local file path
+            local_path = os.path.join(self.clips_dir, f"veo3_clip_{operation_id}.mp4")
+            
+            # Write video data to file
+            with open(local_path, 'wb') as f:
+                f.write(video_bytes)
+            
+            logger.info(f"✅ Saved VEO-3 base64 video: {local_path}")
+            
+            # Check if video needs cropping to portrait
+            cropped_path = self._ensure_portrait_aspect_ratio(local_path, operation_id)
+            return cropped_path if cropped_path else local_path
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to save base64 video: {e}")
+            return None
+
+    def _ensure_portrait_aspect_ratio(self, video_path: str, operation_id: str) -> str:
+        """Crop landscape video to portrait if needed"""
+        try:
+            import subprocess
+            import json
+            
+            # Get video dimensions using ffprobe
+            cmd = [
+                'ffprobe', '-v', 'quiet', '-print_format', 'json',
+                '-show_streams', video_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode != 0:
+                logger.warning(f"⚠️ Could not analyze video dimensions: {result.stderr}")
+                return video_path
+            
+            video_info = json.loads(result.stdout)
+            
+            # Find video stream
+            video_stream = None
+            for stream in video_info['streams']:
+                if stream['codec_type'] == 'video':
+                    video_stream = stream
+                    break
+            
+            if not video_stream:
+                logger.warning("⚠️ No video stream found")
+                return video_path
+            
+            width = int(video_stream['width'])
+            height = int(video_stream['height'])
+            
+            # Check if video is landscape (width > height)
+            if width <= height:
+                logger.info(f"✅ Video is already portrait ({width}x{height})")
+                return video_path
+            
+            logger.info(f"🔄 Cropping landscape video ({width}x{height}) to portrait")
+            
+            # Calculate crop dimensions for 9:16 aspect ratio
+            target_aspect = 9 / 16
+            current_aspect = width / height
+            
+            if current_aspect > target_aspect:
+                # Video is wider than target, crop width
+                new_width = int(height * target_aspect)
+                new_height = height
+                crop_x = (width - new_width) // 2
+                crop_y = 0
+            else:
+                # Video is taller than target, crop height
+                new_width = width
+                new_height = int(width / target_aspect)
+                crop_x = 0
+                crop_y = (height - new_height) // 2
+            
+            # Create cropped video path
+            cropped_path = os.path.join(self.clips_dir, f"veo3_clip_{operation_id}_portrait.mp4")
+            
+            # Crop video using ffmpeg
+            crop_cmd = [
+                'ffmpeg', '-i', video_path,
+                '-vf', f'crop={new_width}:{new_height}:{crop_x}:{crop_y}',
+                '-c:a', 'copy', '-y', cropped_path
+            ]
+            
+            result = subprocess.run(crop_cmd, capture_output=True, text=True)
+            if result.returncode == 0:
+                logger.info(f"✅ Successfully cropped to portrait: {cropped_path} ({new_width}x{new_height})")
+                return cropped_path
+            else:
+                logger.error(f"❌ Failed to crop video: {result.stderr}")
+                return video_path
+                
+        except Exception as e:
+            logger.error(f"❌ Error checking/cropping video: {e}")
+            return video_path
 
     def _download_video_from_gcs(self, gcs_uri: str, clip_id: str) -> str:
         """Download video from GCS to local storage"""
@@ -384,7 +563,10 @@ class VertexAIVeo3Client(BaseVeoClient):
             blob.download_to_filename(local_path)
 
             logger.info(f"✅ Downloaded VEO-3 video: {local_path}")
-            return local_path
+            
+            # Check if video needs cropping to portrait
+            cropped_path = self._ensure_portrait_aspect_ratio(local_path, clip_id)
+            return cropped_path if cropped_path else local_path
 
         except Exception as e:
             logger.error(f"❌ Failed to download video from GCS: {e}")

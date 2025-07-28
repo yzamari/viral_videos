@@ -1,0 +1,237 @@
+{
+  "duration_seconds": {
+    "key": "duration_seconds",
+    "value": 35,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-27T23:38:20.549053"
+  },
+  "platform": {
+    "key": "platform",
+    "value": "instagram",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Platform: instagram",
+    "timestamp": "2025-07-27T23:38:20.549236"
+  },
+  "category": {
+    "key": "category",
+    "value": "Comedy",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Category: Comedy",
+    "timestamp": "2025-07-27T23:38:20.549422"
+  },
+  "category_string": {
+    "key": "category_string",
+    "value": "Comedy",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original category string: Comedy",
+    "timestamp": "2025-07-27T23:38:20.549555"
+  },
+  "target_audience": {
+    "key": "target_audience",
+    "value": "general audience",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Target audience: general audience",
+    "timestamp": "2025-07-27T23:38:20.549710"
+  },
+  "language": {
+    "key": "language",
+    "value": "he",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Primary language from CLI: he",
+    "timestamp": "2025-07-27T23:38:20.549832"
+  },
+  "all_languages": {
+    "key": "all_languages",
+    "value": [
+      "he",
+      "en-US"
+    ],
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "All languages: he, en-US",
+    "timestamp": "2025-07-27T23:38:20.549945"
+  },
+  "style": {
+    "key": "style",
+    "value": "marvel",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-27T23:38:20.550059"
+  },
+  "style_string": {
+    "key": "style_string",
+    "value": "marvel",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original style string: marvel",
+    "timestamp": "2025-07-27T23:38:20.550162"
+  },
+  "tone": {
+    "key": "tone",
+    "value": "satirical",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Tone: satirical",
+    "timestamp": "2025-07-27T23:38:20.550298"
+  },
+  "tone_string": {
+    "key": "tone_string",
+    "value": "satirical",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original tone string: satirical",
+    "timestamp": "2025-07-27T23:38:20.550423"
+  },
+  "visual_style": {
+    "key": "visual_style",
+    "value": "dynamic",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Visual style: dynamic",
+    "timestamp": "2025-07-27T23:38:20.550526"
+  },
+  "visual_style_string": {
+    "key": "visual_style_string",
+    "value": "dynamic",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Original visual style string: dynamic",
+    "timestamp": "2025-07-27T23:38:20.550628"
+  },
+  "theme_id": {
+    "key": "theme_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No theme specified",
+    "timestamp": "2025-07-27T23:38:20.550732"
+  },
+  "style_reference_id": {
+    "key": "style_reference_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No style reference specified",
+    "timestamp": "2025-07-27T23:38:20.550837"
+  },
+  "character_id": {
+    "key": "character_id",
+    "value": "Benjamin Netanyahu with gray hair, clean-shaven face with no mustache, determined expression, dark suit with lightning aura, Marvel superhero style",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character specified by user: Benjamin Netanyahu with gray hair, clean-shaven face with no mustache, determined expression, dark suit with lightning aura, Marvel superhero style",
+    "timestamp": "2025-07-27T23:38:20.550939"
+  },
+  "character_scene": {
+    "key": "character_scene",
+    "value": null,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character scene: None",
+    "timestamp": "2025-07-27T23:38:20.551045"
+  },
+  "frame_continuity": {
+    "key": "frame_continuity",
+    "value": true,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.95,
+    "reasoning": "AI decision: 35s duration on instagram - continuity preferred for quality",
+    "timestamp": "2025-07-27T23:38:26.468505"
+  },
+  "continuous_generation": {
+    "key": "continuous_generation",
+    "value": true,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified continuous: True",
+    "timestamp": "2025-07-27T23:38:26.468660"
+  },
+  "mode": {
+    "key": "mode",
+    "value": "enhanced",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mode: enhanced",
+    "timestamp": "2025-07-27T23:38:26.468781"
+  },
+  "cheap_mode": {
+    "key": "cheap_mode",
+    "value": false,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode: False",
+    "timestamp": "2025-07-27T23:38:26.468900"
+  },
+  "cheap_mode_level": {
+    "key": "cheap_mode_level",
+    "value": "full",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode level: full",
+    "timestamp": "2025-07-27T23:38:26.469018"
+  },
+  "mission": {
+    "key": "mission",
+    "value": "Marvel Comics explosion! Benjamin Netanyahu with lightning effects crashes through Knesset walls. CRASH! 'I am eternal!' Opposition parties vanish in comic smoke. WHOOSH! Coalition deals with exploding panels. BOOM! Juggling multiple corruption trials while texting. ZAP! Building settlements with energy beams. THWACK! Judicial reform controversy splits the nation. CRACK! 'Bibi will return... again!' WHAM! Israeli flag with lightning bolts.",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mission: Marvel Comics explosion! Benjamin Netanyahu with l...",
+    "timestamp": "2025-07-27T23:38:26.469147"
+  },
+  "hook": {
+    "key": "hook",
+    "value": "Amazing content ahead!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated hook",
+    "timestamp": "2025-07-27T23:38:26.469263"
+  },
+  "call_to_action": {
+    "key": "call_to_action",
+    "value": "Follow for more!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated CTA",
+    "timestamp": "2025-07-27T23:38:26.469373"
+  },
+  "voice_strategy": {
+    "key": "voice_strategy",
+    "value": "variety",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: 35s duration",
+    "timestamp": "2025-07-27T23:38:26.469482"
+  },
+  "color_palette": {
+    "key": "color_palette",
+    "value": "dynamic palette",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 0.5,
+    "reasoning": "Style-based fallback",
+    "timestamp": "2025-07-27T23:38:26.469611"
+  },
+  "background_music_style": {
+    "key": "background_music_style",
+    "value": "ambient",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: marvel style, satirical tone",
+    "timestamp": "2025-07-27T23:38:26.469721"
+  },
+  "num_clips": {
+    "key": "num_clips",
+    "value": 7,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.9,
+    "reasoning": "Standard informational pacing",
+    "timestamp": "2025-07-27T23:38:36.099468"
+  }
+}

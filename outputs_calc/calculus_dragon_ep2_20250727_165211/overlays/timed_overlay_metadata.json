@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 5,
+  "hook_text": "All aboard the SEQUENCE EXPRESS!\" the baby dragon conductor bellows.",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "The 'Family Guy style' description directly suggests a cartoon aesthetic. A baby dragon conductor on a magical number train with dialogue like 'CHOO CHOO!' and visual gags like 'magic epsilon tunnel' are perfectly suited for a vibrant, exaggerated cartoon style. Instagram and TikTok audiences respond well to such dynamic and visually engaging content.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "The content is visually rich with a narrative that flows from left to right, following the train. Placing the primary overlay at the bottom center allows it to be clearly visible without obstructing key characters or actions while staying within Instagram's safe zone.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/calculus_dragon_ep2_20250727_165211/temp_files/base_video.mp4 -vf drawtext=text='\u2728 RULE INSIDE':fontcolor=#54A0FF:fontsize=36:font='Impact':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,6.5\\,9.0),drawtext=text='\ud83d\udd2c EPSILON':fontcolor=#00D2D3:fontsize=32:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,17.0\\,19.5),drawtext=text='\u2795 SUM LIMITS':fontcolor=#45B7D1:fontsize=34:font='Impact':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,30.0\\,32.5),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Anton':box=1:boxcolor=#FF00A4@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,51.79\\,53.19),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Anton':box=1:boxcolor=#FF00A4@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,53.29\\,54.69) -c:a copy -y outputs/calculus_dragon_ep2_20250727_165211/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='\u2728 RULE INSIDE':fontcolor=#54A0FF:fontsize=36:font='Impact':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,6.5\\,9.0),drawtext=text='\ud83d\udd2c EPSILON':fontcolor=#00D2D3:fontsize=32:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,17.0\\,19.5),drawtext=text='\u2795 SUM LIMITS':fontcolor=#45B7D1:fontsize=34:font='Impact':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,30.0\\,32.5),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Anton':box=1:boxcolor=#FF00A4@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,51.79\\,53.19),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Anton':box=1:boxcolor=#FF00A4@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,53.29\\,54.69)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 57.79,
+    "overlay_count": 5
+  }
+}

@@ -118,6 +118,15 @@ def test_auth():
 @click.option('--voice', help='Specific voice to use throughout the video (e.g., "en-US-Journey-F")')
 @click.option('--multiple-voices', is_flag=True, help='Allow multiple voices (default: single voice)')
 @click.option('--languages', multiple=True, default=['en-US'], help='Languages for audio/subtitles (e.g., --languages en-US --languages he --languages fa). First language is primary.')
+@click.option('--veo-model-order', default='veo3-fast,veo3,veo2', help='VEO model preference order (e.g., "veo3-fast,veo3,veo2" or "veo2,veo3,veo3-fast")')
+@click.option('--use-whisper/--no-whisper', default=False, help='[DEPRECATED] No longer needed - we use exact text from audio generation')
+@click.option('--business-name', help='Business name to display in overlay')
+@click.option('--business-address', help='Business address to display in overlay')
+@click.option('--business-phone', help='Business phone number to display in overlay')
+@click.option('--business-website', help='Business website to display in overlay')
+@click.option('--business-facebook', help='Business Facebook page to display in overlay')
+@click.option('--business-instagram', help='Business Instagram handle to display in overlay')
+@click.option('--show-business-info/--hide-business-info', default=True, help='Show business information overlay (default: show)')
 def generate(**kwargs):
     """🎬 Generate viral video with optimized AI system"""
     try:
@@ -163,7 +172,16 @@ def generate(**kwargs):
             scene=kwargs.get('scene'),
             voice=kwargs.get('voice'),
             multiple_voices=kwargs.get('multiple_voices', False),
-            languages=list(kwargs.get('languages', ['en-US']))
+            languages=list(kwargs.get('languages', ['en-US'])),
+            veo_model_order=kwargs.get('veo_model_order', 'veo3-fast,veo3,veo2'),
+            use_whisper=False,  # Deprecated - always use our known text
+            business_name=kwargs.get('business_name'),
+            business_address=kwargs.get('business_address'),
+            business_phone=kwargs.get('business_phone'),
+            business_website=kwargs.get('business_website'),
+            business_facebook=kwargs.get('business_facebook'),
+            business_instagram=kwargs.get('business_instagram'),
+            show_business_info=kwargs.get('show_business_info', True)
         )
         
         # Auto-post if requested

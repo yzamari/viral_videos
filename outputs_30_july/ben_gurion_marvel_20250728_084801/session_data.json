@@ -1,0 +1,15 @@
+{
+  "session_id": "ben_gurion_marvel_20250728_084801",
+  "mission": "Introduce Israel's founding Prime Minister David Ben-Gurion in Marvel superhero style with dark humor",
+  "duration_seconds": 35,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.COMEDY",
+  "visual_style": "dynamic",
+  "tone": "satirical",
+  "script_processing": {
+    "original_script": "[VISUAL: Intense, shadowy silhouette of a man with a determined gaze. Lightning cracks behind him.] DIALOGUE: From the Negev's dust, a titan emerged. He forged a nation from whispers and will. [VISUAL: Quick cuts of Ben-Gurion in action \u2013 giving speeches, signing documents. A subtle, slightly sarcastic smirk.] DIALOGUE: His superpower? Unwavering conviction, and a knack for making enemies sweat. Beware the beard of destiny. [VISUAL: A comic book panel splash page. Ben-Gurion appears with a cape, looking slightly exasperated by paperwork.] DIALOGUE: He faced down empires, yet his greatest battles were often against bureaucracy. A true hero, with a very dry wit. [VISUAL: An animated sequence of Ben-Gurion punching through obstacles. A faint, knowing wink.] DIALOGUE: When the world said 'impossible,' he heard 'opportunity.' His catchphrase? 'Let us build something!' \u2026 Loudly. [VISUAL: Final shot of Ben-Gurion looking sternly at the camera. Text overlay: 'David Ben-Gurion: Founding Prime Minister. Still judging your life choices.'] DIALOGUE: He is the architect, the general, the man who simply would not quit. A legend forged in fire.",
+    "final_script": "From the Negev's dust, a titan emerged, forging a nation from whispers and sheer will. His superpower? Unwavering conviction, a skill for unsettling enemies. Beware the beard of destiny. He confronted empires, but his toughest battles were against bureaucracy. A true hero, possessing a very dry wit. When the world declared something 'impossible,' he saw 'opportunity'. His resounding catchphrase? 'Let us build something!' He is the architect, the general, the man who simply would not quit. A legend forged in fire",
+    "word_count": 94,
+    "tts_ready": false
+  }
+}

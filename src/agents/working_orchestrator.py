@@ -387,7 +387,7 @@ class WorkingOrchestrator:
             # Phase 6: Video Generation with All Features (continuity-aware)
             try:
                 # Check if multiple languages are requested
-                languages = config.get('languages', [])
+                languages = config.get('languages', []) or []
                 logger.info(f"🔍 DEBUG: Languages in config: {languages}")
                 logger.info(f"🔍 DEBUG: Language count: {len(languages)}")
                 logger.info(f"🔍 DEBUG: Multiple languages check: {len(languages) > 1}")
@@ -840,8 +840,8 @@ class WorkingOrchestrator:
         multilang_topic = DiscussionTopic( topic_id="multilingual_strategy", title="Multilingual Content Strategy", description="Optimize content for multiple languages and cultures",
             context={
                 'mission': self.mission,
-                'languages': config.get('languages', [Language.ENGLISH_US]),
-                'cultural_adaptation': config.get('cultural_adaptation', True)
+                'languages': config.get('languages', [Language.ENGLISH_US]) or [Language.ENGLISH_US],
+                'cultural_adaptation': getattr(config, 'cultural_adaptation', True)
             }, required_decisions=["language_priority", "cultural_adaptation", "voice_selection"]
         )
 
@@ -864,7 +864,7 @@ class WorkingOrchestrator:
             duration_constraints = self.discussion_results['duration_validation'].decision
         
         # Determine the target language for script generation
-        languages = config.get('languages', [Language.ENGLISH_US])
+        languages = config.get('languages', [Language.ENGLISH_US]) or [Language.ENGLISH_US]
         target_language = languages[0] if languages else Language.ENGLISH_US
         
         # Add language instruction to the mission if not English
@@ -889,30 +889,67 @@ class WorkingOrchestrator:
             mission_with_language = f"{self.mission}\n\nIMPORTANT: Generate all script content, dialogue, and text in {language_name}. Do not translate the mission statement itself, but create the script output in {language_name}."
             logger.info(f"🌍 Generating script in {language_name}")
         
-        # Use Director to create base script
-        script_data = self.director.write_script(
-            mission=mission_with_language,
-            style=self.style,
-            duration=self.duration,
-            platform=self.platform,
-            category=self.category,
-            patterns={
-                'hooks': self.trending_insights.get('viral_hooks', []),
-                'themes': [self.tone],
-                'success_factors': [self.style, 'engaging'],
-                'duration_constraints': duration_constraints,
-                'max_words': int(self.duration * 2.8),  # Enforce word limit (2.8 words per second for TTS)
-                'tolerance_percent': 0.05,  # 5% tolerance
-                'target_language': target_language
-            }
-        )
+        # Use the calculated duration from core_decisions if available, otherwise fallback to self.duration
+        actual_duration = self.core_decisions.duration_seconds if self.core_decisions else self.duration
+        logger.info(f"🎯 Using duration for script generation: {actual_duration}s (core_decisions: {self.core_decisions is not None})")
+        
+        # Try new separated script generator for better visual/dialogue separation
+        try:
+            logger.info("🔄 Using new separated script generator for better visual/dialogue separation")
+            from ..generators.separated_script_generator import SeparatedScriptGenerator
+            
+            separated_generator = SeparatedScriptGenerator(self.api_key)
+            character_desc = config.get('character_description', self.character)
+            
+            script_data = await separated_generator.generate_separated_script(
+                mission=mission_with_language,
+                duration=actual_duration,
+                style=self.style,
+                platform=self.platform,
+                language=target_language,
+                character_description=character_desc
+            )
+            logger.info("✅ Successfully generated script with separated visual/dialogue approach")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Separated generator failed, falling back to Director: {e}")
+            
+            # Fallback to Director method
+            script_data = self.director.write_script(
+                mission=mission_with_language,
+                style=self.style,
+                duration=actual_duration,
+                platform=self.platform,
+                category=self.category,
+                patterns={
+                    'hooks': self.trending_insights.get('viral_hooks', []),
+                    'themes': [self.tone],
+                    'success_factors': [self.style, 'engaging'],
+                    'duration_constraints': duration_constraints,
+                    'max_words': int(actual_duration * 2.8),  # Enforce word limit (2.8 words per second for TTS)
+                    'tolerance_percent': 0.15,  # 15% tolerance (fixed)
+                    'target_language': target_language
+                }
+            )
 
         # Enhanced script processing for advanced modes
         if self.script_processor and self.mode != OrchestratorMode.SIMPLE:
+            # Extract the actual script text from script_data
+            # The Director returns a dict with 'full_text' containing all dialogue
+            script_text = script_data.get('full_text', '')
+            if not script_text:
+                # Fallback: construct from segments
+                hook_text = script_data.get('hook', {}).get('text', '')
+                segment_texts = [seg.get('text', '') for seg in script_data.get('segments', [])]
+                cta_text = script_data.get('cta', {}).get('text', '')
+                script_text = ' '.join([hook_text] + segment_texts + [cta_text]).strip()
+            
+            logger.info(f"📝 Processing script text: {script_text[:100]}...")
+            
             processed_script = await self.script_processor.process_script_for_tts(
-                script_content=str(script_data),
+                script_content=script_text,
                 language=target_language,  # Use the target_language we already determined above
-                target_duration=self.duration
+                target_duration=actual_duration
             )
 
             script_data['processed'] = processed_script
@@ -939,7 +976,7 @@ class WorkingOrchestrator:
         logger.info("🧠 Making comprehensive AI decisions...")
         
         # Get target language from config
-        languages = config.get('languages', [Language.ENGLISH_US])
+        languages = config.get('languages', [Language.ENGLISH_US]) or [Language.ENGLISH_US]
         target_language = languages[0] if languages else Language.ENGLISH_US
 
         decisions = {}
@@ -1143,7 +1180,7 @@ class WorkingOrchestrator:
             
             logger.info("✅ Multilingual generator initialized")
 
-        languages = config.get('languages', [Language.ENGLISH_US])
+        languages = config.get('languages', [Language.ENGLISH_US]) or [Language.ENGLISH_US]
 
         # Create enhanced video config
         video_config = self._create_enhanced_video_config(
@@ -1179,10 +1216,10 @@ class WorkingOrchestrator:
             if multilang_result and multilang_result.language_versions:
                 logger.info(f"💾 Saving {len(multilang_result.language_versions)} language versions...")
                 
-                # Get session directory
+                # Get session directory and use final_output for all language versions
                 session_dir = self.session_context.get_output_path()
-                languages_dir = os.path.join(session_dir, "languages")
-                os.makedirs(languages_dir, exist_ok=True)
+                final_output_dir = os.path.join(session_dir, "final_output")
+                os.makedirs(final_output_dir, exist_ok=True)
                 
                 # Save info about all languages
                 lang_info = {
@@ -1193,8 +1230,8 @@ class WorkingOrchestrator:
                 
                 for lang, version in multilang_result.language_versions.items():
                     lang_code = lang.value if hasattr(lang, 'value') else str(lang)
-                    lang_dir = os.path.join(languages_dir, lang_code)
-                    os.makedirs(lang_dir, exist_ok=True)
+                    # All language files go directly to final_output (no subdirectories)
+                    lang_dir = final_output_dir
                     
                     # Save audio file
                     if version.audio_path and os.path.exists(version.audio_path):
@@ -1312,11 +1349,11 @@ class WorkingOrchestrator:
             
             logger.info(f"📝 Base script: {base_script[:100]}...")
             
-            # Create session language directory
+            # Create session final_output directory (all languages in same folder)
             session_dir = f"outputs/{self.session_id}"
-            languages_dir = os.path.join(session_dir, "languages")
-            os.makedirs(languages_dir, exist_ok=True)
-            logger.info(f"📁 Created languages directory: {languages_dir}")
+            final_output_dir = os.path.join(session_dir, "final_output")
+            os.makedirs(final_output_dir, exist_ok=True)
+            logger.info(f"📁 Created final_output directory: {final_output_dir}")
             
             language_versions = {}
             
@@ -1324,10 +1361,9 @@ class WorkingOrchestrator:
                 try:
                     logger.info(f"🗣️ Processing {lang_names.get(language, language.value)}...")
                     
-                    # Create language directory
+                    # All language files go to final_output directory
                     lang_code = language.value.replace('-', '_')
-                    lang_dir = os.path.join(languages_dir, lang_code)
-                    os.makedirs(lang_dir, exist_ok=True)
+                    lang_dir = final_output_dir  # No subdirectories per language
                     
                     # Translate script if not English
                     if language == Language.ENGLISH_US:
@@ -1424,6 +1460,7 @@ class WorkingOrchestrator:
         """Combine video with audio and burn in subtitles using ffmpeg"""
         try:
             import subprocess
+            import os
             
             logger.info(f"🎬 Combining video with audio and subtitles")
             logger.info(f"   Video: {video_path}")
@@ -1443,7 +1480,6 @@ class WorkingOrchestrator:
                 '-c:a', 'aac',
                 '-map', '0:v:0',
                 '-map', '1:a:0',
-                '-shortest',
                 temp_video
             ]
             
@@ -1456,11 +1492,30 @@ class WorkingOrchestrator:
                 
             # Now add subtitles
             if subtitle_path and os.path.exists(subtitle_path):
-                # Burn in subtitles
+                # Escape the subtitle path for FFmpeg
+                escaped_subtitle_path = subtitle_path.replace('\\', '/').replace(':', '\\:')
+                
+                # Check if we need RTL support
+                rtl_alignment = 2  # Default center alignment
+                # Read first line of subtitle to check for RTL text
+                try:
+                    with open(subtitle_path, 'r', encoding='utf-8') as f:
+                        subtitle_content = f.read()
+                        import re
+                        rtl_chars = re.compile(r'[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]')
+                        if rtl_chars.search(subtitle_content):
+                            logger.info("🔤 Detected RTL language in subtitles")
+                            # For RTL, we might want right alignment (3) or keep center (2)
+                            # Center alignment (2) is usually better for subtitles
+                            rtl_alignment = 2
+                except Exception as e:
+                    logger.debug(f"Could not check for RTL: {e}")
+                
+                # Burn in subtitles with RTL-aware settings
                 cmd_subtitles = [
                     'ffmpeg', '-y',
                     '-i', temp_video,
-                    '-vf', f"subtitles={subtitle_path}:force_style='Fontsize=24,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,Outline=2,Alignment=2,MarginV=40'",
+                    '-vf', f"subtitles='{escaped_subtitle_path}':force_style='FontName=Arial,Fontsize=24,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,Outline=2,Alignment={rtl_alignment},MarginV=40'",
                     '-c:a', 'copy',
                     output_path
                 ]
@@ -1609,9 +1664,14 @@ class WorkingOrchestrator:
         logger.info("🎬 Generating enhanced video with AI decisions...")
 
         try:
-            # Create video generator with VEO3 disabled
+            # Create video generator with VEO3-FAST preference
             # Get Vertex AI configuration from environment
             import os
+            from src.generators.video_generator import VideoGenerator
+            
+            # Default to prefer VEO3-FAST (it's cheaper at $0.25/second)
+            prefer_veo3_fast = True
+            
             video_generator = VideoGenerator(
                 api_key=self.api_key,
                 use_real_veo2=not self.cheap_mode,  # Use VEO2 when cheap_mode is False
@@ -1619,7 +1679,7 @@ class WorkingOrchestrator:
                 vertex_project_id=os.getenv('VERTEX_AI_PROJECT_ID') or os.getenv('VERTEX_PROJECT_ID'),
                 vertex_location=os.getenv('VERTEX_AI_LOCATION') or os.getenv('VERTEX_LOCATION', 'us-central1'),
                 vertex_gcs_bucket=os.getenv('VERTEX_AI_GCS_BUCKET') or os.getenv('VERTEX_GCS_BUCKET'),
-                prefer_veo3=False  # CRITICAL: Disable VEO3 as requested
+                prefer_veo3=prefer_veo3_fast  # Use VEO3-FAST when configured
             )
 
             # Create enhanced video config
@@ -1776,7 +1836,7 @@ class WorkingOrchestrator:
                 logger.info("✅ Applied platform optimization from professional discussions")
 
         # Get languages from config
-        languages = config.get('languages', [Language.ENGLISH_US])
+        languages = config.get('languages', [Language.ENGLISH_US]) or [Language.ENGLISH_US]
         primary_language = languages[0] if languages else Language.ENGLISH_US
         
         # Enhanced configuration with platform and category for AI timing
@@ -1805,7 +1865,15 @@ class WorkingOrchestrator:
             use_real_veo2=config.get('force_generation') != 'force_image_gen',
             num_clips=num_clips,
             clip_durations=clip_durations,
-            theme_id=self.core_decisions.theme_id if self.core_decisions and hasattr(self.core_decisions, 'theme_id') else None
+            theme_id=self.core_decisions.theme_id if self.core_decisions and hasattr(self.core_decisions, 'theme_id') else None,
+            # Business information overlay
+            business_name=config.get('business_name'),
+            business_address=config.get('business_address'),
+            business_phone=config.get('business_phone'),
+            business_website=config.get('business_website'),
+            business_facebook=config.get('business_facebook'),
+            business_instagram=config.get('business_instagram'),
+            show_business_info=config.get('show_business_info', True)
         )
 
         logger.info(f"✅ Created enhanced video config with {len(decisions)} AI decisions")
@@ -1992,7 +2060,7 @@ class WorkingOrchestrator:
                 video_generator.core_decisions = self.core_decisions
             
             # Get languages from config
-            languages = config.get('languages', [Language.ENGLISH_US])
+            languages = config.get('languages', [Language.ENGLISH_US]) or [Language.ENGLISH_US]
             primary_language = languages[0] if languages else Language.ENGLISH_US
             
             # Create config based on cheap mode level
@@ -2028,7 +2096,15 @@ class WorkingOrchestrator:
                 use_real_veo2=use_real_veo2,
                 fallback_only=fallback_only,
                 cheap_mode=cheap_mode,  # Controls text video vs normal video
-                cheap_mode_level=self.cheap_mode_level  # Pass granular level to video generator
+                cheap_mode_level=self.cheap_mode_level,  # Pass granular level to video generator
+                # Business information overlay
+                business_name=config.get('business_name'),
+                business_address=config.get('business_address'),
+                business_phone=config.get('business_phone'),
+                business_website=config.get('business_website'),
+                business_facebook=config.get('business_facebook'),
+                business_instagram=config.get('business_instagram'),
+                show_business_info=config.get('show_business_info', True)
             )
             
             logger.info(f"💰 Generating video with {self.cheap_mode_level} cheap mode")

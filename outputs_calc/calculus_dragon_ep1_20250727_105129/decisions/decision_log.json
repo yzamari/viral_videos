@@ -1,0 +1,236 @@
+{
+  "duration_seconds": {
+    "key": "duration_seconds",
+    "value": 63,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-27T10:51:39.190340"
+  },
+  "platform": {
+    "key": "platform",
+    "value": "instagram",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Platform: instagram",
+    "timestamp": "2025-07-27T10:51:39.190473"
+  },
+  "category": {
+    "key": "category",
+    "value": "Educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Category: Educational",
+    "timestamp": "2025-07-27T10:51:39.190596"
+  },
+  "category_string": {
+    "key": "category_string",
+    "value": "Educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original category string: Educational",
+    "timestamp": "2025-07-27T10:51:39.190701"
+  },
+  "target_audience": {
+    "key": "target_audience",
+    "value": "general audience",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Target audience: general audience",
+    "timestamp": "2025-07-27T10:51:39.190808"
+  },
+  "language": {
+    "key": "language",
+    "value": "en-US",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Primary language from CLI: en-US",
+    "timestamp": "2025-07-27T10:51:39.190919"
+  },
+  "all_languages": {
+    "key": "all_languages",
+    "value": [
+      "en-US"
+    ],
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "All languages: en-US",
+    "timestamp": "2025-07-27T10:51:39.191024"
+  },
+  "style": {
+    "key": "style",
+    "value": "educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-27T10:51:39.191131"
+  },
+  "style_string": {
+    "key": "style_string",
+    "value": "educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original style string: educational",
+    "timestamp": "2025-07-27T10:51:39.191230"
+  },
+  "tone": {
+    "key": "tone",
+    "value": "funny",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Tone: funny",
+    "timestamp": "2025-07-27T10:51:39.191330"
+  },
+  "tone_string": {
+    "key": "tone_string",
+    "value": "funny",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original tone string: funny",
+    "timestamp": "2025-07-27T10:51:39.191426"
+  },
+  "visual_style": {
+    "key": "visual_style",
+    "value": "family guy animation",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Visual style: family guy animation",
+    "timestamp": "2025-07-27T10:51:39.191526"
+  },
+  "visual_style_string": {
+    "key": "visual_style_string",
+    "value": "family guy animation",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original visual style string: family guy animation",
+    "timestamp": "2025-07-27T10:51:39.191622"
+  },
+  "theme_id": {
+    "key": "theme_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No theme specified",
+    "timestamp": "2025-07-27T10:51:39.191725"
+  },
+  "style_reference_id": {
+    "key": "style_reference_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No style reference specified",
+    "timestamp": "2025-07-27T10:51:39.191829"
+  },
+  "character_id": {
+    "key": "character_id",
+    "value": "Baby dragon with big cute eyes, chubby cheeks, tiny wings, purple scales, wearing tiny glasses, Family Guy animation style, holding a tiny calculus book",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character specified by user: Baby dragon with big cute eyes, chubby cheeks, tiny wings, purple scales, wearing tiny glasses, Family Guy animation style, holding a tiny calculus book",
+    "timestamp": "2025-07-27T10:51:39.191929"
+  },
+  "character_scene": {
+    "key": "character_scene",
+    "value": "Animated classroom with chalkboard, Family Guy style, colorful math symbols floating around, epsilon chicks (\u03b5) thinking in the background",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character scene: Animated classroom with chalkboard, Family Guy style, colorful math symbols floating around, epsilon chicks (\u03b5) thinking in the background",
+    "timestamp": "2025-07-27T10:51:39.192039"
+  },
+  "frame_continuity": {
+    "key": "frame_continuity",
+    "value": true,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.95,
+    "reasoning": "AI decision: 63s duration on instagram - continuity preferred for quality",
+    "timestamp": "2025-07-27T10:51:45.483809"
+  },
+  "continuous_generation": {
+    "key": "continuous_generation",
+    "value": true,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified continuous: True",
+    "timestamp": "2025-07-27T10:51:45.484426"
+  },
+  "mode": {
+    "key": "mode",
+    "value": "enhanced",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mode: enhanced",
+    "timestamp": "2025-07-27T10:51:45.484664"
+  },
+  "cheap_mode": {
+    "key": "cheap_mode",
+    "value": false,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode: False",
+    "timestamp": "2025-07-27T10:51:45.484955"
+  },
+  "cheap_mode_level": {
+    "key": "cheap_mode_level",
+    "value": "full",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode level: full",
+    "timestamp": "2025-07-27T10:51:45.485215"
+  },
+  "mission": {
+    "key": "mission",
+    "value": "Family Guy cutaway: Baby dragon discovers number sets! 'Hey kids, I'm Epsilon the Dragon!' POOF! Natural numbers appear as counting cookies. 'But wait!' Integers show up with negative temperatures. WHOOSH! Rational numbers as pizza slices. 'Mind blown!' Irrational numbers as infinite dragons. Real numbers form a beautiful number line. Absolute value is like dragon hugs - always positive! Intervals are dragon nap zones. Bounded sets are like dragon cages. Supremum is the tallest dragon! Completeness means no gaps in our number line! Epsilon chicks chirp: '\u03b5 > 0!'",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mission: Family Guy cutaway: Baby dragon discovers number s...",
+    "timestamp": "2025-07-27T10:51:45.485444"
+  },
+  "hook": {
+    "key": "hook",
+    "value": "Amazing content ahead!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated hook",
+    "timestamp": "2025-07-27T10:51:45.485664"
+  },
+  "call_to_action": {
+    "key": "call_to_action",
+    "value": "Follow for more!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated CTA",
+    "timestamp": "2025-07-27T10:51:45.485857"
+  },
+  "voice_strategy": {
+    "key": "voice_strategy",
+    "value": "variety",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: 63s duration",
+    "timestamp": "2025-07-27T10:51:45.486051"
+  },
+  "color_palette": {
+    "key": "color_palette",
+    "value": "family guy animation palette",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 0.5,
+    "reasoning": "Style-based fallback",
+    "timestamp": "2025-07-27T10:51:45.486314"
+  },
+  "background_music_style": {
+    "key": "background_music_style",
+    "value": "ambient",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: educational style, funny tone",
+    "timestamp": "2025-07-27T10:51:45.486537"
+  },
+  "num_clips": {
+    "key": "num_clips",
+    "value": 8,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.9,
+    "reasoning": "Two clips allow for a clear before-and-after visual impact.  One clip focuses on introducing the basic sets, the second on the more advanced concepts. This avoids overwhelming the viewer with information in a short timeframe. [ADJUSTED: Enforced 8-second maximum clip duration constraint - increased from 2 to 8 clips]",
+    "timestamp": "2025-07-27T10:52:00.235866"
+  }
+}

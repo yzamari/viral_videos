@@ -1,0 +1,227 @@
+{
+  "hashtags": [
+    {
+      "tag": "#FamilyGuyCalculus",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Combines the popular show with the educational topic, creating immediate recognition and interest.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#NinjaMath",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the ninja dojo metaphor and the educational aspect, making it intriguing.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#BabyDragonMath",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Focuses on the adorable baby dragon character and the math theme.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#CalculusSecrets",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Emphasizes the 'secret techniques' and advanced nature of the content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#DarbouxTheorem",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Directly targets users searching for specific calculus concepts.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#LHopitalsRule",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Specific and searchable for the key technique taught.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#LearnOnTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popular TikTok trend of educational content on the platform.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#EduTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Broad educational tag for TikTok, currently very popular.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#MathIsCool",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "A generally positive and trending sentiment around making math engaging.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ComedyMath",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the comedic approach to learning calculus.",
+      "trend_score": 0.82
+    },
+    {
+      "tag": "#AnimationIsArt",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to users interested in animation and creative content, a common trend.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#ExplainLikeIm5",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Popular format for simplifying complex topics, which this content does.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#NinjaSkills",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Taps into the popular theme of ninjas and skill acquisition.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#FunnyLearning",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Captures the blend of humor and education, a strong engagement driver.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#MathMadeEasy",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets users looking for accessible explanations of difficult math topics.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#CalculusTips",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "For students and enthusiasts actively seeking calculus advice.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#IndeterminateForms",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Highly specific to the calculus problem being solved.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#LimitTechniques",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets advanced calculus learners interested in specific methods.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#MathHumor",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Connects with a community that appreciates humor in math.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#EducationalComedy",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Precisely describes the unique blend of content.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#Animation",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General tag for anyone interested in animated content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Comedy",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Broad appeal for users seeking humorous content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Education",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Maximizes reach to a general audience interested in learning.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#Learning",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to a wide audience interested in acquiring knowledge.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Math",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "The most fundamental tag for reaching anyone interested in mathematics.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Funny",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General tag for humor, ensuring broad discoverability.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ShareYourKnowledge",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages community participation and discussion.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#AskMeAnything",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Invites questions and fosters interaction from the audience.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Prompts comments and opinions, boosting engagement metrics.",
+      "trend_score": 0.78
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The strategy incorporates a mix of evergreen educational tags, trending TikTok/Instagram Reels formats like #LearnOnTikTok and #EduTok, popular meme-like themes (#NinjaSkills, #FamilyGuy), and highly specific calculus terms. The focus is on attracting both existing math enthusiasts and a broader audience drawn in by the unique concept and humor.",
+    "engagement_strategy": "Engagement is driven by actively encouraging audience participation through questions (#WhatDoYouThink) and inviting them to share their own learning experiences or ask questions (#ShareYourKnowledge, #AskMeAnything). The niche and primary tags also serve to attract users already interested in these specific topics, increasing the likelihood of interaction."
+  },
+  "usage_tips": [
+    "For Instagram, aim to use a diverse mix of these hashtags. Place a good portion of them in the first comment to keep the caption clean and visually appealing.",
+    "While these are generally good for Instagram, consider tailoring the 'trending' category to whatever is currently viral on the platform at the time of posting (e.g., a specific dance, audio, or challenge).",
+    "Don't be afraid to experiment with slightly longer, more descriptive hashtags if they accurately reflect your content, as Instagram's search is quite robust.",
+    "Monitor the performance of different hashtag categories to refine your strategy over time. See which ones drive the most impressions and engagement for your content."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-28T02:01:30.379703",
+    "topic": "Create a Family Guy style comedy where baby dragon in ninja dojo learns secret calculus techniques. Teach Darboux theorem, L'Hôpital's rule for various indeterminate forms, and advanced limit techniques. Use visual metaphors: ninja training, secret scrolls, ultimate techniques. Show how to handle 0/0, infinity/infinity, and other indeterminate forms with humor and clarity.",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 29
+  }
+}

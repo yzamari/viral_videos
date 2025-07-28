@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 8,
+  "hook_text": "\u05d4\u05db\u05e0\u05e1\u05ea \u05de\u05ea\u05e4\u05d5\u05e6\u05e6\u05ea! \u05e0\u05ea\u05e0\u05d9\u05d4\u05d5 \u05e2\u05dd \u05d1\u05e8\u05e7\u05d9\u05dd: \"\u05d0\u05e0\u05d9 \u05e0\u05e6\u05d7\u05d9!\" - \u05de\u05d9 \u05e0\u05e2\u05dc\u05dd?",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "dynamic",
+    "color_palette": "vibrant",
+    "reasoning": "User explicitly requested dynamic style",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "dynamic",
+    "reasoning": "The content is highly dynamic with visual effects and text. Placing the primary overlay at the bottom center provides good visibility for the overall scene, especially considering the 'crashing through walls' and 'exploding panels' elements that might dominate the upper portions. The 'dynamic' strategy allows for elements to be placed without obstructing crucial action, while still keeping key information accessible. For Instagram, avoiding the bottom 20% is respected by centering it above that zone.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i /var/folders/p9/8_jtm3l55v921154bg2xg5vr0000gn/T/tmpwj7hd17y.mp4 -vf drawtext=text='I AM ETERNAL \u26a1':fontcolor=#54A0FF:fontsize=60:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,3.5\\,6.0),drawtext=text='Coalition BOOM \ud83e\udd2f':fontcolor=#00D2D3:fontsize=58:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,9.5\\,12.0),drawtext=text='Texting & Trials \ud83d\udcf2':fontcolor=#5F27CD:fontsize=50:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,12.5\\,15.0),drawtext=text='Settlements THWACK \ud83c\udfd7\ufe0f':fontcolor=#96CEB4:fontsize=54:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,15.5\\,18.0),drawtext=text='Bibi Returns \ud83d\udd04':fontcolor=#FF6B6B:fontsize=60:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,21.5\\,24.0),drawtext=text='Lightning Flag \ud83c\uddee\ud83c\uddf1':fontcolor=#45B7D1:fontsize=54:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,24.5\\,27.0),drawtext=text='Follow for':fontcolor=#FF00FF:fontsize=60:font='Impact':box=1:boxcolor=#FFFF00@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,22.933333\\,24.333333),drawtext=text='more':fontcolor=#FF00FF:fontsize=60:font='Impact':box=1:boxcolor=#FFFF00@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,24.433333\\,25.833333) -c:a copy -y outputs/netanyahu_marvel_ep17_20250727_233813/temp_files/timed_overlays_tmpwj7hd17y.mp4",
+  "filter_complex": "drawtext=text='I AM ETERNAL \u26a1':fontcolor=#54A0FF:fontsize=60:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,3.5\\,6.0),drawtext=text='Coalition BOOM \ud83e\udd2f':fontcolor=#00D2D3:fontsize=58:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,9.5\\,12.0),drawtext=text='Texting & Trials \ud83d\udcf2':fontcolor=#5F27CD:fontsize=50:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,12.5\\,15.0),drawtext=text='Settlements THWACK \ud83c\udfd7\ufe0f':fontcolor=#96CEB4:fontsize=54:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,15.5\\,18.0),drawtext=text='Bibi Returns \ud83d\udd04':fontcolor=#FF6B6B:fontsize=60:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,21.5\\,24.0),drawtext=text='Lightning Flag \ud83c\uddee\ud83c\uddf1':fontcolor=#45B7D1:fontsize=54:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,24.5\\,27.0),drawtext=text='Follow for':fontcolor=#FF00FF:fontsize=60:font='Impact':box=1:boxcolor=#FFFF00@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,22.933333\\,24.333333),drawtext=text='more':fontcolor=#FF00FF:fontsize=60:font='Impact':box=1:boxcolor=#FFFF00@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,24.433333\\,25.833333)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 28.933333,
+    "overlay_count": 8
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 6,
+  "hook_text": "Marvel's Ben-Gurion: INEVITABLE desert birth! Vanishing mandates, exploding history!",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "comic",
+    "color_palette": "vibrant",
+    "reasoning": "The prompt explicitly mentions 'Marvel Comics explosion!', 'comic smoke', and 'exploding panels,' all of which strongly point to a comic book art style. The energetic descriptions like 'bursts,' 'VANISHES,' and 'KA-POW!' also align perfectly with the dynamic and exaggerated visuals common in comics. Vibrant colors will enhance the energetic and impactful nature of this style, suiting Instagram's audience.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "The prompt describes a visually busy scene with an explosion and comic book elements. Placing the text at the top center provides a clear, unobstructed view of the main action while keeping the text visible without interfering with the core visuals. Instagram's rule of avoiding the bottom 20% makes the top half a safer bet.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/israeli_pm_marvel_ep1_en/temp_files/base_video.mp4 -vf drawtext=text='Mandate Vanishes \ud83d\udca8':fontcolor=#FF6B6B:fontsize=55:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,6.5\\,9.0),drawtext=text='Kibbutz Power \u2728':fontcolor=#5F27CD:fontsize=55:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,15.5\\,18.0),drawtext=text='The Legacy \ud83c\uddee\ud83c\uddf1':fontcolor=#2C3E50:fontsize=55:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,24.5\\,27.0),drawtext=text='#BenGurionEpic':fontcolor=#FFFFFF:fontsize=40:font='Helvetica-Bold':box=1:boxcolor=#5F27CD@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,27.5\\,30.5),drawtext=text='Follow for':fontcolor=#FFD700:fontsize=52:font='Impact':box=1:boxcolor=#800080@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,24.51\\,25.91),drawtext=text='more':fontcolor=#FFD700:fontsize=52:font='Impact':box=1:boxcolor=#800080@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,26.01\\,27.41) -c:a copy -y outputs/israeli_pm_marvel_ep1_en/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='Mandate Vanishes \ud83d\udca8':fontcolor=#FF6B6B:fontsize=55:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,6.5\\,9.0),drawtext=text='Kibbutz Power \u2728':fontcolor=#5F27CD:fontsize=55:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,15.5\\,18.0),drawtext=text='The Legacy \ud83c\uddee\ud83c\uddf1':fontcolor=#2C3E50:fontsize=55:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,24.5\\,27.0),drawtext=text='#BenGurionEpic':fontcolor=#FFFFFF:fontsize=40:font='Helvetica-Bold':box=1:boxcolor=#5F27CD@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,27.5\\,30.5),drawtext=text='Follow for':fontcolor=#FFD700:fontsize=52:font='Impact':box=1:boxcolor=#800080@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,24.51\\,25.91),drawtext=text='more':fontcolor=#FFD700:fontsize=52:font='Impact':box=1:boxcolor=#800080@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,26.01\\,27.41)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 30.51,
+    "overlay_count": 6
+  }
+}

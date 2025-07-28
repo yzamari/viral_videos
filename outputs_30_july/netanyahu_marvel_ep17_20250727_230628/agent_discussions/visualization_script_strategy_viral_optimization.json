@@ -1,0 +1,127 @@
+{
+  "discussion_summary": {
+    "topic": "Script Strategy & Viral Optimization",
+    "participants": [
+      "StoryWeaver",
+      "VisionCraft",
+      "AudioMaster"
+    ],
+    "duration_seconds": 3.7168691158294678,
+    "total_rounds": 1,
+    "final_consensus": 1.0,
+    "target_consensus": 0.7,
+    "success": true
+  },
+  "round_by_round": [
+    {
+      "round": 1,
+      "contributions": [
+        {
+          "agent": "StoryWeaver",
+          "message": "To maximize engagement for this 'Marvel Comics explosion!' video on Instagram, we must lean into the rapid-fire, over-the-top comic book aesthetic. Each action needs a distinct visual and sound effect, like the CRASH! and WHOOSH!, to create a punchy, high-energy experience within the 35-second timeframe.",
+          "vote": "agree",
+          "timestamp": "2025-07-27 23:06:59.377461"
+        },
+        {
+          "agent": "VisionCraft",
+          "message": "To maximize engagement for this 'Marvel Comics explosion!' video on Instagram, we must prioritize rapid-fire visual gags and punchy sound design that synchronize with each described action, ensuring every moment lands with a comic-book impact. The key is a fast-paced, visually dynamic sequence that delivers the satirical message through quick, over-the-top action.",
+          "vote": "agree",
+          "timestamp": "2025-07-27 23:07:00.765273"
+        },
+        {
+          "agent": "AudioMaster",
+          "message": "For this 'Marvel Comics explosion!' video, we must maximize engagement by ensuring each distinct action and dialogue cue is punchy, visually dynamic, and perfectly synced with high-impact sound effects. The 35-second duration demands aggressive pacing, with each event, from the Knesset wall crash to the flag flourish, landing sharply to maintain audience attention on Instagram.",
+          "vote": "agree",
+          "timestamp": "2025-07-27 23:07:01.927729"
+        }
+      ],
+      "votes": {
+        "agree": 3,
+        "disagree": 0,
+        "neutral": 0
+      }
+    }
+  ],
+  "consensus_progression": [
+    {
+      "round": 1,
+      "consensus": 1.0,
+      "timestamp": "2025-07-27 23:07:01.929044"
+    }
+  ],
+  "agent_contributions": {
+    "StoryWeaver": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-27 23:06:59.377461",
+      "last_contribution": "2025-07-27 23:06:59.377461"
+    },
+    "VisionCraft": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-27 23:07:00.765273",
+      "last_contribution": "2025-07-27 23:07:00.765273"
+    },
+    "AudioMaster": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-27 23:07:01.927729",
+      "last_contribution": "2025-07-27 23:07:01.927729"
+    }
+  },
+  "timeline": [
+    {
+      "timestamp": "2025-07-27 23:06:58.214612",
+      "event": "discussion_started",
+      "description": "Discussion 'Script Strategy & Viral Optimization' started"
+    },
+    {
+      "timestamp": "2025-07-27 23:06:59.377461",
+      "event": "agent_contribution",
+      "agent": "StoryWeaver",
+      "round": 1,
+      "description": "StoryWeaver contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-27 23:07:00.765273",
+      "event": "agent_contribution",
+      "agent": "VisionCraft",
+      "round": 1,
+      "description": "VisionCraft contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-27 23:07:01.927729",
+      "event": "agent_contribution",
+      "agent": "AudioMaster",
+      "round": 1,
+      "description": "AudioMaster contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-27 23:07:01.929044",
+      "event": "consensus_update",
+      "round": 1,
+      "consensus_level": 1.0,
+      "description": "Consensus updated to 100.0% in round 1"
+    },
+    {
+      "timestamp": "2025-07-27 23:07:01.931484",
+      "event": "discussion_completed",
+      "description": "Discussion completed with 100.0% consensus"
+    }
+  ]
+}

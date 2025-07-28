@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep7_20250728_005415",
+  "mission": "Create a Family Guy style comedy where baby dragon shape-shifter teaches functions. Explain transformation rules, domain and range, one-to-one and onto functions, bijections, function composition, even/odd functions, and periodic functions. Use visual metaphors: dragon transformation machine, territory maps, mirror and rotational symmetry. Make abstract function concepts concrete and entertaining.",
+  "platform": "instagram",
+  "duration_seconds": 35,
+  "created_at": "2025-07-28T01:09:11.522883",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep7_20250728_005415/final_output/final_video_calculus_dragon_ep7_20250728_005415__final.mp4",
+      "file_size_mb": 80.58526039123535
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep7_20250728_005415/final_output/final_video_calculus_dragon_ep7_20250728_005415__audio_only.mp4",
+      "file_size_mb": 65.22903156280518
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep7_20250728_005415/final_output/final_video_calculus_dragon_ep7_20250728_005415__overlays_only.mp4",
+      "file_size_mb": 65.34926223754883
+    }
+  }
+}

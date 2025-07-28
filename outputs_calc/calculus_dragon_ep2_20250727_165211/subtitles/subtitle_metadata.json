@@ -1,0 +1,27 @@
+{
+  "total_segments": 34,
+  "total_duration": 58.514284999999994,
+  "script_content": "All aboard the SEQUENCE EXPRESS! Our first number is one. Next, one-half. Then, one-third. CHOO CHOO! Notice the pattern - each term follows a simple rule. We are approaching LIMIT STATION, zero. Convergence means we get increasingly closer to zero. After a certain point, all terms remain extremely close to zero. The UNIQUE LIMIT THEOREM guarantees only one possible destination. If minus M is less than or equal to a sub n, the sequence is bounded. This convergence is fascinating, is it not? The elegance of mathematics is on full display here. We see the power of limits in action, approaching the destination with unwavering precision. The journey itself is as remarkable as the destination. Observe how each step brings us closer, illustrating the concept flawlessly. The precision is truly astounding. It is a beautiful illustration of mathematical convergence",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_9.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_10.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_11.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_12.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_13.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_14.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_15.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_16.mp3",
+    "outputs/calculus_dragon_ep2_20250727_165211/audio/padded/padded_audio_segment_17.mp3"
+  ],
+  "target_duration": 58.514284999999994,
+  "capped_to_target": false
+}

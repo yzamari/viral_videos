@@ -1,0 +1,23 @@
+{
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "A Family Guy-style comedy inherently requires a cartoon style for its visual humor and character designs. Vibrant colors are typical of the show and will appeal to a general Instagram audience, making the complex mathematical concepts more digestible and visually engaging. The chosen style allows for creative visual metaphors like treasure hunting and dragon velocity.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "Instagram's feed prioritizes content. Placing the overlay at the top center ensures it's visible without obstructing the core visual narrative of the cartoon, which will likely unfold in the main body of the screen. This also avoids the bottom 20% restriction for Instagram.",
+    "mobile_optimized": true
+  },
+  "timestamp": "2025-07-28T01:39:07.883591",
+  "config": {
+    "mission": "Create a Family Guy style comedy where dragon treasure hunter teaches extreme value theorem, uniform continuity, and introduces derivatives. Cover finding max/min on closed intervals, monotonic bijections, Heine-Cantor theorem, and derivative as instantaneous rate of change. Use visual metaphors: treasure hunting, dragon velocity, measuring slopes. Show relationship between differentiability and continuity.",
+    "platform": "Platform.INSTAGRAM",
+    "category": "VideoCategory.EDUCATIONAL",
+    "duration": 35,
+    "visual_style": "family guy animation",
+    "tone": "funny"
+  }
+}

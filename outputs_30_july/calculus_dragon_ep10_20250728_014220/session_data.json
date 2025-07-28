@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep10_20250728_014220",
+  "mission": "Create a Family Guy Olympics special where dragons compete in calculus events. Cover chain rule, inverse function derivatives, higher derivatives, critical points, Fermat's theorem, Rolle's theorem, Lagrange mean value theorem, and Cauchy mean value theorem. Use visual metaphors: relay races, gymnastics, marathon running, treasure hunting. Make derivative rules and theorems exciting through Olympic competition format.",
+  "duration_seconds": 35,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: A majestic dragon soaring, a stadium filled with roaring dragons.  Peter Griffin commentates.] DIALOGUE: Welcome to the first ever Dragon Calculus Olympics! [VISUAL: Dragons in a relay race, passing glowing vials representing derivatives.] DIALOGUE: The Chain Rule Relay: each dragon\u2019s output must match the next dragon\u2019s input! [VISUAL: A dragon performing complex aerial maneuvers, landing precisely on specific points.] DIALOGUE: Inverse function derivatives are judged on elegance and accuracy in the gymnastics arena. [VISUAL: Dragons climbing a treacherous mountain, finding critical points.] DIALOGUE: Higher derivatives and critical points are key in our treacherous mountain climbing marathon. [VISUAL: Dragons unearthing a treasure chest marked with theorems.] DIALOGUE: Fermat's, Rolle's, and Mean Value theorems are buried treasures in our grand finale hunt!",
+    "final_script": "Welcome to the first ever Dragon Calculus Olympics! The Chain Rule Relay: each dragon\u2019s output must match the next dragon\u2019s input! Inverse function derivatives are judged on elegance and accuracy in the gymnastics arena. Higher derivatives and critical points are key in our treacherous mountain climbing marathon. Fermat's, Rolle's, and Mean Value theorems are buried treasures in our grand finale hunt",
+    "word_count": 61,
+    "tts_ready": false
+  }
+}

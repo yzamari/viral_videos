@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep13_20250728_021055",
+  "mission": "Create a Family Guy style comedy where dragon detective investigates functions completely. Teach systematic function analysis: finding domain, critical points, using first and second derivative tests, finding inflection points, asymptotes, and sketching curves. Use visual metaphors: detective investigation, solving cases, mood swings for concavity. Make the complete function investigation process entertaining and memorable.",
+  "platform": "instagram",
+  "duration_seconds": 35,
+  "created_at": "2025-07-28T02:25:07.837474",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep13_20250728_021055/final_output/final_video_calculus_dragon_ep13_20250728_021055__final.mp4",
+      "file_size_mb": 80.88089752197266
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep13_20250728_021055/final_output/final_video_calculus_dragon_ep13_20250728_021055__audio_only.mp4",
+      "file_size_mb": 66.45791530609131
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep13_20250728_021055/final_output/final_video_calculus_dragon_ep13_20250728_021055__overlays_only.mp4",
+      "file_size_mb": 66.32500553131104
+    }
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "hashtags": [
+    {
+      "tag": "#SequenceDragonExpress",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly names the content, making it highly searchable and recognizable. It's unique and memorable.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#MathParody",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Clearly states the comedic and educational nature of the content, attracting both humor and learning audiences.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#LimitsExplained",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Essential for users actively searching for explanations of mathematical limits.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#EpsilonDelta",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Specific to the mathematical concept, attracting a targeted audience interested in calculus and analysis.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#CalculusComedy",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the subject matter with humor, broadening appeal within the educational sphere.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#FamilyGuyParody",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popularity of Family Guy to attract a massive, engaged audience.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#ViralMath",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Aims for broad virality within the educational content space.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#LearnOnTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages a dominant platform trend for educational content, encouraging short-form learning.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#EduTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A popular and established hashtag for educational content on TikTok, ensuring discoverability.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#MathIsFun",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Promotes a positive and engaging view of math, aligning with the content's tone.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ComedySketch",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Describes the format and genre, attracting viewers who enjoy humorous skits.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#AnimationMagic",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the visual appeal and impressive animation mentioned in the description.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#SqueezeTheorem",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Specific to the mathematical concept used as a weapon, attracting advanced math students and educators.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#SequenceAndSeries",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets students studying this specific area of mathematics.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#CalculusGeek",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to a dedicated community passionate about calculus.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MathEducation",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Broad but targeted towards the educational sector, reaching teachers and students.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#STEMEducation",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Connects with the broader STEM learning community.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#MathematicsIsArt",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "A more artistic and philosophical take on math, attracting a creative audience interested in the beauty of numbers.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#StudyGram",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Popular on Instagram for study-related content, reaching a large student demographic.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#InstaEdu",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "A common hashtag for educational content on Instagram, fostering discoverability.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ReelsEducation",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Specifically targets Instagram Reels, where this content would likely perform well.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#FunnyMath",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to a wide audience who enjoy humorous takes on academic subjects.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#EducationalVideo",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A straightforward and searchable tag for anyone looking for educational videos.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#LearnSomethingNew",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Encourages discovery and learning, a common user intent.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ShareTheKnowledge",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages sharing and community building around learning.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#TagAFriend",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Directly prompts users to engage by tagging others, increasing reach.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#WhatsYourFavoriteMathConcept",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Asks a question to spark conversation and comments.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MathMemes",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects the educational content with the popular meme culture, especially relevant for younger audiences.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#AnimationInEducation",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the innovative use of animation for educational purposes.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ComedyInEducation",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Focuses on the unique blend of humor and learning, attracting those seeking engaging educational methods.",
+      "trend_score": 0.75
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The strategy incorporates trending hashtags relevant to short-form video content ('#LearnOnTikTok', '#EduTok', '#ReelsEducation'), popular cultural references ('#FamilyGuyParody'), and broad appeal tags ('#MathIsFun', '#FunnyMath'). Niche tags are selected to target specific mathematical concepts and educational communities ('#EpsilonDelta', '#SqueezeTheorem', '#CalculusGeek'). Engagement tags encourage user interaction and content sharing.",
+    "engagement_strategy": "Engagement is driven by a mix of direct calls to action like '#TagAFriend', community-building hashtags like '#ShareTheKnowledge', and question-based prompts like '#WhatsYourFavoriteMathConcept' to encourage comments and discussions. The humorous and relatable nature of the content itself is also a key driver of organic engagement."
+  },
+  "usage_tips": [
+    "For Instagram, aim for a mix of popular and niche hashtags. Place the most important primary hashtags at the beginning of your caption or in the first comment for better visibility.",
+    "Vary your hashtag usage across different posts to reach a wider audience and test what resonates best.",
+    "Consider creating a unique branded hashtag for your series (e.g., #SequenceDragonExpress) and encourage your audience to use it.",
+    "Monitor the performance of your hashtags to identify which ones are driving the most reach and engagement.",
+    "For Reels, ensure your hashtags are visible and relevant to the trending audio or visual elements if applicable."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-28T08:23:40.573571",
+    "topic": "EPISODE 2: Sequence Dragon Express!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! INSANE Family Guy parody! Dragon conductor's MAGICAL TRAIN is HIJACKED by epsilon-delta BANDITS! Each train car is a sequence term RACING toward limit station while bandits throw MATHEMATICAL OBSTACLES! Dragon must FIGHT OFF convergence villains, blast through epsilon tunnels with FIRE BREATH, and use the SQUEEZE THEOREM as a WEAPON! Include train EXPLOSIONS, ridiculous chase scenes, and the dragon using bounded sequences as SHIELDS! Make students SCREAM with laughter while mastering limits!",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

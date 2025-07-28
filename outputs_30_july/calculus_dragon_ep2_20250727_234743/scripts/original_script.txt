@@ -1,0 +1,1 @@
+Welcome aboard the Number Train! Our baby dragon conductor guides us toward a special station. Each car, a sequence number, gets closer and closer. This is convergence! See the tiny epsilon tunnels? They show how numbers stay near the limit. Bounds keep our train on track, always within limits. No derailing! With these math lessons, sequences and limits are now super clear!

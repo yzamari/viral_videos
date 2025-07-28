@@ -1,0 +1,236 @@
+{
+  "duration_seconds": {
+    "key": "duration_seconds",
+    "value": 35,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-27T23:47:54.306911"
+  },
+  "platform": {
+    "key": "platform",
+    "value": "instagram",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Platform: instagram",
+    "timestamp": "2025-07-27T23:47:54.307187"
+  },
+  "category": {
+    "key": "category",
+    "value": "Educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Category: Educational",
+    "timestamp": "2025-07-27T23:47:54.307431"
+  },
+  "category_string": {
+    "key": "category_string",
+    "value": "Educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original category string: Educational",
+    "timestamp": "2025-07-27T23:47:54.307660"
+  },
+  "target_audience": {
+    "key": "target_audience",
+    "value": "general audience",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Target audience: general audience",
+    "timestamp": "2025-07-27T23:47:54.307895"
+  },
+  "language": {
+    "key": "language",
+    "value": "en-US",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Primary language from CLI: en-US",
+    "timestamp": "2025-07-27T23:47:54.308135"
+  },
+  "all_languages": {
+    "key": "all_languages",
+    "value": [
+      "en-US"
+    ],
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "All languages: en-US",
+    "timestamp": "2025-07-27T23:47:54.308363"
+  },
+  "style": {
+    "key": "style",
+    "value": "educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-27T23:47:54.308602"
+  },
+  "style_string": {
+    "key": "style_string",
+    "value": "educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original style string: educational",
+    "timestamp": "2025-07-27T23:47:54.308821"
+  },
+  "tone": {
+    "key": "tone",
+    "value": "funny",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Tone: funny",
+    "timestamp": "2025-07-27T23:47:54.309047"
+  },
+  "tone_string": {
+    "key": "tone_string",
+    "value": "funny",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original tone string: funny",
+    "timestamp": "2025-07-27T23:47:54.311977"
+  },
+  "visual_style": {
+    "key": "visual_style",
+    "value": "family guy animation",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Visual style: family guy animation",
+    "timestamp": "2025-07-27T23:47:54.312234"
+  },
+  "visual_style_string": {
+    "key": "visual_style_string",
+    "value": "family guy animation",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original visual style string: family guy animation",
+    "timestamp": "2025-07-27T23:47:54.312524"
+  },
+  "theme_id": {
+    "key": "theme_id",
+    "value": "preset_university",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Theme specified by user: preset_university",
+    "timestamp": "2025-07-27T23:47:54.312805"
+  },
+  "style_reference_id": {
+    "key": "style_reference_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No style reference specified",
+    "timestamp": "2025-07-27T23:47:54.313058"
+  },
+  "character_id": {
+    "key": "character_id",
+    "value": "Young clever dragon professor with glasses, purple scales, wearing a lab coat, Family Guy animation style, holding advanced calculus textbook, confident and witty expression",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character specified by user: Young clever dragon professor with glasses, purple scales, wearing a lab coat, Family Guy animation style, holding advanced calculus textbook, confident and witty expression",
+    "timestamp": "2025-07-27T23:47:54.313304"
+  },
+  "character_scene": {
+    "key": "character_scene",
+    "value": "University lecture hall with complex equations on multiple blackboards, Family Guy style, mathematical symbols and formulas floating around, epsilon-delta proofs visualized, engineering diagrams in background",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character scene: University lecture hall with complex equations on multiple blackboards, Family Guy style, mathematical symbols and formulas floating around, epsilon-delta proofs visualized, engineering diagrams in background",
+    "timestamp": "2025-07-27T23:47:54.313551"
+  },
+  "frame_continuity": {
+    "key": "frame_continuity",
+    "value": true,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.95,
+    "reasoning": "AI decision: 35s duration on instagram - continuity preferred for quality",
+    "timestamp": "2025-07-27T23:48:07.680004"
+  },
+  "continuous_generation": {
+    "key": "continuous_generation",
+    "value": true,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified continuous: True",
+    "timestamp": "2025-07-27T23:48:07.680242"
+  },
+  "mode": {
+    "key": "mode",
+    "value": "enhanced",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mode: enhanced",
+    "timestamp": "2025-07-27T23:48:07.680437"
+  },
+  "cheap_mode": {
+    "key": "cheap_mode",
+    "value": false,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode: False",
+    "timestamp": "2025-07-27T23:48:07.680626"
+  },
+  "cheap_mode_level": {
+    "key": "cheap_mode_level",
+    "value": "full",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode level: full",
+    "timestamp": "2025-07-27T23:48:07.680813"
+  },
+  "mission": {
+    "key": "mission",
+    "value": "Create a Family Guy style comedy where baby dragon conductor runs a magical number train to teach sequences and limits. Each train car represents sequence terms approaching a limit. Explain convergence, epsilon-delta definition, unique limit theorem, bounded sequences, arithmetic of limits, and the squeeze theorem. Use visual metaphors: train approaching limit station, epsilon tunnels, safety rails for bounds. Make it entertaining while teaching how sequences converge to limits with mathematical precision.",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mission: Create a Family Guy style comedy where baby dragon...",
+    "timestamp": "2025-07-27T23:48:07.681014"
+  },
+  "hook": {
+    "key": "hook",
+    "value": "Amazing content ahead!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated hook",
+    "timestamp": "2025-07-27T23:48:07.681215"
+  },
+  "call_to_action": {
+    "key": "call_to_action",
+    "value": "Follow for more!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated CTA",
+    "timestamp": "2025-07-27T23:48:07.681398"
+  },
+  "voice_strategy": {
+    "key": "voice_strategy",
+    "value": "variety",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: 35s duration",
+    "timestamp": "2025-07-27T23:48:07.681585"
+  },
+  "color_palette": {
+    "key": "color_palette",
+    "value": "family guy animation palette",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 0.5,
+    "reasoning": "Style-based fallback",
+    "timestamp": "2025-07-27T23:48:07.681778"
+  },
+  "background_music_style": {
+    "key": "background_music_style",
+    "value": "ambient",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: educational style, funny tone",
+    "timestamp": "2025-07-27T23:48:07.681965"
+  },
+  "num_clips": {
+    "key": "num_clips",
+    "value": 5,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.9,
+    "reasoning": "Two clips allow for a clear introduction and a compelling visual demonstration.  More would be too complex for the short timeframe. [ADJUSTED: Enforced 8-second maximum clip duration constraint - increased from 2 to 5 clips]",
+    "timestamp": "2025-07-27T23:48:27.288644"
+  }
+}

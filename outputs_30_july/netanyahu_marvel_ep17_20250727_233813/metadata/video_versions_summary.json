@@ -1,0 +1,24 @@
+{
+  "session_id": "netanyahu_marvel_ep17_20250727_233813",
+  "mission": "Marvel Comics explosion! Benjamin Netanyahu with lightning effects crashes through Knesset walls. CRASH! 'I am eternal!' Opposition parties vanish in comic smoke. WHOOSH! Coalition deals with exploding panels. BOOM! Juggling multiple corruption trials while texting. ZAP! Building settlements with energy beams. THWACK! Judicial reform controversy splits the nation. CRACK! 'Bibi will return... again!' WHAM! Israeli flag with lightning bolts.",
+  "platform": "instagram",
+  "duration_seconds": 35,
+  "created_at": "2025-07-27T23:52:42.577228",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/netanyahu_marvel_ep17_20250727_233813/final_output/final_video_netanyahu_marvel_ep17_20250727_233813__final.mp4",
+      "file_size_mb": 72.03442478179932
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/netanyahu_marvel_ep17_20250727_233813/final_output/final_video_netanyahu_marvel_ep17_20250727_233813__audio_only.mp4",
+      "file_size_mb": 58.83134937286377
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/netanyahu_marvel_ep17_20250727_233813/final_output/final_video_netanyahu_marvel_ep17_20250727_233813__overlays_only.mp4",
+      "file_size_mb": 58.85021114349365
+    }
+  }
+}

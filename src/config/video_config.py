@@ -62,6 +62,7 @@ class TextOverlayConfig:
     """Text overlay styling parameters"""
     # Font settings
     default_font: str = 'Arial-Bold'
+    rtl_font: str = 'Arial Unicode MS'  # Better RTL support for Hebrew/Arabic/Persian
     
     # Font sizes (relative to video dimensions)
     font_sizes: Dict[str, float] = field(default_factory=lambda: {
@@ -241,8 +242,9 @@ class AudioConfig:
     duration_tolerance_percent: float = 20.0  # Accept ±20% duration variance (allows quiet time)
     
     # Segment duration constraints
-    min_segment_duration: float = 2.0       # Minimum 2 seconds per segment
+    min_segment_duration: float = 0.1       # Minimum 0.1 seconds per segment (allows one sentence per segment)
     max_segment_duration: float = 8.0       # Maximum 8 seconds per segment
+    one_sentence_per_segment: bool = True   # Create one audio segment per sentence for perfect subtitle sync
     
     # Padding between segments
     padding_between_segments: float = 0.3   # 300ms pause between segments

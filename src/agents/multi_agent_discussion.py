@@ -20,6 +20,7 @@ from .discussion_visualizer import DiscussionVisualizer
 from ..services.monitoring_service import MonitoringService
 from ..config.ai_model_config import DEFAULT_AI_MODEL
 from ..utils.logging_config import get_logger
+from ..generators.ai_content_analyzer import AIContentAnalyzer, ContentType
 
 logger = get_logger(__name__)
 class AgentRole(Enum):
@@ -662,12 +663,20 @@ class MultiAgentDiscussionSystem:
         platform = serializable_context.get('platform', 'Unknown Platform')
         duration = serializable_context.get('duration', 'Unknown Duration')
         
-        # Determine if this is a mission (action-oriented) or topic (informational)
-        is_mission = any(action_word in str(mission_or_topic).lower() for action_word in [
-            'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
-            'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
-            'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
-        ])
+        # Use AI to determine content type instead of hardcoded patterns
+        try:
+            # Try to get API key from context or agent info
+            api_key = serializable_context.get('api_key', '')
+            if api_key:
+                analyzer = AIContentAnalyzer(api_key)
+                content_type, analysis = analyzer.analyze_content_type(str(mission_or_topic))
+                is_mission = analysis.get('is_action_oriented', False)
+            else:
+                # Fallback if no API key available
+                is_mission = False
+        except:
+            # Safe fallback
+            is_mission = False
 
         if is_mission:
             # Mission-focused prompt
@@ -707,6 +716,8 @@ PREVIOUS DISCUSSION:
 - Each sentence should be ~10-15 words for 2-line subtitle display
 - Natural speech breaks between segments for proper pacing
 - This ensures readable subtitles and clear audio segments
+- TAG all content: "DIALOGUE:" for spoken words, "[VISUAL:]" for visual descriptions
+- Example: "[VISUAL: Dragon breathing fire] DIALOGUE: The limits approach infinity!"
 
 Your task is to contribute expertise on how to strategically ACCOMPLISH the mission "{mission_or_topic}" through video content.
 
@@ -763,6 +774,8 @@ PREVIOUS DISCUSSION:
 - Each sentence should be ~10-15 words for 2-line subtitle display
 - Natural speech breaks between segments for proper pacing
 - This ensures readable subtitles and clear audio segments
+- TAG all content: "DIALOGUE:" for spoken words, "[VISUAL:]" for visual descriptions
+- Example: "[VISUAL: Dragon breathing fire] DIALOGUE: The limits approach infinity!"
 
 Your task is to contribute to this discussion by providing your expert perspective on how to create the best possible video for the topic "{mission_or_topic}".
 
@@ -1074,12 +1087,19 @@ class VideoGenerationTopics:
         # Get the actual user topic from context
         user_mission = context.get('mission', context.get('topic', 'Unknown Mission'))
         
-        # Determine if this is a mission (action-oriented) or topic (informational)
-        is_mission = any(action_word in user_mission.lower() for action_word in [
-            'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
-            'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
-            'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
-        ])
+        # Use AI to determine content type instead of hardcoded patterns
+        try:
+            # Get API key from context if available
+            api_key = context.get('api_key', '')
+            if api_key:
+                analyzer = AIContentAnalyzer(api_key)
+                content_type, analysis = analyzer.analyze_content_type(user_mission)
+                is_mission = analysis.get('is_action_oriented', False)
+            else:
+                # Safe fallback
+                is_mission = False
+        except:
+            is_mission = False
 
         if is_mission:
             return DiscussionTopic(

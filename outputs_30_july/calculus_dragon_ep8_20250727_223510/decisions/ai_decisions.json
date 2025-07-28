@@ -1,0 +1,23 @@
+{
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "The 'Family Guy' style directly calls for a cartoon aesthetic. 'Vibrant' colors complement the energetic and often exaggerated nature of Family Guy's animation, which is crucial for making abstract mathematical concepts visually engaging and intuitive for a general Instagram audience through flight analogies.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "For Instagram, avoiding the bottom 20% and placing the overlay centrally at the bottom balances visibility with not obstructing the main cartoon action. This position is generally safe for most Instagram viewing scenarios and allows the cartoon elements to be prominent.",
+    "mobile_optimized": true
+  },
+  "timestamp": "2025-07-27T22:58:50.164892",
+  "config": {
+    "mission": "Create a Family Guy style comedy where dragon pilot teaches function limits and continuity. Cover epsilon-delta definition, one-sided limits, Cauchy criterion, continuity conditions, types of discontinuities, and the intermediate value theorem. Use visual metaphors: smooth flying vs teleporting, landing from different directions, altitude changes. Make limits and continuity intuitive through flight analogies.",
+    "platform": "Platform.INSTAGRAM",
+    "category": "VideoCategory.EDUCATIONAL",
+    "duration": 63,
+    "visual_style": "family guy animation",
+    "tone": "funny"
+  }
+}

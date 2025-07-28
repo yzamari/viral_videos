@@ -1,0 +1,251 @@
+{
+  "session_id": "calculus_dragon_ep8_20250728_010919",
+  "mission": "Create a Family Guy style comedy where dragon pilot teaches function limits and continuity. Cover epsilon-delta definition, one-sided limits, Cauchy criterion, continuity conditions, types of discontinuities, and the intermediate value theorem. Use visual metaphors: smooth flying vs teleporting, landing from different directions, altitude changes. Make limits and continuity intuitive through flight analogies.",
+  "timestamp": "2025-07-28T01:25:14.621794",
+  "generation_metadata": {
+    "platform": "Platform.INSTAGRAM",
+    "category": "VideoCategory.EDUCATIONAL",
+    "duration_seconds": 35,
+    "visual_style": "family guy animation",
+    "tone": "funny"
+  },
+  "agents": {
+    "script_processor": {
+      "agent_name": "EnhancedScriptProcessor",
+      "role": "Script optimization and TTS preparation",
+      "input": {
+        "original_mission": "Create a Family Guy style comedy where dragon pilot teaches function limits and continuity. Cover epsilon-delta definition, one-sided limits, Cauchy criterion, continuity conditions, types of discontinuities, and the intermediate value theorem. Use visual metaphors: smooth flying vs teleporting, landing from different directions, altitude changes. Make limits and continuity intuitive through flight analogies.",
+        "target_duration": 35,
+        "platform": "Platform.INSTAGRAM",
+        "hook": "Dragon pilot teaches limits and continuity: Family Guy style!",
+        "call_to_action": "Follow for more!"
+      },
+      "output": {
+        "optimized_script": "Alright Lois, see this smooth flight path? That is a limit. We approach the destination without actually reaching it. If the dragon vanished and reappeared, that is not a limit; it is rude teleporting, Brian. We land from the left, we land from the right. Both directions must match, or the operation is chaotic. See that perfect landing? No sudden jolts. That is continuity. The flight is smooth. Even with altitude changes, the flight remains unbroken. It is all connected, like Stewie's evil plans, but with more precision",
+        "segments": [
+          {
+            "text": "Alright Lois, see this smooth flight path",
+            "duration": 2.5,
+            "word_count": 7,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "That is a limit",
+            "duration": 1.0,
+            "word_count": 3,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "We approach the destination without actually reaching it",
+            "duration": 3.5,
+            "word_count": 9,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "If the dragon vanished and reappeared, that is not a limit; it is rude teleporting, Brian",
+            "duration": 5.5,
+            "word_count": 16,
+            "voice_suggestion": "enthusiastic"
+          },
+          {
+            "text": "We land from the left, we land from the right",
+            "duration": 3.0,
+            "word_count": 9,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "Both directions must match, or the operation is chaotic",
+            "duration": 4.0,
+            "word_count": 11,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "See that perfect landing? No sudden jolts",
+            "duration": 3.0,
+            "word_count": 8,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "That is continuity",
+            "duration": 1.5,
+            "word_count": 3,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "The flight is smooth",
+            "duration": 1.5,
+            "word_count": 4,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "Even with altitude changes, the flight remains unbroken",
+            "duration": 4.5,
+            "word_count": 10,
+            "voice_suggestion": "calm"
+          },
+          {
+            "text": "It is all connected, like Stewie's evil plans, but with more precision",
+            "duration": 5.0,
+            "word_count": 14,
+            "voice_suggestion": "storyteller"
+          }
+        ],
+        "total_duration": 35.0,
+        "word_count": 93,
+        "optimization_notes": "Removed redundant phrases, replaced 'blinked out of existence' with 'vanished', 'continuity chaos' with 'chaotic', and 'more math' with 'more precision' for conciseness and better flow.  Adjusted word choices for improved TTS clarity and natural speech.",
+        "duration_match": "perfect"
+      },
+      "reasoning": "AI-enhanced script processing with precise duration matching and TTS optimization",
+      "performance": {
+        "accuracy": "high",
+        "duration_precision": "exact",
+        "engagement_optimization": "enabled"
+      }
+    },
+    "visual_style": {
+      "agent_name": "VisualStyleAgent",
+      "role": "Visual aesthetics and engagement optimization",
+      "input": {
+        "mission": "Create a Family Guy style comedy where dragon pilot teaches function limits and continuity. Cover epsilon-delta definition, one-sided limits, Cauchy criterion, continuity conditions, types of discontinuities, and the intermediate value theorem. Use visual metaphors: smooth flying vs teleporting, landing from different directions, altitude changes. Make limits and continuity intuitive through flight analogies.",
+        "audience": "general audience",
+        "platform": "Platform.INSTAGRAM",
+        "content_type": "VideoCategory.EDUCATIONAL"
+      },
+      "output": {
+        "primary_style": "cartoon",
+        "color_palette": "vibrant",
+        "engagement_score": "high",
+        "visual_elements": [],
+        "style_confidence": 0.85
+      },
+      "reasoning": "Family Guy's established cartoon style is perfect for humor and visual metaphors. Vibrant colors will grab attention on Instagram, aligning with the platform's aesthetic. The chosen style allows for creative interpretations of complex mathematical concepts through intuitive flight analogies.",
+      "performance": {
+        "trend_analysis": "enabled",
+        "platform_optimization": "active",
+        "engagement_prediction": "high"
+      }
+    },
+    "positioning": {
+      "agent_name": "OverlayPositioningAgent",
+      "role": "Subtitle and overlay positioning optimization",
+      "input": {
+        "mission": "Create a Family Guy style comedy where dragon pilot teaches function limits and continuity. Cover epsilon-delta definition, one-sided limits, Cauchy criterion, continuity conditions, types of discontinuities, and the intermediate value theorem. Use visual metaphors: smooth flying vs teleporting, landing from different directions, altitude changes. Make limits and continuity intuitive through flight analogies.",
+        "style": "cartoon",
+        "platform": "Platform.INSTAGRAM",
+        "duration": 35
+      },
+      "output": {
+        "primary_position": "bottom_center",
+        "strategy": "static",
+        "safety_zones": [],
+        "positioning_confidence": 0.9
+      },
+      "reasoning": "For Instagram, the 'bottom_center' position is generally safe and allows for good visibility of the content without obstructing the main visual elements. It avoids the bottom 20% as per the rules and is a common area for text overlays in short-form video content.",
+      "performance": {
+        "platform_compliance": "verified",
+        "readability_score": "high",
+        "accessibility": "optimized"
+      }
+    },
+    "voice_director": {
+      "agent_name": "VoiceDirectorAgent",
+      "role": "Voice selection and audio strategy optimization",
+      "input": {
+        "mission": "Create a Family Guy style comedy where dragon pilot teaches function limits and continuity. Cover epsilon-delta definition, one-sided limits, Cauchy criterion, continuity conditions, types of discontinuities, and the intermediate value theorem. Use visual metaphors: smooth flying vs teleporting, landing from different directions, altitude changes. Make limits and continuity intuitive through flight analogies.",
+        "script": "Alright Lois, see this smooth flight path? That is a limit. We approach the destination without actually reaching it. If the dragon vanished and reappeared, that is not a limit; it is rude teleporting, Brian. We land from the left, we land from the right. Both directions must match, or the operation is chaotic. See that perfect landing? No sudden jolts. That is continuity. The flight is smooth. Even with altitude changes, the flight remains unbroken. It is all connected, like Stewie's evil plans, but with more precision",
+        "platform": "Platform.INSTAGRAM",
+        "duration": 35
+      },
+      "output": {
+        "strategy": "single",
+        "voices": [
+          {
+            "clip_index": 0,
+            "voice": "en-US-Wavenet-D",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 1,
+            "voice": "en-US-Wavenet-D",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 2,
+            "voice": "en-US-Wavenet-D",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 3,
+            "voice": "en-US-Wavenet-D",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 4,
+            "voice": "en-US-Wavenet-D",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          }
+        ],
+        "primary_personality": "custom",
+        "voice_variety": false,
+        "total_voices": 5
+      },
+      "reasoning": "User specified voice: en-US-Wavenet-D",
+      "performance": {
+        "voice_matching": "optimal",
+        "engagement_optimization": "active",
+        "personality_alignment": "high"
+      }
+    }
+  },
+  "discussion_summary": {
+    "consensus": "All agents achieved optimal consensus for viral video generation",
+    "key_decisions": [
+      "Visual style: cartoon with vibrant colors",
+      "Positioning: bottom_center using static strategy",
+      "Voice strategy: single with custom personality",
+      "Script optimization: 93 words optimized for 35s duration"
+    ],
+    "performance_metrics": {
+      "total_agents": 4,
+      "decisions_made": 4,
+      "consensus_achieved": true,
+      "optimization_level": "high",
+      "processing_time": "optimized",
+      "ai_confidence": 0.92
+    },
+    "technical_details": {
+      "veo_model": "veo-2.0-generate-001",
+      "tts_engine": "enhanced_multilingual",
+      "script_processor": "ai_enhanced",
+      "session_tracking": "comprehensive"
+    }
+  },
+  "generation_insights": {
+    "content_analysis": {
+      "mission_relevance": "high",
+      "viral_potential": "optimized",
+      "engagement_factors": [
+        "visual_appeal",
+        "audio_quality",
+        "script_optimization",
+        "platform_targeting"
+      ]
+    },
+    "optimization_summary": {
+      "script_enhancement": "Optimized from basic mission to 93 words",
+      "duration_matching": "Achieved perfect duration alignment",
+      "style_optimization": "Selected cartoon style for maximum engagement",
+      "voice_optimization": "Configured single voice strategy"
+    }
+  }
+}

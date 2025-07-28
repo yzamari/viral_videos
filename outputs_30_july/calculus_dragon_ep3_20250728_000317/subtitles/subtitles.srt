@@ -1,0 +1,72 @@
+1
+00:00:00,000 --> 00:00:01,919
+Sparky's rocket pack is a sequence;
+
+2
+00:00:01,919 --> 00:00:02,560
+will it
+
+3
+00:00:02,859 --> 00:00:04,231
+reach the stars or fizzle?
+
+4
+00:00:04,231 --> 00:00:05,054
+We test its
+
+5
+00:00:05,354 --> 00:00:06,738
+divergence with rocket launches.
+
+6
+00:00:06,738 --> 00:00:08,123
+Even shrinking spells cannot
+
+7
+00:00:08,423 --> 00:00:10,042
+stop its epic ascent.
+
+8
+00:00:10,042 --> 00:00:11,662
+Nth roots approaching one
+
+9
+00:00:11,962 --> 00:00:17,317
+mirror Sparky's planetary aim, a slow but
+sure
+
+10
+00:00:17,617 --> 00:00:18,313
+approach.
+
+11
+00:00:18,313 --> 00:00:23,181
+For growing plants, the ratio test shows
+
+12
+00:00:23,481 --> 00:00:26,247
+rapid growth, similar to Sparky's rocket
+engine.
+
+13
+00:00:26,247 --> 00:00:26,642
+The
+
+14
+00:00:26,942 --> 00:00:28,931
+root test also reveals amazing growth
+rates.
+
+15
+00:00:28,931 --> 00:00:29,215
+Sparky's
+
+16
+00:00:29,515 --> 00:00:30,562
+rocket found infinity.
+
+17
+00:00:30,562 --> 00:00:33,355
+Sequences either converge or diverge with
+rocket-fueled speed
+

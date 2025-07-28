@@ -1,0 +1,14 @@
+{
+  "total_segments": 8,
+  "total_duration": 25.911837000000002,
+  "script_content": "These little dragons make close formations, just like Cauchy sequences approach their limit. They always cluster within any tiny epsilon box we give them. For real numbers, being Cauchy means they are guaranteed to converge to something. Compactness, like Heine-Borel, means we can cover everything with finite blankets, no holes! Dedekind cuts define real numbers, showing how Cauchy completion makes our number line whole",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep5_20250728_002637/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep5_20250728_002637/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep5_20250728_002637/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep5_20250728_002637/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep5_20250728_002637/audio/padded/padded_audio_segment_4.mp3"
+  ],
+  "target_duration": 26.211837000000003,
+  "capped_to_target": false
+}

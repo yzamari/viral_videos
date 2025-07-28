@@ -1,0 +1,235 @@
+{
+  "hashtags": [
+    {
+      "tag": "#FunctionInvestigation",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly describes the core educational concept, highly searchable.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#CalculusComedy",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the educational subject with the comedic style, appealing to a specific interest.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#DragonDetectiveMath",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the unique character and educational angle, creating memorability.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#FamilyGuyMath",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popular show's style for broader appeal and recognition.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MathMadeFun",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Aspirational and broadly appealing, communicates the value proposition.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#DerivativeDrama",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Uses alliteration and a dramatic tone to make calculus concepts engaging.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#DerivativeDetective",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Further emphasizes the character and the specific calculus topic.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MathTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Dominant hashtag on TikTok for math content, essential for discoverability there.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#STEMTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Broader trending hashtag for science, technology, engineering, and math content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#EduTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A major trend for educational content across platforms.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ComedyCentral",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Relevant due to the Family Guy style, taps into a broader entertainment audience.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#LearnOnTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Encourages learning within the platform's context.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ViralEducation",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Aims for broad reach by associating with virality in education.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MemeEducation",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Connects the educational content with meme culture for engagement.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#MathHumor",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Capitalizes on the desire for funny educational content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#CalculusMadeEasy",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets a specific pain point for students learning calculus.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#FunctionAnalysis",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Precise keyword for students and educators searching for this specific topic.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#DerivativeTests",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Very specific to the topic, good for highly targeted searches.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#InflectionPoints",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Another specific calculus term for targeted audience.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#Asymptote",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Specific feature of function analysis, attracting relevant searchers.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#CurveSketching",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Key skill taught in calculus, attracting students and educators.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#Mathematics",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General and widely used hashtag for any math-related content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Education",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Opens the content to a very large audience interested in learning.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Learning",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General interest hashtag that captures people looking to acquire knowledge.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Comedy",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Attracts users who enjoy humorous content, broad appeal.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#Science",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Encompasses the scientific nature of calculus.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Tutorial",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Indicates the instructional nature of the content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#ShareYourKnowledge",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages community participation and sharing.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#AskMeAnything",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Invites questions and interaction, fostering engagement.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#CommentBelow",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Direct call-to-action to encourage comments and discussion.",
+      "trend_score": 0.7
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The strategy incorporates dominant educational and math-related trends like #MathTok, #EduTok, and #STEMTok, acknowledging the platform's primary use for educational content. It also taps into broader trending categories like #Comedy and #ComedyCentral due to the Family Guy style, and general discoverability tags like #Mathematics and #Education. The inclusion of niche hashtags ensures that users specifically searching for calculus concepts are reached. Engagement hashtags like #CommentBelow and #AskMeAnything are included to foster community interaction, which is key on Instagram.",
+    "engagement_strategy": "Engagement is driven by a mix of niche and broad hashtags that signal educational value and humor. The primary and niche tags attract an audience actively looking to learn calculus concepts. Broad tags like #Comedy and #Mathematics cast a wider net. The engagement-specific hashtags, combined with a compelling script, are designed to prompt direct interaction through comments and questions, increasing dwell time and algorithm favorability on Instagram. The unique, character-driven approach of the content itself will also be a key driver of engagement, encouraging shares and saves."
+  },
+  "usage_tips": [
+    "For Instagram, aim for a mix of popular and niche hashtags. Don't overstuff; 15-25 is generally optimal, but up to 30 is acceptable if relevant.",
+    "Place hashtags in the caption or in the first comment to maintain caption cleanliness, though Instagram's algorithm treats both similarly.",
+    "Rotate and test different hashtag combinations to see which ones yield the best reach and engagement for your specific content.",
+    "Monitor the performance of each hashtag to understand which ones are driving the most impressions and engagement.",
+    "Consider adding location-specific hashtags if relevant to your audience or if targeting a particular region."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-28T02:25:07.833716",
+    "topic": "Create a Family Guy style comedy where dragon detective investigates functions completely. Teach systematic function analysis: finding domain, critical points, using first and second derivative tests, finding inflection points, asymptotes, and sketching curves. Use visual metaphors: detective investigation, solving cases, mood swings for concavity. Make the complete function investigation process entertaining and memorable.",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

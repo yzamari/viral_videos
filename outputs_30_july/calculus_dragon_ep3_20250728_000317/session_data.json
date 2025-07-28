@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep3_20250728_000317",
+  "mission": "Create a Family Guy style comedy where baby dragon with rocket pack explores special limits and divergence. Teach nth roots approaching 1, sequences diverging to infinity, ratio test, root test, and geometric sequences. Use visual metaphors: shrinking spells, rocket launches for divergence, growing plants for root test. Demonstrate how these tests reveal sequence behavior through growth rates. Make it engaging and humorous while explaining when sequences converge or diverge.",
+  "duration_seconds": 35,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: Baby dragon, Sparky, with a tiny rocket pack ignites. He wobbles then zooms upwards.] DIALOGUE: Sparky's rocket pack is like a sequence; will it reach the stars or fizzle out? [VISUAL: Sparky blasts off, leaving a trail of sparks. A shrinking spell hits his rocket, but it keeps growing.] DIALOGUE: We test divergence with rocket launches! Even shrinking spells cannot stop its epic ascent. [VISUAL: Sparky passes a planet that looks like a giant number. The rocket's nose dips towards it.] DIALOGUE: Nth roots approaching one are like Sparky aiming for that planet, slowly but surely getting closer. [VISUAL: Sparky's rocket flies through a garden where plants grow super fast, but his rocket outpaces them. A 'Ratio Test' sign appears.] DIALOGUE: For growing plants, the ratio test shows rapid growth. Sparky's rocket engine has amazing growth rates! [VISUAL: Sparky lands triumphantly on the planet, which is now labeled 'Infinity'. A 'Root Test' sign appears near a large blooming flower.] DIALOGUE: The root test reveals growth rates too; Sparky's rocket found infinity. Sequences either converge, or have rocket-fueled divergence!",
+    "final_script": "Sparky's rocket pack is a sequence; will it reach the stars or fizzle? We test its divergence with rocket launches. Even shrinking spells cannot stop its epic ascent. Nth roots approaching one mirror Sparky's planetary aim, a slow but sure approach. For growing plants, the ratio test shows rapid growth, similar to Sparky's rocket engine. The root test also reveals amazing growth rates. Sparky's rocket found infinity. Sequences either converge or diverge with rocket-fueled speed",
+    "word_count": 84,
+    "tts_ready": false
+  }
+}

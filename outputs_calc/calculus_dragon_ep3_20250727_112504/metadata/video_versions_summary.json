@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep3_20250727_112504",
+  "mission": "Baby dragon with rocket pack! 'Let's explore crazy limits!' nth root of constant: Dragon shrinking spell! nth root of n approaches 1: 'Magic stabilization!' ZOOM to infinity! 'Some sequences go FOREVER!' Divergence in extended sense. Ratio test: 'Compare neighbors!' Root test with dragon plants growing. 'If ratio < 1, we converge!' Epsilon chicks multiply rapidly showing divergence. 'Remember: limits help us understand the infinite!'",
+  "platform": "instagram",
+  "duration_seconds": 63,
+  "created_at": "2025-07-27T11:44:42.050566",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep3_20250727_112504/final_output/final_video_calculus_dragon_ep3_20250727_112504__final.mp4",
+      "file_size_mb": 140.91455936431885
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep3_20250727_112504/final_output/final_video_calculus_dragon_ep3_20250727_112504__audio_only.mp4",
+      "file_size_mb": 114.84365749359131
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep3_20250727_112504/final_output/final_video_calculus_dragon_ep3_20250727_112504__overlays_only.mp4",
+      "file_size_mb": 114.92249298095703
+    }
+  }
+}

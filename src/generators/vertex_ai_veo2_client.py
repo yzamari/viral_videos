@@ -240,7 +240,7 @@ class VertexAIVeo2Client(BaseVeoClient):
             logger.error(f"❌ VEO-2 request failed: {e}")
             return None
 
-    def _poll_operation(self, operation_name: str, max_attempts: int = 60) -> Optional[Dict]:
+    def _poll_operation(self, operation_name: str, max_attempts: int = 180) -> Optional[Dict]:
         """Poll VEO-2 operation with network retry logic"""
         import time
         import requests
@@ -300,7 +300,7 @@ class VertexAIVeo2Client(BaseVeoClient):
                 
                 # Operation still in progress
                 logger.info(f"⏳ VEO-2 generation in progress... (attempt {attempt + 1}/{max_attempts})")
-                time.sleep(12)  # Wait 12 seconds between polls
+                time.sleep(10)  # Wait 10 seconds between polls
                 
             except Exception as e:
                 logger.error(f"❌ Error polling VEO-2 operation: {e}")

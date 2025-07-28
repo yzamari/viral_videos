@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep4_20250728_001617",
+  "mission": "Create a Family Guy style comedy where baby dragon explores monotonic sequences on infinite stairs and recursive sequences in time loops. Teach monotonic convergence theorem, recursive sequences, the number e, nested intervals, subsequences, and Bolzano-Weierstrass theorem. Use visual metaphors: climbing/descending stairs, time loops for recursion, shrinking boxes for nested intervals. Make it funny while explaining how bounded monotonic sequences must converge.",
+  "platform": "instagram",
+  "duration_seconds": 35,
+  "created_at": "2025-07-28T00:26:29.906419",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep4_20250728_001617/final_output/final_video_calculus_dragon_ep4_20250728_001617__final.mp4",
+      "file_size_mb": 69.3487663269043
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep4_20250728_001617/final_output/final_video_calculus_dragon_ep4_20250728_001617__audio_only.mp4",
+      "file_size_mb": 56.53242301940918
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep4_20250728_001617/final_output/final_video_calculus_dragon_ep4_20250728_001617__overlays_only.mp4",
+      "file_size_mb": 56.51523780822754
+    }
+  }
+}

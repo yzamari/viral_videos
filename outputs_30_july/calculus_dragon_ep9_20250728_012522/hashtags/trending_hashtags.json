@@ -1,0 +1,214 @@
+{
+  "hashtags": [
+    {
+      "tag": "#FamilyGuyMath",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the popular show with the educational topic for instant recognition and appeal.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#CalculusTreasureHunt",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Directly links the visual metaphor of treasure hunting to the mathematical concepts being taught.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#ExtremeValueTheorem",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "A core concept in the script, making it highly searchable for students and educators.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#UniformContinuity",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "A more specific mathematical term, targeting a dedicated audience interested in analysis.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#DerivativeExplained",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "A fundamental calculus concept that many users search for explanations of.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#MathIsFun",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "A popular broad tag that aims to make math accessible and enjoyable.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#StewieGram",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popularity of Stewie on Instagram, often used for fan-created content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#LearnOnTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Although for Instagram, cross-platform trending tags can boost discoverability.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#EducationalReels",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "'Reels' is a key Instagram feature, and this targets the educational content trend on the platform.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ComedyMath",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the humor aspect with the educational content, tapping into viral comedy trends.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#DragonLore",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Connects to fantasy and dragon themes which are often popular and trending.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#InfiniteWisdom",
+      "category": "trending",
+      "estimated_reach": "low",
+      "reasoning": "A more abstract, slightly mystical tag that can appeal to a curious audience.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#CalculusExplained",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Specific search term for students needing help with calculus concepts.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#RealAnalysis",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets advanced mathematics students and professionals interested in the theoretical underpinnings.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#MathematicalPhysics",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Connects the mathematical concepts to their applications in physics, appealing to a related field.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#ContinuousFunctions",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Focuses on a specific property relevant to uniform continuity and the Heine-Cantor theorem.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#InstantaneousRateOfChange",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "A descriptive phrase for a key application of derivatives, highly specific.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#MonotonicFunction",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets the specific property of monotonic bijections mentioned in the script.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#LearnSomethingNew",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Encourages discovery and learning, appealing to a wide audience on Instagram.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#InstaEducation",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General tag for educational content on Instagram, broad reach.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ReelsViral",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Aims for maximum visibility on Instagram's Reels feature.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#BrainBoost",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to users looking for mental stimulation and new knowledge.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#ScienceAndHumor",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Combines two popular content categories, increasing potential reach.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MathGeek",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Targets individuals who identify with mathematics and enjoy related content.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Directly prompts interaction and discussion in the comments.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ShareTheKnowledge",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages users to share the educational content with their networks.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#CommentBelow",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "A clear call to action to drive comments and boost engagement metrics.",
+      "trend_score": 0.8
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 27,
+    "platform_optimization": "instagram",
+    "trend_analysis": "This strategy blends highly relevant, niche mathematical terms with broad, engaging Instagram trends like 'ReelsViral', 'LearnOnTikTok' (for cross-platform inspiration), and comedy-focused tags. It also incorporates character-specific tags like '#StewieGram' to tap into existing fan communities and popular cultural references. The goal is to appeal to both students seeking specific calculus help and a wider audience interested in educational, entertaining content.",
+    "engagement_strategy": "Engagement is driven by a mix of direct calls-to-action like '#CommentBelow' and '#WhatDoYouThink', encouraging interaction. Broader tags like '#LearnSomethingNew' and '#BrainBoost' attract users who are inherently looking to learn, while the comedy and Family Guy elements make the content shareable and more likely to spark conversations.  The inclusion of niche terms helps attract a dedicated audience who are more likely to engage with in-depth content."
+  },
+  "usage_tips": [
+    "For Instagram, aim to use a mix of 15-25 hashtags, strategically placing a few key ones in the caption and the rest in the first comment to avoid clutter.",
+    "Prioritize trending and primary hashtags at the beginning of your hashtag list to give them more weight.",
+    "Continuously monitor which hashtags perform best for your content and adjust your strategy accordingly. Instagram Insights can be very helpful here.",
+    "Consider creating a unique brand hashtag (e.g., #FamilyGuyMathExplains) to build your own community.",
+    "Engage with content that uses similar hashtags to increase your own visibility."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-28T01:42:12.450940",
+    "topic": "Create a Family Guy style comedy where dragon treasure hunter teaches extreme value theorem, uniform continuity, and introduces derivatives. Cover finding max/min on closed intervals, monotonic bijections, Heine-Cantor theorem, and derivative as instantaneous rate of change. Use visual metaphors: treasure hunting, dragon velocity, measuring slopes. Show relationship between differentiability and continuity.",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 27
+  }
+}

@@ -1,0 +1,98 @@
+1
+00:00:00,000 --> 00:00:04,368
+Behold, a baby dragon perched atop an
+endless
+
+2
+00:00:04,368 --> 00:00:04,776
+staircase!
+
+3
+00:00:04,776 --> 00:00:07,631
+Monotonic means always ascending or always
+descending.
+
+4
+00:00:07,631 --> 00:00:08,741
+This dragon is never falling.
+
+5
+00:00:08,741 --> 00:00:09,407
+Bounded and monotonic
+
+6
+00:00:09,407 --> 00:00:10,049
+implies convergence.
+
+7
+00:00:10,049 --> 00:00:11,975
+The dragon is trapped, caught in
+
+8
+00:00:11,975 --> 00:00:12,911
+a time loop!
+
+9
+00:00:12,911 --> 00:00:14,471
+Each step in this recursive
+
+10
+00:00:14,471 --> 00:00:17,064
+sequence depends on the previous one.
+
+11
+00:00:17,064 --> 00:00:17,928
+We can
+
+12
+00:00:17,928 --> 00:00:19,800
+determine the limits of these sequences.
+
+13
+00:00:19,800 --> 00:00:20,423
+It mirrors
+
+14
+00:00:20,423 --> 00:00:21,080
+the dragon's journey.
+
+15
+00:00:21,080 --> 00:00:22,175
+The number *e* symbol of
+
+16
+00:00:22,175 --> 00:00:26,123
+natural dragon growth, a key mathematical
+constant.
+
+17
+00:00:26,123 --> 00:00:26,687
+Observe
+
+18
+00:00:26,687 --> 00:00:30,671
+Cantor's dragon boxes, each smaller than
+the last.
+
+19
+00:00:30,671 --> 00:00:34,583
+Subsequences are like the dragon's kin,
+related yet
+
+20
+00:00:34,583 --> 00:00:35,225
+distinct.
+
+21
+00:00:35,225 --> 00:00:39,719
+The Bolzano-Weierstrass theorem assures
+bounded sequence possesses
+
+22
+00:00:39,719 --> 00:00:40,432
+a convergent subsequence.
+
+23
+00:00:40,432 --> 00:00:41,856
+The dragon always finds its way
+

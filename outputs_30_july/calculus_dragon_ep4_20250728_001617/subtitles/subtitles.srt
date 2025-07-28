@@ -1,0 +1,46 @@
+1
+00:00:00,000 --> 00:00:05,120
+Stewie's stuck on infinite stairs,
+realizing he is climbing a
+
+2
+00:00:05,419 --> 00:00:06,349
+monotonic sequence.
+
+3
+00:00:06,349 --> 00:00:10,069
+He gets stuck in time loops, his recursive
+
+4
+00:00:10,369 --> 00:00:11,960
+sequences repeating endlessly.
+
+5
+00:00:11,960 --> 00:00:15,672
+He learns about number 'e' and nested
+
+6
+00:00:15,972 --> 00:00:18,833
+intervals, like shrinking Russian dolls.
+
+7
+00:00:18,833 --> 00:00:21,693
+Subsequences appear, tiny versions of
+
+8
+00:00:21,993 --> 00:00:24,422
+the journey, hinting at
+Bolzano-Weierstrass.
+
+9
+00:00:24,422 --> 00:00:26,852
+A bounded monotonic sequence must
+
+10
+00:00:27,152 --> 00:00:28,741
+converge, even if the stairs never end!
+
+11
+00:00:28,741 --> 00:00:30,104
+Stewie's stuck on infinite stairs, realiz
+

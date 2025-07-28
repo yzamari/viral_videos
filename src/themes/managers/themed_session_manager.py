@@ -58,7 +58,7 @@ class ThemedSessionManager:
         session_id = session_manager.create_session(
             topic=session_name,
             platform="youtube",  # Default, can be overridden
-            duration=theme.default_duration or 60,
+            duration=theme.default_duration or 64,
             category="Entertainment"  # Default, can be overridden
         )
         
@@ -169,7 +169,7 @@ class ThemedSessionManager:
         # Prepare generation parameters
         params = {
             "mission": mission,
-            "duration": theme.default_duration or 60,
+            "duration": theme.default_duration or 64,
             "style": theme.content_style,
             "tone": theme.content_tone,
             "target_audience": theme.target_audience

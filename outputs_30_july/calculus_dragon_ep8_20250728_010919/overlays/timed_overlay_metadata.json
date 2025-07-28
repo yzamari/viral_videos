@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 5,
+  "hook_text": "Dragon pilot teaches limits and continuity: Family Guy style!",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "Family Guy's established cartoon style is perfect for humor and visual metaphors. Vibrant colors will grab attention on Instagram, aligning with the platform's aesthetic. The chosen style allows for creative interpretations of complex mathematical concepts through intuitive flight analogies.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "For Instagram, the 'bottom_center' position is generally safe and allows for good visibility of the content without obstructing the main visual elements. It avoids the bottom 20% as per the rules and is a common area for text overlays in short-form video content.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/calculus_dragon_ep8_20250728_010919/temp_files/base_video.mp4 -vf drawtext=text='NEARBY IS KEY \ud83e\udd0f':fontcolor=#E74C3C:fontsize=35:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=200:enable=between(t\\,8.0\\,11.0),drawtext=text='LANDING FROM SIDE':fontcolor=#5F27CD:fontsize=40:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,17.0\\,20.5),drawtext=text='IVT ALTITUDE PATH \ud83d\udcc8':fontcolor=#FF6B6B:fontsize=40:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,30.5\\,34.0),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00FF@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,28.619999999999997\\,30.019999999999996),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00FF@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,30.119999999999997\\,31.519999999999996) -c:a copy -y outputs/calculus_dragon_ep8_20250728_010919/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='NEARBY IS KEY \ud83e\udd0f':fontcolor=#E74C3C:fontsize=35:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=200:enable=between(t\\,8.0\\,11.0),drawtext=text='LANDING FROM SIDE':fontcolor=#5F27CD:fontsize=40:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,17.0\\,20.5),drawtext=text='IVT ALTITUDE PATH \ud83d\udcc8':fontcolor=#FF6B6B:fontsize=40:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,30.5\\,34.0),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00FF@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,28.619999999999997\\,30.019999999999996),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Impact':box=1:boxcolor=#FF00FF@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,30.119999999999997\\,31.519999999999996)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 34.62,
+    "overlay_count": 5
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep5_20250728_002637",
+  "mission": "Create a Family Guy style comedy where baby dragon army teaches Cauchy sequences. Show how Cauchy sequences cluster together within epsilon distance. Explain the fundamental theorem that Cauchy equals convergent in real numbers, upper and lower limits, Heine-Borel theorem for compactness, Dedekind cuts, and Cauchy completion. Use visual metaphors: dragon formations, flight records, covering with blankets. Make it entertaining while explaining completeness of real numbers.",
+  "platform": "instagram",
+  "duration_seconds": 35,
+  "created_at": "2025-07-28T00:35:56.854492",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep5_20250728_002637/final_output/final_video_calculus_dragon_ep5_20250728_002637__final.mp4",
+      "file_size_mb": 60.76465892791748
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep5_20250728_002637/final_output/final_video_calculus_dragon_ep5_20250728_002637__audio_only.mp4",
+      "file_size_mb": 49.0661563873291
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep5_20250728_002637/final_output/final_video_calculus_dragon_ep5_20250728_002637__overlays_only.mp4",
+      "file_size_mb": 49.17170810699463
+    }
+  }
+}

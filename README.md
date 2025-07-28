@@ -2,10 +2,56 @@
 
 🚀 **Production-ready AI video generation system with 22 specialized agents, centralized decision-making, and comprehensive social media integration.**
 
-[![Version](https://img.shields.io/badge/version-3.2.0--rc1-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.2.0-rc1)
+🎯 **v3.2.2 Update**: Major RTL Text Fix + Perfect Audio Sync + Ghibli Style Recognition!
+
+[![Version](https://img.shields.io/badge/version-3.2.2-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.2.2)
 [![Status](https://img.shields.io/badge/status-Production%20Ready-green.svg)](https://github.com/yourusername/viral-video-generator)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+
+## 🚨 **CRITICAL LIMITATION** - Trending Intelligence Uses Mock Data
+
+**⚠️ URGENT ATTENTION REQUIRED**: The system's trending intelligence currently uses **mock data** instead of real-time platform APIs, significantly limiting its ability to create truly viral content.
+
+**Current Issue:**
+- **TrendMaster Agent**: Uses fake trending data instead of real YouTube/TikTok/Instagram trends
+- **Hashtag Generation**: Based on mock patterns, not actual trending hashtags  
+- **Viral Optimization**: Cannot identify real engagement triggers or current formats
+- **Platform Insights**: Missing awareness of what's actually trending on target platforms
+
+**Impact on Performance:**
+- Reduced viral potential due to outdated trending information
+- Hashtags may not align with current platform trends
+- Content strategies miss real-time engagement patterns
+- Platform-specific optimizations based on static data
+
+**Planned Fix (Urgent Priority):**
+- Real-time YouTube Data API integration for trending videos
+- TikTok Research API for trending sounds and hashtags
+- Instagram Graph API for trending posts and story formats
+- AI-powered viral pattern analysis from real data
+- **Timeline**: 6-8 weeks for complete implementation
+
+**Workaround:** System remains production-ready for content generation, but trending intelligence should be supplemented with manual research for maximum viral potential.
+
+---
+
+## ✨ **What's New in v3.2.2**
+
+### 🎬 **Major Video Generation Fixes** ✅ **CRITICAL FIXES!**
+- **RTL Text Rendering**: Hebrew/Arabic text now displays correctly (not reversed)
+- **Audio-Subtitle Sync**: Perfect timing with proper silence gaps between segments
+- **Ghibli Style Recognition**: "Studio Ghibli" style now properly applies animation effects
+- **End-of-Video Audio**: Fixed broken audio at video end with proper padding
+
+## ✨ **What's New in v3.2.1-rc1**
+
+### 🎯 **Visual/Dialogue Tagging System** ✅ **CRITICAL FIX!**
+- **AI-Powered Tagging**: Agents now properly separate visual descriptions from dialogue
+- **Perfect Audio Sync**: Only dialogue is spoken, visual descriptions enhance video only
+- **No Hardcoded Filters**: Intelligent tagging replaces regex patterns
+- **Format**: `[VISUAL: description] DIALOGUE: spoken text`
+- **Backward Compatible**: Handles both old and new script formats
 
 ## ✨ **What's New in v3.2.0-rc1**
 
@@ -79,13 +125,37 @@
 - **Frame Continuity**: AI-powered smooth transitions between scenes
 - **Note**: Currently only works with premium (non-cheap) mode
 
+### 📊 **Comprehensive Test Suite** ✅ **IMPLEMENTED**
+- **CI/CD Testing**: Automated testing pipeline with comprehensive coverage
+- **Unit Tests**: Component-level testing for all major systems
+- **Integration Tests**: End-to-end workflow testing
+- **Specialized Tests**: VEO2/VEO3, audio, multilanguage, themes, characters
+- **E2E Testing**: Complete generation workflow validation
+
+### 📱 **Advanced Social Media Integration** ✅ **PRODUCTION READY**
+- **Instagram AutoPoster**: Full API integration with instagrapi library
+- **WhatsApp Business API**: Complete business messaging integration
+- **Telegram Bot API**: Full bot integration for automated posting
+- **Social Media Manager**: Unified management system for all platforms
+- **Platform Optimization**: YouTube, TikTok, Instagram, Twitter format optimization
+- **Auto-Posting**: CLI flag `--auto-post` for automated distribution
+
+### 🤖 **22+ Specialized AI Agents** ✅ **REVOLUTIONARY**
+- **Core Creative Team**: 7 agents (enhanced mode)
+- **Professional Extensions**: 15+ additional agents (professional mode)
+- **Specialized Agents**: Cultural sensitivity, fact checking, continuity management
+- **Collaborative Intelligence**: Multi-agent discussions across 7 specialized topics
+- **Mode Selection**: Simple (3 agents) → Enhanced (7 agents) → Professional (22+ agents)
+
 ### 🌐 **Content Scraping Framework** 🚧 **PLANNED**
+- **Status**: Architecture designed, implementation in progress
 - **Multi-Source Scraping**: RSS, APIs, web pages, social media
 - **Real-Time Content**: Always up-to-date information
 - **Smart Extraction**: AI-powered content relevance filtering
 - **Media Collection**: Automatic image and video gathering
 
 ### 🎬 **Media Integration Pipeline** 🚧 **PLANNED**
+- **Status**: Framework outlined, awaiting content scraping completion
 - **External Media Support**: Use scraped images/videos as backgrounds
 - **Smart Composition**: AI-driven media placement
 - **Rights Management**: Track media sources and attribution
@@ -154,7 +224,10 @@
   - Anthropic API key (optional)
   - Vertex AI credentials (optional)
 
-### 🚀 **Latest Release: v3.1.0**
+### 🚀 **Current Release: v3.2.1-rc1**
+- **Visual/Dialogue Tagging System**: Perfect audio-subtitle sync with AI-powered separation
+- **University Theme**: Academic theme with logo overlay support
+- **Episode Selection**: Generate specific episodes in series with `-e` flag
 - **Universal AI Provider Interface**: Switch between AI providers without code changes
 - **Zero Hardcoding**: Complete configuration system - all values configurable
 - **Multi-Provider Support**: Gemini, Vertex AI, OpenAI, Anthropic ready

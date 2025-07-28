@@ -68,7 +68,7 @@ class Series:
     style_reference_id: Optional[str] = None
     
     # Series configuration
-    default_duration: int = 60
+    default_duration: int = 64
     default_model: str = "veo-3"
     default_quality: str = "professional"
     
@@ -259,7 +259,7 @@ class SeriesTemplate:
     
     # Default settings
     theme_id: str = ""
-    default_duration: int = 60
+    default_duration: int = 64
     default_model: str = "veo-3"
     default_quality: str = "professional"
     

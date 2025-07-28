@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep1_20250727_233819",
+  "mission": "Create a Family Guy style educational comedy where baby dragon professor Epsilon teaches number sets. Cover natural numbers, integers, rational and irrational numbers, the real number line, absolute value, intervals, bounded sets, and supremum. Use visual metaphors: counting cookies for natural numbers, ice cubes for negative numbers, pizza slices for fractions, infinite spiral for irrational numbers. Make it funny and engaging for calculus students while teaching key concepts. The dragon should have a comedic personality and use humor to explain mathematical concepts.",
+  "platform": "instagram",
+  "duration_seconds": 35,
+  "created_at": "2025-07-27T23:47:35.146751",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep1_20250727_233819/final_output/final_video_calculus_dragon_ep1_20250727_233819__final.mp4",
+      "file_size_mb": 39.7357292175293
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep1_20250727_233819/final_output/final_video_calculus_dragon_ep1_20250727_233819__audio_only.mp4",
+      "file_size_mb": 32.22530937194824
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep1_20250727_233819/final_output/final_video_calculus_dragon_ep1_20250727_233819__overlays_only.mp4",
+      "file_size_mb": 32.35568904876709
+    }
+  }
+}

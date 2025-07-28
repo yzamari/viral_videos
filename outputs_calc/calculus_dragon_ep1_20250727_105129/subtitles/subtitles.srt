@@ -1,0 +1,128 @@
+1
+00:00:00,000 --> 00:00:02,303
+Hey kids, I am Epsilon the
+
+2
+00:00:02,303 --> 00:00:02,383
+Dragon!
+
+3
+00:00:02,383 --> 00:00:02,463
+POOF!
+
+4
+00:00:02,463 --> 00:00:02,783
+Natural numbers magically appear
+
+5
+00:00:02,783 --> 00:00:05,263
+as delicious counting cookies.
+
+6
+00:00:05,263 --> 00:00:06,503
+But wait!
+
+7
+00:00:06,503 --> 00:00:07,151
+Integers arrive with a shiver,
+representing
+
+8
+00:00:07,151 --> 00:00:08,439
+negative temperatures.
+
+9
+00:00:08,439 --> 00:00:09,083
+WHOOSH!
+
+10
+00:00:09,083 --> 00:00:11,015
+Rational numbers flutter
+
+11
+00:00:11,015 --> 00:00:11,519
+down as perfectly sized pizza slices.
+
+12
+00:00:11,519 --> 00:00:12,783
+Mind blown!
+
+13
+00:00:12,783 --> 00:00:15,311
+Irrational numbers are like
+
+14
+00:00:15,311 --> 00:00:15,951
+infinite, shimmering dragons, stretching
+endlessly.
+
+15
+00:00:15,951 --> 00:00:16,079
+Real
+
+16
+00:00:16,079 --> 00:00:20,423
+numbers create a beautiful, complete
+number
+
+17
+00:00:20,423 --> 00:00:20,960
+line.
+
+18
+00:00:20,960 --> 00:00:23,640
+Absolute value is a warm
+
+19
+00:00:23,640 --> 00:00:26,056
+dragon hug, always positive.
+
+20
+00:00:26,056 --> 00:00:27,263
+Intervals are
+
+21
+00:00:27,263 --> 00:00:30,000
+cozy nap zones on the number
+
+22
+00:00:30,000 --> 00:00:30,452
+line.
+
+23
+00:00:30,452 --> 00:00:32,712
+Bounded sets are snug, secure
+
+24
+00:00:32,712 --> 00:00:33,160
+cages.
+
+25
+00:00:33,160 --> 00:00:35,400
+Supremum is the tallest dragon
+
+26
+00:00:35,400 --> 00:00:36,876
+in the land!
+
+27
+00:00:36,876 --> 00:00:38,352
+Completeness ensures there
+
+28
+00:00:38,352 --> 00:00:41,880
+are no gaps on our number
+
+29
+00:00:41,880 --> 00:00:41,966
+line.
+
+30
+00:00:41,966 --> 00:00:42,826
+My little Epsilon chicks chirp, "Epsilon
+is greater than zero!
+
+31
+00:00:42,826 --> 00:00:42,912
+"
+

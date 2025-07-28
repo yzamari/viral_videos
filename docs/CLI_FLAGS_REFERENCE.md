@@ -41,6 +41,17 @@ This document provides a comprehensive reference for all command-line flags avai
 **Description**: Custom session identifier for organizing outputs  
 **Example**: `--session-id "my_project_v1"`
 
+### `--category`
+**Type**: String  
+**Options**: `Comedy`, `Educational`, `Entertainment`, `News`, `Tech`  
+**Description**: Content category for better AI agent optimization  
+**Example**: `--category Educational`
+
+### `--target-audience`
+**Type**: String  
+**Description**: Specify target audience for content optimization  
+**Example**: `--target-audience "tech professionals aged 25-40"`
+
 ## Content & Style Flags
 
 ### `--tone`
@@ -137,6 +148,25 @@ This document provides a comprehensive reference for all command-line flags avai
 
 **Example**: `--mode professional`
 
+### `--veo-model-order`
+**Type**: String  
+**Default**: `veo3-fast,veo3,veo2`  
+**Description**: Specify VEO model preference order for video generation  
+**Options**: `veo2`, `veo3`, `veo3-fast`  
+**Example**: `--veo-model-order veo3,veo2,veo3-fast`
+
+### `--languages`
+**Type**: String  
+**Default**: `en-US`  
+**Description**: Language(s) for audio and subtitle generation  
+**Example**: `--languages "en-US,es-ES,he-IL"`
+
+### `--multiple-voices` / `--single-voice`
+**Type**: Boolean  
+**Default**: `--single-voice`  
+**Description**: Allow multiple voices in video or use single narrator  
+**Example**: `--multiple-voices`
+
 ### `--cheap` / `--no-cheap`
 **Type**: Boolean  
 **Default**: `true` (cheap mode enabled)  
@@ -205,6 +235,44 @@ This document provides a comprehensive reference for all command-line flags avai
 **Presets**: `preset_news_edition`, `preset_sports`, `preset_tech`, `iran_international_news`, `entertainment`, `educational`  
 **Description**: Apply consistent branding and styling  
 **Example**: `--theme iran_international_news`
+
+### Business Information Flags
+
+### `--business-name`
+**Type**: String  
+**Description**: Business or organization name for branding  
+**Example**: `--business-name "TechCorp Solutions"`
+
+### `--business-address`
+**Type**: String  
+**Description**: Business address for contact information  
+**Example**: `--business-address "123 Tech Street, Silicon Valley, CA"`
+
+### `--business-phone`
+**Type**: String  
+**Description**: Business phone number  
+**Example**: `--business-phone "+1-555-123-4567"`
+
+### `--business-website`
+**Type**: String  
+**Description**: Business website URL  
+**Example**: `--business-website "https://techcorp.com"`
+
+### `--business-facebook`
+**Type**: String  
+**Description**: Business Facebook page URL  
+**Example**: `--business-facebook "https://facebook.com/techcorp"`
+
+### `--business-instagram`
+**Type**: String  
+**Description**: Business Instagram handle or URL  
+**Example**: `--business-instagram "@techcorp"`
+
+### `--show-business-info` / `--hide-business-info`
+**Type**: Boolean  
+**Default**: `--hide-business-info`  
+**Description**: Show or hide business information in video  
+**Example**: `--show-business-info`
 
 ### `--series`
 **Type**: String  
@@ -457,6 +525,20 @@ The following flags are documented for future implementation but not currently a
 - Cultural controls (`--cultural-guidelines`, `--content-rating`)
 - Debug flags (`--verbose`, `--debug`, `--dry-run`, `--save-intermediates`)
 - Performance (`--fast`)
+
+### 🚨 **Critical Limitation**: Trending Intelligence Flags Missing
+
+Currently, there are **no CLI flags for trending intelligence control** because the system uses mock trending data instead of real platform APIs. The following trending-related flags should be implemented once real-time trending intelligence is added:
+
+**Proposed Trending Flags** (Future Implementation):
+- `--trending-hours <hours>`: Analyze trends from past N hours (default: 24)
+- `--trending-region <region>`: Geographic region for trending analysis (e.g., 'US', 'global')
+- `--trending-platform <platform>`: Focus trending analysis on specific platform
+- `--disable-trending`: Skip trending analysis entirely (use only topic-based insights)
+- `--trending-fallback`: Allow fallback to mock data if APIs unavailable
+- `--trending-weight <float>`: Weight of trending data in decision making (0.0-1.0)
+
+**Current Status**: These flags don't exist because trending intelligence uses mock data only. Implementation of real-time trending APIs is required before these flags can be added.
 
 ### Platform Support
 Currently supported platforms: `youtube`, `tiktok`, `instagram`, `twitter`  

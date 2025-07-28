@@ -1,0 +1,82 @@
+1
+00:00:00,000 --> 00:00:02,285
+Functions are like transformation
+machines.
+
+2
+00:00:02,285 --> 00:00:02,742
+Input
+
+3
+00:00:03,042 --> 00:00:05,002
+a roar, output a chair.
+
+4
+00:00:05,002 --> 00:00:05,393
+The
+
+5
+00:00:05,693 --> 00:00:07,957
+domain includes all possible inputs.
+
+6
+00:00:07,957 --> 00:00:08,410
+The
+
+7
+00:00:08,710 --> 00:00:11,296
+range is only the outputs created.
+
+8
+00:00:11,596 --> 00:00:14,862
+One-to-one functions have one input for
+
+9
+00:00:15,162 --> 00:00:16,145
+each output.
+
+10
+00:00:16,145 --> 00:00:18,113
+Onto functions use all
+
+11
+00:00:18,413 --> 00:00:18,962
+possible outputs;
+
+12
+00:00:18,962 --> 00:00:20,059
+there are no leftovers.
+
+13
+00:00:20,359 --> 00:00:24,068
+Bijections are perfect one-to-one and onto
+
+14
+00:00:24,368 --> 00:00:24,913
+transformations.
+
+15
+00:00:24,913 --> 00:00:27,634
+Function composition chains
+transformations together.
+
+16
+00:00:27,934 --> 00:00:29,275
+Even functions are symmetrical;
+
+17
+00:00:29,275 --> 00:00:29,945
+odd functions
+
+18
+00:00:30,245 --> 00:00:31,617
+are rotationally symmetrical.
+
+19
+00:00:31,617 --> 00:00:32,988
+Some functions repeat
+
+20
+00:00:33,288 --> 00:00:36,266
+their output, like a broken record
+

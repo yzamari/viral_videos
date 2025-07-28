@@ -1,0 +1,13 @@
+{
+  "stage": "audio_generation",
+  "timestamp": "2025-07-28T00:51:00.183076",
+  "target_duration": 35,
+  "actual_duration": 34.142041000000006,
+  "component": "audio_generator",
+  "is_within_tolerance": true,
+  "details": {
+    "files": 12
+  },
+  "warnings": [],
+  "errors": []
+}

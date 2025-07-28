@@ -1,0 +1,236 @@
+{
+  "hashtags": [
+    {
+      "tag": "#FamilyGuyMath",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the popular show with the educational topic, targeting fans and math enthusiasts.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#BabyDragonMath",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the unique character and subject matter, making it memorable and searchable.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#NumberSets",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly targets users searching for this specific mathematical concept.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MathMadeFun",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to a broad audience looking for engaging educational content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#CalculusJokes",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Targets calculus students specifically with the promise of humor.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MathHumor",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Broader appeal for those who enjoy humorous takes on academic subjects.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#LearnOnTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages a popular TikTok trend for educational content discovery.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#MathTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A prominent community tag on TikTok for math content, also relevant for Instagram Reels.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#EducationTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Another broad educational trend tag for maximum discoverability.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#StudyTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects with the large and active study community.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ViralEducation",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Aims to tap into the aspiration of viral reach for educational content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#ComedyEducation",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the unique blend of comedy and learning.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MathNerd",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Targets individuals who proudly identify with mathematics.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#GeekCulture",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to a broader audience interested in nerdy or niche content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#RealNumberLine",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Very specific to a concept taught, good for precise searches.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#AbsoluteValueMath",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets users looking for specific math definitions.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#Supremum",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets advanced calculus students searching for this specific term.",
+      "trend_score": 0.45
+    },
+    {
+      "tag": "#IntervalNotation",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Another specific concept for targeted reach.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#MathMetaphors",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Highlights the visual and comparative teaching style.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#MathConcept",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Broader niche tag for concept-focused searches.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#Mathematics",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Extremely broad tag for general math enthusiasts.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Education",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General tag for all educational content.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Comedy",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Attracts users who enjoy humorous content.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Learning",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Targets individuals actively seeking to learn.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#InstaLearn",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Instagram-specific tag for learning content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#Creator",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General tag for content creators and their audiences.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#MathTips",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages users to seek out helpful advice.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#AskAMathPro",
+      "category": "engagement",
+      "estimated_reach": "low",
+      "reasoning": "Invites questions and interaction with the professor character.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#ShareYourMath",
+      "category": "engagement",
+      "estimated_reach": "low",
+      "reasoning": "Promotes community sharing and engagement with the topic.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#MathChallenge",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages participation and problem-solving, driving interaction.",
+      "trend_score": 0.7
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The strategy incorporates current trends like #LearnOnTikTok, #MathTok, and #StudyTok, which are highly relevant for short-form video content shared on Instagram Reels. It also taps into broad educational and comedy tags for maximum reach and combines these with niche, specific math terms to attract a highly targeted audience of calculus students. The inclusion of engagement-focused tags aims to foster community interaction and participation.",
+    "engagement_strategy": "Engagement is driven by using hashtags that encourage interaction, such as #AskAMathPro and #MathChallenge, and by using community-oriented tags like #ShareYourMath. The humorous and approachable nature of the content, amplified by tags like #MathMadeFun and #ComedyEducation, also encourages shares and comments."
+  },
+  "usage_tips": [
+    "On Instagram, use a mix of 15-25 hashtags per post, strategically placing them in the caption or the first comment.",
+    "Prioritize the primary and trending hashtags at the beginning of your hashtag list for maximum visibility.",
+    "Rotate your hashtags regularly to avoid appearing as spam and to reach different segments of your audience.",
+    "Monitor the performance of your hashtags to identify which ones are driving the most reach and engagement.",
+    "For Instagram Reels, consider using trending audio or effects and relevant hashtags to increase discoverability within the Reels feed.",
+    "Engage with other accounts using these hashtags to build community and increase your own visibility."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-27T23:47:35.143300",
+    "topic": "Create a Family Guy style educational comedy where baby dragon professor Epsilon teaches number sets. Cover natural numbers, integers, rational and irrational numbers, the real number line, absolute value, intervals, bounded sets, and supremum. Use visual metaphors: counting cookies for natural numbers, ice cubes for negative numbers, pizza slices for fractions, infinite spiral for irrational numbers. Make it funny and engaging for calculus students while teaching key concepts. The dragon should have a comedic personality and use humor to explain mathematical concepts.",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

@@ -1,0 +1,1308 @@
+🥤 Papaya Bar - Ultimate Hebrew TikTok Commercial
+==============================================
+🎯 Target: Israeli TikTok audience
+😂 Style: Funny & engaging mix of Marvel action + Ghibli magic
+🌐 Language: Hebrew (עברית)
+⏱️  Duration: 30 seconds
+📱 Platform: TikTok
+
+[32m2025-07-28 23:01:00 - __main__ - INFO - 🔐 Checking authentication...[0m
+[32m2025-07-28 23:01:19 - __main__ - INFO - ✅ Authentication already configured[0m
+[32m2025-07-28 23:01:20 - __main__ - INFO - 🔍 CLI Debug - cheap flag value: False (--no-cheap was used)[0m
+[32m2025-07-28 23:01:20 - src.workflows.generate_viral_video - INFO - 🎯 Generating None video for mission: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:01:20 - src.workflows.generate_viral_video - INFO - 📱 Platform: tiktok[0m
+[32m2025-07-28 23:01:20 - src.workflows.generate_viral_video - INFO - ⏱️ Duration: 32 seconds[0m
+[32m2025-07-28 23:01:20 - src.workflows.generate_viral_video - INFO - 🎭 Mode: enhanced (7 agents with discussions)[0m
+[32m2025-07-28 23:01:20 - src.workflows.generate_viral_video - INFO - 🎬 Visual Continuity: ✅ Enabled[0m
+[32m2025-07-28 23:01:20 - src.workflows.generate_viral_video - INFO - 📝 Content Continuity: ✅ Enabled[0m
+[32m2025-07-28 23:01:20 - src.workflows.generate_viral_video - INFO - 🤖 AI System: 🎯 Enhanced (7 agents with discussions, best viral content)[0m
+[32m2025-07-28 23:01:20 - src.workflows.generate_viral_video - INFO - 🔍 Debug - cheap_mode value: False (type: <class 'bool'>)[0m
+[32m2025-07-28 23:01:20 - src.workflows.generate_viral_video - INFO - 💎 PREMIUM MODE: Using VEO video generation and premium voices[0m
+[33m2025-07-28 23:01:20 - src.utils.session_context - WARNING - No active session found for papaya_unified_hebrew_30s_20250728_230019[0m
+[32m2025-07-28 23:01:20 - src.utils.session_context - INFO - ✅ Session context initialized for papaya_unified_hebrew_30s_20250728_230019 at outputs/papaya_unified_hebrew_30s_20250728_230019[0m
+[32m2025-07-28 23:01:20 - src.utils.session_context - INFO - Created session metadata file for papaya_unified_hebrew_30s_20250728_230019[0m
+[32m2025-07-28 23:01:20 - src.frameworks.content_credibility_system - INFO - 🔍 Content Credibility System initialized[0m
+[32m2025-07-28 23:01:20 - src.frameworks.audience_intelligence_system - INFO - 🧠 Audience Intelligence System initialized[0m
+[32m2025-07-28 23:01:20 - src.frameworks.ethical_optimization_system - INFO - 🎯 Ethical Optimization System initialized[0m
+[32m2025-07-28 23:01:20 - src.agents.mission_planning_agent - INFO - 🎯 Enhanced Mission Planning Agent initialized with None[0m
+[32m2025-07-28 23:01:20 - src.agents.mission_planning_agent - INFO - 🔍 Content credibility system enabled[0m
+[32m2025-07-28 23:01:20 - src.agents.mission_planning_agent - INFO - 🧠 Audience intelligence system enabled[0m
+[32m2025-07-28 23:01:20 - src.agents.mission_planning_agent - INFO - 🎯 Ethical optimization system enabled[0m
+[32m2025-07-28 23:01:20 - src.core.decision_framework - INFO - 🎯 Decision Framework initialized with Mission Planning Agent[0m
+[32m2025-07-28 23:01:20 - src.core.decision_framework - INFO - 🎯 Making all core decisions upfront...[0m
+[32m2025-07-28 23:01:20 - src.core.decision_framework - INFO - 📏 Duration calculation:[0m
+[32m2025-07-28 23:01:20 - src.core.decision_framework - INFO -    Requested: 32s[0m
+[32m2025-07-28 23:01:20 - src.core.decision_framework - INFO -    Clips: 4 x 8s = 32s[0m
+[32m2025-07-28 23:01:20 - src.core.decision_framework - INFO -    Fadeout: 1.5s[0m
+[32m2025-07-28 23:01:20 - src.core.decision_framework - INFO -    Total: 33.5s[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: duration_seconds = 32 (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: platform = tiktok (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: category = Entertainment (source: system_default, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: category_string = Entertainment (source: system_default, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: target_audience = israeli youth tiktok users health-conscious party-goers (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: language = he (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: all_languages = ['he'] (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: style = viral (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: style_string = viral (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: tone = funny refreshing energetic (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: tone_string = funny refreshing energetic (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: visual_style = marvel comics meets studio ghibli hybrid colorful vibrant (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: visual_style_string = marvel comics meets studio ghibli hybrid colorful vibrant (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: theme_id = None (source: system_default, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: style_reference_id = None (source: system_default, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: character_id = פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:20 - src.core.decision_framework - DEBUG - 🎯 Decision: character_scene = None (source: user_cli, confidence: 1.00)[0m
+[32m2025-07-28 23:01:42 - src.core.decision_framework - INFO - Character description provided instead of stored ID: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים ...[0m
+[32m2025-07-28 23:01:42 - src.core.decision_framework - INFO - Character consistency will be handled by video generation prompts[0m
+[36m2025-07-28 23:01:42 - src.core.decision_framework - DEBUG - 🎯 Decision: frame_continuity = True (source: ai_agent, confidence: 0.95)[0m
+[36m2025-07-28 23:01:42 - src.core.decision_framework - DEBUG - 🎯 Decision: continuous_generation = True (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:42 - src.core.decision_framework - DEBUG - 🎯 Decision: mode = enhanced (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:42 - src.core.decision_framework - DEBUG - 🎯 Decision: cheap_mode = False (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:42 - src.core.decision_framework - DEBUG - 🎯 Decision: cheap_mode_level = full (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:42 - src.core.decision_framework - DEBUG - 🎯 Decision: mission = Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open. (source: user_cli, confidence: 1.00)[0m
+[36m2025-07-28 23:01:42 - src.core.decision_framework - DEBUG - 🎯 Decision: hook = Amazing content ahead! (source: ai_agent, confidence: 0.80)[0m
+[36m2025-07-28 23:01:42 - src.core.decision_framework - DEBUG - 🎯 Decision: call_to_action = Follow for more! (source: ai_agent, confidence: 0.80)[0m
+[36m2025-07-28 23:01:42 - src.core.decision_framework - DEBUG - 🎯 Decision: voice_strategy = variety (source: ai_agent, confidence: 0.80)[0m
+[36m2025-07-28 23:01:42 - src.core.decision_framework - DEBUG - 🎯 Decision: color_palette = marvel comics meets studio ghibli hybrid colorful vibrant palette (source: system_default, confidence: 0.50)[0m
+[36m2025-07-28 23:01:42 - src.core.decision_framework - DEBUG - 🎯 Decision: background_music_style = upbeat (source: ai_agent, confidence: 0.80)[0m
+[32m2025-07-28 23:01:42 - src.core.decision_framework - INFO - 📏 Pre-calculating clip constraints:[0m
+[32m2025-07-28 23:01:42 - src.core.decision_framework - INFO -    Total duration: 32s[0m
+[32m2025-07-28 23:01:42 - src.core.decision_framework - INFO -    Clip duration: 8.0s[0m
+[32m2025-07-28 23:01:42 - src.core.decision_framework - INFO -    Number of clips: 4[0m
+[32m2025-07-28 23:01:42 - src.agents.mission_planning_agent - INFO - 🎯 Analyzing mission: Create a hilarious 30-second TikTok ad for Papaya ...[0m
+[36m2025-07-28 23:01:44 - src.agents.mission_planning_agent - DEBUG - AI response text: ```json
+{
+  "mission_type": "convince",
+  "is_strategic_mission": true,
+  "confidence": 0.95,
+  "reasoning": "The primary purpose of the statement is to create a TikTok ad that convinces viewers to visit Papaya Bar in Rosh HaAyin.  The detailed description of the ad's content, including the humorous storyline and call to action (business information), clearly indicates an intent to persuade potential customers to choose Papaya Bar. The desired outcome is increased foot traffic and sales.  While ...[0m
+[32m2025-07-28 23:01:44 - src.agents.mission_planning_agent - INFO - 🎯 AI Mission Detection: convince (strategic: True)[0m
+[32m2025-07-28 23:01:44 - src.agents.mission_planning_agent - INFO -    Confidence: 0.95[0m
+[32m2025-07-28 23:01:44 - src.agents.mission_planning_agent - INFO -    Reasoning: The primary purpose of the statement is to create a TikTok ad that convinces viewers to visit Papaya Bar in Rosh HaAyin.  The detailed description of the ad's content, including the humorous storyline and call to action (business information), clearly indicates an intent to persuade potential customers to choose Papaya Bar. The desired outcome is increased foot traffic and sales.  While elements of entertainment and demonstration are present, the core mission is to convince through persuasive advertising.[0m
+[36m2025-07-28 23:01:53 - src.agents.mission_planning_agent - DEBUG - Raw JSON from AI: {
+  "target_outcome": "Achieve a minimum of 10,000 views and a 5% engagement rate (likes, comments, shares) within the first 72 hours of posting the TikTok ad, resulting in a measurable increase in foot traffic to Papaya Bar in Rosh HaAyin.",
+  "strategic_approach": "Employ a high-energy, comedic approach leveraging the power of unexpected transitions and relatable humor to capture attention and create a memorable association between Papaya Bar and feeling amazing, both day and night.",
+  "succe...[0m
+[32m2025-07-28 23:01:53 - src.agents.mission_planning_agent - INFO - 🔍 Performing content credibility analysis...[0m
+[32m2025-07-28 23:01:53 - src.frameworks.content_credibility_system - INFO - 🔍 Evaluating content credibility for topic: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:01:53 - src.frameworks.content_credibility_system - INFO - 🔍 Extracted 4 factual claims[0m
+[32m2025-07-28 23:01:57 - src.frameworks.content_credibility_system - INFO - 🎯 Bias analysis complete: LOW bias level bias level[0m
+[32m2025-07-28 23:01:57 - src.frameworks.content_credibility_system - INFO - ✅ Credibility evaluation complete: 6.6/10[0m
+[32m2025-07-28 23:01:57 - src.agents.mission_planning_agent - INFO - 🧠 Performing audience intelligence analysis...[0m
+[32m2025-07-28 23:01:57 - src.frameworks.audience_intelligence_system - INFO - 🧠 Analyzing audience for topic: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open. on tiktok[0m
+[32m2025-07-28 23:01:57 - src.frameworks.audience_intelligence_system - INFO - 🧠 Audience analysis complete: 1.00 confidence[0m
+[32m2025-07-28 23:01:57 - src.agents.mission_planning_agent - INFO - 🎯 Performing ethical optimization analysis...[0m
+[32m2025-07-28 23:01:57 - src.frameworks.ethical_optimization_system - INFO - 🎯 Performing ethical optimization for: Create a hilarious 30-second TikTok ad for Papaya ...[0m
+[32m2025-07-28 23:02:01 - src.frameworks.ethical_optimization_system - INFO - 🎯 Ethical optimization complete: NEEDS_IMPROVEMENT rating[0m
+[32m2025-07-28 23:02:01 - src.frameworks.ethical_optimization_system - INFO -    Compliance Score: 5.75/10[0m
+[32m2025-07-28 23:02:01 - src.frameworks.ethical_optimization_system - INFO -    Transparency: 3.30/10[0m
+[32m2025-07-28 23:02:01 - src.frameworks.ethical_optimization_system - INFO -    Educational Value: 8.00/10[0m
+[32m2025-07-28 23:02:01 - src.frameworks.ethical_optimization_system - INFO -    Positive Engagement: 6.50/10[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO - 🎯 Strategic Mission Plan:[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO -    Target Outcome: Achieve a minimum of 10,000 views and a 5% engagement rate (likes, comments, shares) within the first 72 hours of posting the TikTok ad, resulting in a measurable increase in foot traffic to Papaya Bar in Rosh HaAyin.[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO -    Strategic Approach: Employ a high-energy, comedic approach leveraging the power of unexpected transitions and relatable humor to capture attention and create a memorable association between Papaya Bar and feeling amazing, both day and night.[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO -    Recommended Clips: 5[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO -    Confidence Score: 0.95[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO - 🔍 Content Credibility: 6.6/10 (ACCEPTABLE - Moderately credible, some improvements needed)[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO - 🧠 Audience Intelligence: 1.00 confidence[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO -    Primary Age Group: gen_z[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO -    Engagement Prediction: 0.8[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO -    Optimization Recommendations: 4 provided[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO - 🎯 Ethical Optimization: NEEDS_IMPROVEMENT rating[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO -    Compliance Score: 5.75/10[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO -    Transparency: 3.30/10[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO -    Educational Value: 8.00/10[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO -    Positive Engagement: 6.50/10[0m
+[32m2025-07-28 23:02:01 - src.agents.mission_planning_agent - INFO - ✅ Strategic mission plan created: convince[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO - 🎯 Mission-Based Clip Structure:[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Mission Type: convince[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Strategic Mission: True[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Target Outcome: Achieve a minimum of 10,000 views and a 5% engagement rate (likes, comments, shares) within the first 72 hours of posting the TikTok ad, resulting in a measurable increase in foot traffic to Papaya Bar in Rosh HaAyin.[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Recommended Clips: 4[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Strategic Reasoning: Multiple clips allow for pacing, visual variety, and effective storytelling to maintain audience eng...[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Cost Efficiency: 0.80[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Content Quality: 0.95[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO - 💾 Mission plan saved to session: outputs/papaya_unified_hebrew_30s_20250728_230019/decisions/mission_plan.json[0m
+[36m2025-07-28 23:02:01 - src.core.decision_framework - DEBUG - 🎯 Decision: num_clips = 4 (source: ai_agent, confidence: 0.90)[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO - 💾 Decisions saved to session: outputs/papaya_unified_hebrew_30s_20250728_230019/decisions/core_decisions.json[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO - ✅ All core decisions made and saved[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Duration: 32s[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Platform: tiktok[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Style: viral[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Tone: funny refreshing energetic[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Visual Style: marvel comics meets studio ghibli hybrid colorful vibrant[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Voice Strategy: variety[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Clips: 4 clips[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Clip Durations: [8.0, 8.0, 8.0, 8.0][0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Cost Efficiency: 0.80[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Content Quality: 0.95[0m
+[32m2025-07-28 23:02:01 - src.core.decision_framework - INFO -    Balance Score: 0.88[0m
+[32m2025-07-28 23:02:01 - src.workflows.generate_viral_video - INFO - ✅ All decisions made upfront - propagating to system[0m
+[32m2025-07-28 23:02:01 - src.agents.working_orchestrator - INFO - ✅ Core decisions received: 4 clips, [8.0, 8.0, 8.0, 8.0][0m
+[32m2025-07-28 23:02:01 - src.agents.working_orchestrator - INFO - 🔄 Activating existing session: papaya_unified_hebrew_30s_20250728_230019[0m
+[36m2025-07-28 23:02:01 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-28 23:02:01 - src.agents.voice_director_agent - INFO - 🎭 Voice Director Agent initialized with AI-powered voice selection[0m
+[32m2025-07-28 23:02:01 - src.generators.ai_content_analyzer - INFO - ✅ AI Content Analyzer initialized with model: gemini-2.5-flash-lite[0m
+[32m2025-07-28 23:02:01 - src.utils.text_validator - INFO - ✅ Text Validator initialized with AI capabilities[0m
+[32m2025-07-28 23:02:01 - src.generators.ai_content_analyzer - INFO - ✅ AI Content Analyzer initialized with model: gemini-2.5-flash-lite[0m
+[32m2025-07-28 23:02:01 - src.generators.enhanced_script_processor - INFO - ✅ Enhanced Script Processor initialized[0m
+[32m2025-07-28 23:02:01 - src.generators.rtl_validator - INFO - ✅ RTL Validator initialized with Gemini AI[0m
+[36m2025-07-28 23:02:08 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-28 23:02:08 - src.agents.voice_director_agent - INFO - 🎭 Voice Director Agent initialized with AI-powered voice selection[0m
+[32m2025-07-28 23:02:08 - src.generators.enhanced_multilang_tts - INFO - ✅ Enhanced Multilingual TTS client initialized[0m
+[32m2025-07-28 23:02:08 - src.generators.integrated_multilang_generator - INFO - ✅ Integrated Multilingual Generator initialized with AI agents[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO - 🎬 WorkingOrchestrator initialized[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Mission: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Platform: tiktok[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Duration: 32s[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Mode: enhanced[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Style: viral[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Tone: funny refreshing energetic[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Target Audience: israeli youth tiktok users health-conscious party-goers[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Visual Style: marvel comics meets studio ghibli hybrid colorful vibrant[0m
+[32m2025-07-28 23:02:08 - src.generators.ai_content_analyzer - INFO - ✅ AI Content Analyzer initialized with model: gemini-2.5-flash-lite[0m
+[32m2025-07-28 23:02:08 - src.generators.director - INFO - Director initialized with model: gemini-2.5-flash-lite[0m
+[36m2025-07-28 23:02:08 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-28 23:02:08 - src.agents.voice_director_agent - INFO - 🎭 Voice Director Agent initialized with AI-powered voice selection[0m
+[32m2025-07-28 23:02:08 - src.generators.ai_content_analyzer - INFO - ✅ AI Content Analyzer initialized with model: gemini-2.5-flash-lite[0m
+[32m2025-07-28 23:02:08 - src.utils.text_validator - INFO - ✅ Text Validator initialized with AI capabilities[0m
+[32m2025-07-28 23:02:08 - src.generators.ai_content_analyzer - INFO - ✅ AI Content Analyzer initialized with model: gemini-2.5-flash-lite[0m
+[32m2025-07-28 23:02:08 - src.generators.enhanced_script_processor - INFO - ✅ Enhanced Script Processor initialized[0m
+[32m2025-07-28 23:02:08 - src.utils.session_manager - INFO - 📁 Created missing subdirectory: agent_discussions[0m
+[32m2025-07-28 23:02:08 - src.agents.multi_agent_discussion - INFO - ✅ Session-managed discussions: papaya_unified_hebrew_30s_20250728_230019[0m
+[32m2025-07-28 23:02:08 - src.agents.multi_agent_discussion - INFO - 🎭 Discussion visualizer initialized with session dir: outputs/papaya_unified_hebrew_30s_20250728_230019[0m
+[32m2025-07-28 23:02:08 - src.agents.multi_agent_discussion - INFO - 🎭 Multi-agent discussion system initialized[0m
+[32m2025-07-28 23:02:08 - src.agents.multi_agent_discussion - INFO -    Session: papaya_unified_hebrew_30s_20250728_230019[0m
+[32m2025-07-28 23:02:08 - src.agents.multi_agent_discussion - INFO -    Agents available: 22[0m
+[32m2025-07-28 23:02:08 - src.agents.multi_agent_discussion - INFO -    Session-managed discussions: ✅[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO - 🎬 Enhanced Working Orchestrator initialized (enhanced)[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Mission: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Platform: tiktok[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Duration: 32s[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Session: papaya_unified_hebrew_30s_20250728_230019[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Mode: enhanced[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO -    Agents: 7[0m
+[32m2025-07-28 23:02:08 - src.workflows.generate_viral_video - INFO - 🌍 Languages: he[0m
+[32m2025-07-28 23:02:08 - src.workflows.generate_viral_video - INFO - 📝 RTL languages detected - will handle right-to-left text properly[0m
+[32m2025-07-28 23:02:08 - src.workflows.generate_viral_video - INFO - 🎬 Starting enhanced AI agent video generation[0m
+[32m2025-07-28 23:02:08 - src.agents.working_orchestrator - INFO - 🎬 Starting enhanced AI agent video generation[0m
+[32m2025-07-28 23:02:09 - src.agents.working_orchestrator - INFO - 🎬 Frame Continuity Decision: ✅ ENABLED[0m
+[32m2025-07-28 23:02:09 - src.agents.working_orchestrator - INFO -    Confidence: 0.90[0m
+[32m2025-07-28 23:02:09 - src.agents.working_orchestrator - INFO -    Reason: The narrative arc of the hero's journey, from exhaustion to revitalized party-goer, strongly benefits from seamless transitions to emphasize the transformation and the magical elements.[0m
+[32m2025-07-28 23:02:09 - src.agents.working_orchestrator - INFO - 🤝 Conducting AI agent discussions...[0m
+[32m2025-07-28 23:02:09 - src.agents.multi_agent_discussion - INFO - 🎭 Starting agent discussion: Duration & Timing Validation[0m
+[32m2025-07-28 23:02:09 - src.agents.multi_agent_discussion - INFO - 👥 Participating agents: AudioMaster, CutMaster, SyncMaster[0m
+[32m2025-07-28 23:02:09 - src.agents.discussion_visualizer - INFO - 🎭 Starting discussion: Duration & Timing Validation[0m
+[32m2025-07-28 23:02:09 - src.agents.multi_agent_discussion - INFO - 🔄 Discussion round 1/10[0m
+[32m2025-07-28 23:02:11 - src.agents.discussion_visualizer - INFO - 💬 AudioMaster: To make this Papaya Bar TikTok ad hilarious and engaging, we need to lean heavily into dynamic audio...[0m
+[32m2025-07-28 23:02:11 - src.agents.multi_agent_discussion - INFO - 💬 AudioMaster: To make this Papaya Bar TikTok ad hilarious and engaging, we need to lean heavily into dynamic audio...[0m
+[32m2025-07-28 23:02:13 - src.agents.discussion_visualizer - INFO - 💬 CutMaster: To make this Papaya Bar ad hilarious and engaging on TikTok, we need to maximize the visual and tona...[0m
+[32m2025-07-28 23:02:13 - src.agents.multi_agent_discussion - INFO - 💬 CutMaster: To make this Papaya Bar ad hilarious and engaging on TikTok, we need to maximize the visual and tona...[0m
+[32m2025-07-28 23:02:14 - src.agents.discussion_visualizer - INFO - 💬 SyncMaster: To ensure this Papaya Bar TikTok ad is engaging and viral-worthy, we must meticulously sync the rapi...[0m
+[32m2025-07-28 23:02:14 - src.agents.multi_agent_discussion - INFO - 💬 SyncMaster: To ensure this Papaya Bar TikTok ad is engaging and viral-worthy, we must meticulously sync the rapi...[0m
+[32m2025-07-28 23:02:14 - src.agents.multi_agent_discussion - INFO - 📊 Consensus level: 1.00[0m
+[32m2025-07-28 23:02:14 - src.agents.discussion_visualizer - INFO - 📊 Consensus level: 1.00 (Round 1)[0m
+[32m2025-07-28 23:02:14 - src.agents.multi_agent_discussion - INFO - ✅ Consensus reached![0m
+[32m2025-07-28 23:02:14 - src.agents.discussion_visualizer - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds (5.2s)[0m
+[32m2025-07-28 23:02:14 - src.agents.discussion_visualizer - INFO - 📊 Discussion report saved: outputs/papaya_unified_hebrew_30s_20250728_230019/agent_discussions/report_duration_timing_validation.md[0m
+[32m2025-07-28 23:02:14 - src.utils.session_manager - INFO - 💾 Saved discussion to session: duration_validation[0m
+[32m2025-07-28 23:02:14 - src.agents.multi_agent_discussion - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds[0m
+[32m2025-07-28 23:02:14 - src.agents.multi_agent_discussion - INFO - 🎭 Starting agent discussion: Script Strategy & Viral Optimization[0m
+[32m2025-07-28 23:02:14 - src.agents.multi_agent_discussion - INFO - 👥 Participating agents: StoryWeaver, VisionCraft, AudioMaster[0m
+[32m2025-07-28 23:02:14 - src.agents.discussion_visualizer - INFO - 🎭 Starting discussion: Script Strategy & Viral Optimization[0m
+[32m2025-07-28 23:02:14 - src.agents.multi_agent_discussion - INFO - 🔄 Discussion round 1/10[0m
+[32m2025-07-28 23:02:15 - src.agents.discussion_visualizer - INFO - 💬 StoryWeaver: To create a hilarious and engaging 32-second TikTok ad for Papaya Bar, we need to maximize the contr...[0m
+[32m2025-07-28 23:02:15 - src.agents.multi_agent_discussion - INFO - 💬 StoryWeaver: To create a hilarious and engaging 32-second TikTok ad for Papaya Bar, we need to maximize the contr...[0m
+[32m2025-07-28 23:02:17 - src.agents.discussion_visualizer - INFO - 💬 VisionCraft: To maximize engagement for this specific Papaya Bar TikTok, we need to lean into the visual absurdit...[0m
+[32m2025-07-28 23:02:17 - src.agents.multi_agent_discussion - INFO - 💬 VisionCraft: To maximize engagement for this specific Papaya Bar TikTok, we need to lean into the visual absurdit...[0m
+[32m2025-07-28 23:02:19 - src.agents.discussion_visualizer - INFO - 💬 AudioMaster: To maximize engagement for this Papaya Bar TikTok, we must synchronize abrupt visual shifts with cor...[0m
+[32m2025-07-28 23:02:19 - src.agents.multi_agent_discussion - INFO - 💬 AudioMaster: To maximize engagement for this Papaya Bar TikTok, we must synchronize abrupt visual shifts with cor...[0m
+[32m2025-07-28 23:02:19 - src.agents.multi_agent_discussion - INFO - 📊 Consensus level: 1.00[0m
+[32m2025-07-28 23:02:19 - src.agents.discussion_visualizer - INFO - 📊 Consensus level: 1.00 (Round 1)[0m
+[32m2025-07-28 23:02:19 - src.agents.multi_agent_discussion - INFO - ✅ Consensus reached![0m
+[32m2025-07-28 23:02:19 - src.agents.discussion_visualizer - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds (4.9s)[0m
+[32m2025-07-28 23:02:19 - src.agents.discussion_visualizer - INFO - 📊 Discussion report saved: outputs/papaya_unified_hebrew_30s_20250728_230019/agent_discussions/report_script_strategy_viral_optimization.md[0m
+[32m2025-07-28 23:02:19 - src.utils.session_manager - INFO - 💾 Saved discussion to session: script_strategy[0m
+[32m2025-07-28 23:02:19 - src.agents.multi_agent_discussion - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds[0m
+[32m2025-07-28 23:02:19 - src.agents.multi_agent_discussion - INFO - 🎭 Starting agent discussion: Visual Composition & Technical Approach[0m
+[32m2025-07-28 23:02:19 - src.agents.multi_agent_discussion - INFO - 👥 Participating agents: PixelForge, CutMaster, AudioMaster[0m
+[32m2025-07-28 23:02:19 - src.agents.discussion_visualizer - INFO - 🎭 Starting discussion: Visual Composition & Technical Approach[0m
+[32m2025-07-28 23:02:19 - src.agents.multi_agent_discussion - INFO - 🔄 Discussion round 1/10[0m
+[32m2025-07-28 23:02:21 - src.agents.discussion_visualizer - INFO - 💬 PixelForge: To make this Papaya Bar TikTok ad hilarious and engaging, we need to lean heavily into rapid, contra...[0m
+[32m2025-07-28 23:02:21 - src.agents.multi_agent_discussion - INFO - 💬 PixelForge: To make this Papaya Bar TikTok ad hilarious and engaging, we need to lean heavily into rapid, contra...[0m
+[32m2025-07-28 23:02:23 - src.agents.discussion_visualizer - INFO - 💬 CutMaster: To maximize engagement for this Papaya Bar TikTok ad, we need a visually dynamic and humor-driven ap...[0m
+[32m2025-07-28 23:02:23 - src.agents.multi_agent_discussion - INFO - 💬 CutMaster: To maximize engagement for this Papaya Bar TikTok ad, we need a visually dynamic and humor-driven ap...[0m
+[32m2025-07-28 23:02:25 - src.agents.discussion_visualizer - INFO - 💬 AudioMaster: To make this Papaya Bar TikTok ad hilarious and engaging, we must prioritize rapid, contrasting audi...[0m
+[32m2025-07-28 23:02:25 - src.agents.multi_agent_discussion - INFO - 💬 AudioMaster: To make this Papaya Bar TikTok ad hilarious and engaging, we must prioritize rapid, contrasting audi...[0m
+[32m2025-07-28 23:02:25 - src.agents.multi_agent_discussion - INFO - 📊 Consensus level: 1.00[0m
+[32m2025-07-28 23:02:25 - src.agents.discussion_visualizer - INFO - 📊 Consensus level: 1.00 (Round 1)[0m
+[32m2025-07-28 23:02:25 - src.agents.multi_agent_discussion - INFO - ✅ Consensus reached![0m
+[32m2025-07-28 23:02:25 - src.agents.discussion_visualizer - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds (6.0s)[0m
+[32m2025-07-28 23:02:25 - src.agents.discussion_visualizer - INFO - 📊 Discussion report saved: outputs/papaya_unified_hebrew_30s_20250728_230019/agent_discussions/report_visual_composition_technical_approach.md[0m
+[32m2025-07-28 23:02:25 - src.utils.session_manager - INFO - 💾 Saved discussion to session: visual_strategy[0m
+[32m2025-07-28 23:02:25 - src.agents.multi_agent_discussion - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds[0m
+[32m2025-07-28 23:02:25 - src.agents.multi_agent_discussion - INFO - 🎭 Starting agent discussion: Audio Production & Voice Strategy[0m
+[32m2025-07-28 23:02:25 - src.agents.multi_agent_discussion - INFO - 👥 Participating agents: AudioMaster, CutMaster, SyncMaster[0m
+[32m2025-07-28 23:02:25 - src.agents.discussion_visualizer - INFO - 🎭 Starting discussion: Audio Production & Voice Strategy[0m
+[32m2025-07-28 23:02:25 - src.agents.multi_agent_discussion - INFO - 🔄 Discussion round 1/10[0m
+[32m2025-07-28 23:02:27 - src.agents.discussion_visualizer - INFO - 💬 AudioMaster: To maximize engagement for this Papaya Bar TikTok ad, we must synchronize sharp visual shifts with d...[0m
+[32m2025-07-28 23:02:27 - src.agents.multi_agent_discussion - INFO - 💬 AudioMaster: To maximize engagement for this Papaya Bar TikTok ad, we must synchronize sharp visual shifts with d...[0m
+[32m2025-07-28 23:02:28 - src.agents.discussion_visualizer - INFO - 💬 CutMaster: For this Papaya Bar TikTok ad, the audio strategy needs to mirror the rapid visual shifts, using dis...[0m
+[32m2025-07-28 23:02:28 - src.agents.multi_agent_discussion - INFO - 💬 CutMaster: For this Papaya Bar TikTok ad, the audio strategy needs to mirror the rapid visual shifts, using dis...[0m
+[32m2025-07-28 23:02:30 - src.agents.discussion_visualizer - INFO - 💬 SyncMaster: To maximize engagement for this Papaya Bar TikTok ad, we need to lean into rapid, contrasting audio ...[0m
+[32m2025-07-28 23:02:30 - src.agents.multi_agent_discussion - INFO - 💬 SyncMaster: To maximize engagement for this Papaya Bar TikTok ad, we need to lean into rapid, contrasting audio ...[0m
+[32m2025-07-28 23:02:30 - src.agents.multi_agent_discussion - INFO - 📊 Consensus level: 1.00[0m
+[32m2025-07-28 23:02:30 - src.agents.discussion_visualizer - INFO - 📊 Consensus level: 1.00 (Round 1)[0m
+[32m2025-07-28 23:02:30 - src.agents.multi_agent_discussion - INFO - ✅ Consensus reached![0m
+[32m2025-07-28 23:02:30 - src.agents.discussion_visualizer - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds (5.1s)[0m
+[32m2025-07-28 23:02:30 - src.agents.discussion_visualizer - INFO - 📊 Discussion report saved: outputs/papaya_unified_hebrew_30s_20250728_230019/agent_discussions/report_audio_production_voice_strategy.md[0m
+[32m2025-07-28 23:02:30 - src.utils.session_manager - INFO - 💾 Saved discussion to session: audio_strategy[0m
+[32m2025-07-28 23:02:30 - src.agents.multi_agent_discussion - INFO - 🎯 Discussion completed: 1.00 consensus in 1 rounds[0m
+[32m2025-07-28 23:02:30 - src.agents.working_orchestrator - INFO - ✅ Completed 4 enhanced discussions[0m
+[32m2025-07-28 23:02:30 - src.agents.working_orchestrator - INFO - 📝 Generating enhanced script...[0m
+[32m2025-07-28 23:02:30 - src.agents.working_orchestrator - INFO - 🌍 Generating script in Hebrew[0m
+[32m2025-07-28 23:02:30 - src.agents.working_orchestrator - INFO - 🎯 Using duration for script generation: 32s (core_decisions: True)[0m
+[32m2025-07-28 23:02:30 - src.agents.working_orchestrator - INFO - 🔄 Using new separated script generator for better visual/dialogue separation[0m
+[36m2025-07-28 23:02:30 - src.generators.separated_script_generator - DEBUG - Initializing log file for session tracking[0m
+[36m2025-07-28 23:02:30 - src.utils.session_manager - DEBUG - Log file not yet created: logs/viral_video_20250728.log[0m
+[32m2025-07-28 23:02:30 - src.generators.ai_content_analyzer - INFO - ✅ AI Content Analyzer initialized with model: gemini-2.5-flash-lite[0m
+[32m2025-07-28 23:02:30 - src.generators.separated_script_generator - INFO - ✅ Separated Script Generator initialized[0m
+[33m2025-07-28 23:02:30 - src.agents.working_orchestrator - WARNING - ⚠️ Separated generator failed, falling back to Director: 'WorkingOrchestrator' object has no attribute 'character'[0m
+[32m2025-07-28 23:02:30 - src.generators.director - INFO - Writing script for Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.
+
+IMPORTANT: Generate all script content, dialogue, and text in Hebrew. Do not translate the mission statement itself, but create the script output in Hebrew. (32s) on tiktok[0m
+[32m2025-07-28 23:02:31 - src.generators.director - INFO - ✅ Context retrieved on attempt 1[0m
+[32m2025-07-28 23:02:31 - src.generators.director - INFO - Incorporated current information from Gemini's internet access[0m
+[32m2025-07-28 23:02:33 - src.generators.ai_content_analyzer - INFO - 📊 AI Analysis Complete: commercial[0m
+[32m2025-07-28 23:02:33 - src.generators.ai_content_analyzer - INFO -    Purpose: To create a highly engaging and shareable TikTok advertisement for Papaya Bar in Rosh HaAyin, driving foot traffic and brand awareness through a humorous and memorable concept.[0m
+[32m2025-07-28 23:02:33 - src.generators.ai_content_analyzer - INFO -    Action-oriented: True[0m
+[32m2025-07-28 23:02:33 - src.generators.director - INFO - ✅ AI generated hook on attempt 1: [VISUAL: קיר מתפוצץ, גיבור גיבור מתרסק פנימה, מיוב...[0m
+[32m2025-07-28 23:02:34 - src.generators.ai_content_analyzer - INFO - 📊 AI Analysis Complete: unknown[0m
+[32m2025-07-28 23:02:34 - src.generators.ai_content_analyzer - INFO -    Purpose: To create a 30-second TikTok advertisement script for Papaya Bar that is humorous, engaging, and promotes the business by highlighting its offerings for both daytime health and nighttime entertainment.[0m
+[32m2025-07-28 23:02:34 - src.generators.ai_content_analyzer - INFO -    Action-oriented: True[0m
+[32m2025-07-28 23:02:37 - src.generators.director - INFO - ✅ Content generation succeeded on attempt 1[0m
+[32m2025-07-28 23:02:37 - src.generators.director - INFO - Optimizing script for virality[0m
+[32m2025-07-28 23:02:37 - src.generators.director - INFO - Script generation completed successfully[0m
+[32m2025-07-28 23:02:37 - src.generators.director - INFO - 📝 Generated script preview:[0m
+[32m2025-07-28 23:02:37 - src.generators.director - INFO -    Length: 10215 characters[0m
+[32m2025-07-28 23:02:37 - src.generators.director - INFO -    First 300 chars: {
+  "hook": {
+    "text": "[VISUAL: \u05e7\u05d9\u05e8 \u05de\u05ea\u05e4\u05d5\u05e6\u05e5, \u05d2\u05d9\u05d1\u05d5\u05e8 \u05d2\u05d9\u05d1\u05d5\u05e8 \u05de\u05ea\u05e8\u05e1\u05e7 \u05e4\u05e0\u05d9\u05de\u05d4, \u05de\u05d9\u05d5\u05d1\u05e9 \u05d5\u05de\u05d9\u05d5\u05d1\u05e9]\nDIALOGUE: \u...[0m
+[32m2025-07-28 23:02:37 - src.generators.director - INFO -    Segment 1 text: [VISUAL: גיבור על נכנס בכוח דרך קיר, מותש וצמא.] DIALOGUE: אני חייב משהו שיציל אותי!...[0m
+[32m2025-07-28 23:02:37 - src.generators.director - INFO -    Segment 2 text: [VISUAL: המקום הופך ליער קסום, פפאיה מרחפת. סבתא מופיעה עם שייק ריפוי. הגיבור שותה ומשתנה לאל שרירי....[0m
+[32m2025-07-28 23:02:37 - src.generators.director - INFO -    Segment 3 text: [VISUAL: חיתוך למציאות - בחור רגיל מרגיש פלא, ואז אותו בר בלילה, מלא קוקטיילים מבוססי שייק.] DIALOGU...[0m
+[32m2025-07-28 23:02:37 - src.generators.director - INFO -    Segment 4 text: [VISUAL: צעירים רוקדים עם משקאות זוהרים. בחור שיכור מנסה להזמין שייק 'בריא'.] DIALOGUE: פפאיה בר ראש...[0m
+[32m2025-07-28 23:02:37 - src.agents.working_orchestrator - INFO - 📝 Processing script text: [VISUAL: קיר מתפוצץ, גיבור גיבור מתרסק פנימה, מיובש ומיובש]
+DIALOGUE: אתם חייבים לראות את זה! [VISUA...[0m
+[32m2025-07-28 23:02:37 - src.generators.enhanced_script_processor - INFO - 📝 Processing script for TTS optimization (he)[0m
+[32m2025-07-28 23:02:37 - src.generators.enhanced_script_processor - INFO - 📝 Dialogue extraction: 596 → 164 chars (27.5%)[0m
+[32m2025-07-28 23:02:37 - src.generators.enhanced_script_processor - INFO - ✅ Using pure dialogue only (visual descriptions excluded from audio)[0m
+[32m2025-07-28 23:02:37 - src.generators.enhanced_script_processor - INFO - ✅ Extracted 5 dialogue segments from tagged script[0m
+[33m2025-07-28 23:02:37 - src.generators.enhanced_script_processor - WARNING - ⚠️ Script significantly reduced: 596 → 164 chars[0m
+[33m2025-07-28 23:02:37 - src.generators.enhanced_script_processor - WARNING - ⚠️ Cleaned script preview: אתם חייבים לראות את זה! אני חייב משהו שיציל אותי! וואו! זה הפפאיה בר! גיבורים ביום, אגדות בלילה! פפאיה בר ראש העין! שבזי 47, 054-222-2617. פתוח תמיד! עקבו לחלק 2! 👀...[0m
+[32m2025-07-28 23:02:37 - src.generators.enhanced_script_processor - INFO - 🎯 Target duration: 32 seconds[0m
+[32m2025-07-28 23:02:46 - src.generators.enhanced_script_processor - INFO - ✅ Duration match: 28.2s (target: 32s)[0m
+[36m2025-07-28 23:02:47 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:02:48 - src.generators.enhanced_script_processor - DEBUG - ✅ Script text is clean - no issues found[0m
+[36m2025-07-28 23:02:48 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:02:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 0 is clean - no issues found[0m
+[36m2025-07-28 23:02:50 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:02:51 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 1 is clean - no issues found[0m
+[36m2025-07-28 23:02:51 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:02:52 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 2 is clean - no issues found[0m
+[36m2025-07-28 23:02:53 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:02:54 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 3 is clean - no issues found[0m
+[36m2025-07-28 23:02:54 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:02:55 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 4 is clean - no issues found[0m
+[36m2025-07-28 23:02:56 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:02:57 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 5 is clean - no issues found[0m
+[36m2025-07-28 23:02:57 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:02:58 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 6 is clean - no issues found[0m
+[36m2025-07-28 23:02:59 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:03:00 - src.generators.enhanced_script_processor - DEBUG - ✅ Segment 7 is clean - no issues found[0m
+[36m2025-07-28 23:03:00 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:03:01 - src.utils.text_validator - DEBUG - 📝 Removed metadata from segment_8: ["AI detected metadata: This text appears to be a navigational instruction or a prompt to continue to the next part of a sequence. While it's content in itself, its primary function is likely to guide the user through a larger content structure, implying a metadata-like role in organizing or presenting information."][0m
+[33m2025-07-28 23:03:01 - src.generators.enhanced_script_processor - WARNING - ⚠️ Cleaned segment 8 - removed: ["AI detected metadata: This text appears to be a navigational instruction or a prompt to continue to the next part of a sequence. While it's content in itself, its primary function is likely to guide the user through a larger content structure, implying a metadata-like role in organizing or presenting information."][0m
+[32m2025-07-28 23:03:01 - src.generators.enhanced_script_processor - INFO - ✅ AI enhanced script: 39 words[0m
+[32m2025-07-28 23:03:01 - src.agents.working_orchestrator - INFO - ✅ Script generation completed successfully[0m
+[32m2025-07-28 23:03:01 - src.agents.working_orchestrator - INFO - 🧠 Making comprehensive AI decisions...[0m
+[32m2025-07-28 23:03:01 - src.agents.working_orchestrator - INFO - ✅ Using frame continuity decision: True[0m
+[32m2025-07-28 23:03:01 - src.agents.voice_director_agent - INFO - 🎭 AI analyzing content for voice selection: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:03:03 - src.agents.voice_director_agent - INFO - 🎭 AI Voice Strategy: single[0m
+[32m2025-07-28 23:03:03 - src.agents.voice_director_agent - INFO - 🗣️ Distinct Speakers: False[0m
+[32m2025-07-28 23:03:03 - src.agents.voice_director_agent - INFO - 👥 Speaker Count: 1[0m
+[32m2025-07-28 23:03:03 - src.agents.voice_director_agent - INFO - 🎤 Primary Personality: comedian[0m
+[32m2025-07-28 23:03:03 - src.agents.voice_director_agent - INFO - 👥 Multiple Voices: False[0m
+[32m2025-07-28 23:03:03 - src.agents.voice_director_agent - INFO - 🧠 AI Reasoning: The content is designed as a narrative with distinct visual shifts, but there are no explicit dialog...[0m
+[32m2025-07-28 23:03:03 - src.agents.voice_director_agent - INFO - 🎤 Selected voice: he-IL-Wavenet-B (comedian, male, neutral)[0m
+[32m2025-07-28 23:03:03 - src.agents.voice_director_agent - INFO - 🎤 Generated voice config for 4 clips with 1 unique voices[0m
+⚠️ All automatic JSON fixes failed, using AI to fix...
+[32m2025-07-28 23:03:13 - src.agents.working_orchestrator - INFO - ✅ Made 6 comprehensive AI decisions[0m
+[32m2025-07-28 23:03:13 - src.agents.working_orchestrator - INFO - ✅ Decision making completed successfully[0m
+[32m2025-07-28 23:03:13 - src.agents.working_orchestrator - INFO - 🔍 DEBUG: Languages in config: [<Language.HEBREW: 'he'>][0m
+[32m2025-07-28 23:03:13 - src.agents.working_orchestrator - INFO - 🔍 DEBUG: Language count: 1[0m
+[32m2025-07-28 23:03:13 - src.agents.working_orchestrator - INFO - 🔍 DEBUG: Multiple languages check: False[0m
+[32m2025-07-28 23:03:13 - src.agents.working_orchestrator - INFO - 🎬 Generating enhanced video with AI decisions...[0m
+[32m2025-07-28 23:03:13 - src.generators.ai_content_analyzer - INFO - ✅ AI Content Analyzer initialized with model: gemini-2.5-flash-lite[0m
+[32m2025-07-28 23:03:13 - src.generators.director - INFO - Director initialized with model: gemini-2.5-flash-lite[0m
+[36m2025-07-28 23:03:13 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-28 23:03:13 - src.agents.voice_director_agent - INFO - 🎭 Voice Director Agent initialized with AI-powered voice selection[0m
+[36m2025-07-28 23:03:13 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-28 23:03:13 - src.agents.overlay_positioning_agent - INFO - 🎯 OverlayPositioningAgent initialized with colorful hooks support[0m
+[36m2025-07-28 23:03:13 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-28 23:03:13 - src.agents.visual_style_agent - INFO - 🎨 VisualStyleAgent initialized[0m
+[32m2025-07-28 23:03:13 - src.generators.ai_content_analyzer - INFO - ✅ AI Content Analyzer initialized with model: gemini-2.5-flash-lite[0m
+[32m2025-07-28 23:03:13 - src.utils.text_validator - INFO - ✅ Text Validator initialized with AI capabilities[0m
+[32m2025-07-28 23:03:13 - src.generators.ai_content_analyzer - INFO - ✅ AI Content Analyzer initialized with model: gemini-2.5-flash-lite[0m
+[32m2025-07-28 23:03:13 - src.generators.enhanced_script_processor - INFO - ✅ Enhanced Script Processor initialized[0m
+[32m2025-07-28 23:03:13 - src.generators.png_overlay_handler - INFO - ✅ PNG Overlay Handler initialized[0m
+[36m2025-07-28 23:03:13 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-28 23:03:13 - src.utils.audio_duration_manager - INFO - ✅ Audio Duration Manager initialized[0m
+[32m2025-07-28 23:03:13 - src.utils.audio_duration_manager - INFO -    Tolerance: ±20.0%[0m
+[32m2025-07-28 23:03:13 - src.utils.audio_duration_manager - INFO -    Min segment duration: 0.1s[0m
+[32m2025-07-28 23:03:13 - src.utils.audio_duration_manager - INFO -    Max segment duration: 8.0s[0m
+[32m2025-07-28 23:03:13 - src.utils.audio_duration_manager - INFO -    Padding between segments: 0.3s[0m
+[32m2025-07-28 23:03:13 - src.generators.gemini_image_client - INFO - 🎨 Real AI Image Generation client initialized[0m
+[32m2025-07-28 23:03:13 - src.generators.gemini_image_client - INFO - 📁 Images directory: outputs/gemini_images[0m
+[32m2025-07-28 23:03:13 - src.generators.gemini_image_client - INFO - 🎬 Clips directory: outputs/gemini_clips[0m
+[32m2025-07-28 23:03:13 - src.generators.gemini_image_client - INFO - ✨ Using Gemini 2.0 Flash Preview Image Generation model[0m
+[36m2025-07-28 23:03:18 - src.agents.gemini_helper - DEBUG - ✅ Gemini model gemini-2.5-flash-lite configured with API key[0m
+[32m2025-07-28 23:03:18 - src.agents.voice_director_agent - INFO - 🎭 Voice Director Agent initialized with AI-powered voice selection[0m
+[32m2025-07-28 23:03:18 - src.generators.enhanced_multilang_tts - INFO - ✅ Enhanced Multilingual TTS client initialized[0m
+[32m2025-07-28 23:03:18 - src.generators.hashtag_generator - INFO - 🏷️ HashtagGenerator initialized[0m
+[36m2025-07-28 23:03:18 - src.generators.base_veo_client - DEBUG - Initializing log file for session tracking[0m
+[36m2025-07-28 23:03:18 - src.utils.session_manager - DEBUG - Log file not yet created: logs/viral_video_20250728.log[0m
+[36m2025-07-28 23:03:18 - src.generators.vertex_ai_veo2_client - DEBUG - Initializing log file for session tracking[0m
+[36m2025-07-28 23:03:18 - src.utils.session_manager - DEBUG - Log file not yet created: logs/viral_video_20250728.log[0m
+[36m2025-07-28 23:03:24 - src.generators.base_veo_client - DEBUG - 🔑 Access token refreshed[0m
+[36m2025-07-28 23:03:25 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-28 23:03:25 - src.generators.base_veo_client - INFO - ✅ VertexAIVeo2Client initialized successfully[0m
+[36m2025-07-28 23:03:27 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-28 23:03:27 - src.generators.vertex_ai_veo2_client - INFO - ✅ VertexAIVeo2Client initialized successfully[0m
+[36m2025-07-28 23:03:28 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO - 🎬 VideoGenerator initialized with clean OOP architecture[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO -    VEO Models: [<VeoModel.VEO2: 'veo-2.0-generate-001'>][0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO -    Prefer VEO-3: ✅[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO -    Vertex AI: ✅[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO -    AI Agents: ✅ (Voice, Positioning, Style, Script)[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO -    Session-aware: ✅ (Files will be organized in session directories)[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO - 🔐 Authentication: ✅ SUCCESS[0m
+[32m2025-07-28 23:03:28 - src.agents.working_orchestrator - INFO - 🎯 Using core decisions: 4 clips, [8.0, 8.0, 8.0, 8.0][0m
+[32m2025-07-28 23:03:28 - src.agents.working_orchestrator - INFO - ✅ Created enhanced video config with 6 AI decisions[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO - 🎯 Stored mission context: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO - 📱 Stored platform context: tiktok[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO - 🔄 Using existing session: papaya_unified_hebrew_30s_20250728_230019[0m
+[32m2025-07-28 23:03:28 - src.utils.session_context - INFO - ✅ Session context initialized for papaya_unified_hebrew_30s_20250728_230019 at outputs/papaya_unified_hebrew_30s_20250728_230019[0m
+[32m2025-07-28 23:03:28 - src.utils.duration_feedback_system - INFO - 📊 Duration Feedback System initialized[0m
+[32m2025-07-28 23:03:28 - src.utils.duration_feedback_system - INFO -    Tolerance: ±20.0%[0m
+[32m2025-07-28 23:03:28 - src.utils.duration_feedback_system - INFO -    Quality gates: ✅ ENABLED[0m
+[32m2025-07-28 23:03:28 - src.utils.duration_feedback_system - INFO - 🎯 Target duration set: 32s[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO - 🎬 Starting video generation for: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO -    Duration: 32s[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO -    Platform: tiktok[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO -    Session: papaya_unified_hebrew_30s_20250728_230019[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO -    Session Directory: outputs/papaya_unified_hebrew_30s_20250728_230019/[0m
+[32m2025-07-28 23:03:28 - src.utils.session_manager - INFO - 📝 Logged generation step: video_generation_started - in_progress[0m
+[32m2025-07-28 23:03:28 - src.generators.video_generator - INFO - 🎯 Initialized Duration Coordinator with target: 32s[0m
+[36m2025-07-28 23:03:33 - src.generators.base_veo_client - DEBUG - 🔑 Access token refreshed[0m
+[36m2025-07-28 23:03:34 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-28 23:03:34 - src.generators.base_veo_client - INFO - ✅ VertexAIVeo2Client initialized successfully[0m
+[36m2025-07-28 23:03:35 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-28 23:03:35 - src.generators.vertex_ai_veo2_client - INFO - ✅ VertexAIVeo2Client initialized successfully[0m
+[36m2025-07-28 23:03:36 - src.generators.vertex_ai_veo2_client - DEBUG - ✅ VEO-2 fully available[0m
+[32m2025-07-28 23:03:36 - src.generators.video_generator - INFO - 📝 Processing script with AI[0m
+[32m2025-07-28 23:03:36 - src.generators.video_generator - INFO - 🎬 Director generating narrative script for: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-st...[0m
+[32m2025-07-28 23:03:36 - src.generators.director - INFO - Writing script for Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open. (32s) on tiktok[0m
+[32m2025-07-28 23:03:37 - src.generators.ai_content_analyzer - INFO - 📊 AI Analysis Complete: commercial[0m
+[32m2025-07-28 23:03:37 - src.generators.ai_content_analyzer - INFO -    Purpose: To advertise Papaya Bar in Rosh HaAyin by creating a memorable and engaging TikTok ad concept that highlights both its healthy options and its vibrant nightlife atmosphere, ultimately driving customer visits.[0m
+[32m2025-07-28 23:03:37 - src.generators.ai_content_analyzer - INFO -    Action-oriented: True[0m
+[32m2025-07-28 23:03:38 - src.generators.director - INFO - ✅ AI generated hook on attempt 1: [VISUAL: Dramatic superhero crash through wall, lo...[0m
+[32m2025-07-28 23:03:39 - src.generators.ai_content_analyzer - INFO - 📊 AI Analysis Complete: commercial[0m
+[32m2025-07-28 23:03:39 - src.generators.ai_content_analyzer - INFO -    Purpose: To create a compelling and memorable TikTok advertisement for Papaya Bar, aiming to drive customer visits and sales by highlighting its offerings for both health-conscious individuals and those seeking a vibrant nightlife experience.[0m
+[32m2025-07-28 23:03:39 - src.generators.ai_content_analyzer - INFO -    Action-oriented: True[0m
+[32m2025-07-28 23:03:41 - src.generators.director - INFO - ✅ Content generation succeeded on attempt 1[0m
+[32m2025-07-28 23:03:41 - src.generators.director - INFO - Optimizing script for virality[0m
+[32m2025-07-28 23:03:41 - src.generators.director - INFO - Script generation completed successfully[0m
+[32m2025-07-28 23:03:41 - src.generators.director - INFO - 📝 Generated script preview:[0m
+[32m2025-07-28 23:03:41 - src.generators.director - INFO -    Length: 5715 characters[0m
+[32m2025-07-28 23:03:41 - src.generators.director - INFO -    First 300 chars: {
+  "hook": {
+    "text": "[VISUAL: Dramatic superhero crash through wall, looking parched.] DIALOGUE: \u05d4\u05e6\u05dc\u05d4! \u05d4\u05e1\u05d5\u05e4\u05d4 \u05d4\u05d2\u05d9\u05e2\u05d4!",
+    "type": "ai_generated",
+    "duration_seconds": 3
+  },
+  "segments": [
+    {
+      "text": "[VISUAL: D...[0m
+[32m2025-07-28 23:03:41 - src.generators.director - INFO -    Segment 1 text: [VISUAL: Dramatic superhero crashes through a wall, looking exhausted and dehydrated.] DIALOGUE: אוי...[0m
+[32m2025-07-28 23:03:41 - src.generators.director - INFO -    Segment 2 text: [VISUAL: The bar transforms into an enchanted forest with floating papaya fruits. Grandma offers a g...[0m
+[32m2025-07-28 23:03:41 - src.generators.director - INFO -    Segment 3 text: [VISUAL: Person drinks the shake, looks energized. Cuts to night, bar is a cocktail paradise, young ...[0m
+[32m2025-07-28 23:03:41 - src.generators.director - INFO -    Segment 4 text: [VISUAL: Papaya Bar logo, address, phone number, and 'Always Open' flash on screen.] DIALOGUE: פפאיה...[0m
+[32m2025-07-28 23:03:41 - src.generators.video_generator - INFO - ✅ Director generated narrative script: [VISUAL: Dramatic superhero crashes through a wall, looking exhausted and dehydrated.] DIALOGUE: אוי, אני גמור! צריך כוח! [VISUAL: The bar transforms into an enchanted forest with floating papaya frui...[0m
+[32m2025-07-28 23:03:41 - src.generators.video_generator - INFO - 📝 Script to process: [VISUAL: Dramatic superhero crashes through a wall, looking exhausted and dehydrated.] DIALOGUE: אוי...[0m
+[32m2025-07-28 23:03:41 - src.generators.enhanced_script_processor - INFO - 📝 Processing script for TTS optimization (he)[0m
+[32m2025-07-28 23:03:41 - src.generators.enhanced_script_processor - INFO - 📝 Dialogue extraction: 641 → 136 chars (21.2%)[0m
+[32m2025-07-28 23:03:41 - src.generators.enhanced_script_processor - INFO - ✅ Using pure dialogue only (visual descriptions excluded from audio)[0m
+[32m2025-07-28 23:03:41 - src.generators.enhanced_script_processor - INFO - ✅ Extracted 4 dialogue segments from tagged script[0m
+[33m2025-07-28 23:03:41 - src.generators.enhanced_script_processor - WARNING - ⚠️ Script significantly reduced: 641 → 136 chars[0m
+[33m2025-07-28 23:03:41 - src.generators.enhanced_script_processor - WARNING - ⚠️ Cleaned script preview: אוי, אני גמור! צריך כוח! קסם הג'ונגל! סבתא תרפא אותך! גיבורי היום, אגדות הלילה! בריאות או מסיבה? פפאיה בר, שבזי 47, ראש העין. תמיד פתוח!...[0m
+[32m2025-07-28 23:03:41 - src.generators.enhanced_script_processor - INFO - 🎯 Target duration: 32 seconds[0m
+[33m2025-07-28 23:03:47 - src.generators.enhanced_script_processor - WARNING - ⚠️ Duration mismatch: 19.4s vs target 32s[0m
+[32m2025-07-28 23:03:47 - src.generators.enhanced_script_processor - INFO - 📏 Expanded script to reach target word count[0m
+[31m2025-07-28 23:03:47 - src.generators.enhanced_script_processor - ERROR - Script reprocessing failed: name 'video_config' is not defined[0m
+[32m2025-07-28 23:03:47 - src.generators.enhanced_script_processor - INFO - 🕒 Applying minimum segment duration threshold: 0.1s[0m
+[32m2025-07-28 23:03:47 - src.generators.enhanced_script_processor - INFO - ✅ All segments meet minimum duration requirement[0m
+[36m2025-07-28 23:03:48 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:03:49 - src.generators.enhanced_script_processor - DEBUG - ✅ Fallback script is clean - no issues found[0m
+[36m2025-07-28 23:03:50 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:03:51 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:03:53 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:03:54 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:03:56 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:03:57 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:03:59 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:03:59 - src.utils.text_validator - DEBUG - 📝 Removed metadata from fallback_segment: ['AI detected metadata: שבזי 47', 'AI detected metadata: ראש העין'][0m
+[36m2025-07-28 23:04:00 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:04:01 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:04:03 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:04:04 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:04:06 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:04:07 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:04:09 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:04:10 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:04:12 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[36m2025-07-28 23:04:13 - src.utils.text_validator - DEBUG - Text appears to be already cleaned - skipping instruction removal[0m
+[32m2025-07-28 23:04:16 - src.generators.enhanced_script_processor - INFO - ✅ AI enhanced script: 17 words[0m
+[32m2025-07-28 23:04:16 - src.generators.video_generator - INFO - 📝 Processed script: ‏אוי, אני גמור! צריך כוח! קסם הג'ונגל! סבתא תרפא אותך! גיבורי היום, אגדות הלילה! בריאות או מסיבה...[0m
+[32m2025-07-28 23:04:16 - src.utils.session_manager - INFO - 💾 Saved original script to session[0m
+[32m2025-07-28 23:04:16 - src.utils.session_manager - INFO - 💾 Saved processed script to session[0m
+[32m2025-07-28 23:04:16 - src.generators.video_generator - INFO - 💾 Saved processed script to session[0m
+[32m2025-07-28 23:04:16 - src.utils.session_manager - INFO - 💾 Saved processing_result script to session[0m
+[32m2025-07-28 23:04:16 - src.generators.video_generator - INFO - ✅ Script processed: 17 words[0m
+[32m2025-07-28 23:04:16 - src.generators.video_generator - INFO - ✅ Session data saved: outputs/papaya_unified_hebrew_30s_20250728_230019/session_data.json[0m
+[32m2025-07-28 23:04:16 - src.generators.video_generator - INFO - 📝 Script duration analysis: 8.9s[0m
+[32m2025-07-28 23:04:16 - src.utils.duration_feedback_system - INFO - 📍 Checkpoint: script_generation - 8.9s (⚠️ OUT OF RANGE)[0m
+[32m2025-07-28 23:04:16 - src.generators.video_generator - INFO - 🎨 Getting AI visual style decision[0m
+[32m2025-07-28 23:04:16 - src.agents.visual_style_agent - INFO - 🎨 Analyzing optimal visual style for: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:04:16 - src.agents.visual_style_agent - INFO - 👥 Audience: israeli youth tiktok users health-conscious party-goers, Platform: tiktok[0m
+[32m2025-07-28 23:04:16 - src.agents.visual_style_agent - INFO - 🎨 Style Decision: anime[0m
+[32m2025-07-28 23:04:16 - src.agents.visual_style_agent - INFO - 🎨 Color Palette: vibrant[0m
+[32m2025-07-28 23:04:16 - src.agents.visual_style_agent - INFO - 📊 Engagement Prediction: high[0m
+[32m2025-07-28 23:04:16 - src.agents.visual_style_agent - INFO - 💭 Reasoning: The request explicitly calls for Marvel-style and Ghibli-style transformations, which are strongly a...[0m
+[32m2025-07-28 23:04:16 - src.generators.video_generator - INFO - ✅ Style decision: anime[0m
+[32m2025-07-28 23:04:16 - src.generators.video_generator - INFO - 🎯 Getting AI positioning decision[0m
+[32m2025-07-28 23:04:16 - src.agents.overlay_positioning_agent - INFO - 🎯 Analyzing optimal positioning for: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:04:16 - src.agents.overlay_positioning_agent - INFO - 📱 Platform: tiktok, Style: anime, Duration: 32.0s[0m
+[32m2025-07-28 23:04:17 - src.agents.overlay_positioning_agent - INFO - 🎯 Positioning Decision: bottom_center[0m
+[32m2025-07-28 23:04:17 - src.agents.overlay_positioning_agent - INFO - 📋 Strategy: static[0m
+[32m2025-07-28 23:04:17 - src.agents.overlay_positioning_agent - INFO - 💭 Reasoning: The request specifies TikTok, and the bottom_center position is a common and effective placement for...[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - ✅ Positioning decision: bottom_third[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🎬 Generating video clips with VEO factory[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🎬 Continuous generation: ❌ DISABLED[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🎬 Frame continuity: ✅ ENABLED[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🎬 Generating standard video clips[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🎵 Found 0 audio segments in session[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🎯 Using core decisions: 4 video clips[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 📝 Found 8 script segments (independent from video clips)[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🎯 Using core decisions clip durations: ['8.0s', '8.0s', '8.0s', '8.0s'][0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - ⏱️ Total from core decisions: 32.0s (Target: 32s)[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🚀 Using veo-2.0-generate-001 for video generation[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🎨 Creating visual prompt from segment: '‏אוי, אני גמור...'[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🤖 Using AI to generate visual prompt from segment: '‏אוי, אני גמור...'[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🎭 Using character from config: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🎯 AI-generated visual prompt: 'פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות crashes through a dramatic, comic-book-style wall, appearing exhausted and dehydrated, with a broken and dusty cape, set against a vibrant, multi-colored background that transitions into a magical Ghibli-esque enchanted forest with glowing, floating papaya fruits and a wise, warm grandma figure holding a radiant healing smoothie, bathed in soft, ethereal light., no text overlays'[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - ✅ Character 'פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות' included in prompt[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - ⏱️ Clip 1 Duration: 8.0s (optimal video duration)[0m
+[32m2025-07-28 23:04:17 - src.agents.visual_style_agent - INFO - 🎨 Found partial style match: 'marvel comics meets studio ghibli hybrid colorful vibrant' → 'studio'[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 💾 Saved VEO prompt for clip 1 to: outputs/papaya_unified_hebrew_30s_20250728_230019/logs/veo_prompt_clip_1.json[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 🎬 Generating VEO clip 1/4 (attempt 1/3): פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים ... (duration: 8.0s)[0m
+[32m2025-07-28 23:04:17 - src.generators.video_generator - INFO - 📝 FULL VEO PROMPT for clip 1 attempt 1: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות crashes through a dramatic, comic-book-style wall, appearing exhausted and dehydrated, with a broken and dusty cape, set against a vibrant, multi-colored background that transitions into a magical Ghibli-esque enchanted forest with glowing, floating papaya fruits and a wise, warm grandma figure holding a radiant healing smoothie, bathed in soft, ethereal light., no text overlays, studio lighting, controlled environment, clean backgrounds[0m
+[32m2025-07-28 23:04:17 - src.generators.vertex_ai_veo2_client - INFO - 🎬 Starting VEO-2 generation for clip: clip_1_attempt_1[0m
+[32m2025-07-28 23:04:17 - src.generators.vertex_ai_veo2_client - INFO - ⏱️ VEO-2 Duration Requested: 8.0s[0m
+[32m2025-07-28 23:04:17 - src.generators.vertex_ai_veo2_client - INFO - 📝 VEO-2 Prompt: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות crashes through a dramatic, comic-book-styl...[0m
+[32m2025-07-28 23:04:17 - src.generators.vertex_ai_veo2_client - INFO - 📐 VEO-2 Aspect Ratio: 9:16[0m
+[31m2025-07-28 23:04:18 - src.generators.vertex_ai_veo2_client - ERROR - ❌ VEO-2 request failed: 429 - {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for aiplatform.googleapis.com/long_running_online_prediction_requests_per_base_model with base model: veo-2.0-generate-001. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.",
+    "status": "RESOURCE_EXHAUSTED"
+  }
+}
+[0m
+[31m2025-07-28 23:04:18 - src.generators.vertex_ai_veo2_client - ERROR - ❌ VEO-2 generation failed[0m
+[32m2025-07-28 23:04:18 - src.generators.video_generator - INFO - 🔄 Attempt 2 - applying safety rephrasing[0m
+[32m2025-07-28 23:04:18 - src.generators.video_generator - INFO - 🛡️ Applying safety level 1 rephrasing[0m
+[32m2025-07-28 23:04:18 - src.generators.video_generator - INFO - 🛡️ Using safety level 1 rephrasing[0m
+[32m2025-07-28 23:04:18 - src.generators.video_generator - INFO - 🎬 Generating VEO clip 1/4 (attempt 2/3): פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים ... (duration: 8.0s)[0m
+[32m2025-07-28 23:04:18 - src.generators.video_generator - INFO - 📝 FULL VEO PROMPT for clip 1 attempt 2: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות crashes through a dramatic, comic-book-style wall, appearing exhausted and dehydrated, with a broken and dusty cape, set against a vibrant, multi-colored background that transitions into a magical Ghibli-esque enchanted forest with glowing, floating papaya fruits and a wise, conflictm grandma figure holding a radiant healing smoothie, bathed in soft, ethereal light., no text overlays, studio lighting, controlled environment, clean backgrounds[0m
+[32m2025-07-28 23:04:18 - src.generators.vertex_ai_veo2_client - INFO - 🎬 Starting VEO-2 generation for clip: clip_1_attempt_2[0m
+[32m2025-07-28 23:04:18 - src.generators.vertex_ai_veo2_client - INFO - ⏱️ VEO-2 Duration Requested: 8.0s[0m
+[32m2025-07-28 23:04:18 - src.generators.vertex_ai_veo2_client - INFO - 📝 VEO-2 Prompt: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות crashes through a dramatic, comic-book-styl...[0m
+[32m2025-07-28 23:04:18 - src.generators.vertex_ai_veo2_client - INFO - 📐 VEO-2 Aspect Ratio: 9:16[0m
+[31m2025-07-28 23:04:20 - src.generators.vertex_ai_veo2_client - ERROR - ❌ VEO-2 request failed: 429 - {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for aiplatform.googleapis.com/long_running_online_prediction_requests_per_base_model with base model: veo-2.0-generate-001. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.",
+    "status": "RESOURCE_EXHAUSTED"
+  }
+}
+[0m
+[31m2025-07-28 23:04:20 - src.generators.vertex_ai_veo2_client - ERROR - ❌ VEO-2 generation failed[0m
+[32m2025-07-28 23:04:20 - src.generators.video_generator - INFO - 🔄 Attempt 3 - applying safety rephrasing[0m
+[32m2025-07-28 23:04:20 - src.generators.video_generator - INFO - 🛡️ Applying safety level 2 rephrasing[0m
+[32m2025-07-28 23:04:20 - src.generators.video_generator - INFO - 🛡️ Using safety level 2 rephrasing[0m
+[32m2025-07-28 23:04:20 - src.generators.video_generator - INFO - 🎬 Generating VEO clip 1/4 (attempt 3/3): Educational documentary style: Create a hilarious ... (duration: 8.0s)[0m
+[32m2025-07-28 23:04:20 - src.generators.video_generator - INFO - 📝 FULL VEO PROMPT for clip 1 attempt 3: Educational documentary style: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.. Scene 1 showing informative content about the topic. Professional presentation suitable for all audiences. Platform: tiktok. Focus on facts and learning.[0m
+[32m2025-07-28 23:04:20 - src.generators.vertex_ai_veo2_client - INFO - 🎬 Starting VEO-2 generation for clip: clip_1_attempt_3[0m
+[32m2025-07-28 23:04:20 - src.generators.vertex_ai_veo2_client - INFO - ⏱️ VEO-2 Duration Requested: 8.0s[0m
+[32m2025-07-28 23:04:20 - src.generators.vertex_ai_veo2_client - INFO - 📝 VEO-2 Prompt: Educational documentary style: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin!...[0m
+[32m2025-07-28 23:04:20 - src.generators.vertex_ai_veo2_client - INFO - 📐 VEO-2 Aspect Ratio: 9:16[0m
+[31m2025-07-28 23:04:21 - src.generators.vertex_ai_veo2_client - ERROR - ❌ VEO-2 request failed: 429 - {
+  "error": {
+    "code": 429,
+    "message": "Quota exceeded for aiplatform.googleapis.com/long_running_online_prediction_requests_per_base_model with base model: veo-2.0-generate-001. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.",
+    "status": "RESOURCE_EXHAUSTED"
+  }
+}
+[0m
+[31m2025-07-28 23:04:21 - src.generators.vertex_ai_veo2_client - ERROR - ❌ VEO-2 generation failed[0m
+[33m2025-07-28 23:04:21 - src.generators.video_generator - WARNING - ⚠️ FALLBACK WARNING: VEO generation failed for clip 1, using fallback[0m
+[32m2025-07-28 23:04:21 - src.generators.video_generator - INFO - 🔄 Starting hierarchical fallback for clip 1[0m
+[32m2025-07-28 23:04:21 - src.generators.video_generator - INFO - 🖼️ Attempting image generation fallback for clip 1[0m
+[32m2025-07-28 23:04:21 - src.generators.video_generator - INFO - 🖼️ Generating image for clip 1 (attempt 1)[0m
+[32m2025-07-28 23:04:28 - src.generators.video_generator - INFO - 🎨 Generating image with Vertex AI Imagen (prompt 1/1)...[0m
+[32m2025-07-28 23:04:38 - src.generators.video_generator - INFO - ✅ Image generated successfully: outputs/papaya_unified_hebrew_30s_20250728_230019/temp_files/image_clip_1_attempt_1.png[0m
+[31m2025-07-28 23:04:39 - src.generators.video_generator - ERROR - ❌ Image to video conversion failed: ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 16.0.0 (clang-1600.0.26.6)
+  configuration: --prefix=/usr/local/Cellar/ffmpeg/7.1.1_3 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags='-Wl,-ld_classic' --enable-ffplay --enable-gnutls --enable-gpl --enable-libaom --enable-libaribb24 --enable-libbluray --enable-libdav1d --enable-libharfbuzz --enable-libjxl --enable-libmp3lame --enable-libopus --enable-librav1e --enable-librist --enable-librubberband --enable-libsnappy --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtesseract --enable-libtheora --enable-libvidstab --enable-libvmaf --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxml2 --enable-libxvid --enable-lzma --enable-libfontconfig --enable-libfreetype --enable-frei0r --enable-libass --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libspeex --enable-libsoxr --enable-libzmq --enable-libzimg --disable-libjack --disable-indev=jack --enable-videotoolbox --enable-audiotoolbox
+  libavutil      59. 39.100 / 59. 39.100
+  libavcodec     61. 19.101 / 61. 19.101
+  libavformat    61.  7.100 / 61.  7.100
+  libavdevice    61.  3.100 / 61.  3.100
+  libavfilter    10.  4.100 / 10.  4.100
+  libswscale      8.  3.100 /  8.  3.100
+  libswresample   5.  3.100 /  5.  3.100
+  libpostproc    58.  3.100 / 58.  3.100
+Input #0, png_pipe, from 'outputs/papaya_unified_hebrew_30s_20250728_230019/temp_files/image_clip_1_attempt_1.png':
+  Duration: N/A, bitrate: N/A
+  Stream #0:0: Video: png, rgb24(pc, gbr/unknown/unknown), 1024x1024, 25 fps, 25 tbr, 25 tbn
+[AVFilterGraph @ 0x7f80b6f04a40] No option name near '"iw/2-(iw/zoom/2)":y="ih/2-(ih/zoom/2)":d=240:s=1080x1920'
+[AVFilterGraph @ 0x7f80b6f04a40] Error parsing a filter description around: 
+[AVFilterGraph @ 0x7f80b6f04a40] Error parsing filterchain 'scale=1296.0:2304.0,zoompan=z="min(zoom+0.0015,1.5)":x="iw/2-(iw/zoom/2)":y="ih/2-(ih/zoom/2)":d=240:s=1080x1920' around: 
+Error opening output file outputs/papaya_unified_hebrew_30s_20250728_230019/video_clips/image_video_clip_1.mp4.
+Error opening output files: Invalid argument
+[0m
+[32m2025-07-28 23:04:39 - src.generators.video_generator - INFO - 🖼️ Generating image for clip 1 (attempt 2)[0m
+[32m2025-07-28 23:04:47 - src.generators.video_generator - INFO - 🔄 Rephrasing problematic prompt while preserving all parameters: '
+                Create a single frame image for this video scene:
+                פפאיה הגיבורה - ד...'[0m
+[32m2025-07-28 23:04:48 - src.generators.video_generator - INFO - ✅ AI-rephrased prompt: Create a single frame image: A super-heroine named "Papaya Hero" with muscles and magical wings bursts through a dramatic, comic-book-style wall, appearing fatigued and parched, with a tattered and dusty cape. The background transitions from vibrant, multi-colored to a Ghibli-esque enchanted forest featuring glowing, airborne papaya fruits. A wise, kindly grandmother figure is present, holding a luminous healing smoothie, all bathed in soft, ethereal light. Style: anime. Visual Style: realistic. Requirements: High quality illustration, appropriate for the narrative, clear and visually appealing, no text or overlays. Studio lighting, controlled environment, clean backgrounds., no text overlays[0m
+[32m2025-07-28 23:04:48 - src.generators.video_generator - INFO - 🔄 Using rephrased prompt for image generation attempt 2[0m
+[32m2025-07-28 23:04:48 - src.generators.video_generator - INFO - 🎨 Generating image with Vertex AI Imagen (prompt 1/2)...[0m
+[32m2025-07-28 23:04:58 - src.generators.video_generator - INFO - ✅ Image generated successfully: outputs/papaya_unified_hebrew_30s_20250728_230019/temp_files/image_clip_1_attempt_2.png[0m
+[31m2025-07-28 23:04:59 - src.generators.video_generator - ERROR - ❌ Image to video conversion failed: ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 16.0.0 (clang-1600.0.26.6)
+  configuration: --prefix=/usr/local/Cellar/ffmpeg/7.1.1_3 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags='-Wl,-ld_classic' --enable-ffplay --enable-gnutls --enable-gpl --enable-libaom --enable-libaribb24 --enable-libbluray --enable-libdav1d --enable-libharfbuzz --enable-libjxl --enable-libmp3lame --enable-libopus --enable-librav1e --enable-librist --enable-librubberband --enable-libsnappy --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtesseract --enable-libtheora --enable-libvidstab --enable-libvmaf --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxml2 --enable-libxvid --enable-lzma --enable-libfontconfig --enable-libfreetype --enable-frei0r --enable-libass --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libspeex --enable-libsoxr --enable-libzmq --enable-libzimg --disable-libjack --disable-indev=jack --enable-videotoolbox --enable-audiotoolbox
+  libavutil      59. 39.100 / 59. 39.100
+  libavcodec     61. 19.101 / 61. 19.101
+  libavformat    61.  7.100 / 61.  7.100
+  libavdevice    61.  3.100 / 61.  3.100
+  libavfilter    10.  4.100 / 10.  4.100
+  libswscale      8.  3.100 /  8.  3.100
+  libswresample   5.  3.100 /  5.  3.100
+  libpostproc    58.  3.100 / 58.  3.100
+Input #0, png_pipe, from 'outputs/papaya_unified_hebrew_30s_20250728_230019/temp_files/image_clip_1_attempt_2.png':
+  Duration: N/A, bitrate: N/A
+  Stream #0:0: Video: png, rgb24(pc, gbr/unknown/unknown), 1024x1024, 25 fps, 25 tbr, 25 tbn
+[AVFilterGraph @ 0x7f85972069c0] No option name near '"iw/2-(iw/zoom/2)":y="ih/2-(ih/zoom/2)":d=240:s=1080x1920'
+[AVFilterGraph @ 0x7f85972069c0] Error parsing a filter description around: 
+[AVFilterGraph @ 0x7f85972069c0] Error parsing filterchain 'scale=1296.0:2304.0,zoompan=z="min(zoom+0.0015,1.5)":x="iw/2-(iw/zoom/2)":y="ih/2-(ih/zoom/2)":d=240:s=1080x1920' around: 
+Error opening output file outputs/papaya_unified_hebrew_30s_20250728_230019/video_clips/image_video_clip_1.mp4.
+Error opening output files: Invalid argument
+[0m
+[33m2025-07-28 23:04:59 - src.generators.video_generator - WARNING - ⚠️ All generation methods failed, using colored fallback for clip 1[0m
+[32m2025-07-28 23:04:59 - src.generators.video_generator - INFO - 🎨 Creating direct fallback for: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים ...[0m
+[32m2025-07-28 23:04:59 - src.generators.video_generator - INFO - 📱 Using platform dimensions for tiktok: 1080x1920[0m
+[32m2025-07-28 23:05:04 - src.generators.video_generator - INFO - ✅ Direct fallback video created: outputs/papaya_unified_hebrew_30s_20250728_230019/video_clips/fallback_clip_1.mp4 (0.0MB)[0m
+[32m2025-07-28 23:05:04 - src.generators.video_generator - INFO - ✅ Created colored fallback for clip 1[0m
+[32m2025-07-28 23:05:04 - src.generators.video_generator - INFO - 🎨 Creating visual prompt from segment: '‏צריך כוח...'[0m
+[32m2025-07-28 23:05:04 - src.generators.video_generator - INFO - 🤖 Using AI to generate visual prompt from segment: '‏צריך כוח...'[0m
+[32m2025-07-28 23:05:04 - src.generators.video_generator - INFO - 🎭 Using character from config: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות[0m
+[32m2025-07-28 23:05:05 - src.generators.video_generator - INFO - 🎯 AI-generated visual prompt: 'פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות, has just crashed through a wall into a vibrant, magical Ghibli-style enchanted forest filled with floating papaya fruits, the atmosphere is colorful and vibrant, with beams of light illuminating the scene., no text overlays'[0m
+[32m2025-07-28 23:05:05 - src.generators.video_generator - INFO - ✅ Character 'פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות' included in prompt[0m
+[32m2025-07-28 23:05:05 - src.generators.video_generator - INFO - ⏱️ Clip 2 Duration: 8.0s (optimal video duration)[0m
+[32m2025-07-28 23:05:05 - src.agents.visual_style_agent - INFO - 🎨 Found partial style match: 'marvel comics meets studio ghibli hybrid colorful vibrant' → 'studio'[0m
+[32m2025-07-28 23:05:05 - src.generators.video_generator - INFO - 💾 Saved VEO prompt for clip 2 to: outputs/papaya_unified_hebrew_30s_20250728_230019/logs/veo_prompt_clip_2.json[0m
+[32m2025-07-28 23:05:05 - src.generators.video_generator - INFO - 🎬 Generating VEO clip 2/4 (attempt 1/3): פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים ... (duration: 8.0s)[0m
+[32m2025-07-28 23:05:05 - src.generators.video_generator - INFO - 📝 FULL VEO PROMPT for clip 2 attempt 1: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות, has just crashed through a wall into a vibrant, magical Ghibli-style enchanted forest filled with floating papaya fruits, the atmosphere is colorful and vibrant, with beams of light illuminating the scene., no text overlays, studio lighting, controlled environment, clean backgrounds[0m
+[32m2025-07-28 23:05:05 - src.generators.vertex_ai_veo2_client - INFO - 🎬 Starting VEO-2 generation for clip: clip_2_attempt_1[0m
+[32m2025-07-28 23:05:05 - src.generators.vertex_ai_veo2_client - INFO - ⏱️ VEO-2 Duration Requested: 8.0s[0m
+[32m2025-07-28 23:05:05 - src.generators.vertex_ai_veo2_client - INFO - 📝 VEO-2 Prompt: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות, has just crashed through a wall into a vib...[0m
+[32m2025-07-28 23:05:05 - src.generators.vertex_ai_veo2_client - INFO - 📐 VEO-2 Aspect Ratio: 9:16[0m
+[32m2025-07-28 23:05:05 - src.generators.vertex_ai_veo2_client - INFO - ✅ VEO-2 request successful: {'name': 'projects/viralgen-464411/locations/us-central1/publishers/google/models/veo-2.0-generate-001/operations/abab23e0-3eb0-4e44-9aaf-ab983de2eef7'}[0m
+[32m2025-07-28 23:05:05 - src.generators.vertex_ai_veo2_client - INFO - ⏳ Polling VEO-2 operation using fetchPredictOperation: abab23e0-3eb0-4e44-9aaf-ab983de2eef7[0m
+[32m2025-07-28 23:05:06 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 1/180)[0m
+[32m2025-07-28 23:05:17 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 2/180)[0m
+[32m2025-07-28 23:05:28 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 3/180)[0m
+[32m2025-07-28 23:05:40 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 4/180)[0m
+[32m2025-07-28 23:05:53 - src.generators.vertex_ai_veo2_client - INFO - 🔍 VEO-2 operation completed. Full response: ...[0m
+[32m2025-07-28 23:05:53 - src.generators.vertex_ai_veo2_client - INFO - ✅ VEO-2 video saved to: outputs/papaya_unified_hebrew_30s_20250728_230019/video_clips/veo_clips/clip_2_attempt_1.mp4[0m
+[32m2025-07-28 23:05:53 - src.generators.vertex_ai_veo2_client - INFO - ✅ VEO-2 generation completed: outputs/papaya_unified_hebrew_30s_20250728_230019/video_clips/veo_clips/clip_2_attempt_1.mp4[0m
+[36m2025-07-28 23:05:54 - src.generators.video_generator - DEBUG - 🎬 Video duration: 8.00s[0m
+[32m2025-07-28 23:05:54 - src.generators.video_generator - INFO - ✅ VEO clip 2 duration: 8.0s[0m
+[32m2025-07-28 23:05:54 - src.generators.video_generator - INFO - ✅ Generated VEO clip 2/4[0m
+[36m2025-07-28 23:05:54 - src.generators.video_generator - DEBUG - 🎬 Video duration: 8.00s[0m
+[32m2025-07-28 23:05:56 - src.generators.video_generator - INFO - 🖼️ Extracted frame 23/24 for continuity: outputs/papaya_unified_hebrew_30s_20250728_230019/images/last_frame_clip_2.jpg[0m
+[36m2025-07-28 23:05:56 - src.generators.video_generator - DEBUG - 📍 Selected frame from last second (frames_to_trim: 1)[0m
+[32m2025-07-28 23:05:56 - src.generators.video_generator - INFO - 💾 Saved continuity frame: frame_continuity_2_to_3.jpg[0m
+[32m2025-07-28 23:05:56 - src.generators.video_generator - INFO - 🎨 Creating visual prompt from segment: '‏קסם הג'ונגל...'[0m
+[32m2025-07-28 23:05:56 - src.generators.video_generator - INFO - 🤖 Using AI to generate visual prompt from segment: '‏קסם הג'ונגל...'[0m
+[32m2025-07-28 23:05:56 - src.generators.video_generator - INFO - 🎭 Using character from config: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות[0m
+[32m2025-07-28 23:05:57 - src.generators.video_generator - INFO - 🎯 AI-generated visual prompt: 'פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות is being lifted by an enchanted forest setting with floating papaya fruits, a glowing healing smoothie is being offered by a magical grandma, with a vibrant and colorful atmosphere blending Marvel comics and Studio Ghibli styles., no text overlays'[0m
+[32m2025-07-28 23:05:57 - src.generators.video_generator - INFO - ✅ Character 'פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות' included in prompt[0m
+[32m2025-07-28 23:05:57 - src.generators.video_generator - INFO - ⏱️ Clip 3 Duration: 8.0s (optimal video duration)[0m
+[32m2025-07-28 23:05:57 - src.agents.visual_style_agent - INFO - 🎨 Found partial style match: 'marvel comics meets studio ghibli hybrid colorful vibrant' → 'studio'[0m
+[32m2025-07-28 23:05:57 - src.generators.video_generator - INFO - 💾 Saved VEO prompt for clip 3 to: outputs/papaya_unified_hebrew_30s_20250728_230019/logs/veo_prompt_clip_3.json[0m
+[32m2025-07-28 23:05:57 - src.generators.video_generator - INFO - 🎬 Generating VEO clip 3/4 (attempt 1/3): פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים ... (duration: 8.0s)[0m
+[32m2025-07-28 23:05:57 - src.generators.video_generator - INFO - 📝 FULL VEO PROMPT for clip 3 attempt 1: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות is being lifted by an enchanted forest setting with floating papaya fruits, a glowing healing smoothie is being offered by a magical grandma, with a vibrant and colorful atmosphere blending Marvel comics and Studio Ghibli styles., no text overlays, studio lighting, controlled environment, clean backgrounds[0m
+[32m2025-07-28 23:05:57 - src.generators.video_generator - INFO - 🖼️ Using frame continuity from clip 2[0m
+[32m2025-07-28 23:05:57 - src.generators.vertex_ai_veo2_client - INFO - 🎬 Starting VEO-2 generation for clip: clip_3_attempt_1[0m
+[32m2025-07-28 23:05:57 - src.generators.vertex_ai_veo2_client - INFO - ⏱️ VEO-2 Duration Requested: 8.0s[0m
+[32m2025-07-28 23:05:57 - src.generators.vertex_ai_veo2_client - INFO - 📝 VEO-2 Prompt: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות is being lifted by an enchanted forest sett...[0m
+[32m2025-07-28 23:05:57 - src.generators.vertex_ai_veo2_client - INFO - 📐 VEO-2 Aspect Ratio: 9:16[0m
+[32m2025-07-28 23:05:57 - src.generators.vertex_ai_veo2_client - INFO - 🖼️ Added image to VEO-2 request: last_frame_clip_2.jpg (image/jpeg)[0m
+[32m2025-07-28 23:05:58 - src.generators.vertex_ai_veo2_client - INFO - ✅ VEO-2 request successful: {'name': 'projects/viralgen-464411/locations/us-central1/publishers/google/models/veo-2.0-generate-001/operations/36e23c93-9031-43a4-b013-ddb8fe96aef4'}[0m
+[32m2025-07-28 23:05:58 - src.generators.vertex_ai_veo2_client - INFO - ⏳ Polling VEO-2 operation using fetchPredictOperation: 36e23c93-9031-43a4-b013-ddb8fe96aef4[0m
+[32m2025-07-28 23:05:58 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 1/180)[0m
+[32m2025-07-28 23:06:09 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 2/180)[0m
+[32m2025-07-28 23:06:21 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 3/180)[0m
+[32m2025-07-28 23:06:32 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 4/180)[0m
+[32m2025-07-28 23:06:45 - src.generators.vertex_ai_veo2_client - INFO - 🔍 VEO-2 operation completed. Full response: ...[0m
+[32m2025-07-28 23:06:45 - src.generators.vertex_ai_veo2_client - INFO - ✅ VEO-2 video saved to: outputs/papaya_unified_hebrew_30s_20250728_230019/video_clips/veo_clips/clip_3_attempt_1.mp4[0m
+[32m2025-07-28 23:06:45 - src.generators.vertex_ai_veo2_client - INFO - ✅ VEO-2 generation completed: outputs/papaya_unified_hebrew_30s_20250728_230019/video_clips/veo_clips/clip_3_attempt_1.mp4[0m
+[36m2025-07-28 23:06:46 - src.generators.video_generator - DEBUG - 🎬 Video duration: 8.00s[0m
+[32m2025-07-28 23:06:46 - src.generators.video_generator - INFO - ✅ VEO clip 3 duration: 8.0s[0m
+[32m2025-07-28 23:06:46 - src.generators.video_generator - INFO - ✅ Generated VEO clip 3/4[0m
+[36m2025-07-28 23:06:46 - src.generators.video_generator - DEBUG - 🎬 Video duration: 8.00s[0m
+[32m2025-07-28 23:06:48 - src.generators.video_generator - INFO - 🖼️ Extracted frame 23/24 for continuity: outputs/papaya_unified_hebrew_30s_20250728_230019/images/last_frame_clip_3.jpg[0m
+[36m2025-07-28 23:06:48 - src.generators.video_generator - DEBUG - 📍 Selected frame from last second (frames_to_trim: 1)[0m
+[32m2025-07-28 23:06:48 - src.generators.video_generator - INFO - 💾 Saved continuity frame: frame_continuity_3_to_4.jpg[0m
+[32m2025-07-28 23:06:48 - src.generators.video_generator - INFO - 🎨 Creating visual prompt from segment: '‏סבתא תרפא אותך...'[0m
+[32m2025-07-28 23:06:48 - src.generators.video_generator - INFO - 🤖 Using AI to generate visual prompt from segment: '‏סבתא תרפא אותך...'[0m
+[32m2025-07-28 23:06:48 - src.generators.video_generator - INFO - 🎭 Using character from config: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות[0m
+[32m2025-07-28 23:06:49 - src.generators.video_generator - INFO - 🎯 AI-generated visual prompt: 'פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות, is healed by a glowing papaya smoothie from a magical, enchanted forest setting where floating papaya fruits surround her, with a grandma figure looking on approvingly, in a vibrant, colorful, marvel comics meets studio ghibli hybrid animated style., no text overlays'[0m
+[32m2025-07-28 23:06:49 - src.generators.video_generator - INFO - ✅ Character 'פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות' included in prompt[0m
+[32m2025-07-28 23:06:49 - src.generators.video_generator - INFO - ⏱️ Clip 4 Duration: 8.0s (optimal video duration)[0m
+[32m2025-07-28 23:06:49 - src.agents.visual_style_agent - INFO - 🎨 Found partial style match: 'marvel comics meets studio ghibli hybrid colorful vibrant' → 'studio'[0m
+[32m2025-07-28 23:06:49 - src.generators.video_generator - INFO - 💾 Saved VEO prompt for clip 4 to: outputs/papaya_unified_hebrew_30s_20250728_230019/logs/veo_prompt_clip_4.json[0m
+[32m2025-07-28 23:06:49 - src.generators.video_generator - INFO - 🎬 Generating VEO clip 4/4 (attempt 1/3): פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים ... (duration: 8.0s)[0m
+[32m2025-07-28 23:06:49 - src.generators.video_generator - INFO - 📝 FULL VEO PROMPT for clip 4 attempt 1: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות, is healed by a glowing papaya smoothie from a magical, enchanted forest setting where floating papaya fruits surround her, with a grandma figure looking on approvingly, in a vibrant, colorful, marvel comics meets studio ghibli hybrid animated style., no text overlays, studio lighting, controlled environment, clean backgrounds[0m
+[32m2025-07-28 23:06:49 - src.generators.video_generator - INFO - 🖼️ Using frame continuity from clip 3[0m
+[32m2025-07-28 23:06:49 - src.generators.vertex_ai_veo2_client - INFO - 🎬 Starting VEO-2 generation for clip: clip_4_attempt_1[0m
+[32m2025-07-28 23:06:49 - src.generators.vertex_ai_veo2_client - INFO - ⏱️ VEO-2 Duration Requested: 8.0s[0m
+[32m2025-07-28 23:06:49 - src.generators.vertex_ai_veo2_client - INFO - 📝 VEO-2 Prompt: פפאיה הגיבורה - דמות סופר-פפאיה עם שרירים וכנפיים קסומות, is healed by a glowing papaya smoothie fro...[0m
+[32m2025-07-28 23:06:49 - src.generators.vertex_ai_veo2_client - INFO - 📐 VEO-2 Aspect Ratio: 9:16[0m
+[32m2025-07-28 23:06:49 - src.generators.vertex_ai_veo2_client - INFO - 🖼️ Added image to VEO-2 request: last_frame_clip_3.jpg (image/jpeg)[0m
+[32m2025-07-28 23:06:50 - src.generators.vertex_ai_veo2_client - INFO - ✅ VEO-2 request successful: {'name': 'projects/viralgen-464411/locations/us-central1/publishers/google/models/veo-2.0-generate-001/operations/4175472f-c9bf-457b-bc82-80fe78f3e17d'}[0m
+[32m2025-07-28 23:06:50 - src.generators.vertex_ai_veo2_client - INFO - ⏳ Polling VEO-2 operation using fetchPredictOperation: 4175472f-c9bf-457b-bc82-80fe78f3e17d[0m
+[32m2025-07-28 23:06:51 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 1/180)[0m
+[32m2025-07-28 23:07:02 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 2/180)[0m
+[32m2025-07-28 23:07:13 - src.generators.vertex_ai_veo2_client - INFO - ⏳ VEO-2 generation in progress... (attempt 3/180)[0m
+[32m2025-07-28 23:07:26 - src.generators.vertex_ai_veo2_client - INFO - 🔍 VEO-2 operation completed. Full response: ...[0m
+[32m2025-07-28 23:07:26 - src.generators.vertex_ai_veo2_client - INFO - ✅ VEO-2 video saved to: outputs/papaya_unified_hebrew_30s_20250728_230019/video_clips/veo_clips/clip_4_attempt_1.mp4[0m
+[32m2025-07-28 23:07:26 - src.generators.vertex_ai_veo2_client - INFO - ✅ VEO-2 generation completed: outputs/papaya_unified_hebrew_30s_20250728_230019/video_clips/veo_clips/clip_4_attempt_1.mp4[0m
+[36m2025-07-28 23:07:27 - src.generators.video_generator - DEBUG - 🎬 Video duration: 8.00s[0m
+[32m2025-07-28 23:07:27 - src.generators.video_generator - INFO - ✅ VEO clip 4 duration: 8.0s[0m
+[32m2025-07-28 23:07:27 - src.generators.video_generator - INFO - ✅ Generated VEO clip 4/4[0m
+[32m2025-07-28 23:07:27 - src.generators.video_generator - INFO - 🎬 Generated 4 video clips[0m
+[32m2025-07-28 23:07:30 - src.generators.video_generator - INFO - 🎬 Video clips total duration: 32.1s[0m
+[32m2025-07-28 23:07:30 - src.generators.video_generator - INFO - 🎤 Generating AI-optimized audio[0m
+[32m2025-07-28 23:07:30 - src.generators.video_generator - INFO - 🎯 Using core decisions for audio generation: 4 clips[0m
+[32m2025-07-28 23:07:30 - src.generators.video_generator - INFO - 🎤 Using specified voice: he-IL-AvriNeural[0m
+[32m2025-07-28 23:07:30 - src.generators.video_generator - INFO - 🎯 Creating audio segments from script sentences[0m
+[32m2025-07-28 23:07:30 - src.generators.video_generator - INFO - 📝 Found 6 sentences in script[0m
+[32m2025-07-28 23:07:30 - src.generators.video_generator - INFO - ✅ Created 6 audio segments[0m
+[32m2025-07-28 23:07:30 - src.generators.video_generator - INFO - 📊 Total expected duration: 6.1s (target: 32s)[0m
+[32m2025-07-28 23:07:30 - src.generators.video_generator - INFO - 🎵 Generating audio for segment 1/6: '‏אוי, אני גמור!...' (duration: 1.1s)[0m
+[32m2025-07-28 23:07:30 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating intelligent voice audio for he[0m
+[32m2025-07-28 23:07:30 - src.agents.voice_director_agent - INFO - 🎭 AI analyzing content for voice selection: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:07:32 - src.agents.voice_director_agent - INFO - 🎭 AI Voice Strategy: single[0m
+[32m2025-07-28 23:07:32 - src.agents.voice_director_agent - INFO - 🗣️ Distinct Speakers: False[0m
+[32m2025-07-28 23:07:32 - src.agents.voice_director_agent - INFO - 👥 Speaker Count: 1[0m
+[32m2025-07-28 23:07:32 - src.agents.voice_director_agent - INFO - 🎤 Primary Personality: comedian[0m
+[32m2025-07-28 23:07:32 - src.agents.voice_director_agent - INFO - 👥 Multiple Voices: False[0m
+[32m2025-07-28 23:07:32 - src.agents.voice_director_agent - INFO - 🧠 AI Reasoning: The content is a single narrative for a TikTok ad, without distinct dialogue between characters. The...[0m
+[32m2025-07-28 23:07:32 - src.agents.voice_director_agent - INFO - 🎤 Selected voice: he-IL-Wavenet-B (comedian, male, neutral)[0m
+[32m2025-07-28 23:07:32 - src.agents.voice_director_agent - INFO - 🎤 Generated voice config for 4 clips with 1 unique voices[0m
+[32m2025-07-28 23:07:32 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating clip audio: he-IL-Wavenet-B (speed: 0.9, pitch: -1.0, emotion: dramatic)[0m
+[32m2025-07-28 23:07:32 - src.generators.enhanced_multilang_tts - INFO - 🎵 Adjusted speed from 0.9 to 1.10 to match target duration (1s)[0m
+[33m2025-07-28 23:07:32 - src.generators.enhanced_multilang_tts - WARNING - ⚠️ Content requires 1.20x speed, capped at 1.1x. Consider shortening script.[0m
+[32m2025-07-28 23:07:33 - src.generators.enhanced_multilang_tts - INFO - ✅ Google Cloud TTS generated: 0.01MB[0m
+[32m2025-07-28 23:07:33 - src.generators.enhanced_multilang_tts - INFO - ✅ Generated audio for clip 0: he-IL-Wavenet-B[0m
+[32m2025-07-28 23:07:33 - src.generators.video_generator - INFO - ✅ Generated audio segment 1: 1.2s (total: 1.2s)[0m
+[32m2025-07-28 23:07:33 - src.generators.video_generator - INFO - 🎵 Generating audio for segment 2/6: 'צריך כוח!...' (duration: 0.7s)[0m
+[32m2025-07-28 23:07:33 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating intelligent voice audio for he[0m
+[32m2025-07-28 23:07:33 - src.agents.voice_director_agent - INFO - 🎭 AI analyzing content for voice selection: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:07:35 - src.agents.voice_director_agent - INFO - 🎭 AI Voice Strategy: single[0m
+[32m2025-07-28 23:07:35 - src.agents.voice_director_agent - INFO - 🗣️ Distinct Speakers: False[0m
+[32m2025-07-28 23:07:35 - src.agents.voice_director_agent - INFO - 👥 Speaker Count: 1[0m
+[32m2025-07-28 23:07:35 - src.agents.voice_director_agent - INFO - 🎤 Primary Personality: comedian[0m
+[32m2025-07-28 23:07:35 - src.agents.voice_director_agent - INFO - 👥 Multiple Voices: False[0m
+[32m2025-07-28 23:07:35 - src.agents.voice_director_agent - INFO - 🧠 AI Reasoning: The content is a comedic TikTok ad with a narrative flow, not distinct dialogue between characters. ...[0m
+[32m2025-07-28 23:07:35 - src.agents.voice_director_agent - INFO - 🎤 Selected voice: he-IL-Wavenet-B (comedian, male, neutral)[0m
+[32m2025-07-28 23:07:35 - src.agents.voice_director_agent - INFO - 🎤 Generated voice config for 4 clips with 1 unique voices[0m
+[32m2025-07-28 23:07:35 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating clip audio: he-IL-Wavenet-B (speed: 1.05, pitch: 1.0, emotion: enthusiastic)[0m
+[32m2025-07-28 23:07:35 - src.generators.enhanced_multilang_tts - INFO - ✅ Google Cloud TTS generated: 0.01MB[0m
+[32m2025-07-28 23:07:35 - src.generators.enhanced_multilang_tts - INFO - ✅ Generated audio for clip 1: he-IL-Wavenet-B[0m
+[32m2025-07-28 23:07:36 - src.generators.video_generator - INFO - ✅ Generated audio segment 2: 1.1s (total: 2.3s)[0m
+[32m2025-07-28 23:07:36 - src.generators.video_generator - INFO - 🎵 Generating audio for segment 3/6: 'קסם הג'ונגל!...' (duration: 0.7s)[0m
+[32m2025-07-28 23:07:36 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating intelligent voice audio for he[0m
+[32m2025-07-28 23:07:36 - src.agents.voice_director_agent - INFO - 🎭 AI analyzing content for voice selection: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:07:38 - src.agents.voice_director_agent - INFO - 🎭 AI Voice Strategy: single[0m
+[32m2025-07-28 23:07:38 - src.agents.voice_director_agent - INFO - 🗣️ Distinct Speakers: False[0m
+[32m2025-07-28 23:07:38 - src.agents.voice_director_agent - INFO - 👥 Speaker Count: 1[0m
+[32m2025-07-28 23:07:38 - src.agents.voice_director_agent - INFO - 🎤 Primary Personality: comedian[0m
+[32m2025-07-28 23:07:38 - src.agents.voice_director_agent - INFO - 👥 Multiple Voices: False[0m
+[32m2025-07-28 23:07:38 - src.agents.voice_director_agent - INFO - 🧠 AI Reasoning: The content is a short TikTok ad designed to be humorous and engaging. While there are different sty...[0m
+[32m2025-07-28 23:07:38 - src.agents.voice_director_agent - INFO - 🎤 Selected voice: he-IL-Wavenet-B (comedian, male, neutral)[0m
+[32m2025-07-28 23:07:38 - src.agents.voice_director_agent - INFO - 🎤 Generated voice config for 4 clips with 1 unique voices[0m
+[32m2025-07-28 23:07:38 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating clip audio: he-IL-Wavenet-B (speed: 1.1, pitch: 1.5, emotion: excited)[0m
+[32m2025-07-28 23:07:38 - src.generators.enhanced_multilang_tts - INFO - ✅ Google Cloud TTS generated: 0.01MB[0m
+[32m2025-07-28 23:07:38 - src.generators.enhanced_multilang_tts - INFO - ✅ Generated audio for clip 2: he-IL-Wavenet-B[0m
+[32m2025-07-28 23:07:38 - src.generators.video_generator - INFO - ✅ Generated audio segment 3: 1.3s (total: 3.6s)[0m
+[32m2025-07-28 23:07:38 - src.generators.video_generator - INFO - 🎵 Generating audio for segment 4/6: 'סבתא תרפא אותך!...' (duration: 1.1s)[0m
+[32m2025-07-28 23:07:38 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating intelligent voice audio for he[0m
+[32m2025-07-28 23:07:38 - src.agents.voice_director_agent - INFO - 🎭 AI analyzing content for voice selection: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:07:41 - src.agents.voice_director_agent - INFO - 🎭 AI Voice Strategy: single[0m
+[32m2025-07-28 23:07:41 - src.agents.voice_director_agent - INFO - 🗣️ Distinct Speakers: False[0m
+[32m2025-07-28 23:07:41 - src.agents.voice_director_agent - INFO - 👥 Speaker Count: 1[0m
+[32m2025-07-28 23:07:41 - src.agents.voice_director_agent - INFO - 🎤 Primary Personality: comedian[0m
+[32m2025-07-28 23:07:41 - src.agents.voice_director_agent - INFO - 👥 Multiple Voices: False[0m
+[32m2025-07-28 23:07:41 - src.agents.voice_director_agent - INFO - 🧠 AI Reasoning: The content is designed as a narrative with a single overarching voice driving the humor and storyte...[0m
+[32m2025-07-28 23:07:41 - src.agents.voice_director_agent - INFO - 🎤 Selected voice: he-IL-Wavenet-B (comedian, male, neutral)[0m
+[32m2025-07-28 23:07:41 - src.agents.voice_director_agent - INFO - 🎤 Generated voice config for 4 clips with 1 unique voices[0m
+[32m2025-07-28 23:07:41 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating clip audio: he-IL-Wavenet-B (speed: 1.1, pitch: 1.5, emotion: playful)[0m
+[32m2025-07-28 23:07:41 - src.generators.enhanced_multilang_tts - INFO - 🎵 Adjusted speed from 1.1 to 1.10 to match target duration (1s)[0m
+[33m2025-07-28 23:07:41 - src.generators.enhanced_multilang_tts - WARNING - ⚠️ Content requires 1.20x speed, capped at 1.1x. Consider shortening script.[0m
+[32m2025-07-28 23:07:41 - src.generators.enhanced_multilang_tts - INFO - ✅ Google Cloud TTS generated: 0.01MB[0m
+[32m2025-07-28 23:07:41 - src.generators.enhanced_multilang_tts - INFO - ✅ Generated audio for clip 3: he-IL-Wavenet-B[0m
+[32m2025-07-28 23:07:41 - src.generators.video_generator - INFO - ✅ Generated audio segment 4: 1.3s (total: 4.9s)[0m
+[32m2025-07-28 23:07:41 - src.generators.video_generator - INFO - 🎵 Generating audio for segment 5/6: 'גיבורי היום, אגדות הלילה!...' (duration: 1.4s)[0m
+[32m2025-07-28 23:07:41 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating intelligent voice audio for he[0m
+[32m2025-07-28 23:07:41 - src.agents.voice_director_agent - INFO - 🎭 AI analyzing content for voice selection: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:07:44 - src.agents.voice_director_agent - INFO - 🎭 AI Voice Strategy: single[0m
+[32m2025-07-28 23:07:44 - src.agents.voice_director_agent - INFO - 🗣️ Distinct Speakers: False[0m
+[32m2025-07-28 23:07:44 - src.agents.voice_director_agent - INFO - 👥 Speaker Count: 1[0m
+[32m2025-07-28 23:07:44 - src.agents.voice_director_agent - INFO - 🎤 Primary Personality: comedian[0m
+[32m2025-07-28 23:07:44 - src.agents.voice_director_agent - INFO - 👥 Multiple Voices: False[0m
+[32m2025-07-28 23:07:44 - src.agents.voice_director_agent - INFO - 🧠 AI Reasoning: The content is designed as a humorous, narrative-driven TikTok ad for a bar. While there are distinc...[0m
+[32m2025-07-28 23:07:44 - src.agents.voice_director_agent - INFO - 🎤 Selected voice: he-IL-Wavenet-B (comedian, male, neutral)[0m
+[32m2025-07-28 23:07:44 - src.agents.voice_director_agent - INFO - 🎤 Generated voice config for 4 clips with 1 unique voices[0m
+[32m2025-07-28 23:07:44 - src.generators.enhanced_multilang_tts - INFO - 🔄 Clip index 4 > available voices (4), using voice from index 0[0m
+[32m2025-07-28 23:07:44 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating clip audio: he-IL-Wavenet-B (speed: 0.9, pitch: -1.0, emotion: dramatic)[0m
+[32m2025-07-28 23:07:44 - src.generators.enhanced_multilang_tts - INFO - 🎵 Adjusted speed from 0.9 to 1.10 to match target duration (1s)[0m
+[33m2025-07-28 23:07:44 - src.generators.enhanced_multilang_tts - WARNING - ⚠️ Content requires 1.60x speed, capped at 1.1x. Consider shortening script.[0m
+[32m2025-07-28 23:07:44 - src.generators.enhanced_multilang_tts - INFO - ✅ Google Cloud TTS generated: 0.02MB[0m
+[32m2025-07-28 23:07:44 - src.generators.enhanced_multilang_tts - INFO - ✅ Generated audio for clip 0: he-IL-Wavenet-B[0m
+[32m2025-07-28 23:07:44 - src.generators.video_generator - INFO - ✅ Generated audio segment 5: 2.1s (total: 7.1s)[0m
+[32m2025-07-28 23:07:44 - src.generators.video_generator - INFO - 🎵 Generating audio for segment 6/6: 'בריאות או מסיבה...' (duration: 1.1s)[0m
+[32m2025-07-28 23:07:44 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating intelligent voice audio for he[0m
+[32m2025-07-28 23:07:44 - src.agents.voice_director_agent - INFO - 🎭 AI analyzing content for voice selection: Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! 
+Start with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. 
+Suddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. 
+Grandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. 
+Cut to reality - it's just a regular person feeling amazing after a papaya shake. 
+Night scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. 
+Young crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. 
+End with catchy Hebrew slogan about being healthy heroes by day, party legends by night! 
+Business: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.[0m
+[32m2025-07-28 23:07:47 - src.agents.voice_director_agent - INFO - 🎭 AI Voice Strategy: single[0m
+[32m2025-07-28 23:07:47 - src.agents.voice_director_agent - INFO - 🗣️ Distinct Speakers: False[0m
+[32m2025-07-28 23:07:47 - src.agents.voice_director_agent - INFO - 👥 Speaker Count: 1[0m
+[32m2025-07-28 23:07:47 - src.agents.voice_director_agent - INFO - 🎤 Primary Personality: comedian[0m
+[32m2025-07-28 23:07:47 - src.agents.voice_director_agent - INFO - 👥 Multiple Voices: False[0m
+[32m2025-07-28 23:07:47 - src.agents.voice_director_agent - INFO - 🧠 AI Reasoning: The content is designed as a narrative with different visual styles and character transformations, b...[0m
+[32m2025-07-28 23:07:47 - src.agents.voice_director_agent - INFO - 🎤 Selected voice: he-IL-Wavenet-B (comedian, male, neutral)[0m
+[32m2025-07-28 23:07:47 - src.agents.voice_director_agent - INFO - 🎤 Generated voice config for 4 clips with 1 unique voices[0m
+[32m2025-07-28 23:07:47 - src.generators.enhanced_multilang_tts - INFO - 🔄 Clip index 5 > available voices (4), using voice from index 1[0m
+[32m2025-07-28 23:07:47 - src.generators.enhanced_multilang_tts - INFO - 🎤 Generating clip audio: he-IL-Wavenet-B (speed: 1.05, pitch: 1.0, emotion: enthusiastic)[0m
+[32m2025-07-28 23:07:47 - src.generators.enhanced_multilang_tts - INFO - 🎵 Adjusted speed from 1.05 to 1.10 to match target duration (1s)[0m
+[33m2025-07-28 23:07:47 - src.generators.enhanced_multilang_tts - WARNING - ⚠️ Content requires 1.20x speed, capped at 1.1x. Consider shortening script.[0m
+[32m2025-07-28 23:07:47 - src.generators.enhanced_multilang_tts - INFO - ✅ Google Cloud TTS generated: 0.01MB[0m
+[32m2025-07-28 23:07:47 - src.generators.enhanced_multilang_tts - INFO - ✅ Generated audio for clip 1: he-IL-Wavenet-B[0m
+[32m2025-07-28 23:07:47 - src.generators.video_generator - INFO - ✅ Generated audio segment 6: 1.3s (total: 8.3s)[0m
+[32m2025-07-28 23:07:47 - src.generators.video_generator - INFO - ✅ Audio segment 0 saved to session: audio_segment_0.mp3[0m
+[32m2025-07-28 23:07:47 - src.generators.video_generator - INFO - ✅ Audio segment 1 saved to session: audio_segment_1.mp3[0m
+[32m2025-07-28 23:07:47 - src.generators.video_generator - INFO - ✅ Audio segment 2 saved to session: audio_segment_2.mp3[0m
+[32m2025-07-28 23:07:47 - src.generators.video_generator - INFO - ✅ Audio segment 3 saved to session: audio_segment_3.mp3[0m
+[32m2025-07-28 23:07:47 - src.generators.video_generator - INFO - ✅ Audio segment 4 saved to session: audio_segment_4.mp3[0m
+[32m2025-07-28 23:07:47 - src.generators.video_generator - INFO - ✅ Audio segment 5 saved to session: audio_segment_5.mp3[0m
+[32m2025-07-28 23:07:47 - src.generators.video_generator - INFO - 🔇 Adding padding between 6 audio segments[0m
+[32m2025-07-28 23:07:47 - src.utils.audio_duration_manager - INFO - 🔇 Adding 0.3s padding between 6 segments[0m
+[32m2025-07-28 23:07:48 - src.utils.audio_duration_manager - INFO - ✅ Padded audio segment 1/6[0m
+[32m2025-07-28 23:07:48 - src.utils.audio_duration_manager - INFO - ✅ Padded audio segment 2/6[0m
+[32m2025-07-28 23:07:48 - src.utils.audio_duration_manager - INFO - ✅ Padded audio segment 3/6[0m
+[32m2025-07-28 23:07:48 - src.utils.audio_duration_manager - INFO - ✅ Padded audio segment 4/6[0m
+[32m2025-07-28 23:07:49 - src.utils.audio_duration_manager - INFO - ✅ Padded audio segment 5/6[0m
+[32m2025-07-28 23:07:49 - src.utils.audio_duration_manager - INFO - ✅ Padded audio segment 6/6[0m
+[32m2025-07-28 23:07:50 - src.generators.video_generator - INFO - 📊 Final audio validation:[0m
+[32m2025-07-28 23:07:50 - src.generators.video_generator - INFO -    Target duration: 32s[0m
+[32m2025-07-28 23:07:50 - src.generators.video_generator - INFO -    Actual total duration: 10.1s[0m
+[32m2025-07-28 23:07:50 - src.generators.video_generator - INFO -    Difference: -21.9s (-68.5%)[0m
+[33m2025-07-28 23:07:50 - src.generators.video_generator - WARNING - ⚠️ Total audio duration 10.1s is below minimum 30.4s[0m
+[33m2025-07-28 23:07:50 - src.generators.video_generator - WARNING - ⚠️ Consider adding more content or adjusting speech rate[0m
+[32m2025-07-28 23:07:50 - src.generators.video_generator - INFO - 🎵 Generated 6 audio files[0m
+[32m2025-07-28 23:07:56 - src.generators.video_generator - INFO - 🎵 Audio total duration: 10.1s[0m
+[32m2025-07-28 23:07:56 - src.utils.duration_feedback_system - INFO - 📍 Checkpoint: audio_generation - 10.1s (⚠️ OUT OF RANGE)[0m
+[32m2025-07-28 23:07:56 - src.utils.audio_duration_manager - INFO - 🚦 Validating audio duration before video generation[0m
+[32m2025-07-28 23:07:56 - src.utils.audio_duration_manager - INFO - 🔍 Analyzing 6 audio files against target duration 32s[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Added 1.50s padding for 5 gaps[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO - 📊 Audio Duration Analysis:[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Total duration: 11.6s (target: 32s)[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Difference: -20.4s (36.2% of target)[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Within tolerance: ❌ NO[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Quality score: 0.36/1.0[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Must regenerate: ❌ YES[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Recommendation: Audio is critically short (36% of target) - regenerate with more content[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO - 📝 Segment details:[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Segment 0: 1.5s[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Segment 1: 1.4s[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Segment 2: 1.7s[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Segment 3: 1.7s[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Segment 4: 2.5s[0m
+[32m2025-07-28 23:07:57 - src.utils.audio_duration_manager - INFO -    Segment 5: 1.3s[0m
+[31m2025-07-28 23:07:57 - src.utils.audio_duration_manager - ERROR - ❌ BLOCKING: Audio duration validation failed[0m
+[31m2025-07-28 23:07:57 - src.utils.audio_duration_manager - ERROR -    Audio is critically short (36% of target) - regenerate with more content[0m
+[31m2025-07-28 23:07:57 - src.utils.audio_duration_manager - ERROR -    Video generation cannot proceed until audio is regenerated[0m
+[31m2025-07-28 23:07:57 - src.generators.video_generator - ERROR - ❌ Audio duration validation failed - cannot proceed with video generation[0m
+[31m2025-07-28 23:07:57 - src.utils.session_manager - ERROR - ❌ Logged session error: audio_duration_validation_failed - Audio is critically short (36% of target) - regenerate with more content[0m
+[32m2025-07-28 23:07:57 - src.agents.working_orchestrator - INFO - ✅ Video generation completed: [0m
+[31m2025-07-28 23:07:57 - src.agents.working_orchestrator - ERROR - ❌ enhanced video generation returned None[0m
+[31m2025-07-28 23:07:57 - src.workflows.generate_viral_video - ERROR - ❌ Video generation failed: Video generation returned None[0m
+[31m2025-07-28 23:07:57 - src.workflows.generate_viral_video - ERROR - ❌ Video generation failed after 397.2s[0m
+
+[1m[96m╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                           🤖 AI AGENT DISCUSSION STARTING                           ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝[0m
+
+[1m📋 Topic:[0m [93mDuration & Timing Validation[0m
+[1m👥 Participants:[0m 🎵 AudioMaster • ✂️ CutMaster • 🎯 SyncMaster
+[1m🎯 Target Consensus:[0m [92m70%[0m
+[1m🔄 Max Rounds:[0m [94m10[0m
+[1m⏰ Started:[0m 23:02:09
+
+[1m[4mDiscussion Progress:[0m
+        
+
+[1mRound 1[0m │ 🎵 [96mAudioMaster[0m [92m[AGREE][0m
+├─ [1mMessage:[0m To make this Papaya Bar TikTok ad hilarious and engaging, we need to lean heavily into dynamic audio shifts that mirror ...
+├─ [1mReasoning:[0m This approach prioritizes audio's role in delivering the humor and energy requir...
+└─ [94mTime:[0m 23:02:11
+
+
+[1mRound 1[0m │ ✂️ [96mCutMaster[0m [92m[AGREE][0m
+├─ [1mMessage:[0m To make this Papaya Bar ad hilarious and engaging on TikTok, we need to maximize the visual and tonal shifts. The rapid ...
+├─ [1mReasoning:[0m The script's structure lends itself well to TikTok's short-form, attention-grabb...
+└─ [94mTime:[0m 23:02:13
+
+
+[1mRound 1[0m │ 🎯 [96mSyncMaster[0m [92m[AGREE][0m
+├─ [1mMessage:[0m To ensure this Papaya Bar TikTok ad is engaging and viral-worthy, we must meticulously sync the rapid visual style shift...
+├─ [1mReasoning:[0m The proposed structure offers a strong comedic arc and visually dynamic content ...
+└─ [94mTime:[0m 23:02:14
+
+
+[1m📊 Consensus Progress:[0m Round 1
+[92m[██████████████████████████████] 100.0%[0m │ Target: 70%
+[1m[92mCONSENSUS REACHED![0m
+        
+
+[1m[92m╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                          ✅ DISCUSSION COMPLETED                                    ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝[0m
+
+[1m🎯 Final Consensus:[0m [92m100.0%[0m
+[1m🔄 Total Rounds:[0m [94m1[0m
+[1m⏱️ Duration:[0m [96m5.2s[0m
+[1m👥 Participants:[0m 3 agents
+
+[1m💡 Key Insights:[0m
+   1. This approach prioritizes audio's role in delivering the humor and energy required by the script, en...
+   2. The script's structure lends itself well to TikTok's short-form, attention-grabbing format. The key ...
+   3. The proposed structure offers a strong comedic arc and visually dynamic content ideal for TikTok's s...
+
+[1m📁 Full details saved to:[0m agent_discussions/
+
+[2025-07-28 23:02:14] 🎯 Agent Discussion Complete: duration_validation
+
+[2025-07-28 23:02:14]    Consensus: 1.00
+
+[2025-07-28 23:02:14]    Rounds: 1
+
+[2025-07-28 23:02:14]    Participants: AudioMaster, CutMaster, SyncMaster
+
+
+[1m[96m╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                           🤖 AI AGENT DISCUSSION STARTING                           ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝[0m
+
+[1m📋 Topic:[0m [93mScript Strategy & Viral Optimization[0m
+[1m👥 Participants:[0m 📝 StoryWeaver • 🎨 VisionCraft • 🎵 AudioMaster
+[1m🎯 Target Consensus:[0m [92m70%[0m
+[1m🔄 Max Rounds:[0m [94m10[0m
+[1m⏰ Started:[0m 23:02:14
+
+[1m[4mDiscussion Progress:[0m
+        
+
+[1mRound 1[0m │ 📝 [96mStoryWeaver[0m [92m[AGREE][0m
+├─ [1mMessage:[0m To create a hilarious and engaging 32-second TikTok ad for Papaya Bar, we need to maximize the contrast between epic fan...
+├─ [1mReasoning:[0m This approach leverages TikTok's appetite for rapid, attention-grabbing content ...
+└─ [94mTime:[0m 23:02:15
+
+
+[1mRound 1[0m │ 🎨 [96mVisionCraft[0m [92m[AGREE][0m
+├─ [1mMessage:[0m To maximize engagement for this specific Papaya Bar TikTok, we need to lean into the visual absurdity and rapid tonal sh...
+├─ [1mReasoning:[0m This approach leverages TikTok's appetite for quick, visually dynamic content wi...
+└─ [94mTime:[0m 23:02:17
+
+
+[1mRound 1[0m │ 🎵 [96mAudioMaster[0m [92m[AGREE][0m
+├─ [1mMessage:[0m To maximize engagement for this Papaya Bar TikTok, we must synchronize abrupt visual shifts with corresponding audio ele...
+├─ [1mReasoning:[0m The success of this ad on TikTok relies on rapid, attention-grabbing transitions...
+└─ [94mTime:[0m 23:02:19
+
+
+[1m📊 Consensus Progress:[0m Round 1
+[92m[██████████████████████████████] 100.0%[0m │ Target: 70%
+[1m[92mCONSENSUS REACHED![0m
+        
+
+[1m[92m╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                          ✅ DISCUSSION COMPLETED                                    ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝[0m
+
+[1m🎯 Final Consensus:[0m [92m100.0%[0m
+[1m🔄 Total Rounds:[0m [94m1[0m
+[1m⏱️ Duration:[0m [96m4.9s[0m
+[1m👥 Participants:[0m 3 agents
+
+[1m💡 Key Insights:[0m
+   1. This approach leverages TikTok's appetite for rapid, attention-grabbing content and relatable humor,...
+   2. This approach leverages TikTok's appetite for quick, visually dynamic content with unexpected humor,...
+   3. The success of this ad on TikTok relies on rapid, attention-grabbing transitions amplified by precis...
+
+[1m📁 Full details saved to:[0m agent_discussions/
+
+[2025-07-28 23:02:19] 🎯 Agent Discussion Complete: script_strategy
+
+[2025-07-28 23:02:19]    Consensus: 1.00
+
+[2025-07-28 23:02:19]    Rounds: 1
+
+[2025-07-28 23:02:19]    Participants: StoryWeaver, VisionCraft, AudioMaster
+
+
+[1m[96m╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                           🤖 AI AGENT DISCUSSION STARTING                           ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝[0m
+
+[1m📋 Topic:[0m [93mVisual Composition & Technical Approach[0m
+[1m👥 Participants:[0m ⚡ PixelForge • ✂️ CutMaster • 🎵 AudioMaster
+[1m🎯 Target Consensus:[0m [92m70%[0m
+[1m🔄 Max Rounds:[0m [94m10[0m
+[1m⏰ Started:[0m 23:02:19
+
+[1m[4mDiscussion Progress:[0m
+        
+
+[1mRound 1[0m │ ⚡ [96mPixelForge[0m [92m[AGREE][0m
+├─ [1mMessage:[0m To make this Papaya Bar TikTok ad hilarious and engaging, we need to lean heavily into rapid, contrasting visual and aud...
+├─ [1mReasoning:[0m The proposed multi-style approach offers high potential for TikTok engagement by...
+└─ [94mTime:[0m 23:02:21
+
+
+[1mRound 1[0m │ ✂️ [96mCutMaster[0m [92m[AGREE][0m
+├─ [1mMessage:[0m To maximize engagement for this Papaya Bar TikTok ad, we need a visually dynamic and humor-driven approach that leverage...
+├─ [1mReasoning:[0m The success of this ad hinges on expertly blending disparate visual and narrativ...
+└─ [94mTime:[0m 23:02:23
+
+
+[1mRound 1[0m │ 🎵 [96mAudioMaster[0m [92m[AGREE][0m
+├─ [1mMessage:[0m To make this Papaya Bar TikTok ad hilarious and engaging, we must prioritize rapid, contrasting audio and visual transit...
+├─ [1mReasoning:[0m The requested ad is rich with stylistic shifts and comedic beats; aligning audio...
+└─ [94mTime:[0m 23:02:25
+
+
+[1m📊 Consensus Progress:[0m Round 1
+[92m[██████████████████████████████] 100.0%[0m │ Target: 70%
+[1m[92mCONSENSUS REACHED![0m
+        
+
+[1m[92m╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                          ✅ DISCUSSION COMPLETED                                    ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝[0m
+
+[1m🎯 Final Consensus:[0m [92m100.0%[0m
+[1m🔄 Total Rounds:[0m [94m1[0m
+[1m⏱️ Duration:[0m [96m6.0s[0m
+[1m👥 Participants:[0m 3 agents
+
+[1m💡 Key Insights:[0m
+   1. The proposed multi-style approach offers high potential for TikTok engagement by blending trending a...
+   2. The success of this ad hinges on expertly blending disparate visual and narrative elements into a co...
+   3. The requested ad is rich with stylistic shifts and comedic beats; aligning audio and visual elements...
+
+[1m📁 Full details saved to:[0m agent_discussions/
+
+[2025-07-28 23:02:25] 🎯 Agent Discussion Complete: visual_strategy
+
+[2025-07-28 23:02:25]    Consensus: 1.00
+
+[2025-07-28 23:02:25]    Rounds: 1
+
+[2025-07-28 23:02:25]    Participants: PixelForge, CutMaster, AudioMaster
+
+
+[1m[96m╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                           🤖 AI AGENT DISCUSSION STARTING                           ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝[0m
+
+[1m📋 Topic:[0m [93mAudio Production & Voice Strategy[0m
+[1m👥 Participants:[0m 🎵 AudioMaster • ✂️ CutMaster • 🎯 SyncMaster
+[1m🎯 Target Consensus:[0m [92m70%[0m
+[1m🔄 Max Rounds:[0m [94m10[0m
+[1m⏰ Started:[0m 23:02:25
+
+[1m[4mDiscussion Progress:[0m
+        
+
+[1mRound 1[0m │ 🎵 [96mAudioMaster[0m [92m[AGREE][0m
+├─ [1mMessage:[0m To maximize engagement for this Papaya Bar TikTok ad, we must synchronize sharp visual shifts with distinct audio cues t...
+├─ [1mReasoning:[0m The rapid tonal shifts from epic superhero to magical Ghibli, followed by a rela...
+└─ [94mTime:[0m 23:02:27
+
+
+[1mRound 1[0m │ ✂️ [96mCutMaster[0m [92m[AGREE][0m
+├─ [1mMessage:[0m For this Papaya Bar TikTok ad, the audio strategy needs to mirror the rapid visual shifts, using distinct sound design f...
+├─ [1mReasoning:[0m Achieving perfect sync between the dramatic Marvel intro, the enchanting Ghibli ...
+└─ [94mTime:[0m 23:02:28
+
+
+[1mRound 1[0m │ 🎯 [96mSyncMaster[0m [92m[AGREE][0m
+├─ [1mMessage:[0m To maximize engagement for this Papaya Bar TikTok ad, we need to lean into rapid, contrasting audio shifts that amplify ...
+├─ [1mReasoning:[0m The core of this ad's success on TikTok lies in its rapid stylistic shifts and c...
+└─ [94mTime:[0m 23:02:30
+
+
+[1m📊 Consensus Progress:[0m Round 1
+[92m[██████████████████████████████] 100.0%[0m │ Target: 70%
+[1m[92mCONSENSUS REACHED![0m
+        
+
+[1m[92m╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                          ✅ DISCUSSION COMPLETED                                    ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝[0m
+
+[1m🎯 Final Consensus:[0m [92m100.0%[0m
+[1m🔄 Total Rounds:[0m [94m1[0m
+[1m⏱️ Duration:[0m [96m5.1s[0m
+[1m👥 Participants:[0m 3 agents
+
+[1m💡 Key Insights:[0m
+   1. The rapid tonal shifts from epic superhero to magical Ghibli, followed by a relatable reality and a ...
+   2. Achieving perfect sync between the dramatic Marvel intro, the enchanting Ghibli transformation, the ...
+   3. The core of this ad's success on TikTok lies in its rapid stylistic shifts and comedic juxtaposition...
+
+[1m📁 Full details saved to:[0m agent_discussions/
+
+[2025-07-28 23:02:30] 🎯 Agent Discussion Complete: audio_strategy
+
+[2025-07-28 23:02:30]    Consensus: 1.00
+
+[2025-07-28 23:02:30]    Rounds: 1
+
+[2025-07-28 23:02:30]    Participants: AudioMaster, CutMaster, SyncMaster
+
+⚠️ FALLBACK WARNING: VEO generation failed for clip 1 - using fallback with reduced quality
+
+✅ Papaya Bar unified commercial completed successfully!
+
+📁 Output location: outputs/papaya_unified_hebrew_30s_20250728_230019
+
+
+📱 Ready for TikTok upload!
+
+💡 Commercial highlights:
+   - Marvel superhero entrance
+   - Ghibli magical transformation
+   - Grandma's healing smoothie
+   - Day/night transformation
+   - Funny drunk scene
+   - Hebrew slogan
+
+🏪 Business info included:
+   📍 שבזי 47, ראש העין
+   📞 054-222-2617
+   🌐 @thepapayabar
+   ⏰ Always Open
+
+💡 To generate more variations:
+   ./run_papaya_unified_hebrew_30s.sh
+
+💡 To run in background:
+   nohup ./run_papaya_unified_hebrew_30s.sh > papaya_log.txt 2>&1 &
+   tail -f papaya_log.txt

@@ -1,0 +1,236 @@
+{
+  "duration_seconds": {
+    "key": "duration_seconds",
+    "value": 35,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-27T23:54:20.751922"
+  },
+  "platform": {
+    "key": "platform",
+    "value": "instagram",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Platform: instagram",
+    "timestamp": "2025-07-27T23:54:20.752091"
+  },
+  "category": {
+    "key": "category",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Category: Entertainment",
+    "timestamp": "2025-07-27T23:54:20.752239"
+  },
+  "category_string": {
+    "key": "category_string",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Original category string: Entertainment",
+    "timestamp": "2025-07-27T23:54:20.752378"
+  },
+  "target_audience": {
+    "key": "target_audience",
+    "value": "general audience",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Target audience: general audience",
+    "timestamp": "2025-07-27T23:54:20.752515"
+  },
+  "language": {
+    "key": "language",
+    "value": "he",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Primary language from CLI: he",
+    "timestamp": "2025-07-27T23:54:20.752656"
+  },
+  "all_languages": {
+    "key": "all_languages",
+    "value": [
+      "he"
+    ],
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "All languages: he",
+    "timestamp": "2025-07-27T23:54:20.752786"
+  },
+  "style": {
+    "key": "style",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-27T23:54:20.752922"
+  },
+  "style_string": {
+    "key": "style_string",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original style string: cinematic",
+    "timestamp": "2025-07-27T23:54:20.753048"
+  },
+  "tone": {
+    "key": "tone",
+    "value": "darkly_humorous",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Tone: darkly_humorous",
+    "timestamp": "2025-07-27T23:54:20.753178"
+  },
+  "tone_string": {
+    "key": "tone_string",
+    "value": "darkly_humorous",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original tone string: darkly_humorous",
+    "timestamp": "2025-07-27T23:54:20.753303"
+  },
+  "visual_style": {
+    "key": "visual_style",
+    "value": "marvel comics",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Visual style: marvel comics",
+    "timestamp": "2025-07-27T23:54:20.753429"
+  },
+  "visual_style_string": {
+    "key": "visual_style_string",
+    "value": "marvel comics",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original visual style string: marvel comics",
+    "timestamp": "2025-07-27T23:54:20.753553"
+  },
+  "theme_id": {
+    "key": "theme_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No theme specified",
+    "timestamp": "2025-07-27T23:54:20.753680"
+  },
+  "style_reference_id": {
+    "key": "style_reference_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No style reference specified",
+    "timestamp": "2025-07-27T23:54:20.753809"
+  },
+  "character_id": {
+    "key": "character_id",
+    "value": "\u05d3\u05d5\u05d3 \u05d1\u05df-\u05d2\u05d5\u05e8\u05d9\u05d5\u05df \u05e2\u05dd \u05e9\u05d9\u05e2\u05e8 \u05dc\u05d1\u05df \u05e4\u05e8\u05d5\u05e2 \u05d0\u05d9\u05e7\u05d5\u05e0\u05d9 \u05d1\u05e1\u05d2\u05e0\u05d5\u05df \u05d0\u05d9\u05d9\u05e0\u05e9\u05d8\u05d9\u05d9\u05df \u05d6\u05d5\u05e8\u05dd \u05d1\u05d3\u05e8\u05de\u05d8\u05d9\u05d5\u05ea, \u05e4\u05e0\u05d9\u05dd \u05e2\u05d2\u05d5\u05dc\u05d5\u05ea, \u05d4\u05d1\u05e2\u05d4 \u05e0\u05d7\u05d5\u05e9\u05d4, \u05dc\u05d5\u05d1\u05e9 \u05d7\u05d5\u05dc\u05e6\u05ea \u05d7\u05d0\u05e7\u05d9 \u05e4\u05e9\u05d5\u05d8\u05d4 \u05db\u05de\u05d5 \u05de\u05d9\u05d9\u05e1\u05d3 \u05d9\u05e9\u05e8\u05d0\u05dc \u05d4\u05d0\u05de\u05d9\u05ea\u05d9",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character specified by user: \u05d3\u05d5\u05d3 \u05d1\u05df-\u05d2\u05d5\u05e8\u05d9\u05d5\u05df \u05e2\u05dd \u05e9\u05d9\u05e2\u05e8 \u05dc\u05d1\u05df \u05e4\u05e8\u05d5\u05e2 \u05d0\u05d9\u05e7\u05d5\u05e0\u05d9 \u05d1\u05e1\u05d2\u05e0\u05d5\u05df \u05d0\u05d9\u05d9\u05e0\u05e9\u05d8\u05d9\u05d9\u05df \u05d6\u05d5\u05e8\u05dd \u05d1\u05d3\u05e8\u05de\u05d8\u05d9\u05d5\u05ea, \u05e4\u05e0\u05d9\u05dd \u05e2\u05d2\u05d5\u05dc\u05d5\u05ea, \u05d4\u05d1\u05e2\u05d4 \u05e0\u05d7\u05d5\u05e9\u05d4, \u05dc\u05d5\u05d1\u05e9 \u05d7\u05d5\u05dc\u05e6\u05ea \u05d7\u05d0\u05e7\u05d9 \u05e4\u05e9\u05d5\u05d8\u05d4 \u05db\u05de\u05d5 \u05de\u05d9\u05d9\u05e1\u05d3 \u05d9\u05e9\u05e8\u05d0\u05dc \u05d4\u05d0\u05de\u05d9\u05ea\u05d9",
+    "timestamp": "2025-07-27T23:54:20.753935"
+  },
+  "character_scene": {
+    "key": "character_scene",
+    "value": null,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character scene: None",
+    "timestamp": "2025-07-27T23:54:20.754063"
+  },
+  "frame_continuity": {
+    "key": "frame_continuity",
+    "value": true,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.95,
+    "reasoning": "AI decision: 35s duration on instagram - continuity preferred for quality",
+    "timestamp": "2025-07-27T23:54:27.662199"
+  },
+  "continuous_generation": {
+    "key": "continuous_generation",
+    "value": true,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified continuous: True",
+    "timestamp": "2025-07-27T23:54:27.662516"
+  },
+  "mode": {
+    "key": "mode",
+    "value": "enhanced",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mode: enhanced",
+    "timestamp": "2025-07-27T23:54:27.662797"
+  },
+  "cheap_mode": {
+    "key": "cheap_mode",
+    "value": false,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode: False",
+    "timestamp": "2025-07-27T23:54:27.663066"
+  },
+  "cheap_mode_level": {
+    "key": "cheap_mode_level",
+    "value": "full",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode level: full",
+    "timestamp": "2025-07-27T23:54:27.663331"
+  },
+  "mission": {
+    "key": "mission",
+    "value": "\u05e4\u05d9\u05e6\u05d5\u05e5 \u05e7\u05d5\u05de\u05d9\u05e7\u05e1 \u05de\u05d0\u05e8\u05d5\u05d5\u05dc! \u05d3\u05d5\u05d3 \u05d1\u05df-\u05d2\u05d5\u05e8\u05d9\u05d5\u05df \u05e2\u05dd \u05e9\u05d9\u05e2\u05e8 \u05d0\u05d9\u05d9\u05e0\u05e9\u05d8\u05d9\u05d9\u05df \u05dc\u05d1\u05df \u05d0\u05d9\u05e7\u05d5\u05e0\u05d9 \u05e4\u05d5\u05e8\u05e5 \u05de\u05d7\u05d5\u05dc\u05d5\u05ea \u05d4\u05de\u05d3\u05d1\u05e8. '\u05d0\u05e0\u05d9 \u05d1\u05dc\u05ea\u05d9 \u05e0\u05de\u05e0\u05e2!' \u05d4\u05de\u05e0\u05d3\u05d8 \u05d4\u05d1\u05e8\u05d9\u05d8\u05d9 \u05e0\u05e2\u05dc\u05dd \u05d1\u05e2\u05e9\u05df \u05e7\u05d5\u05de\u05d9\u05e7\u05e1. \u05d4\u05db\u05e8\u05d6\u05ea \u05d4\u05e2\u05e6\u05de\u05d0\u05d5\u05ea \u05e2\u05dd \u05e4\u05d0\u05e0\u05dc\u05d9\u05dd \u05de\u05ea\u05e4\u05d5\u05e6\u05e6\u05d9\u05dd. \u05e7\u05d0-\u05e4\u05d0\u05d5! \u05e2\u05de\u05d9\u05d3\u05d5\u05ea \u05e8\u05d0\u05e9 \u05d1\u05d9\u05d5\u05d2\u05d4 \u05d1\u05d9\u05e9\u05d9\u05d1\u05d5\u05ea \u05d4\u05de\u05de\u05e9\u05dc\u05d4. \u05d1\u05e0\u05d9\u05d9\u05ea \u05e7\u05d9\u05d1\u05d5\u05e6\u05d9\u05dd \u05e2\u05dd \u05d0\u05e4\u05e7\u05d8\u05d9 \u05d0\u05e0\u05e8\u05d2\u05d9\u05d4. \u05e4\u05e8\u05d9\u05e9\u05d4 \u05dc\u05de\u05d3\u05d1\u05e8. '\u05d1\u05df-\u05d2\u05d5\u05e8\u05d9\u05d5\u05df \u05d9\u05d7\u05d6\u05d5\u05e8!' \u05d3\u05d2\u05dc \u05d9\u05e9\u05e8\u05d0\u05dc \u05d1\u05e4\u05d9\u05e0\u05d4 \u05d4\u05e9\u05de\u05d0\u05dc\u05d9\u05ea \u05d4\u05e2\u05dc\u05d9\u05d5\u05e0\u05d4.",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mission: \u05e4\u05d9\u05e6\u05d5\u05e5 \u05e7\u05d5\u05de\u05d9\u05e7\u05e1 \u05de\u05d0\u05e8\u05d5\u05d5\u05dc! \u05d3\u05d5\u05d3 \u05d1\u05df-\u05d2\u05d5\u05e8\u05d9\u05d5\u05df \u05e2\u05dd \u05e9\u05d9\u05e2\u05e8 \u05d0\u05d9\u05d9\u05e0\u05e9\u05d8\u05d9...",
+    "timestamp": "2025-07-27T23:54:27.663592"
+  },
+  "hook": {
+    "key": "hook",
+    "value": "Amazing content ahead!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated hook",
+    "timestamp": "2025-07-27T23:54:27.663893"
+  },
+  "call_to_action": {
+    "key": "call_to_action",
+    "value": "Follow for more!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated CTA",
+    "timestamp": "2025-07-27T23:54:27.664086"
+  },
+  "voice_strategy": {
+    "key": "voice_strategy",
+    "value": "variety",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: 35s duration",
+    "timestamp": "2025-07-27T23:54:27.664287"
+  },
+  "color_palette": {
+    "key": "color_palette",
+    "value": "marvel comics palette",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 0.5,
+    "reasoning": "Style-based fallback",
+    "timestamp": "2025-07-27T23:54:27.664499"
+  },
+  "background_music_style": {
+    "key": "background_music_style",
+    "value": "ambient",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: cinematic style, darkly_humorous tone",
+    "timestamp": "2025-07-27T23:54:27.664699"
+  },
+  "num_clips": {
+    "key": "num_clips",
+    "value": 5,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.9,
+    "reasoning": "Two clips allow for a clear narrative arc: a fast-paced action sequence followed by a powerful concluding image.  More clips would compromise pacing and impact within the 35-second limit. [ADJUSTED: Enforced 8-second maximum clip duration constraint - increased from 2 to 5 clips]",
+    "timestamp": "2025-07-27T23:54:44.663722"
+  }
+}

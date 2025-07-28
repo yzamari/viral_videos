@@ -26,7 +26,7 @@ def series():
 @click.option('--template', help='Template ID to use (news-daily, tech-weekly, documentary)')
 @click.option('--character', help='Character ID for consistent presenter')
 @click.option('--voice', help='Voice ID for consistent narration')
-@click.option('--duration', type=int, default=60, help='Default episode duration')
+@click.option('--duration', type=int, default=64, help='Default episode duration')
 @click.option('--model', default='veo-3', help='Default video model')
 @click.option('--quality', default='professional', help='Default quality level')
 def create(name, theme, description, template, character, voice, duration, model, quality):

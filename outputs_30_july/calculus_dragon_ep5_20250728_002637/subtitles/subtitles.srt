@@ -1,0 +1,37 @@
+1
+00:00:00,000 --> 00:00:05,459
+These little dragons make close
+formations, just like Cauchy sequences
+
+2
+00:00:05,759 --> 00:00:06,068
+limit.
+
+3
+00:00:06,068 --> 00:00:09,468
+They always cluster within any tiny
+epsilon box we give them.
+
+4
+00:00:09,768 --> 00:00:14,079
+For real numbers, being Cauchy means they
+are guaranteed to converge to
+
+5
+00:00:14,379 --> 00:00:14,866
+something.
+
+6
+00:00:14,866 --> 00:00:20,230
+Compactness, like Heine-Borel, means we
+can cover everything with finite blankets,
+
+7
+00:00:20,530 --> 00:00:21,203
+no holes!
+
+8
+00:00:21,203 --> 00:00:25,911
+Dedekind cuts define real numbers, showing
+how Cauchy completion makes our number
+

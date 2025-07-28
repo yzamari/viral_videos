@@ -1,0 +1,73 @@
+1
+00:00:00,000 --> 00:00:01,719
+Welcome aboard the Number Train.
+
+2
+00:00:01,719 --> 00:00:02,063
+Our
+
+3
+00:00:02,363 --> 00:00:05,733
+baby dragon conductor leads us to
+
+4
+00:00:06,033 --> 00:00:07,587
+a special station.
+
+5
+00:00:07,587 --> 00:00:09,142
+Each train car
+
+6
+00:00:09,442 --> 00:00:11,348
+shows a sequence number, getting closer.
+
+7
+00:00:11,648 --> 00:00:12,772
+This demonstrates convergence.
+
+8
+00:00:12,772 --> 00:00:13,895
+See the tiny
+
+9
+00:00:14,195 --> 00:00:15,092
+epsilon tunnels?
+
+10
+00:00:15,092 --> 00:00:16,886
+They illustrate how numbers
+
+11
+00:00:17,186 --> 00:00:18,648
+approach the limit.
+
+12
+00:00:18,648 --> 00:00:20,111
+Bounds keep our
+
+13
+00:00:20,411 --> 00:00:21,935
+train on track, within limits.
+
+14
+00:00:21,935 --> 00:00:22,240
+No
+
+15
+00:00:22,540 --> 00:00:24,094
+derailing is allowed.
+
+16
+00:00:24,094 --> 00:00:25,648
+These math lessons
+
+17
+00:00:25,948 --> 00:00:26,883
+make sequences and limits clear.
+
+18
+00:00:26,883 --> 00:00:28,378
+We have learned about sequences and their
+limits
+

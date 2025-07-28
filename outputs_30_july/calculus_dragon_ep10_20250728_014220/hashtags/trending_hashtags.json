@@ -1,0 +1,234 @@
+{
+  "hashtags": [
+    {
+      "tag": "#DragonCalculusOlympics",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly identifies the unique and exciting concept of the content.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#CalculusChampionship",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the competitive aspect and the core subject matter.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MathletesVsDragons",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the two main elements in a catchy and intriguing way.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#DerivativesOnFire",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Uses a fiery metaphor fitting for dragons and calculus, adding excitement.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#ChainRuleRelay",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Specific event highlight, good for deeper dives into the content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#InverseFunctionsInAction",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Focuses on a specific calculus concept presented in a dynamic way.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#HigherDerivativesHeats",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Targets a specific advanced calculus topic in the Olympic format.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MathOlympics",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Broad appeal to anyone interested in math competitions.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Calculus",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Essential for discoverability among calculus enthusiasts.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#STEM",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Reaches a wide audience interested in science, technology, engineering, and math.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Education",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Targets users looking for educational content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#LearnOnInstagram",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Encourages learning and discovery on the platform.",
+      "trend_score": 0.82
+    },
+    {
+      "tag": "#Dragons",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Attracts fantasy and pop culture enthusiasts who might be drawn to the unique concept.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Animation",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Targets users interested in animated content and creative visuals.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#FanMade",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Connects with the fan-created content community, potentially leading to shares.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#Viral",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Aspirational and widely used to signal potential virality.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Trending",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Directly taps into what's currently popular on the platform.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#TikTokMadeMeWatchIt",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the trend of TikTok virality, even if content is for Instagram.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#ChallengeAccepted",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Implies a challenge or overcoming obstacles, which fits the Olympic theme.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#InstaGood",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A popular aesthetic and discovery tag on Instagram.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#Reels",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Essential for discoverability within Instagram Reels.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Discover",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Encourages exploration and discovery of new content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#FunnyMath",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to those who enjoy humorous takes on educational topics.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#CalculusHumor",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Specifically targets the intersection of humor and calculus.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MathExplained",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "For users actively seeking explanations of mathematical concepts.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#DifferentialCalculus",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Precise keyword for users interested in this branch of calculus.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#TheoremsInAction",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Highlights the practical application of mathematical theorems.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MathIsFun",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Encourages positive engagement and perception of math.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ShareYourThoughts",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Direct call-to-action for comments and discussion.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#TagAFriend",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Promotes virality through user sharing and recommendation.",
+      "trend_score": 0.85
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "Incorporates broad appeal tags like #Viral and #Trending, platform-specific discovery tags like #Reels and #InstaGood, and niche tags targeting calculus enthusiasts and those interested in humorous educational content. The concept itself taps into fantasy and pop culture via #Dragons and #Animation.",
+    "engagement_strategy": "Employs a mix of direct calls-to-action like #TagAFriend and #ShareYourThoughts, alongside inspirational tags like #MathIsFun to foster positive community interaction. Primary and niche tags are designed to attract the target audience, while broad and trending tags ensure wider discoverability."
+  },
+  "usage_tips": [
+    "On Instagram, use a mix of popular and niche hashtags. Aim for 15-30 hashtags per post for optimal reach. Place hashtags in the caption or the first comment.",
+    "Vary your hashtags with each post to avoid appearing spammy and to reach different audience segments.",
+    "Consider creating a unique branded hashtag for your series, like #DragonCalculusOlympics, and encourage followers to use it.",
+    "Monitor hashtag performance to see which ones drive the most engagement and adjust your strategy accordingly."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-28T01:52:06.355318",
+    "topic": "Create a Family Guy Olympics special where dragons compete in calculus events. Cover chain rule, inverse function derivatives, higher derivatives, critical points, Fermat's theorem, Rolle's theorem, Lagrange mean value theorem, and Cauchy mean value theorem. Use visual metaphors: relay races, gymnastics, marathon running, treasure hunting. Make derivative rules and theorems exciting through Olympic competition format.",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

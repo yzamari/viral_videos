@@ -1,0 +1,15 @@
+{
+  "total_segments": 11,
+  "total_duration": 25.193060000000003,
+  "script_content": "Welcome to the first ever Dragon Calculus Olympics! The Chain Rule Relay: each dragon\u2019s output must match the next dragon\u2019s input! Inverse function derivatives are judged on elegance and accuracy in the gymnastics arena. Higher derivatives and critical points are key in our treacherous mountain climbing marathon. Fermat's, Rolle's, and Mean Value theorems are buried treasures in our grand finale hunt",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep10_20250728_014220/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep10_20250728_014220/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep10_20250728_014220/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep10_20250728_014220/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep10_20250728_014220/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep10_20250728_014220/audio/padded/padded_audio_segment_5.mp3"
+  ],
+  "target_duration": 25.193060000000003,
+  "capped_to_target": false
+}

@@ -1,0 +1,66 @@
+{
+  "session_id": "calculus_dragon_ep12_20250728_020138",
+  "session_dir": "outputs/calculus_dragon_ep12_20250728_020138",
+  "subdirs": {
+    "logs": "outputs/calculus_dragon_ep12_20250728_020138/logs",
+    "scripts": "outputs/calculus_dragon_ep12_20250728_020138/scripts",
+    "audio": "outputs/calculus_dragon_ep12_20250728_020138/audio",
+    "video_clips": "outputs/calculus_dragon_ep12_20250728_020138/video_clips",
+    "images": "outputs/calculus_dragon_ep12_20250728_020138/images",
+    "ai_agents": "outputs/calculus_dragon_ep12_20250728_020138/ai_agents",
+    "discussions": "outputs/calculus_dragon_ep12_20250728_020138/discussions",
+    "final_output": "outputs/calculus_dragon_ep12_20250728_020138/final_output",
+    "metadata": "outputs/calculus_dragon_ep12_20250728_020138/metadata",
+    "comprehensive_logs": "outputs/calculus_dragon_ep12_20250728_020138/comprehensive_logs",
+    "temp_files": "outputs/calculus_dragon_ep12_20250728_020138/temp_files",
+    "fallback_content": "outputs/calculus_dragon_ep12_20250728_020138/fallback_content",
+    "debug_info": "outputs/calculus_dragon_ep12_20250728_020138/debug_info",
+    "performance_metrics": "outputs/calculus_dragon_ep12_20250728_020138/performance_metrics",
+    "user_configs": "outputs/calculus_dragon_ep12_20250728_020138/user_configs",
+    "error_logs": "outputs/calculus_dragon_ep12_20250728_020138/error_logs",
+    "success_metrics": "outputs/calculus_dragon_ep12_20250728_020138/success_metrics",
+    "decisions": "outputs/calculus_dragon_ep12_20250728_020138/decisions",
+    "subtitles": "outputs/calculus_dragon_ep12_20250728_020138/subtitles",
+    "overlays": "outputs/calculus_dragon_ep12_20250728_020138/overlays",
+    "agent_discussions": "outputs/calculus_dragon_ep12_20250728_020138/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-28T02:03:13.233181",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Create a Family Guy style comedy where fortune teller dragon teaches Taylor polynomials and series. Cover linear and quadratic approximations, Taylor's theorem, remainder estimates, famous series for exponential, trigonometric and logarithmic functions, and the proof that e is irrational. Use visual metaphors: crystal ball predictions, increasing precision, shrinking errors. Make power series accessible and magical.",
+        "platform": "instagram",
+        "duration": 35
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

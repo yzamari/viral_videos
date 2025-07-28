@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep1_20250727_105129",
+  "mission": "Family Guy cutaway: Baby dragon discovers number sets! 'Hey kids, I'm Epsilon the Dragon!' POOF! Natural numbers appear as counting cookies. 'But wait!' Integers show up with negative temperatures. WHOOSH! Rational numbers as pizza slices. 'Mind blown!' Irrational numbers as infinite dragons. Real numbers form a beautiful number line. Absolute value is like dragon hugs - always positive! Intervals are dragon nap zones. Bounded sets are like dragon cages. Supremum is the tallest dragon! Completeness means no gaps in our number line! Epsilon chicks chirp: '\u03b5 > 0!'",
+  "platform": "instagram",
+  "duration_seconds": 63,
+  "created_at": "2025-07-27T11:07:45.963361",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep1_20250727_105129/final_output/final_video_calculus_dragon_ep1_20250727_105129__final.mp4",
+      "file_size_mb": 106.0363302230835
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep1_20250727_105129/final_output/final_video_calculus_dragon_ep1_20250727_105129__audio_only.mp4",
+      "file_size_mb": 85.27075862884521
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep1_20250727_105129/final_output/final_video_calculus_dragon_ep1_20250727_105129__overlays_only.mp4",
+      "file_size_mb": 85.19227695465088
+    }
+  }
+}

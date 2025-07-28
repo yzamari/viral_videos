@@ -448,8 +448,14 @@ class ProfessionalTextRenderer:
         # Try to load the specified font
         font_paths = [
             f"/System/Library/Fonts/{font_family}.ttf",  # macOS
+            f"/System/Library/Fonts/{font_family}.ttc",  # macOS TrueType Collection
             f"/usr/share/fonts/truetype/{font_family.lower()}/{font_family}.ttf",  # Linux
             f"C:\\Windows\\Fonts\\{font_family}.ttf",  # Windows
+            # Add emoji fonts for better emoji support
+            "/System/Library/Fonts/Apple Color Emoji.ttc",  # macOS emoji font
+            "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",  # macOS Unicode
+            "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",  # Linux emoji font
+            "C:\\Windows\\Fonts\\seguiemj.ttf",  # Windows emoji font
         ]
         
         font = None
@@ -642,9 +648,31 @@ class ProfessionalTextRenderer:
         
         return blended.astype(np.uint8)
     
+    def _is_rtl_text(self, text: str) -> bool:
+        """Detect if text contains RTL characters (Hebrew, Arabic, etc.)"""
+        rtl_ranges = [
+            (0x0590, 0x05FF),  # Hebrew
+            (0x0600, 0x06FF),  # Arabic
+            (0x0700, 0x074F),  # Syriac
+            (0x0750, 0x077F),  # Arabic Supplement
+            (0x08A0, 0x08FF),  # Arabic Extended-A
+            (0xFB50, 0xFDFF),  # Arabic Presentation Forms-A
+            (0xFE70, 0xFEFF),  # Arabic Presentation Forms-B
+        ]
+        
+        for char in text:
+            code = ord(char)
+            for start, end in rtl_ranges:
+                if start <= code <= end:
+                    return True
+        return False
+    
     def create_subtitle_overlay(self, text: str, frame_width: int, frame_height: int,
                               style_preset: str = "default") -> TextOverlay:
         """Create a subtitle overlay with predefined styling"""
+        # Detect if RTL text
+        is_rtl = self._is_rtl_text(text)
+        
         # Predefined subtitle styles
         styles = {
             "default": TextStyle(
@@ -657,6 +685,17 @@ class ProfessionalTextRenderer:
                 background_color=(0, 0, 0, 128),
                 background_padding=(10, 5, 10, 5),
                 line_spacing=1.2
+            ),
+            "rtl": TextStyle(
+                font_family="Arial",
+                font_size=max(40, int(frame_width * 0.05)),  # Larger for RTL
+                font_weight="bold",
+                color=(255, 255, 255, 255),
+                stroke_color=(0, 0, 0, 255),
+                stroke_width=3,  # Thicker outline for RTL
+                background_color=(0, 0, 0, 160),  # Darker background
+                background_padding=(15, 8, 15, 8),  # More padding
+                line_spacing=1.3
             ),
             "modern": TextStyle(
                 font_family="Roboto",
@@ -683,7 +722,11 @@ class ProfessionalTextRenderer:
             )
         }
         
-        style = styles.get(style_preset, styles["default"])
+        # Use RTL style if RTL text detected
+        if is_rtl and style_preset == "default":
+            style = styles["rtl"]
+        else:
+            style = styles.get(style_preset, styles["default"])
         
         layout = TextLayout(
             position=TextPosition.BOTTOM_CENTER,

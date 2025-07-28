@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 5,
+  "hook_text": "Hey kids, I am Epsilon the Dragon! Let us explore number sets!",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "The description 'Family Guy cutaway' immediately suggests a humorous, exaggerated, and animated style. The subject matter (talking numbers, dragons, magical land) is inherently fantastical and lends itself well to a cartoon aesthetic. Vibrant colors will appeal to a general audience on Instagram and make the abstract concepts of number sets visually engaging and memorable. The 'Family Guy' reference also implies a certain irreverent humor and simplified, expressive character design, which is best achieved with cartoon.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "The content is a narrative explanation of number sets with visual cues that would benefit from a stable position. Instagram's rule of avoiding the bottom 20% allows for a bottom-center placement which is still easily readable, and this position is often used for captions or explanatory text in video content.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/calculus_dragon_ep1_20250727_163508/temp_files/base_video.mp4 -vf drawtext=text='Zeros Special \u2728':fontcolor=#FF6B6B:fontsize=38:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,6.3\\,8.5),drawtext=text='Rational Squad \u2705':fontcolor=#5F27CD:fontsize=38:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,14.0\\,16.5),drawtext=text='Dragon Territories \ud83d\uddfa\ufe0f':fontcolor=#E74C3C:fontsize=38:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,26.0\\,28.5),drawtext=text='Follow for':fontcolor=#FFFF00:fontsize=52:font='Anton':box=1:boxcolor=#FF00FF@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,48.01\\,49.41),drawtext=text='more':fontcolor=#FFFF00:fontsize=52:font='Anton':box=1:boxcolor=#FF00FF@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,49.51\\,50.91) -c:a copy -y outputs/calculus_dragon_ep1_20250727_163508/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='Zeros Special \u2728':fontcolor=#FF6B6B:fontsize=38:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,6.3\\,8.5),drawtext=text='Rational Squad \u2705':fontcolor=#5F27CD:fontsize=38:font='Trebuchet-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,14.0\\,16.5),drawtext=text='Dragon Territories \ud83d\uddfa\ufe0f':fontcolor=#E74C3C:fontsize=38:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,26.0\\,28.5),drawtext=text='Follow for':fontcolor=#FFFF00:fontsize=52:font='Anton':box=1:boxcolor=#FF00FF@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,48.01\\,49.41),drawtext=text='more':fontcolor=#FFFF00:fontsize=52:font='Anton':box=1:boxcolor=#FF00FF@0.7:boxborderw=2:x=(w-text_w)/2:y=1640:enable=between(t\\,49.51\\,50.91)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 54.01,
+    "overlay_count": 5
+  }
+}

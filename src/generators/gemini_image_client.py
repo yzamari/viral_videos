@@ -290,18 +290,13 @@ class GeminiImageClient:
                 scene_index,
                 total_scenes)
 
-            # Try to generate real AI image using correct Gemini image generation API
+            # Try to generate real AI image using Gemini
+            # Note: Current Gemini model doesn't support direct image generation
+            # This will create a placeholder until we integrate proper image generation
             try:
-                # Use the correct API call with response_modalities
-                response = self.model.generate_content(
-                    contents=[enhanced_prompt],
-                    generation_config={
-                        "response_modalities": ["IMAGE", "TEXT"],
-                        "temperature": 0.7,
-                        "top_p": 0.9,
-                        "max_output_tokens": 1024
-                    }
-                )
+                # For now, skip the actual AI generation since Gemini text models don't support image generation
+                # Jump directly to placeholder creation
+                raise Exception("Image generation not supported with current model - using artistic placeholder")
 
                 # Check if response contains image data
                 if hasattr(response, 'candidates') and response.candidates:
@@ -324,13 +319,8 @@ class GeminiImageClient:
                 # If no image data found, try alternative approach
                 logger.warning("⚠️ No image data in response, trying alternative approach")
 
-                # Try with simpler configuration
-                response = self.model.generate_content(
-                    contents=[f"Generate an image: {enhanced_prompt}"],
-                    generation_config={
-                        "response_modalities": ["IMAGE"]
-                    }
-                )
+                # Skip this retry since image generation is not supported
+                raise Exception("Image generation not supported with current model")
 
                 if hasattr(response, 'candidates') and response.candidates:
                     candidate = response.candidates[0]

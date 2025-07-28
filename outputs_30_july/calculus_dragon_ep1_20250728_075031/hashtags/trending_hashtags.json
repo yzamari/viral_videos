@@ -1,0 +1,234 @@
+{
+  "hashtags": [
+    {
+      "tag": "#NumbersAreMyFriends",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly reflects the episode title and core concept.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#DragonMath",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the dragon element with the educational aspect.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#EpsilonTheDragon",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the main character, making it searchable for fans.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#AnimatedEducation",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Describes the animated educational format.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#FamilyGuyComedy",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popular comedy style mentioned in the script.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#CalculusMadeFun",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Targets the desired audience and their pain point.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#NumberMonsterBattle",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Captures the exciting battle aspect of the content.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#LearnWithMe",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A popular and engaging tag for educational content.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#EduTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Extremely popular tag on TikTok for educational content, but relevant for Instagram's explore page.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#CartoonsForKids",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Broad appeal for families and those looking for animated content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#AnimationLover",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects with the animation community.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ComedySketch",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Describes the comedic format of the episode.",
+      "trend_score": 0.72
+    },
+    {
+      "tag": "#MarvelStyle",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the appeal of Marvel-style action effects.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ExplosiveComedy",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the energetic and humorous tone.",
+      "trend_score": 0.77
+    },
+    {
+      "tag": "#FunnyEducational",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A popular combination for engaging learning content.",
+      "trend_score": 0.89
+    },
+    {
+      "tag": "#MathIsFun",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "A classic and evergreen tag for making math approachable.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#NumberTheory",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Specific mathematical concept that attracts knowledgeable audiences.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#AlgebraicBattles",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Creative tag linking math concepts to the action.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#CalculusStudents",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Directly targets the intended audience for learning.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ZombieNumbers",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Unique and attention-grabbing, related to specific monster type.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#IceDemons",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Specific and memorable description of negative integers.",
+      "trend_score": 0.58
+    },
+    {
+      "tag": "#RationalNumbers",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets those interested in specific number sets.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#IrrationalNumbers",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets those interested in specific number sets.",
+      "trend_score": 0.52
+    },
+    {
+      "tag": "#Education",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "General tag for educational content, broad discoverability.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Animation",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "General tag for animation, reaching a large audience.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#Comedy",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "General tag for comedy content, attracting humor seekers.",
+      "trend_score": 0.93
+    },
+    {
+      "tag": "#Learning",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Broad term for educational content, reaching a wide audience.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#FamilyFun",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to families looking for shared entertainment.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#InstaLearn",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages learning specifically on Instagram.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#WhatsYourFavoriteNumber",
+      "category": "engagement",
+      "estimated_reach": "low",
+      "reasoning": "Asks a question to encourage comments and interaction.",
+      "trend_score": 0.6
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The strategy incorporates trending educational tags like #EduTok and #LearnWithMe, popular entertainment tags like #FamilyGuyComedy and #MarvelStyle, and general discovery tags for animation and comedy. Niche tags are used to target specific interests within mathematics and the unique elements of the content. The focus is on a mix of broad reach and targeted discovery for maximum impact on Instagram's algorithm.",
+    "engagement_strategy": "Engagement is driven by using a mix of primary, trending, and niche hashtags that are inherently interesting or informative. Call-to-action hashtags like #InstaLearn and #CommentBelow encourage direct interaction from viewers. The primary and niche tags also act as conversation starters, prompting comments and shares among those interested in animation, comedy, and math."
+  },
+  "usage_tips": [
+    "On Instagram, aim for a mix of 10-20 hashtags per post. You can place them in the caption or in the first comment. Prioritize a few high-reach, relevant tags and supplement with more specific, niche tags.",
+    "Vary your hashtag usage across posts to avoid appearing repetitive to the algorithm and to reach different audience segments.",
+    "Monitor the performance of your hashtags. If a hashtag isn't driving engagement, swap it out for a different one.",
+    "Consider creating a unique, branded hashtag for your series to build community and track content related to it, e.g., #EpsilonMathAdventures."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-28T08:07:34.704471",
+    "topic": "EPISODE 1: Numbers Are My Friends!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! EXPLOSIVE Family Guy comedy! Baby dragon professor Epsilon discovers his classroom is under ATTACK by number monsters! Natural numbers are cookie-obsessed zombies, negative integers are ice demons freezing everything, rationals are pizza-throwing ninjas, and irrational numbers are infinite spiral monsters! Dragon must BATTLE each type while teaching their properties. Include epic fights, explosions, dragon fire, and ridiculous jokes. Make calculus students laugh while learning number sets through COMBAT! Add Marvel-style action effects!",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

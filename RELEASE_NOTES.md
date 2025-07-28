@@ -1,5 +1,67 @@
 # Release Notes
 
+## v3.2.2 (July 28, 2025)
+
+### 🎬 Major Video Generation Fixes
+
+#### RTL Text Rendering
+- **Fixed Hebrew/Arabic text reversal**: Text now displays correctly using `arabic-reshaper` and `python-bidi`
+- **Proper bidirectional text support**: Hebrew subtitles no longer appear reversed (זקן instead of ןקז)
+- **Automatic RTL detection**: System detects RTL languages and applies proper text shaping
+- **Fallback support**: Graceful degradation if RTL libraries unavailable
+
+#### Animation Style Recognition 
+- **Fixed Ghibli style detection**: Enhanced style matching for complex style strings
+- **Proper style enhancement**: "studio ghibli magical realism" now correctly applies Ghibli animation
+- **Improved style mapping**: Better partial matching for animation styles
+
+#### Audio-Subtitle Synchronization
+- **Perfect timing alignment**: Replaced overlapping audio with proper silence gaps
+- **Sequential audio playback**: Audio segments now play at exact subtitle timings
+- **Dynamic silence insertion**: Calculates and inserts precise silence between segments
+- **End-of-video padding**: Added proper silence at video end to match duration
+
+### 🔧 Technical Implementation
+- Added RTL text reshaping in `video_generator.py` for all subtitle rendering
+- Enhanced `visual_style_agent.py` style detection algorithm
+- Rewrote audio concatenation logic with proper gap calculation
+- Added `fix_rtl_rendering.py` utility for RTL package installation
+
+### 📦 New Dependencies
+- `arabic-reshaper`: For proper RTL text shaping
+- `python-bidi`: For bidirectional text algorithm support
+
+---
+
+## v3.2.1-rc1 (July 27, 2025)
+
+### 🎯 Critical Fix: Audio-Visual Separation
+
+#### Visual/Dialogue Tagging System
+- **Revolutionary tagging system**: AI agents now properly tag visual descriptions vs spoken dialogue
+- **No more hardcoded filters**: System uses intelligent tagging instead of regex patterns
+- **Format**: `[VISUAL: description] DIALOGUE: spoken text`
+- **Perfect subtitle sync**: Only dialogue is sent to TTS, visual descriptions enhance video only
+- **Backward compatible**: System handles both old and new formats automatically
+
+### 🔧 Technical Improvements
+- Updated Director to generate properly tagged content
+- Enhanced Multi-Agent Discussion system with tagging awareness
+- Improved Script Processor to extract dialogue from tagged content
+- Added comprehensive tagging documentation
+
+### 📚 Documentation
+- New `docs/TAGGING_SYSTEM.md` explains the visual/dialogue separation
+- Updated all prompts to include tagging instructions
+- Added examples and best practices for tagged content
+
+### 🐛 Bug Fixes
+- Fixed issue where visual descriptions were being spoken in audio
+- Resolved subtitle synchronization problems in educational content
+- Eliminated hardcoded pattern matching for visual content removal
+
+---
+
 ## v3.2.0-rc1 (July 27, 2025)
 
 ### 🎉 New Features

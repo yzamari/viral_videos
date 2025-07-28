@@ -28,7 +28,9 @@ class Settings(BaseSettings):
     force_veo_only: bool = False  # NEW: Force VEO-only, no fallbacks
     prefer_google_ai_veo: bool = True  # NEW: Prefer Google AI Studio VEO over Vertex AI
     disable_veo3: bool = True  # NEW: Disable VEO3 completely (force VEO2 only)
-    prefer_veo2_over_veo3: bool = True  # NEW: Always prefer VEO2 over VEO3
+    prefer_veo2_over_veo3: bool = False  # NEW: Always prefer VEO2 over VEO3
+    prefer_veo3_fast: bool = True  # NEW: Prefer VEO3-fast model ($0.25/second)
+    veo_model_preference_order: str = "veo2"  # NEW: Model preference order (can be changed via --veo-model-order)
 
     # Google Cloud TTS Configuration
     google_tts_voice_type: str = "en-US-Neural2-F"

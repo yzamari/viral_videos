@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep11_20250728_015214",
+  "mission": "Create a Family Guy style comedy where baby dragon in ninja dojo learns secret calculus techniques. Teach Darboux theorem, L'H\u00f4pital's rule for various indeterminate forms, and advanced limit techniques. Use visual metaphors: ninja training, secret scrolls, ultimate techniques. Show how to handle 0/0, infinity/infinity, and other indeterminate forms with humor and clarity.",
+  "duration_seconds": 35,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: Baby dragon wearing a tiny ninja gi, sweating. Master Splinter-like ninja master gestures to a scroll.] DIALOGUE: Young Ignis, the ancient texts reveal limits beyond imagination. [VISUAL: Ignis attempts a complex kata, a fiery '0/0' symbol appears, then dissipates.] DIALOGUE: Mastering '0 divided by 0' requires the L'H\u00f4pital's swift strike. [VISUAL: Ignis breathes fire, creating an 'infinity over infinity' cloud. The master slices it cleanly.] DIALOGUE: This 'infinity over infinity' knot, we untangle with derivatives' might. [VISUAL: Ignis points a claw at a waterfall. The water flow magically reverses and then zeroes out.] DIALOGUE: The Darboux double-check, a precise vanishing act for unseen bounds. [VISUAL: Ignis performs a final, glowing ninja pose. A golden 'Calculus Dragon' aura surrounds him.] DIALOGUE: These calculus secrets, you have truly claimed, my fiery prot\u00e9g\u00e9.",
+    "final_script": "Young Ignis, the ancient texts reveal limits beyond imagination. Mastering '0 divided by 0' requires the L'H\u00f4pital's swift strike. This 'infinity over infinity' knot, we untangle with derivatives' might. The Darboux double-check, a precise vanishing act for unseen bounds. These calculus secrets, you have truly claimed, my fiery prot\u00e9g\u00e9. Young Ignis, the ancient texts reveal limits beyo",
+    "word_count": 57,
+    "tts_ready": false
+  }
+}

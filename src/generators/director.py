@@ -20,6 +20,7 @@ from ..utils.exceptions import (
     GenerationFailedError, APIException,
     NetworkError
 )
+from .ai_content_analyzer import AIContentAnalyzer, ContentType
 
 logger = get_logger(__name__)
 
@@ -45,6 +46,9 @@ class Director:
         self.model = genai.GenerativeModel(self.model_name)
         self.hook_templates = self._load_hook_templates()
         self.content_structures = self._load_content_structures()
+        
+        # Initialize AI content analyzer
+        self.content_analyzer = AIContentAnalyzer(api_key, model_name)
 
         logger.info(f"Director initialized with model: {self.model_name}")
 
@@ -138,27 +142,29 @@ class Director:
                    patterns: Dict[str, Any], news_context: str) -> Dict[str, Any]:
         """Create engaging hook that accomplishes the mission"""
         try:
-            # Determine if this is a mission (action-oriented), creative content, or topic (informational)
-            is_creative = any(creative_word in mission.lower() for creative_word in [
-                'satirical', 'satire', 'comedy', 'comedic', 'parody', 'skit', 'sketch',
-                'funny', 'humorous', 'mock', 'spoof', 'joke', 'drama', 'story',
-                'narrative', 'tale', 'scene', 'act', 'performance', 'segment',
-                'hilarious', 'first-person', 'pov', 'perspective', 'inner monologue',
-                'thoughts', 'create a', 'show'
-            ])
+            # Use AI to analyze content type instead of hardcoded patterns
+            content_type, analysis = self.content_analyzer.analyze_content_type(
+                mission, 
+                {"style": style, "platform": platform.value}
+            )
             
-            is_mission = not is_creative and any(action_word in mission.lower() for action_word in [
-                'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
-                'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
-                'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
-            ])
+            is_creative = content_type == ContentType.CREATIVE
+            is_mission = analysis.get('is_action_oriented', False)
             
             if is_creative:
                 # Creative content prompt: generate actual creative dialogue/script
+                # Check if we need Hebrew script
+                language_instruction = ""
+                if patterns and patterns.get('target_language'):
+                    from ..models.video_models import Language
+                    if patterns['target_language'] == Language.HEBREW:
+                        language_instruction = "\nIMPORTANT: Generate ALL dialogue and text in Hebrew (עברית). This includes narration, dialogue, and any spoken content."
+                
                 prompt = f"""
                 Create the opening line/hook for this creative content: "{mission}"
 
                 CRITICAL: This is CREATIVE CONTENT - generate the ACTUAL dialogue, narration, or script content described, NOT educational content about it.
+                {language_instruction}
                 
                 Style: {style}
                 Platform: {platform.value}
@@ -174,17 +180,32 @@ class Director:
                 6. Keep opening hook under 15 words
                 7. Make it immediately engaging for the platform
                 8. NEVER use contractions - use full forms
+                9. TAG all content: "DIALOGUE:" for spoken words, "[VISUAL:]" for visual elements
 
                 Example: If mission mentions "anchor says X", the hook should BE the anchor saying X, not talking about the anchor.
+                Example with tags: "[VISUAL: News desk] DIALOGUE: Breaking news just in!"
 
-                Return ONLY the creative content hook, no explanations.
+                IMPORTANT TAGGING REQUIREMENTS:
+                - Mark dialogue/narration with "DIALOGUE:" prefix
+                - Mark visual descriptions with "[VISUAL:]" prefix
+                - Example: "[VISUAL: Explosion effect] DIALOGUE: This changes everything!"
+                
+                Return ONLY the creative content hook with proper tags, no explanations.
                 """
             elif is_mission:
                 # Mission-focused prompt: create content that accomplishes the objective
+                # Check if we need Hebrew script
+                language_instruction = ""
+                if patterns and patterns.get('target_language'):
+                    from ..models.video_models import Language
+                    if patterns['target_language'] == Language.HEBREW:
+                        language_instruction = "\nIMPORTANT: Generate ALL dialogue and text in Hebrew (עברית). This includes narration, dialogue, and any spoken content."
+                
                 prompt = f"""
                 Create an engaging opening hook for a {platform.value} video with the MISSION: "{mission}"
 
                 CRITICAL: This is a MISSION to accomplish, not just a topic to discuss. Your hook must START the process of accomplishing: "{mission}"
+                {language_instruction}
                 
                 Style: {style}
                 Success patterns: {patterns.get('hooks', [])}
@@ -203,14 +224,27 @@ class Director:
 
                 Example approach: If mission is "convince X that Y is bad" - start by showing consequence/impact, not by saying "let's talk about convincing"
 
-                Return ONLY the hook text that begins accomplishing the mission, no explanations.
+                IMPORTANT TAGGING REQUIREMENTS:
+                - Mark dialogue/narration with "DIALOGUE:" prefix
+                - Mark visual descriptions with "[VISUAL:]" prefix
+                - Example: "[VISUAL: Chart showing data] DIALOGUE: Eight million deaths per year!"
+                
+                Return ONLY the hook text with proper tags that begins accomplishing the mission, no explanations.
                 """
             else:
                 # Topic-focused prompt for informational content
+                # Check if we need Hebrew script
+                language_instruction = ""
+                if patterns and patterns.get('target_language'):
+                    from ..models.video_models import Language
+                    if patterns['target_language'] == Language.HEBREW:
+                        language_instruction = "\nIMPORTANT: Generate ALL dialogue and text in Hebrew (עברית). This includes narration, dialogue, and any spoken content."
+                
                 prompt = f"""
                 Create an engaging opening hook for a {platform.value} video about: "{mission}"
 
                 CRITICAL: The hook MUST be about "{mission}" and nothing else.
+                {language_instruction}
                 
                 Style: {style}
                 Success patterns: {patterns.get('hooks', [])}
@@ -265,6 +299,13 @@ class Director:
             logger.warning(f"Hook generation failed after all attempts: {e}")
             # Use AI to rephrase the topic as a hook
             try:
+                # Check if we need Hebrew script
+                language_instruction = ""
+                if patterns and patterns.get('target_language'):
+                    from ..models.video_models import Language
+                    if patterns['target_language'] == Language.HEBREW:
+                        language_instruction = "\nIMPORTANT: Generate the hook in Hebrew (עברית)."
+                
                 fallback_prompt = f"""
                 The following topic/mission failed to generate a proper hook: "{mission}"
                 
@@ -274,6 +315,7 @@ class Director:
                 3. Works for {platform.value} platform
                 4. Is NOT generic or template-like
                 5. NEVER use contractions
+                {language_instruction}
                 
                 Return ONLY the hook text, nothing else.
                 """
@@ -308,28 +350,30 @@ class Director:
             # Calculate content segments
             num_segments = self._calculate_segments(duration)
 
-            # Determine if this is a mission (action-oriented), creative content, or topic (informational)
-            is_creative = any(creative_word in mission.lower() for creative_word in [
-                'satirical', 'satire', 'comedy', 'comedic', 'parody', 'skit', 'sketch',
-                'funny', 'humorous', 'mock', 'spoof', 'joke', 'drama', 'story',
-                'narrative', 'tale', 'scene', 'act', 'performance', 'segment',
-                'hilarious', 'first-person', 'pov', 'perspective', 'inner monologue',
-                'thoughts', 'create a', 'show'
-            ])
+            # Use AI to analyze content type instead of hardcoded patterns
+            content_type, analysis = self.content_analyzer.analyze_content_type(
+                mission, 
+                {"duration": duration, "patterns": patterns}
+            )
             
-            is_mission = not is_creative and any(action_word in mission.lower() for action_word in [
-                'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
-                'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
-                'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
-            ])
+            is_creative = content_type == ContentType.CREATIVE
+            is_mission = analysis.get('is_action_oriented', False)
 
             if is_creative:
                 # Creative content prompt: generate actual script/dialogue
+                # Check if we need Hebrew script
+                language_instruction = ""
+                if patterns and patterns.get('target_language'):
+                    from ..models.video_models import Language
+                    if patterns['target_language'] == Language.HEBREW:
+                        language_instruction = "\nIMPORTANT: Generate ALL dialogue and text in Hebrew (עברית). This includes narration, dialogue, and any spoken content."
+                
                 prompt = f"""
                 Create {num_segments} script segments for this creative content: "{mission}"
 
                 CRITICAL: Generate the ACTUAL CREATIVE SCRIPT described - the dialogue, narration, or performance content itself.
                 This is NOT educational content ABOUT the topic - this IS the creative content.
+                {language_instruction}
 
                 Duration: EXACTLY {duration} seconds ({int(duration * 2.8)} words total at 2.8 words/second)
                 Segments: {num_segments} segments, each ~{duration // num_segments} seconds
@@ -349,13 +393,15 @@ class Director:
                 5. Make every line serve the creative vision
                 6. NEVER break character to explain or educate
                 7. NEVER use contractions - use full forms
+                8. TAG all content: Use "DIALOGUE:" prefix for spoken words and "[VISUAL:]" prefix for visual elements
 
                 Example: If topic says "anchor mocks X", write what the anchor SAYS while mocking, not an explanation of mocking.
+                Example with tags: "[VISUAL: Anchor at desk with exaggerated expression] DIALOGUE: Oh sure, that plan will definitely work!"
 
                 Return JSON array with the creative script:
                 [
                     {{
-                        "text": "The actual dialogue/narration line",
+                        "text": "[VISUAL: visual description] DIALOGUE: The actual spoken dialogue/narration",
                         "duration": seconds,
                         "character": "who says this (if applicable)"
                     }}
@@ -363,10 +409,18 @@ class Director:
                 """
             elif is_mission:
                 # Mission-focused prompt: create content that accomplishes the objective
+                # Check if we need Hebrew script
+                language_instruction = ""
+                if patterns and patterns.get('target_language'):
+                    from ..models.video_models import Language
+                    if patterns['target_language'] == Language.HEBREW:
+                        language_instruction = "\nIMPORTANT: Generate ALL dialogue and text in Hebrew (עברית). This includes narration, dialogue, and any spoken content."
+                
                 prompt = f"""
                 Create {num_segments} content segments for a {duration}-second video to ACCOMPLISH THE MISSION: "{mission}"
 
                 CRITICAL: This is NOT about discussing the topic - this is about ACCOMPLISHING the mission "{mission}" within {duration} seconds.
+                {language_instruction}
 
                 Mission Strategy:
                 - Duration: EXACTLY {duration} seconds (HARD CONSTRAINT - content MUST fit this time limit)
@@ -395,6 +449,7 @@ class Director:
                 7. No meta-discussion - dive straight into accomplishing the mission
                 8. Make the content compelling and actionable within the time limit
                 9. NEVER use contractions (don't, can't, it's, let's) - use full forms (do not, cannot, it is, let us)
+                10. TAG all content: Use "DIALOGUE:" prefix for spoken words and "[VISUAL:]" prefix for visual elements
 
                 Strategic Approach Examples:
                 - If mission is "convince X that Y is bad": Show consequences, provide evidence, emotional impact
@@ -404,7 +459,7 @@ class Director:
                 Return JSON array with strategic mission-accomplishing content:
                 [
                     {{
-                        "text": "ONLY words to be spoken that advance the mission: {mission}",
+                        "text": "[VISUAL: visual description] DIALOGUE: Words to be spoken that advance the mission",
                         "duration": seconds,
                         "mission_purpose": "How this segment advances the mission"
                     }}
@@ -412,10 +467,18 @@ class Director:
                 """
             else:
                 # Topic-focused prompt for informational content
+                # Check if we need Hebrew script
+                language_instruction = ""
+                if patterns and patterns.get('target_language'):
+                    from ..models.video_models import Language
+                    if patterns['target_language'] == Language.HEBREW:
+                        language_instruction = "\nIMPORTANT: Generate ALL dialogue and text in Hebrew (עברית). This includes narration, dialogue, and any spoken content."
+                
                 prompt = f"""
                 Create {num_segments} content segments for a {duration}-second video about: "{mission}"
 
                 CRITICAL: ALL segments MUST be about "{mission}" and fit EXACTLY within {duration} seconds.
+                {language_instruction}
 
                 Duration constraints:
                 - Duration: EXACTLY {duration} seconds (HARD CONSTRAINT - content MUST fit this time limit)
@@ -443,11 +506,12 @@ class Director:
                 4. Include ONLY spoken dialogue content about "{mission}"
                 5. Be 1-2 complete sentences MAXIMUM (for proper subtitles)
                 6. NEVER use contractions (don't, can't, it's, let's) - use full forms (do not, cannot, it is, let us)
+                7. TAG all content: Use "DIALOGUE:" prefix for spoken words and "[VISUAL:]" prefix for visual elements
 
                 Return JSON array:
                 [
                     {{
-                        "text": "ONLY words to be spoken aloud about {mission}",
+                        "text": "[VISUAL: visual description] DIALOGUE: Words to be spoken aloud about {mission}",
                         "duration": seconds
                     }}
                 ]
@@ -486,7 +550,7 @@ class Director:
                             logger.warning(f"No valid segments found on attempt {attempt + 1}")
                             if attempt < max_attempts - 1:
                                 continue
-                            return self._get_default_segments(mission, num_segments)
+                            return self._get_default_segments(mission, num_segments, duration)
                     else:
                         if attempt < max_attempts - 1:
                             logger.warning(f"Invalid response format on attempt {attempt + 1}, retrying...")
@@ -508,11 +572,11 @@ class Director:
             
             # All attempts failed
             logger.error(f"Content structuring failed after {max_attempts} attempts: {last_error}")
-            return self._get_default_segments(mission, self._calculate_segments(duration))
+            return self._get_default_segments(mission, self._calculate_segments(duration), duration)
 
         except Exception as e:
             logger.warning(f"Content structuring failed, using defaults: {e}")
-            return self._get_default_segments(mission, self._calculate_segments(duration))
+            return self._get_default_segments(mission, self._calculate_segments(duration), duration)
 
     def _create_cta(
         self,
@@ -552,12 +616,12 @@ class Director:
             }
             return hebrew_cta_templates.get(platform, hebrew_cta_templates[Platform.YOUTUBE])
         
-        # Determine if this is a mission (action-oriented) or topic (informational)
-        is_mission = mission and any(action_word in mission.lower() for action_word in [
-            'convince', 'persuade', 'teach', 'show', 'prove', 'demonstrate', 
-            'explain why', 'help', 'stop', 'prevent', 'encourage', 'motivate',
-            'change', 'transform', 'improve', 'solve', 'fix', 'achieve'
-        ])
+        # Use AI to determine if this is a mission (action-oriented) or topic (informational)
+        if mission:
+            content_type, analysis = self.content_analyzer.analyze_content_type(mission)
+            is_mission = analysis.get('is_action_oriented', False)
+        else:
+            is_mission = False
         
         if is_mission:
             # Mission-focused CTAs that reinforce the mission objective
@@ -1203,10 +1267,10 @@ class Director:
         # Roughly 5-10 seconds per segment
         return max(3, min(duration // 7, 8))
 
-    def _get_default_segments(self, mission: str, num_segments: int) -> List[Dict]:
+    def _get_default_segments(self, mission: str, num_segments: int, duration: int = 30) -> List[Dict]:
         """Get default content segments dynamically based on mission"""
         segments = []
-        segment_duration = 30 // num_segments  # Assume 30s default
+        segment_duration = duration // num_segments  # Use actual duration instead of hardcoded 30s
 
         # Check if this is creative content
         is_creative = any(creative_word in mission.lower() for creative_word in [
