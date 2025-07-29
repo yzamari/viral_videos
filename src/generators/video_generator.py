@@ -21,6 +21,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="imageio_ffmpeg")
 
 from ..models.video_models import GeneratedVideoConfig, Platform, VideoCategory
 from ..utils.logging_config import get_logger
+from ..utils.timeline_visualizer import TimelineVisualizer
 from ..generators.veo_client_factory import VeoClientFactory, VeoModel
 from ..generators.gemini_image_client import GeminiImageClient
 from ..generators.enhanced_multilang_tts import EnhancedMultilingualTTS
@@ -830,8 +831,12 @@ The last frame of this scene connects to the next.
                 clips, audio_files, session_context
             )
             
+            # Initialize timeline visualizer for debugging
+            timeline_visualizer = TimelineVisualizer(session_context)
+            timeline_visualizer.set_video_duration(config.duration_seconds)
+            
             # Step 6: Create subtitles and get timing information
-            subtitle_data = self._create_subtitles_with_timings(script_result, audio_files, session_context)
+            subtitle_data = self._create_subtitles_with_timings(script_result, audio_files, session_context, timeline_visualizer)
             subtitle_files = subtitle_data.get('files', {})
             subtitle_timings = subtitle_data.get('timings', [])
             
@@ -859,8 +864,25 @@ The last frame of this scene connects to the next.
             # Step 7: Compose final video with subtitles and overlays
             final_video_path = self._compose_final_video_with_subtitles(
                 clips, audio_files, script_result, style_decision, positioning_decision, 
-                config, session_context, duration_coordinator, subtitle_timings
+                config, session_context, duration_coordinator, subtitle_timings, timeline_visualizer
             )
+            
+            # Save timeline visualization for manual analysis
+            try:
+                timeline_output_dir = session_context.get_output_path("analysis", "timeline")
+                os.makedirs(timeline_output_dir, exist_ok=True)
+                timeline_visualizer.save_timeline_data(timeline_output_dir)
+                logger.info(f"📊 Timeline visualization saved to: {timeline_output_dir}")
+                
+                # Also log the ASCII timeline to console for immediate viewing
+                logger.info("\n" + "="*80)
+                logger.info("TIMELINE VISUALIZATION FOR AUDIO-SUBTITLE ANALYSIS")
+                logger.info("="*80)
+                logger.info("\n" + timeline_visualizer.generate_ascii_timeline())
+                logger.info("\n" + timeline_visualizer.generate_detailed_report())
+                
+            except Exception as e:
+                logger.error(f"❌ Failed to save timeline visualization: {e}")
             
             generation_time = time.time() - start_time
             
@@ -1914,12 +1936,11 @@ The last frame of this scene connects to the next.
                 if segment_audio_files and len(segment_audio_files) > 0:
                     temp_audio_files.append(segment_audio_files[0])
                     
-                    # CRITICAL: Track actual audio duration
+                    # CRITICAL: Track actual audio duration using FFmpeg
                     try:
-                        from moviepy.editor import AudioFileClip
-                        audio_clip = AudioFileClip(segment_audio_files[0])
-                        actual_segment_duration = audio_clip.duration
-                        audio_clip.close()
+                        from ..utils.ffmpeg_processor import FFmpegProcessor
+                        with FFmpegProcessor() as ffmpeg:
+                            actual_segment_duration = ffmpeg.get_duration(segment_audio_files[0])
                         total_audio_duration += actual_segment_duration
                         logger.info(f"✅ Generated audio segment {i+1}: {actual_segment_duration:.1f}s (total: {total_audio_duration:.1f}s)")
                     except:
@@ -1986,12 +2007,11 @@ The last frame of this scene connects to the next.
             if audio_files:
                 actual_total_duration = 0.0
                 try:
-                    from moviepy.editor import AudioFileClip
-                    for audio_file in audio_files:
-                        if os.path.exists(audio_file):
-                            audio_clip = AudioFileClip(audio_file)
-                            actual_total_duration += audio_clip.duration
-                            audio_clip.close()
+                    from ..utils.ffmpeg_processor import FFmpegProcessor
+                    with FFmpegProcessor() as ffmpeg:
+                        for audio_file in audio_files:
+                            if os.path.exists(audio_file):
+                                actual_total_duration += ffmpeg.get_duration(audio_file)
                     
                     logger.info(f"📊 Final audio validation:")
                     logger.info(f"   Target duration: {target_duration}s")
@@ -2080,7 +2100,8 @@ The last frame of this scene connects to the next.
                                            positioning_decision: Dict[str, Any], config: GeneratedVideoConfig,
                                            session_context: SessionContext, 
                                            duration_coordinator: Optional[DurationCoordinator] = None,
-                                           subtitle_timings: Optional[List[Dict[str, float]]] = None) -> str:
+                                           subtitle_timings: Optional[List[Dict[str, float]]] = None,
+                                           timeline_visualizer: Optional[TimelineVisualizer] = None) -> str:
         """Compose final video with subtitles and overlays, plus additional versions"""
         try:
             logger.info("🎬 Composing final video with multiple output versions")
@@ -2106,6 +2127,17 @@ The last frame of this scene connects to the next.
                     logger.warning("   Proceeding with assembly but output may have duration issues")
             
             # Step 1: Create base video from clips with subtitle-aligned audio
+            # Add video clip tracking
+            if timeline_visualizer and clips:
+                clip_duration_per_file = config.duration_seconds / len(clips)
+                for i, clip_path in enumerate(clips):
+                    timeline_visualizer.add_video_clip_event(
+                        index=i + 1,
+                        start=i * clip_duration_per_file,
+                        duration=clip_duration_per_file,
+                        file_path=clip_path
+                    )
+            
             base_video_path = self._create_base_video_from_clips(clips, audio_files, session_context, config.duration_seconds, 
                                                                 platform=config.target_platform.value,
                                                                 subtitle_timings=subtitle_timings)
@@ -2437,8 +2469,8 @@ The last frame of this scene connects to the next.
                     
                     # Compose with FFmpeg
                     ffmpeg_config = {
-                        'mission': getattr(config, 'mission', ''),
-                        'script': getattr(config, 'mission', ''),
+                        'mission': 'video generation',  # Generic mission since config not available
+                        'script': 'generated content',   # Generic script since config not available  
                         'platform': platform or 'instagram',
                         'style': 'viral',
                         'segments': subtitle_segments
@@ -2462,22 +2494,40 @@ The last frame of this scene connects to the next.
                         logger.info("✅ FFmpeg subtitle-aligned composition successful")
                         return result
                     else:
-                        logger.warning("⚠️ FFmpeg composition failed, falling back to MoviePy")
+                        logger.warning("⚠️ FFmpeg composition failed, trying simpler approach")
                         
                 except Exception as e:
-                    logger.warning(f"⚠️ FFmpeg composition error: {e}, falling back to MoviePy")
-                
-                # Fallback to MoviePy (old system)
-                logger.info("🎯 Falling back to MoviePy subtitle-aligned composition")
-                result = self._compose_with_subtitle_aligned_audio(
-                    clips, audio_files, subtitle_timings, output_path, 
-                    session_context, target_duration, platform
-                )
-                if result and os.path.exists(result):
-                    logger.info("✅ MoviePy subtitle-aligned composition successful")
-                    return result
-                else:
-                    logger.warning("⚠️ MoviePy subtitle-aligned composition failed, falling back to standard methods")
+                    logger.error(f"❌ FFmpeg composition error: {e}")
+                    logger.info("🔧 Attempting simpler FFmpeg concatenation without overlays")
+                    
+                    # Try simpler FFmpeg concatenation as fallback
+                    try:
+                        from ..utils.ffmpeg_processor import FFmpegProcessor
+                        with FFmpegProcessor() as ffmpeg:
+                            # Simple concatenation + audio sync
+                            if len(clips) > 1:
+                                base_video = session_context.get_output_path("temp_files", "concat_video.mp4")
+                                ffmpeg.concatenate_videos(clips, base_video)
+                            else:
+                                base_video = clips[0]
+                            
+                            # Add audio
+                            if len(audio_files) > 1:
+                                concat_audio = session_context.get_output_path("temp_files", "concat_audio.mp3") 
+                                ffmpeg.concatenate_audio(audio_files, concat_audio)
+                            else:
+                                concat_audio = audio_files[0]
+                            
+                            # Combine video and audio
+                            ffmpeg.add_audio_to_video(base_video, concat_audio, output_path, "exact")
+                            
+                            if os.path.exists(output_path):
+                                logger.info("✅ Simple FFmpeg composition successful")
+                                return output_path
+                                
+                    except Exception as ffmpeg_error:
+                        logger.error(f"❌ Simple FFmpeg composition also failed: {ffmpeg_error}")
+                        logger.error("❌ No more fallback options available - both advanced and simple FFmpeg failed")
             
             # ENHANCED: Always prefer frame continuity for better video quality
             if len(clips) > 1:
@@ -3579,15 +3629,14 @@ The last frame of this scene connects to the next.
                                  audio_file: str) -> List[Dict[str, Any]]:
         """Perfect synchronization for single audio file using word-level timing analysis"""
         try:
-            from moviepy.editor import AudioFileClip
             import numpy as np
             
             logger.info("🎯 Performing perfect single-audio synchronization")
             
-            # Get actual audio duration
-            audio_clip = AudioFileClip(audio_file)
-            actual_audio_duration = audio_clip.duration
-            audio_clip.close()
+            # Get actual audio duration using FFmpeg
+            from ..utils.ffmpeg_processor import FFmpegProcessor
+            with FFmpegProcessor() as ffmpeg:
+                actual_audio_duration = ffmpeg.get_duration(audio_file)
             
             logger.info(f"🎵 Audio file duration: {actual_audio_duration:.3f}s")
             
@@ -3675,8 +3724,6 @@ The last frame of this scene connects to the next.
                                 audio_files: List[str]) -> List[Dict[str, Any]]:
         """Perfect synchronization for multiple audio files with exact duration mapping"""
         try:
-            from moviepy.editor import AudioFileClip
-            
             logger.info("🎯 Performing perfect multi-audio synchronization")
             
             # Sort audio files by segment number
@@ -3686,20 +3733,21 @@ The last frame of this scene connects to the next.
             audio_durations = []
             total_audio_duration = 0.0
             
-            for i, audio_file in enumerate(audio_files):
-                try:
-                    audio_clip = AudioFileClip(audio_file)
-                    duration = round(audio_clip.duration, 3)  # High precision
-                    audio_durations.append(duration)
-                    total_audio_duration += duration
-                    audio_clip.close()
-                    logger.info(f"🎵 Audio {i+1}: {os.path.basename(audio_file)} - {duration:.3f}s")
-                except Exception as e:
-                    logger.warning(f"⚠️ Failed to analyze audio file {audio_file}: {e}")
-                    # Use estimated duration if analysis fails
-                    estimated_duration = video_duration / len(audio_files)
-                    audio_durations.append(estimated_duration)
-                    total_audio_duration += estimated_duration
+            # Use FFmpeg for precise audio duration analysis
+            from ..utils.ffmpeg_processor import FFmpegProcessor
+            with FFmpegProcessor() as ffmpeg:
+                for i, audio_file in enumerate(audio_files):
+                    try:
+                        duration = round(ffmpeg.get_duration(audio_file), 3)  # High precision
+                        audio_durations.append(duration)
+                        total_audio_duration += duration
+                        logger.info(f"🎵 Audio {i+1}: {os.path.basename(audio_file)} - {duration:.3f}s")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Failed to analyze audio file {audio_file}: {e}")
+                        # Use estimated duration if analysis fails
+                        estimated_duration = video_duration / len(audio_files)
+                        audio_durations.append(estimated_duration)
+                        total_audio_duration += estimated_duration
             
             logger.info(f"🎵 Total audio duration: {total_audio_duration:.3f}s")
             
@@ -3811,12 +3859,10 @@ The last frame of this scene connects to the next.
                                     audio_file: str) -> List[Dict[str, Any]]:
         """INTELLIGENT: Use script structure for optimal subtitle timing - no complex audio analysis"""
         try:
-            from moviepy.editor import AudioFileClip
-            
-            # Get actual audio duration
-            audio_clip = AudioFileClip(audio_file)
-            actual_audio_duration = audio_clip.duration
-            audio_clip.close()
+            # Get actual audio duration using FFmpeg
+            from ..utils.ffmpeg_processor import FFmpegProcessor
+            with FFmpegProcessor() as ffmpeg:
+                actual_audio_duration = ffmpeg.get_duration(audio_file)
             
             # CRITICAL FIX: Use target duration instead of actual audio duration for timing
             # This ensures subtitles match the intended video length
@@ -4221,112 +4267,7 @@ The last frame of this scene connects to the next.
             logger.error(f"❌ Standard composition error: {e}")
             return ""
     
-    def _compose_with_subtitle_aligned_audio(self, clips: List[str], audio_segments: list, 
-                                             subtitle_segments: list, output_path: str,
-                                             session_context: SessionContext, target_duration: Optional[float] = None,
-                                             platform: Optional[str] = None) -> Optional[str]:
-        """
-        Compose video with audio aligned to subtitle timings - SIMPLE approach
-        """
-        try:
-            from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_audioclips, CompositeAudioClip, concatenate_videoclips
-            from moviepy.audio.AudioClip import AudioClip
-            import numpy as np
-            
-            logger.info("🎵 Creating subtitle-aligned audio track (SIMPLE METHOD)")
-            
-            # First create base video from clips
-            logger.info(f"🎬 Creating base video from {len(clips)} clips")
-            video_clips = []
-            for clip_path in clips:
-                if os.path.exists(clip_path):
-                    video_clips.append(VideoFileClip(clip_path))
-            
-            if not video_clips:
-                logger.error("❌ No valid video clips found")
-                return None
-            
-            # Concatenate video clips
-            video = concatenate_videoclips(video_clips, method="compose")
-            video_duration = video.duration
-            
-            # Clean up individual clips
-            for clip in video_clips:
-                clip.close()
-            
-            # Create silence generator
-            def make_silence(duration):
-                """Create silence of given duration"""
-                return AudioClip(lambda t: 0, duration=duration)
-            
-            # Build audio timeline based on SRT
-            audio_timeline = []
-            current_time = 0
-            
-            for i, (segment, audio_path) in enumerate(zip(subtitle_segments, audio_segments)):
-                if not os.path.exists(audio_path):
-                    logger.warning(f"⚠️ Audio file not found: {audio_path}")
-                    continue
-                
-                start_time = segment['start']
-                
-                # Add silence before this segment
-                if start_time > current_time:
-                    silence_duration = start_time - current_time
-                    logger.info(f"🔇 Adding {silence_duration:.2f}s silence before segment {i}")
-                    silence = make_silence(silence_duration)
-                    audio_timeline.append(silence)
-                
-                # Add the audio segment
-                audio_clip = AudioFileClip(audio_path)
-                logger.info(f"🎵 Adding audio segment {i} at {start_time:.2f}s (duration: {audio_clip.duration:.2f}s)")
-                audio_timeline.append(audio_clip)
-                
-                # Update current time
-                current_time = start_time + audio_clip.duration
-            
-            # Add final silence if needed
-            if current_time < video_duration:
-                final_silence = video_duration - current_time
-                logger.info(f"🔇 Adding {final_silence:.2f}s final silence")
-                audio_timeline.append(make_silence(final_silence))
-            
-            # Concatenate all audio
-            if audio_timeline:
-                final_audio = concatenate_audioclips(audio_timeline)
-                
-                # Set audio to video
-                video_with_audio = video.set_audio(final_audio)
-                
-                # Write output
-                logger.info(f"📝 Writing final video with aligned audio to: {output_path}")
-                video_with_audio.write_videofile(
-                    output_path,
-                    codec='libx264',
-                    audio_codec='aac',
-                    temp_audiofile='temp-audio.m4a',
-                    remove_temp=True,
-                    logger=None
-                )
-                
-                # Cleanup
-                video.close()
-                video_with_audio.close()
-                for clip in audio_timeline:
-                    if hasattr(clip, 'close'):
-                        clip.close()
-                
-                logger.info("✅ Audio-video composition complete (SIMPLE METHOD)")
-                return output_path
-            else:
-                logger.warning("⚠️ No audio segments to compose")
-                return base_video_path
-                
-        except Exception as e:
-            logger.error(f"❌ Audio composition failed: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
-            return None
+    # MoviePy-based function removed - using FFmpeg-only approach
     def _create_simple_fallback_composition(self, clips: List[str], audio_files: List[str], 
                                            output_path: str, session_context: SessionContext,
                                            platform: Optional[str] = None) -> str:
@@ -4580,33 +4521,31 @@ This is a placeholder file. In a full implementation, this would be a complete M
         adjustments_made = []
         
         try:
-            # 1. Analyze actual clip and audio durations
-            # Import moviepy for duration calculation
-            from moviepy.editor import VideoFileClip, AudioFileClip
+            # 1. Analyze actual clip and audio durations using FFmpeg
+            from ..utils.ffmpeg_processor import FFmpegProcessor
             
             clip_durations = []
-            for clip in clips:
-                if os.path.exists(clip):
-                    try:
-                        with VideoFileClip(clip) as video_clip:
-                            clip_durations.append(video_clip.duration)
-                    except Exception as e:
-                        logger.warning(f"⚠️ Could not get duration for {clip}: {e}")
+            with FFmpegProcessor() as ffmpeg:
+                for clip in clips:
+                    if os.path.exists(clip):
+                        try:
+                            clip_durations.append(ffmpeg.get_duration(clip))
+                        except Exception as e:
+                            logger.warning(f"⚠️ Could not get duration for {clip}: {e}")
+                            clip_durations.append(target_duration / len(clips))
+                    else:
                         clip_durations.append(target_duration / len(clips))
-                else:
-                    clip_durations.append(target_duration / len(clips))
             
-            audio_durations = []
-            for audio_file in audio_files:
-                if os.path.exists(audio_file):
-                    try:
-                        with AudioFileClip(audio_file) as audio_clip:
-                            audio_durations.append(audio_clip.duration)
-                    except Exception as e:
-                        logger.warning(f"⚠️ Could not get duration for {audio_file}: {e}")
+                audio_durations = []
+                for audio_file in audio_files:
+                    if os.path.exists(audio_file):
+                        try:
+                            audio_durations.append(ffmpeg.get_duration(audio_file))
+                        except Exception as e:
+                            logger.warning(f"⚠️ Could not get duration for {audio_file}: {e}")
+                            audio_durations.append(target_duration / len(audio_files))
+                    else:
                         audio_durations.append(target_duration / len(audio_files))
-                else:
-                    audio_durations.append(target_duration / len(audio_files))
             
             total_clip_duration = sum(clip_durations)
             total_audio_duration = sum(audio_durations)
@@ -4674,9 +4613,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
             logger.warning(f"⚠️ Failed to save prompts: {e}")
     
     def _create_subtitles_with_timings(self, script_result: Dict[str, Any], audio_files: List[str], 
-                                      session_context: SessionContext) -> Dict[str, Any]:
+                                      session_context: SessionContext, timeline_visualizer: Optional[TimelineVisualizer] = None) -> Dict[str, Any]:
         """Create subtitles and return both files and timing information"""
-        subtitle_files = self._create_subtitles(script_result, audio_files, session_context)
+        subtitle_files = self._create_subtitles(script_result, audio_files, session_context, timeline_visualizer)
         
         # Extract timing information from the created subtitles
         timings = []
@@ -4706,6 +4645,15 @@ This is a placeholder file. In a full implementation, this would be a complete M
                         'text': text
                     })
                     
+                    # Add to timeline visualizer
+                    if timeline_visualizer:
+                        timeline_visualizer.add_subtitle_event(
+                            index=len(timings),
+                            start=start_seconds,
+                            end=end_seconds,
+                            text=text
+                        )
+                    
                 logger.info(f"📝 Extracted {len(timings)} subtitle timings from SRT file")
         except Exception as e:
             logger.warning(f"⚠️ Failed to extract subtitle timings: {e}")
@@ -4724,7 +4672,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
         return hours * 3600 + minutes * 60 + seconds
     
     def _create_subtitles(self, script_result: Dict[str, Any], audio_files: List[str], 
-                         session_context: SessionContext) -> Dict[str, str]:
+                         session_context: SessionContext, timeline_visualizer: Optional[TimelineVisualizer] = None) -> Dict[str, str]:
         """Create subtitle files (SRT and VTT) from script and audio timing
         
         Uses one-sentence-per-audio-segment approach for perfect sync:
@@ -4828,6 +4776,16 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     subtitle_text = f"[Audio {i+1}]"
                 
                 segment_end_time = segment_start_time + audio_duration
+                
+                # Add audio segment to timeline
+                if timeline_visualizer:
+                    timeline_visualizer.add_audio_event(
+                        index=i + 1,
+                        start=segment_start_time,
+                        duration=audio_duration,
+                        file_path=audio_file,
+                        actual_duration=audio_duration
+                    )
                 
                 # Create subtitle segment
                 segments.append({
@@ -6969,12 +6927,13 @@ Return ONLY the modified script text, no explanations."""
     def _create_text_video(self, config: GeneratedVideoConfig, audio_file: str, session_context: SessionContext, script_text: str = None) -> str:
         """Create a simple text-based video with theme support"""
         try:
-            from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip, AudioFileClip, ColorClip, ImageClip
+            from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip, ColorClip, ImageClip
             import numpy as np
             
-            # Get audio duration
-            audio_clip = AudioFileClip(audio_file)
-            duration = audio_clip.duration
+            # Get audio duration using FFmpeg
+            from ..utils.ffmpeg_processor import FFmpegProcessor
+            with FFmpegProcessor() as ffmpeg:
+                duration = ffmpeg.get_duration(audio_file)
             
             # Get platform dimensions
             aspect_ratio = self._get_platform_aspect_ratio(config.target_platform.value)
@@ -7079,24 +7038,31 @@ Return ONLY the modified script text, no explanations."""
             clips.extend([badge_clip] + subtitle_clips)
             
             video = CompositeVideoClip(clips)
-            video = video.set_audio(audio_clip)
+            # Note: Audio will be added via FFmpeg post-processing instead of MoviePy
             
             # Save video
             output_path = session_context.get_output_path("final_output", f"final_video_{session_context.session_id}.mp4")
             
-            logger.info(f"💰 Rendering cheap mode video: {output_path}")
+            # Save video without audio first
+            temp_video_path = session_context.get_output_path("temp_files", "temp_video_no_audio.mp4")
+            logger.info(f"💰 Rendering video without audio: {temp_video_path}")
             video.write_videofile(
-                output_path,
+                temp_video_path,
                 fps=video_config.get_fps(config.target_platform.value),
                 codec=video_config.encoding.video_codec,
-                audio_codec=video_config.encoding.audio_codec,
                 verbose=False,
-                logger=None
+                logger=None,
+                audio=False  # No audio in this step
             )
             
-            # Close clips
-            audio_clip.close()
+            # Close video clip
             video.close()
+            
+            # Add audio using FFmpeg for better sync
+            logger.info(f"🎵 Adding audio using FFmpeg: {output_path}")
+            from ..utils.ffmpeg_processor import FFmpegProcessor
+            with FFmpegProcessor() as ffmpeg:
+                ffmpeg.add_audio_to_video(temp_video_path, audio_file, output_path, "exact")
             
             logger.info(f"✅ Cheap mode text video created: {output_path}")
             return output_path
@@ -7114,14 +7080,14 @@ Return ONLY the modified script text, no explanations."""
             
             # Determine video width based on height (assuming portrait mode for cheap mode)
             video_width = 1080 if video_height == 1920 else 1920
-            from moviepy.editor import TextClip, AudioFileClip
+            from moviepy.editor import TextClip
             import re
             
-            # Get actual audio duration for accurate timing
+            # Get actual audio duration for accurate timing using FFmpeg
             try:
-                audio_clip = AudioFileClip(audio_file)
-                actual_audio_duration = audio_clip.duration
-                audio_clip.close()
+                from ..utils.ffmpeg_processor import FFmpegProcessor
+                with FFmpegProcessor() as ffmpeg:
+                    actual_audio_duration = ffmpeg.get_duration(audio_file)
                 logger.info(f"🎵 Audio duration: {actual_audio_duration:.2f}s, Video duration: {duration:.2f}s")
                 
                 # For premium mode, try to get more accurate timing if possible

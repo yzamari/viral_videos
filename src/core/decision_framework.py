@@ -533,8 +533,8 @@ class DecisionFramework:
     def _decide_voice_strategy(self, mission: str, duration: int, platform: Platform, ai_available: bool) -> tuple:
         """Decide voice strategy"""
         if ai_available:
-            # AI would decide based on content and duration
-            strategy = "single" if duration <= 15 else "variety"
+            # FIXED: Always use single voice for consistency - variety causes multiple voices issue
+            strategy = "single"  # Changed from duration-based logic to always single
             personality = "storyteller"
             variety = strategy == "variety"
             self._record_decision('voice_strategy', strategy, DecisionSource.AI_AGENT, 0.8, 

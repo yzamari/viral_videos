@@ -7,6 +7,7 @@ from typing import Dict, List, Any, Tuple, Optional
 from ..utils.logging_config import get_logger
 from ..ai.manager import AIServiceManager
 from ..ai.interfaces.text_generation import TextGenerationRequest
+from ..ai.interfaces.base import AIServiceType
 from ..models.video_models import Language, Platform
 from .ai_content_analyzer import AIContentAnalyzer
 
@@ -22,7 +23,6 @@ class SeparatedScriptGenerator:
         self.api_key = api_key
         # Initialize AI service manager
         from ..ai.config import AIConfiguration, AIProvider
-        from ..ai.factory import AIServiceType
         config = AIConfiguration()
         config.api_keys[AIProvider.GEMINI] = api_key
         config.default_providers[AIServiceType.TEXT_GENERATION] = AIProvider.GEMINI
@@ -57,6 +57,17 @@ class SeparatedScriptGenerator:
             Dictionary with separated visual and dialogue data
         """
         logger.info(f"🎬 Generating separated script for '{mission}' ({duration}s)")
+        
+        # Ensure language is a Language enum for defensive programming
+        if isinstance(language, str):
+            # Convert string to Language enum
+            language_str = language
+            language = Language.ENGLISH_US  # Default
+            for lang in Language:
+                if lang.value == language_str:
+                    language = lang
+                    break
+            logger.debug(f"Converted language string '{language_str}' to enum {language}")
         
         # Calculate segments (8-second clips)
         num_segments = max(1, duration // 8)
@@ -129,19 +140,62 @@ Make each visual description rich and cinematic for compelling image generation.
 """
         
         try:
-            text_service = self.ai_manager.get_service("text_generation")
+            text_service = self.ai_manager.get_service(AIServiceType.TEXT_GENERATION)
             request = TextGenerationRequest(
                 prompt=prompt,
                 max_tokens=2000,  # Larger response for detailed visuals
                 temperature=0.8   # More creative for visual descriptions
             )
             
-            response = await text_service.generate_text(request)
+            response = await text_service.generate(request)
             
-            # Parse JSON response
-            visual_data = json.loads(response.text)
+            # Parse JSON response with better error handling
+            try:
+                # Clean the response text to extract JSON
+                response_text = response.text.strip()
+                
+                # Try to find JSON array in response
+                if response_text.startswith('['):
+                    visual_data = json.loads(response_text)
+                elif '```json' in response_text:
+                    # Extract JSON from markdown code block
+                    json_start = response_text.find('[')
+                    json_end = response_text.rfind(']') + 1
+                    if json_start != -1 and json_end > json_start:
+                        visual_data = json.loads(response_text[json_start:json_end])
+                    else:
+                        raise ValueError("No valid JSON array found in response")
+                else:
+                    # Try to parse as-is
+                    visual_data = json.loads(response_text)
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON parsing failed: {e}")
+                logger.debug(f"Response text: {response_text[:500]}...")
+                raise RuntimeError(f"Failed to parse visual descriptions: {e}")
             
             logger.info(f"🎨 Generated {len(visual_data)} visual descriptions")
+            
+            # CRITICAL: Validate segment count to prevent duration mismatches
+            if len(visual_data) != num_segments:
+                logger.warning(f"⚠️ VISUAL SEGMENT COUNT MISMATCH: Expected {num_segments}, got {len(visual_data)}")
+                logger.warning(f"⚠️ This will cause audio-video duration issues!")
+                
+                # Truncate or pad to match expected count
+                if len(visual_data) > num_segments:
+                    visual_data = visual_data[:num_segments]
+                    logger.info(f"🔧 Truncated to {num_segments} segments")
+                elif len(visual_data) < num_segments:
+                    # Pad with fallback segments
+                    while len(visual_data) < num_segments:
+                        visual_data.append({
+                            "segment_id": len(visual_data) + 1,
+                            "visual_description": f"Scene {len(visual_data) + 1} continuing {mission}",
+                            "camera_work": "Standard shot composition",
+                            "lighting": "Natural lighting",
+                            "character_action": "Relevant character activity"
+                        })
+                    logger.info(f"🔧 Padded to {num_segments} segments")
+            
             return visual_data
             
         except Exception as e:
@@ -158,9 +212,16 @@ Make each visual description rich and cinematic for compelling image generation.
     ) -> List[Dict[str, Any]]:
         """Generate dialogue/narration content separately"""
         
-        # Language instruction
+        # Language instruction - handle both enum and string inputs defensively
         language_instruction = ""
-        if language != Language.ENGLISH_US:
+        is_non_english = False
+        
+        if isinstance(language, str):
+            is_non_english = language != "english_us" and language != Language.ENGLISH_US.value
+        else:
+            is_non_english = language != Language.ENGLISH_US
+            
+        if is_non_english:
             language_name = self._get_language_name(language)
             language_instruction = f"\\nIMPORTANT: Generate ALL dialogue and narration in {language_name}."
         
@@ -169,7 +230,7 @@ Make each visual description rich and cinematic for compelling image generation.
         words_per_segment = total_words // num_segments
         
         prompt = f"""
-Create {num_segments} dialogue/narration segments for: "{mission}"
+Create EXACTLY {num_segments} dialogue/narration segments for: "{mission}"
 
 🎤 AUDIO-ONLY CONTENT REQUIREMENTS:
 1. Generate ONLY what a narrator/character SPEAKS OUT LOUD
@@ -180,6 +241,7 @@ Create {num_segments} dialogue/narration segments for: "{mission}"
 6. Each segment: 1-2 sentences maximum for subtitle readability
 7. Total word limit: {total_words} words (~{words_per_segment} words per segment)
 8. Focus on compelling storytelling through SPOKEN WORD ONLY
+9. CRITICAL: Generate EXACTLY {num_segments} segments - no more, no less!
 {language_instruction}
 
 ❌ BAD EXAMPLES (DON'T DO):
@@ -220,19 +282,62 @@ Focus on creating engaging, speakable content that tells the story effectively.
 """
         
         try:
-            text_service = self.ai_manager.get_service("text_generation")
+            text_service = self.ai_manager.get_service(AIServiceType.TEXT_GENERATION)
             request = TextGenerationRequest(
                 prompt=prompt,
                 max_tokens=1500,  # Focused on dialogue content
                 temperature=0.7   # Balanced creativity for dialogue
             )
             
-            response = await text_service.generate_text(request)
+            response = await text_service.generate(request)
             
-            # Parse JSON response
-            dialogue_data = json.loads(response.text)
+            # Parse JSON response with better error handling
+            try:
+                # Clean the response text to extract JSON
+                response_text = response.text.strip()
+                
+                # Try to find JSON array in response
+                if response_text.startswith('['):
+                    dialogue_data = json.loads(response_text)
+                elif '```json' in response_text:
+                    # Extract JSON from markdown code block
+                    json_start = response_text.find('[')
+                    json_end = response_text.rfind(']') + 1
+                    if json_start != -1 and json_end > json_start:
+                        dialogue_data = json.loads(response_text[json_start:json_end])
+                    else:
+                        raise ValueError("No valid JSON array found in response")
+                else:
+                    # Try to parse as-is
+                    dialogue_data = json.loads(response_text)
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON parsing failed: {e}")
+                logger.debug(f"Response text: {response_text[:500]}...")
+                raise RuntimeError(f"Failed to parse dialogue content: {e}")
             
             logger.info(f"🗣️ Generated {len(dialogue_data)} dialogue segments")
+            
+            # CRITICAL: Validate segment count to prevent duration mismatches
+            if len(dialogue_data) != num_segments:
+                logger.warning(f"⚠️ DIALOGUE SEGMENT COUNT MISMATCH: Expected {num_segments}, got {len(dialogue_data)}")
+                logger.warning(f"⚠️ This will cause audio-video duration issues!")
+                
+                # Truncate or pad to match expected count
+                if len(dialogue_data) > num_segments:
+                    dialogue_data = dialogue_data[:num_segments]
+                    logger.info(f"🔧 Truncated to {num_segments} segments")
+                elif len(dialogue_data) < num_segments:
+                    # Pad with fallback segments
+                    while len(dialogue_data) < num_segments:
+                        dialogue_data.append({
+                            "segment_id": len(dialogue_data) + 1,
+                            "dialogue": f"Continuing our discussion about {mission}",
+                            "tone": "neutral",
+                            "pacing": "normal",
+                            "emphasis": ""
+                        })
+                    logger.info(f"🔧 Padded to {num_segments} segments")
+            
             return dialogue_data
             
         except Exception as e:
@@ -252,6 +357,16 @@ Focus on creating engaging, speakable content that tells the story effectively.
         
         # Ensure we have matching numbers of visual and dialogue segments
         min_segments = min(len(visual_data), len(dialogue_data))
+        
+        # CRITICAL: Warn about segment count mismatches that cause duration issues
+        if len(visual_data) != len(dialogue_data):
+            logger.warning(f"⚠️ SEGMENT COUNT MISMATCH: Visual={len(visual_data)}, Dialogue={len(dialogue_data)}")
+            logger.warning(f"⚠️ This will cause audio-video sync issues and missing content!")
+        
+        expected_segments = max(1, int(segment_duration * min_segments))
+        if min_segments * segment_duration < expected_segments:
+            logger.warning(f"⚠️ DURATION MISMATCH: Generated {min_segments} segments but need content for {expected_segments}s")
+            logger.warning(f"⚠️ This will cause missing audio at the end of the video!")
         
         for i in range(min_segments):
             visual = visual_data[i]
@@ -316,8 +431,22 @@ Focus on creating engaging, speakable content that tells the story effectively.
         
         return enhanced
     
-    def _get_language_name(self, language: Language) -> str:
+    def _get_language_name(self, language) -> str:
         """Get human-readable language name"""
+        # Handle both Language enum and string inputs for defensive programming
+        if isinstance(language, str):
+            # Convert string back to enum if possible
+            try:
+                for lang_enum in Language:
+                    if lang_enum.value == language:
+                        language = lang_enum
+                        break
+                else:
+                    # If string doesn't match any enum value, default to English
+                    return "English"
+            except Exception:
+                return "English"
+        
         language_names = {
             Language.HEBREW: "Hebrew (עברית)",
             Language.ARABIC: "Arabic (العربية)",
@@ -327,7 +456,7 @@ Focus on creating engaging, speakable content that tells the story effectively.
             Language.GERMAN: "German (Deutsch)",
             Language.ITALIAN: "Italian (Italiano)",
             Language.PORTUGUESE: "Portuguese (Português)",
-            Language.RUSSIAN: "Russian (Русский)",
+            Language.RUSSIAN: "Russian (Русský)",
             Language.CHINESE: "Chinese (中文)",
             Language.JAPANESE: "Japanese (日本語)",
             Language.ENGLISH_UK: "British English",
@@ -360,7 +489,15 @@ Focus on creating engaging, speakable content that tells the story effectively.
         fallback_dialogue = []
         
         base_text = "This is about " + mission
-        if language == Language.HEBREW:
+        
+        # Handle both enum and string inputs defensively
+        is_hebrew = False
+        if isinstance(language, str):
+            is_hebrew = language == "hebrew" or language == Language.HEBREW.value
+        else:
+            is_hebrew = language == Language.HEBREW
+            
+        if is_hebrew:
             base_text = "זה על " + mission
         
         for i in range(num_segments):

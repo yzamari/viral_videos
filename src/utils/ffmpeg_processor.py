@@ -104,6 +104,26 @@ class FFmpegProcessor:
         if not audio_paths:
             raise ValueError("No audio files to concatenate")
         
+        # Filter out empty or invalid audio files
+        valid_audio_paths = []
+        for audio_path in audio_paths:
+            if os.path.exists(audio_path) and os.path.getsize(audio_path) > 0:
+                try:
+                    duration = self.get_duration(audio_path)
+                    if duration > 0:
+                        valid_audio_paths.append(audio_path)
+                    else:
+                        logger.warning(f"Skipping zero-duration audio: {audio_path}")
+                except Exception as e:
+                    logger.warning(f"Skipping invalid audio file {audio_path}: {e}")
+            else:
+                logger.warning(f"Skipping non-existent or empty audio: {audio_path}")
+        
+        if not valid_audio_paths:
+            raise ValueError("No valid audio files to concatenate")
+        
+        audio_paths = valid_audio_paths
+        
         if len(audio_paths) == 1:
             # Single file, just copy
             cmd = ['ffmpeg', '-y', '-i', audio_paths[0], '-c', 'copy', output_path]
@@ -127,10 +147,15 @@ class FFmpegProcessor:
             
             filter_complex = ';'.join(filter_parts)
             
+            # Check output format
+            if output_path.endswith('.mp3'):
+                audio_codec = ['-c:a', 'libmp3lame', '-b:a', '128k']
+            else:
+                audio_codec = ['-c:a', 'aac', '-b:a', '128k']
+            
             cmd = ['ffmpeg', '-y'] + inputs + [
                 '-filter_complex', filter_complex,
-                '-map', '[outa]', '-c:a', 'aac', '-b:a', '128k', output_path
-            ]
+                '-map', '[outa]'] + audio_codec + [output_path]
         else:
             # Simple concatenation
             concat_file = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False)
