@@ -1,0 +1,82 @@
+# Dragon Calculus AI Agent Guidelines
+
+## Mission Philosophy
+We're giving AI agents SHORT missions to encourage creativity while ensuring educational value.
+
+## Old Approach (Too Prescriptive):
+"Dragon Episode 1: What is a Limit - Getting Really Really Close. Dragon has 1 cookie. He eats half leaving 0.5..."
+- Problem: No room for AI creativity
+- AI agents just follow the script
+- Less engaging and dynamic
+
+## New Approach (Creative Freedom):
+"Dragon teaches kids what a mathematical limit is using fun everyday examples"
+- AI agents choose the examples
+- AI agents decide the narrative
+- AI agents create the visual demonstrations
+- More surprising and engaging content
+
+## What AI Agents Will Decide:
+
+### ScriptStrategistAgent:
+- Which everyday examples to use
+- How to structure the lesson
+- What analogies work best
+- The narrative arc
+
+### VisualDesignAgent:
+- What objects to show (cookies, toys, etc.)
+- Color schemes and visual style
+- How to visualize abstract concepts
+- Animation ideas
+
+### AudioProductionAgent:
+- Dragon's tone and excitement level
+- Sound effects to enhance learning
+- Music to match the mood
+- Pacing of delivery
+
+### EngagementOptimizer:
+- Hook strategies
+- Interactive elements
+- Memorable phrases
+- Call-to-action
+
+## Guidelines for AI Agents:
+
+1. **Target Audience**: Kids aged 7-12
+2. **Language Level**: Simple, everyday words
+3. **Teaching Method**: Show don't tell
+4. **Episode Length**: 40 seconds
+5. **Learning Goal**: One clear concept per episode
+6. **Style**: Fun, exciting, memorable
+
+## Expected AI Creativity Examples:
+
+### For Limits Episode:
+AI might choose:
+- Walking toward a door with smaller steps
+- Eating pizza slices getting smaller
+- Zooming in on a picture infinitely
+- Water drops getting tinier
+
+### For Derivatives Episode:
+AI might choose:
+- Bicycle speeding up/slowing down
+- Plant growing faster in sunlight
+- Ice cream melting rate
+- Balloon inflating speed
+
+## Benefits of This Approach:
+1. **Fresh Content**: Each generation could be different
+2. **AI Collaboration**: Agents work together creatively
+3. **Better Engagement**: Unexpected examples keep it interesting
+4. **Natural Flow**: AI creates organic narratives
+5. **Adaptive Learning**: AI adjusts to what works best
+
+## The Balance:
+- Mission: Clear WHAT to teach
+- AI Agents: Creative HOW to teach it
+- Result: Educational + Entertaining + Unique
+
+This approach lets the 22-agent system truly shine!

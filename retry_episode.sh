@@ -28,16 +28,16 @@ CHARACTER="Dragon with graduation cap and time-travel goggles"
 VOICE="en-IN-Wavenet-A"  # Indian English male voice
 LANGUAGE="en-IN"          # Indian English (matches Language.ENGLISH_IN enum)
 
-# Episode definitions - Each focuses on ONE concept with complete narrative
+# Episode definitions - Short missions giving AI agents creative freedom
 declare -A EPISODES=(
-    [1]="Dragon Episode 1: What is a Limit? Dragon discovers the concept of limits using his shrinking gold coins. He starts with a pile of gold and keeps dividing it in half, getting closer and closer to zero but never quite reaching it. Through this simple demonstration, Dragon explains how limits work - approaching a value without necessarily reaching it. Include Dragon's amazement as he realizes the gold never completely disappears!"
-    [2]="Dragon Episode 2: Understanding Derivatives - Speed of Change. Dragon learns about derivatives by tracking his flying speed. He starts flying slowly, then faster, measuring how his speed changes each second. Using his flight path, Dragon discovers that derivatives measure rate of change. He realizes his acceleration (change in speed) is the derivative of his velocity. Make it visual with Dragon's speed meter!"
-    [3]="Dragon Episode 3: The Power of Integration - Adding Things Up. Dragon discovers integration by counting his daily treasure collection. Each day he collects different amounts, and integration helps him find the total. He learns that integration is the reverse of derivatives - instead of finding rate of change, we find the total accumulation. Dragon uses colorful treasure piles to show how areas under curves work!"
-    [4]="Dragon Episode 4: The Chain Rule Made Simple. Dragon learns the chain rule through nested treasure boxes. Each box contains a smaller box with gold multipliers. To find total gold, Dragon must multiply the rates from each box - this is the chain rule! He discovers how composite functions work by opening box after box, each affecting the final result."
-    [5]="Dragon Episode 5: Finding Maximum Treasure - Optimization. Dragon uses calculus to find the perfect cave size for maximum treasure storage. Too small and he can't fit treasure, too big and thieves can enter. Using derivatives to find where the slope is zero, Dragon discovers the optimal size. This episode teaches finding maxima and minima in a practical, visual way!"
-    [6]="Dragon Episode 6: Related Rates - Everything Connected. Dragon learns related rates by filling his circular pool with water. As water level rises, the radius increases. Dragon discovers how these rates are related using calculus. He calculates how fast the radius grows based on water flow rate. Make it fun with Dragon splashing and measuring!"
-    [7]="Dragon Episode 7: The Fundamental Theorem - Connecting Two Worlds. Dragon discovers the magical connection between derivatives and integrals. Using his flying height (position) and speed (velocity), he shows how integrating velocity gives position, and deriving position gives velocity. This revelation amazes Dragon as he realizes these operations are opposites!"
-    [8]="Dragon Episode 8: Series and Sequences - Infinite Patterns. Dragon learns about series by stacking smaller and smaller gold coins infinitely high. He discovers that infinite series can have finite sums! Using geometric series, Dragon calculates the total height of his infinite stack. The episode ends with Dragon's mind blown by infinity having limits!"
+    [1]="Dragon teaches kids what a mathematical limit is using fun everyday examples"
+    [2]="Dragon explains derivatives - how to measure how fast things change"
+    [3]="Dragon shows what integration means - adding things up to get totals"
+    [4]="Dragon discovers the chain rule - how connected things affect each other"
+    [5]="Dragon learns about finding maximum values - the biggest or best amount"
+    [6]="Dragon explores related rates - when changing one thing changes another"
+    [7]="Dragon reveals that derivatives and integrals are opposites"
+    [8]="Dragon demonstrates infinite series - how adding forever can equal a finite number"
 )
 
 # Check if episode exists

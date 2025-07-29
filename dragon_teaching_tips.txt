@@ -1,0 +1,92 @@
+# Dragon Calculus Teaching Tips - Making Math Crystal Clear
+
+## Voice & Delivery Guidelines:
+1. **Speak SLOWLY**: Indian accent narrator should speak at 80% normal speed
+2. **Pause between concepts**: 1-2 second pauses after each key point
+3. **Repeat key ideas**: Say the main concept 3 times in different ways
+4. **Excited tone**: Dragon should sound amazed and happy when discovering
+
+## Visual Guidelines:
+1. **Big, clear objects**: Cookies, coins, jars - things kids recognize
+2. **Bright colors**: Use contrasting colors for different concepts
+3. **Numbers on screen**: Show the actual numbers (0.5, 0.25, etc.)
+4. **Arrows and movement**: Show direction of change visually
+
+## Language Rules:
+1. **No math jargon**: Replace "function" with "rule", "variable" with "number"
+2. **Short sentences**: Maximum 10 words per sentence when possible
+3. **Active voice**: "Dragon discovers" not "It is discovered by Dragon"
+4. **Concrete examples**: Always use physical objects, never abstract
+
+## Episode Structure (40 seconds each):
+- 0-5s: Hook with exciting visual
+- 5-10s: Introduce the problem/question
+- 10-25s: Show the concept step-by-step
+- 25-35s: Practice with different example
+- 35-40s: Summarize with memorable phrase
+
+## Key Teaching Phrases:
+
+### Episode 1 - Limits:
+- "Getting closer and closer but never touching!"
+- "Like walking to a wall with tiny steps"
+- "The cookie never disappears completely!"
+
+### Episode 2 - Derivatives:
+- "How fast are things changing?"
+- "Speeding up or slowing down?"
+- "Change per second!"
+
+### Episode 3 - Integration:
+- "Add them all up!"
+- "What's the total?"
+- "Integration is super addition!"
+
+### Episode 4 - Chain Rule:
+- "One thing affects another!"
+- "Multiply the effects!"
+- "Like dominoes falling!"
+
+### Episode 5 - Maximum:
+- "Not too big, not too small - just right!"
+- "When better becomes worse, stop!"
+- "The perfect amount!"
+
+### Episode 6 - Related Rates:
+- "Change one, change the other!"
+- "They're connected!"
+- "Like shadows following the sun!"
+
+### Episode 7 - Opposites:
+- "Derivative breaks down, integral builds up!"
+- "Like addition and subtraction!"
+- "Two sides of the same coin!"
+
+### Episode 8 - Infinite Series:
+- "Adding forever but getting a number!"
+- "Infinite pieces, finite size!"
+- "Smaller and smaller adds up!"
+
+## Common Mistakes to Avoid:
+❌ Using formulas or equations
+❌ Abstract explanations
+❌ Multiple concepts in one episode
+❌ Rushing through examples
+❌ Assuming prior knowledge
+
+## Visual Demonstrations:
+
+### Episode 1: Show cookie being eaten in halves with numbers
+### Episode 2: Speedometer with clear numbers showing change
+### Episode 3: Coins dropping into jar with running total
+### Episode 4: Boxes opening with multiplication shown
+### Episode 5: Different sized jars trying to fit through door
+### Episode 6: Pool filling with measuring tape showing width
+### Episode 7: Split screen showing speed→distance and distance→speed
+### Episode 8: Stack of coins getting smaller with total height marked
+
+## Remember:
+- Each episode is a complete mini-lesson
+- Kids should understand without any prior calculus knowledge
+- Fun and wonder are more important than technical accuracy
+- If a 7-year-old can't understand it, simplify more!
