@@ -510,8 +510,8 @@ Style name: "{style}"
 Provide a concise, descriptive phrase that captures the visual characteristics, techniques, colors, mood, and artistic elements of this style. Focus on visual details that would help an AI understand how to render content in this style.
 
 Examples:
-- "cyberpunk" → "futuristic neon lighting, dark urban environments, high-tech elements, purple and blue color palette, digital aesthetic"
-- "impressionist" → "soft brush strokes, light and shadow play, pastel colors, dreamy atmosphere, artistic painting style"
+- "cyberpunk" -> "futuristic neon lighting, dark urban environments, high-tech elements, purple and blue color palette, digital aesthetic"
+- "impressionist" -> "soft brush strokes, light and shadow play, pastel colors, dreamy atmosphere, artistic painting style"
 
 Return only the descriptive phrase, no explanations:"""
 
@@ -524,8 +524,8 @@ Return only the descriptive phrase, no explanations:"""
                 if description.lower().startswith(style.lower()):
                     # Remove redundant style name from beginning
                     description = description[len(style):].strip()
-                    if description.startswith('→'):
-                        description = description[1:].strip()
+                    if description.startswith('->'):
+                        description = description[2:].strip()
                 
                 # Validate the description is reasonable
                 if len(description) > 10 and len(description) < 200:
