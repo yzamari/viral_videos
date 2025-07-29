@@ -1,5 +1,39 @@
 # Release Notes
 
+## v3.2.3 (July 29, 2025)
+
+### 🚨 Critical Production Fixes
+
+#### RTL Text Double Reversal Fix
+- **ROOT CAUSE FOUND**: MoviePy was applying RTL handling on already-reversed text
+- **Fixed**: Removed `get_display()` call - MoviePy expects logical order, not visual order
+- **Impact**: Hebrew/Arabic/Persian text now displays correctly in all videos
+
+#### Historical Figure Accuracy
+- **Added**: Historical figure database with accurate descriptions
+- **Ben-Gurion**: Now shows with distinctive wild white hair and khaki shirt
+- **Sharett**: Correctly shows as completely bald with wire-rimmed glasses
+- **Enhanced**: Director emphasizes historical accuracy for real people
+
+#### Audio Synchronization Enhancement
+- **Added**: 50ms timing buffer for better audio-subtitle sync
+- **Fixed**: Processing delays causing misalignment
+
+#### Ghibli Animation Style Fix
+- **Enhanced**: Style description now emphasizes "2D hand-drawn animation"
+- **Added**: Specific Miyazaki aesthetic keywords
+- **Result**: Proper Japanese anime style instead of realistic rendering
+
+#### Failed Video Generation Prevention
+- **Added**: Emergency fallback when all generation methods fail
+- **Prevents**: "base_video.mp4 not found" errors
+- **Ensures**: Pipeline completion even in worst-case scenarios
+
+### 📚 Documentation
+- Added comprehensive `ROOT_CAUSE_ANALYSIS.md` documenting all issues and fixes
+
+---
+
 ## v3.2.2 (July 28, 2025)
 
 ### 🎬 Major Video Generation Fixes

@@ -2973,12 +2973,11 @@ The last frame of this scene connects to the next.
                     rtl_chars = re.compile(r'[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]')
                     is_rtl = rtl_chars.search(text)
                     if is_rtl:
-                        # Only reshape, don't apply bidi for MoviePy (it handles RTL natively)
+                        # Properly reshape RTL text for display
                         if RTL_SUPPORT:
-                            # MoviePy expects logical order, not visual order
-                            text = arabic_reshaper.reshape(text)
-                            # DON'T apply get_display() - MoviePy will handle the visual ordering
-                            logger.debug(f"🔤 Reshaped RTL text (logical order) for MoviePy")
+                            reshaped_text = arabic_reshaper.reshape(text)
+                            text = get_display(reshaped_text)
+                            logger.debug(f"🔤 Reshaped RTL text for proper display")
                         else:
                             # Fallback: Add Right-to-Left Mark (RLM) at the beginning and end
                             text = '\u200F' + text + '\u200F'
@@ -3012,8 +3011,8 @@ The last frame of this scene connects to the next.
                     font_size = video_config.get_font_size('header', video_width)
                     
                     # Create text clip with modern styling
-                    # MoviePy uses 'center' for all alignments in caption method
-                    text_align = 'center'  # Caption method handles RTL internally
+                    # Set text alignment based on RTL detection
+                    text_align = 'right' if is_rtl else 'center'
                     
                     text_clip = TextClip(
                         text,

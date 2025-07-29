@@ -2,9 +2,9 @@
 
 🚀 **Production-ready AI video generation system with 22 specialized agents, centralized decision-making, and comprehensive social media integration.**
 
-🎯 **v3.2.2 Update**: Major RTL Text Fix + Perfect Audio Sync + Ghibli Style Recognition!
+🎯 **v3.2.3 Update**: Critical Production Fixes - RTL Double Reversal Solved + Historical Accuracy!
 
-[![Version](https://img.shields.io/badge/version-3.2.2-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.2.2)
+[![Version](https://img.shields.io/badge/version-3.2.3-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.2.3)
 [![Status](https://img.shields.io/badge/status-Production%20Ready-green.svg)](https://github.com/yourusername/viral-video-generator)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
@@ -36,13 +36,14 @@
 
 ---
 
-## ✨ **What's New in v3.2.2**
+## ✨ **What's New in v3.2.3**
 
-### 🎬 **Major Video Generation Fixes** ✅ **CRITICAL FIXES!**
-- **RTL Text Rendering**: Hebrew/Arabic text now displays correctly (not reversed)
-- **Audio-Subtitle Sync**: Perfect timing with proper silence gaps between segments
-- **Ghibli Style Recognition**: "Studio Ghibli" style now properly applies animation effects
-- **End-of-Video Audio**: Fixed broken audio at video end with proper padding
+### 🚨 **Critical Production Fixes** ✅ **ROOT CAUSES SOLVED!**
+- **RTL Double Reversal Fixed**: Found and fixed root cause - MoviePy was reversing already-processed text
+- **Historical Figure Accuracy**: Ben-Gurion now has wild white hair, Sharett is properly bald with glasses
+- **Audio Sync Enhanced**: Added 50ms timing buffer for perfect synchronization
+- **Ghibli 2D Animation**: Now creates authentic hand-drawn anime style, not realistic
+- **Failed Generation Prevention**: Emergency fallback ensures videos always complete
 
 ## ✨ **What's New in v3.2.1-rc1**
 
