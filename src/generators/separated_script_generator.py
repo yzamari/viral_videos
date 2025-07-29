@@ -171,14 +171,26 @@ Make each visual description rich and cinematic for compelling image generation.
         prompt = f"""
 Create {num_segments} dialogue/narration segments for: "{mission}"
 
-CRITICAL REQUIREMENTS:
-1. Generate ONLY spoken content - what the audience hears
-2. NO visual descriptions, NO camera directions, NO stage directions
-3. Pure dialogue, narration, or voiceover content
-4. Each segment must be 1-2 sentences maximum for subtitle readability
-5. Total word limit: {total_words} words (~{words_per_segment} words per segment)
-6. Focus on compelling storytelling through spoken word
+🎤 AUDIO-ONLY CONTENT REQUIREMENTS:
+1. Generate ONLY what a narrator/character SPEAKS OUT LOUD
+2. ABSOLUTELY NO visual descriptions, camera work, or stage directions
+3. DO NOT mention what we "see" - only what we "hear"
+4. NO phrases like "we see", "the camera shows", "visual", "scene", "shot"
+5. Pure spoken dialogue, narration, or voiceover ONLY
+6. Each segment: 1-2 sentences maximum for subtitle readability
+7. Total word limit: {total_words} words (~{words_per_segment} words per segment)
+8. Focus on compelling storytelling through SPOKEN WORD ONLY
 {language_instruction}
+
+❌ BAD EXAMPLES (DON'T DO):
+- "We see Dragon floating in space"
+- "The scene shows a rocket"
+- "Visual of math equations"
+
+✅ GOOD EXAMPLES (DO THIS):
+- "Welcome to our space adventure!"
+- "Dragon explains the math concept"  
+- "Here's how ratios work"
 
 DIALOGUE REQUIREMENTS:
 - Natural speech patterns and rhythm
@@ -266,7 +278,14 @@ Focus on creating engaging, speakable content that tells the story effectively.
             
             segments.append(segment)
         
+        # Create dialogue-only script for TTS
+        dialogue_only_script = " ".join([
+            dialogue.get("dialogue", "") for dialogue in dialogue_data if dialogue.get("dialogue")
+        ]).strip()
+        
         return {
+            "optimized_script": dialogue_only_script,  # PURE DIALOGUE ONLY
+            "final_script": dialogue_only_script,     # PURE DIALOGUE ONLY
             "hook": {
                 "text": dialogue_data[0].get("dialogue", "") if dialogue_data else "",
                 "type": "ai_generated",
@@ -274,7 +293,9 @@ Focus on creating engaging, speakable content that tells the story effectively.
             },
             "segments": segments,
             "total_duration": len(segments) * segment_duration,
-            "generation_method": "separated_llm_calls"
+            "generation_method": "separated_llm_calls",
+            "dialogue_only_script": dialogue_only_script,  # Extra safety
+            "visual_descriptions": visual_data  # Keep visual separate
         }
     
     def _enhance_style_description(self, style: str, character_description: str = None) -> str:

@@ -417,15 +417,43 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                 except json.JSONDecodeError as json_error:
                     logger.error(f"JSON parsing error: {json_error}")
                     logger.error(f"Raw AI response: {response.text[:1000]}...")  # Log first 1000 chars
-                    # Try to clean up common JSON issues
-                    cleaned_json = raw_json.replace('\n', ' ').replace('\r', ' ')
-                    # Remove any trailing commas before closing braces/brackets
+                    
+                    # Enhanced JSON cleanup
+                    cleaned_json = raw_json
+                    
+                    # Remove markdown code blocks
+                    cleaned_json = re.sub(r'```json\s*', '', cleaned_json)
+                    cleaned_json = re.sub(r'```\s*$', '', cleaned_json)
+                    
+                    # Clean whitespace and control characters
+                    cleaned_json = cleaned_json.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
+                    
+                    # Remove trailing commas before closing braces/brackets
                     cleaned_json = re.sub(r',\s*}', '}', cleaned_json)
                     cleaned_json = re.sub(r',\s*]', ']', cleaned_json)
+                    
+                    # Fix incomplete strings (add closing quotes)
+                    if cleaned_json.count('"') % 2 == 1:
+                        cleaned_json += '"'
+                    
+                    # Fix incomplete objects (add closing braces)
+                    open_braces = cleaned_json.count('{')
+                    close_braces = cleaned_json.count('}')
+                    if open_braces > close_braces:
+                        cleaned_json += '}' * (open_braces - close_braces)
+                    
+                    # Fix incomplete arrays (add closing brackets)
+                    open_brackets = cleaned_json.count('[')
+                    close_brackets = cleaned_json.count(']')
+                    if open_brackets > close_brackets:
+                        cleaned_json += ']' * (open_brackets - close_brackets)
+                    
                     try:
                         ai_plan = json.loads(cleaned_json)
-                        logger.info("Successfully parsed JSON after cleanup")
-                    except:
+                        logger.info("Successfully parsed JSON after enhanced cleanup")
+                    except Exception as final_error:
+                        logger.error(f"Enhanced cleanup also failed: {final_error}")
+                        logger.error(f"Cleaned JSON: {cleaned_json[:500]}...")
                         raise json_error
                 
                 # Perform credibility analysis
