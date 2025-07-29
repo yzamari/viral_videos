@@ -627,6 +627,18 @@ The last frame of this scene connects to the next.
         
         # Check for cheap mode and handle granular levels
         cheap_mode = getattr(config, 'cheap_mode', False)
+        # Extract theme from config
+        theme_id = getattr(config, 'theme', None)
+        if not theme_id and hasattr(self, 'core_decisions'):
+            theme_id = getattr(self.core_decisions, 'theme_id', None)
+        
+        # Log theme for debugging
+        if theme_id:
+            logger.info(f"🎨 Using theme: {theme_id}")
+            # Force news overlay for news theme
+            if 'news' in str(theme_id).lower():
+                logger.warning("📺 NEWS THEME DETECTED - Ensuring news overlays are applied")
+
         cheap_mode_level = getattr(config, 'cheap_mode_level', 'full')
         
         if cheap_mode or cheap_mode_level != 'full':
@@ -1469,6 +1481,28 @@ The last frame of this scene connects to the next.
                                 actual_clip_duration = self._get_video_duration(clip_path)
                                 break  # Exit the retry loop on success
                                 
+                        except Exception as e:
+                            logger.error(f"❌ VEO generation failed for clip {i+1} attempt {veo_attempt + 1}:")
+                            logger.error(f"   Error type: {type(e).__name__}")
+                            logger.error(f"   Error message: {str(e)}")
+                            
+                            # Check for common VEO failure reasons
+                            error_msg = str(e).lower()
+                            if 'quota' in error_msg:
+                                logger.error("   🚨 QUOTA EXCEEDED - VEO API limit reached")
+                                print("⚠️ VEO QUOTA EXCEEDED - Consider using --cheap mode")
+                            elif 'invalid' in error_msg and 'prompt' in error_msg:
+                                logger.error("   🚨 INVALID PROMPT - VEO rejected the prompt")
+                                logger.error(f"   Prompt was: {current_prompt[:200]}...")
+                            elif 'timeout' in error_msg:
+                                logger.error("   🚨 TIMEOUT - VEO generation took too long")
+                            elif 'connection' in error_msg or 'network' in error_msg:
+                                logger.error("   🚨 NETWORK ERROR - Check internet connection")
+                            else:
+                                logger.error("   🚨 UNKNOWN ERROR - Check VEO service status")
+                            
+                            self._last_veo_error = str(e)  # Store error for next attempt
+                            clip_path = None
                         except Exception as e:
                             logger.warning(f"⚠️ VEO generation failed for clip {i+1} attempt {veo_attempt + 1}: {e}")
                             self._last_veo_error = str(e)  # Store error for next attempt
@@ -4135,121 +4169,95 @@ The last frame of this scene connects to the next.
             logger.error(f"❌ Standard composition error: {e}")
             return ""
     
-    def _compose_with_subtitle_aligned_audio(self, clips: List[str], audio_files: List[str],
-                                           subtitle_timings: List[Dict[str, float]],
-                                           output_path: str, session_context: SessionContext,
-                                           target_duration: Optional[float] = None,
-                                           platform: Optional[str] = None) -> str:
-        """Compose video with audio segments aligned to subtitle timings
-        
-        This method places each audio segment at the exact time specified in the subtitles,
-        ensuring perfect synchronization between audio and subtitles.
+    def _compose_with_subtitle_aligned_audio(self, base_video_path: str, audio_segments: list, 
+                                             subtitle_segments: list, output_path: str) -> Optional[str]:
+        """
+        Compose video with audio aligned to subtitle timings - SIMPLE approach
         """
         try:
-            import subprocess
+            from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_audioclips, CompositeAudioClip
+            from moviepy.audio.AudioClip import AudioClip
+            import numpy as np
             
-            if not clips or not audio_files:
-                logger.error("❌ Missing clips or audio files for subtitle-aligned composition")
-                return ""
+            logger.info("🎵 Creating subtitle-aligned audio track (SIMPLE METHOD)")
             
-            logger.info(f"🎬 Composing video with subtitle-aligned audio")
-            logger.info(f"📝 Using {len(subtitle_timings)} subtitle timings for {len(audio_files)} audio files")
+            # Load base video
+            video = VideoFileClip(base_video_path)
+            video_duration = video.duration
             
-            # Ensure we have subtitle timings for each audio file
-            if len(subtitle_timings) != len(audio_files):
-                logger.warning(f"⚠️ Subtitle timings ({len(subtitle_timings)}) don't match audio files ({len(audio_files)})")
-                # Fall back to standard composition
-                return self._compose_with_standard_cuts(clips, audio_files, output_path, session_context, target_duration, platform)
+            # Create silence generator
+            def make_silence(duration):
+                """Create silence of given duration"""
+                return AudioClip(lambda t: 0, duration=duration)
             
-            # Create input parts
-            input_parts = []
+            # Build audio timeline based on SRT
+            audio_timeline = []
+            current_time = 0
             
-            # Add all video inputs
-            for clip in clips:
-                input_parts.extend(['-i', clip])
-            
-            # Add all audio inputs
-            for audio in audio_files:
-                input_parts.extend(['-i', audio])
-            
-            # Determine dimensions based on platform
-            aspect_ratio = self._get_platform_aspect_ratio(platform or 'youtube')
-            if aspect_ratio == '16:9':
-                width, height = 1920, 1080
-            else:
-                width, height = 1080, 1920
-            
-            # Create filters to normalize all videos
-            video_scale_filters = []
-            for i in range(len(clips)):
-                video_scale_filters.append(f"[{i}:v]scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1[v{i}]")
-            
-            scale_filter_str = ";".join(video_scale_filters)
-            
-            # Concatenate video clips
-            video_concat_inputs = "".join([f"[v{i}]" for i in range(len(clips))])
-            video_filter = f"{scale_filter_str};{video_concat_inputs}concat=n={len(clips)}:v=1:a=0[outv]"
-            
-            # Create audio filter with adelay to position each segment at subtitle timing
-            audio_filters = []
-            for i, (audio_file, timing) in enumerate(zip(audio_files, subtitle_timings)):
-                input_idx = len(clips) + i
-                delay_ms = int(timing['start'] * 1000)  # Convert to milliseconds
+            for i, (segment, audio_path) in enumerate(zip(subtitle_segments, audio_segments)):
+                if not os.path.exists(audio_path):
+                    logger.warning(f"⚠️ Audio file not found: {audio_path}")
+                    continue
                 
-                # Apply delay to position audio at subtitle start time
-                if delay_ms > 0:
-                    audio_filters.append(f"[{input_idx}:a]adelay={delay_ms}|{delay_ms}[a{i}]")
-                else:
-                    audio_filters.append(f"[{input_idx}:a]acopy[a{i}]")
+                start_time = segment['start']
                 
-                logger.info(f"🎵 Audio {i+1}: Positioned at {timing['start']:.2f}s (delay: {delay_ms}ms)")
+                # Add silence before this segment
+                if start_time > current_time:
+                    silence_duration = start_time - current_time
+                    logger.info(f"🔇 Adding {silence_duration:.2f}s silence before segment {i}")
+                    silence = make_silence(silence_duration)
+                    audio_timeline.append(silence)
+                
+                # Add the audio segment
+                audio_clip = AudioFileClip(audio_path)
+                logger.info(f"🎵 Adding audio segment {i} at {start_time:.2f}s (duration: {audio_clip.duration:.2f}s)")
+                audio_timeline.append(audio_clip)
+                
+                # Update current time
+                current_time = start_time + audio_clip.duration
             
-            # Mix all delayed audio streams together
-            audio_filter_str = ";".join(audio_filters)
-            audio_inputs = "".join([f"[a{i}]" for i in range(len(audio_files))])
+            # Add final silence if needed
+            if current_time < video_duration:
+                final_silence = video_duration - current_time
+                logger.info(f"🔇 Adding {final_silence:.2f}s final silence")
+                audio_timeline.append(make_silence(final_silence))
             
-            # Use amix to combine all audio streams
-            audio_concat = f"{audio_filter_str};{audio_inputs}amix=inputs={len(audio_files)}:duration=longest[outa]"
-            
-            # Combine video and audio filters
-            filter_complex = f"{video_filter};{audio_concat}"
-            
-            # Build ffmpeg command
-            cmd = [
-                'ffmpeg', '-y'
-            ] + input_parts + [
-                '-filter_complex', filter_complex,
-                '-map', '[outv]',
-                '-map', '[outa]',
-                '-c:v', video_config.encoding.video_codec,
-                '-c:a', video_config.encoding.audio_codec,
-                '-preset', video_config.get_encoding_preset(platform or 'default'),
-                '-crf', str(video_config.get_crf(platform or 'default'))
-            ]
-            
-            # Add duration limit if specified
-            if target_duration:
-                cmd.extend(['-t', str(target_duration)])
-                logger.info(f"⏱️ Enforcing exact duration: {target_duration}s")
-            
-            cmd.append(output_path)
-            
-            logger.info("🎬 Running subtitle-aligned audio composition...")
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            
-            if result.returncode == 0:
-                logger.info("✅ Subtitle-aligned composition completed successfully")
+            # Concatenate all audio
+            if audio_timeline:
+                final_audio = concatenate_audioclips(audio_timeline)
+                
+                # Set audio to video
+                video_with_audio = video.set_audio(final_audio)
+                
+                # Write output
+                logger.info(f"📝 Writing final video with aligned audio to: {output_path}")
+                video_with_audio.write_videofile(
+                    output_path,
+                    codec='libx264',
+                    audio_codec='aac',
+                    temp_audiofile='temp-audio.m4a',
+                    remove_temp=True,
+                    logger=None
+                )
+                
+                # Cleanup
+                video.close()
+                video_with_audio.close()
+                for clip in audio_timeline:
+                    if hasattr(clip, 'close'):
+                        clip.close()
+                
+                logger.info("✅ Audio-video composition complete (SIMPLE METHOD)")
                 return output_path
             else:
-                logger.error(f"❌ Subtitle-aligned composition failed: {result.stderr}")
-                # Fall back to standard composition
-                return self._compose_with_standard_cuts(clips, audio_files, output_path, session_context, target_duration, platform)
+                logger.warning("⚠️ No audio segments to compose")
+                return base_video_path
                 
         except Exception as e:
-            logger.error(f"❌ Subtitle-aligned composition error: {e}")
-            # Fall back to standard composition
-            return self._compose_with_standard_cuts(clips, audio_files, output_path, session_context, target_duration, platform)
-    
+            logger.error(f"❌ Audio composition failed: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return None
     def _create_simple_fallback_composition(self, clips: List[str], audio_files: List[str], 
                                            output_path: str, session_context: SessionContext,
                                            platform: Optional[str] = None) -> str:

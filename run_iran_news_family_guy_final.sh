@@ -81,6 +81,7 @@ generate_news_episode() {
         --visual-style "family guy animation" \
         --tone darkly_humorous \
         --style news \
+        --theme preset_news_edition \
         --no-cheap \
         --voice "en-US-Neural2-F" \
         --session-id "${session_base}_ep${ep_num}" \

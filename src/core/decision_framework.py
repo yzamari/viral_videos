@@ -16,6 +16,8 @@ from ..utils.logging_config import get_logger
 from ..models.video_models import Platform, VideoCategory, Language
 from ..utils.session_context import SessionContext
 from ..agents.mission_planning_agent import MissionPlanningAgent
+from ..agents.character_description_agent import CharacterDescriptionAgent
+
 
 logger = get_logger(__name__)
 
@@ -1165,3 +1167,46 @@ Provide strategic reasoning in this exact JSON format:
             return getattr(self.core_decisions, key)
         else:
             raise KeyError(f"Decision '{key}' not found")
+    def _extract_character_description(self, mission_text: str) -> str:
+        """Extract character description from mission text using AI research"""
+        try:
+            # Use Character Description Agent for accurate descriptions
+            from ..agents.character_description_agent import CharacterDescriptionAgent
+            char_agent = CharacterDescriptionAgent(self.api_service_config.get('google_ai_api_key'))
+            
+            character_data = char_agent.describe_character(mission_text)
+            
+            # Build comprehensive description
+            description_parts = []
+            if character_data.get('character_description'):
+                description_parts.append(character_data['character_description'])
+            if character_data.get('ethnicity'):
+                description_parts.append(character_data['ethnicity'])
+            if character_data.get('distinctive_features'):
+                description_parts.append(character_data['distinctive_features'])
+            
+            full_description = ", ".join(description_parts)
+            self.logger.info(f"🎭 Character description: {full_description[:100]}...")
+            
+            return full_description
+            
+        except Exception as e:
+            self.logger.error(f"❌ Character extraction failed: {e}")
+            # Fallback to pattern matching
+            return self._fallback_character_extraction(mission_text)
+    
+    def _fallback_character_extraction(self, mission_text: str) -> str:
+        """Fallback character extraction"""
+        import re
+        patterns = [
+            r"character[:\s]+([^.]+)",
+            r"protagonist[:\s]+([^.]+)",
+            r"featuring[:\s]+([^.]+)",
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, mission_text, re.IGNORECASE)
+            if match:
+                return match.group(1).strip()
+        
+        return ""
