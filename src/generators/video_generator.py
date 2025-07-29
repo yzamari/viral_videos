@@ -524,6 +524,9 @@ The last frame of this scene connects to the next.
             "reasoning": "Default voice configuration"
         }
         
+        # Flag to track if FFmpegVideoComposer was used (to avoid duplicate subtitles)
+        self._used_ffmpeg_composer = False
+        
         # Set output directory (fallback only)
         self.output_dir = output_dir or "outputs"
         os.makedirs(self.output_dir, exist_ok=True)
@@ -709,6 +712,11 @@ The last frame of this scene connects to the next.
                     model=VeoModel.VEO2 if not self.prefer_veo3 else VeoModel.VEO3,
                     output_dir=session_context.get_output_path("video_clips")
                 )
+                
+                # Also initialize JSON adapter for potential JSON prompt usage
+                from .json_veo_adapter import JSONVEOAdapter
+                self.json_veo_adapter = JSONVEOAdapter()
+                logger.info("🎯 JSON VEO adapter ready for structured prompts")
             
             # Step 1: Process script with AI
             script_result = await self._process_script_with_ai(config, session_context)
@@ -1441,12 +1449,33 @@ The last frame of this scene connects to the next.
                 # Remove preemptive policy checking - let VEO handle it
                 # Policy violations will be caught and handled if VEO rejects the prompt
                 
+                # Convert to JSON prompt format
+                # For now, create a simple JSON structure directly
+                # TODO: Add proper async support or synchronous method
+                json_prompt = {
+                    "scene": {
+                        "description": enhanced_prompt,
+                        "segment_index": i
+                    },
+                    "visual_style": {
+                        "style": style_decision.get('primary_style', 'dynamic'),
+                        "platform_optimized": config.target_platform.value
+                    },
+                    "camera": {
+                        "shot_type": "dynamic",
+                        "movement": "smooth"
+                    },
+                    "duration": clip_duration,
+                    "mission_context": config.mission
+                }
+                
                 # CRITICAL: Save ALL VEO prompts to session for debugging
                 self._save_veo_prompt_to_session(session_context, i+1, {
                     'clip_number': i+1,
                     'original_segment': segment_text if 'segment_text' in locals() else 'N/A',
                     'base_prompt': prompt,
                     'enhanced_prompt': enhanced_prompt,
+                    'json_prompt': json_prompt,  # Add JSON prompt
                     'mission': config.mission,
                     'duration': clip_duration,
                     'style': style_decision.get('primary_style', 'dynamic')
@@ -1478,14 +1507,22 @@ The last frame of this scene connects to the next.
                                 )
                                 logger.info(f"🛡️ Using safety level {safety_level} rephrasing")
                             
-                            logger.info(f"🎬 Generating VEO clip {i+1}/{num_clips} (attempt {veo_attempt + 1}/{max_veo_attempts}): {current_prompt[:50]}... (duration: {clip_duration:.1f}s)")
+                            prompt_preview = str(current_prompt)[:50] if current_prompt else "No prompt"
+                            logger.info(f"🎬 Generating VEO clip {i+1}/{num_clips} (attempt {veo_attempt + 1}/{max_veo_attempts}): {prompt_preview}... (duration: {clip_duration:.1f}s)")
                             
                             # Log full prompt for debugging
                             logger.info(f"📝 FULL VEO PROMPT for clip {i+1} attempt {veo_attempt + 1}: {current_prompt}")
                             
                             # Add frame continuity if enabled and available
+                            # For JSON prompts, extract the description for VEO
+                            if veo_attempt == 0 and isinstance(json_prompt, dict):
+                                # Extract description from JSON prompt
+                                prompt_for_veo = json_prompt.get('scene', {}).get('description', enhanced_prompt)
+                            else:
+                                prompt_for_veo = current_prompt
+                            
                             generation_params = {
-                                'prompt': current_prompt,
+                                'prompt': prompt_for_veo,
                                 'duration': clip_duration,
                                 'clip_id': f"clip_{i+1}_attempt_{veo_attempt + 1}",
                                 'aspect_ratio': self._get_platform_aspect_ratio(config.target_platform.value)
@@ -1516,7 +1553,8 @@ The last frame of this scene connects to the next.
                                 print("⚠️ VEO QUOTA EXCEEDED - Consider using --cheap mode")
                             elif 'invalid' in error_msg and 'prompt' in error_msg:
                                 logger.error("   🚨 INVALID PROMPT - VEO rejected the prompt")
-                                logger.error(f"   Prompt was: {current_prompt[:200]}...")
+                                prompt_preview = str(current_prompt)[:200] if current_prompt else "No prompt"
+                                logger.error(f"   Prompt was: {prompt_preview}...")
                             elif 'timeout' in error_msg:
                                 logger.error("   🚨 TIMEOUT - VEO generation took too long")
                             elif 'connection' in error_msg or 'network' in error_msg:
@@ -1869,6 +1907,15 @@ The last frame of this scene connects to the next.
                     
                     complete_sentences = trimmed_sentences
                     logger.info(f"📝 Using {len(complete_sentences)} sentences that fit within duration")
+                elif total_words < max_words * 0.8:  # Script is too short (less than 80% of needed words)
+                    logger.error(f"❌ CRITICAL: Script has only {total_words} words but needs {max_words} words for {target_duration}s")
+                    logger.error(f"❌ This will result in only {total_words/words_per_second:.1f}s of audio instead of {target_duration}s")
+                    logger.warning(f"⚠️ Script needs to be regenerated with more content!")
+                    
+                    # Calculate how many more sentences we need
+                    words_needed = max_words - total_words
+                    sentences_needed = max(1, int(words_needed / 12))  # Assume ~12 words per sentence
+                    logger.info(f"📝 Need approximately {sentences_needed} more sentences ({words_needed} more words)")
                 
                 # Now create segments from the duration-appropriate sentences
                 for i, sentence in enumerate(complete_sentences):
@@ -2218,7 +2265,8 @@ The last frame of this scene connects to the next.
             logger.info(f"✅ VERSION 1 created: {audio_only_path}")
             
             # Step 3: Generate subtitles from our known text and audio timing
-            logger.info("📝 Generating subtitles from script and audio timing")
+            # ALWAYS use MoviePy for better styling (unless language not supported)
+            logger.info("📝 Generating subtitles with MoviePy for better styling")
             video_with_subtitles = self._add_subtitle_overlays(temp_video_path, config, session_context)
             
             # Step 4: Add text overlays and hooks
@@ -2568,6 +2616,8 @@ The last frame of this scene connects to the next.
                     
                     if result and os.path.exists(result):
                         logger.info("✅ FFmpeg subtitle-aligned composition successful")
+                        # Set flag to skip MoviePy subtitle addition later
+                        self._used_ffmpeg_composer = True
                         return result
                     else:
                         logger.warning("⚠️ FFmpeg composition failed, trying simpler approach")
@@ -3111,6 +3161,16 @@ The last frame of this scene connects to the next.
             # Create new video with overlays
             final_clip = video_clip.fl(lambda gf, t: make_frame(t), apply_to=[])
             
+            # CRITICAL: MoviePy often corrupts audio during overlay processing
+            # This is why FFmpegVideoComposer now adds overlays BEFORE audio
+            if video_clip.audio is not None:
+                final_clip = final_clip.set_audio(video_clip.audio)
+                logger.info("✅ Attempting to preserve audio from original video")
+                logger.warning("⚠️ Note: MoviePy may corrupt audio during overlay processing")
+                logger.warning("⚠️ Use FFmpegVideoComposer for reliable audio preservation")
+            else:
+                logger.warning("⚠️ No audio track found in original video")
+            
             # Write the video
             logger.info(f"💾 Writing video with professional overlays: {overlay_path}")
             final_clip.write_videofile(
@@ -3214,14 +3274,35 @@ The last frame of this scene connects to the next.
                         y_pos = video_height * 0.50  # Center
                     else:  # bottom_third (default)
                         if is_portrait:
-                            # Lower position for portrait videos (closer to bottom)
-                            y_pos = video_height * 0.75  # 75% down for portrait
+                            # Optimal position for portrait videos (better for TikTok/Instagram)
+                            # Not too low to avoid UI overlap, not too high to maintain readability
+                            y_pos = video_height * 0.70  # 70% down for portrait
                         else:
                             # Standard position for landscape
-                            y_pos = video_height * 0.60  # 60% down for landscape
+                            y_pos = video_height * 0.65  # 65% down for landscape
                     
-                    # Font size based on video dimensions
-                    font_size = video_config.get_font_size('header', video_width)
+                    # Calculate better font size for subtitles (larger and more readable)
+                    # Use a percentage of video height for consistent sizing across platforms
+                    base_font_size = video_config.get_font_size('subtitle', video_width)
+                    # Adjust font size based on video dimensions
+                    if is_portrait:
+                        # Slightly larger for portrait videos (TikTok/Instagram)
+                        font_size = max(
+                            int(video_height * 0.048),  # 4.8% of video height for portrait
+                            base_font_size,
+                            36  # Minimum font size for portrait
+                        )
+                    else:
+                        # Standard size for landscape
+                        font_size = max(
+                            int(video_height * 0.042),  # 4.2% of video height for landscape
+                            base_font_size,
+                            30  # Minimum font size for landscape
+                        )
+                    
+                    # Cap maximum font size to prevent overly large text
+                    font_size = min(font_size, int(video_height * 0.06))  # Max 6% of height
+                    logger.info(f"📏 Subtitle font size: {font_size}px for {video_width}x{video_height} video")
                     
                     # Create text clip with modern styling
                     # MoviePy uses 'center' for all alignments in caption method
@@ -3233,10 +3314,10 @@ The last frame of this scene connects to the next.
                         color='white',
                         font=subtitle_font,  # Use RTL font if needed
                         stroke_color='black',
-                        stroke_width=video_config.text_overlay.stroke_widths['default'],
+                        stroke_width=max(3, int(font_size * 0.08)),  # Dynamic stroke width
                         method='caption',
-                        size=(int(video_width * video_config.layout.max_subtitle_width_percentage), None),
-                        align=text_align  # Use right alignment for RTL text
+                        size=(int(video_width * 0.9), None),  # 90% width for better readability
+                        align=text_align
                     )
                     
                     # Create semi-transparent background for the text
@@ -3245,15 +3326,20 @@ The last frame of this scene connects to the next.
                     # Get text clip dimensions
                     text_width, text_height = text_clip.size
                     
+                    # Calculate dynamic padding based on font size
+                    padding_x = int(font_size * 0.8)  # Horizontal padding
+                    padding_y = int(font_size * 0.4)  # Vertical padding
+                    
                     # Create a semi-transparent black background
                     background = ColorClip(
-                        size=(text_width + 20, text_height + 10),  # Add padding around text
+                        size=(text_width + padding_x * 2, text_height + padding_y * 2),
                         color=(0, 0, 0),  # Black background
                         duration=end_time - start_time
-                    ).set_opacity(video_config.text_overlay.badge_opacity)  # Semi-transparent
+                    ).set_opacity(0.7)  # 70% opacity for better readability
                     
-                    # Position background and text
-                    background = background.set_position(('center', y_pos - 5)).set_start(start_time)
+                    # Center both background and text at the same position
+                    final_y_pos = y_pos - padding_y  # Adjust for padding
+                    background = background.set_position(('center', final_y_pos)).set_start(start_time)
                     text_clip = text_clip.set_position(('center', y_pos)).set_start(start_time).set_duration(end_time - start_time)
                     
                     # Add both background and text to clips
@@ -5676,6 +5762,33 @@ This is a placeholder file. In a full implementation, this would be a complete M
             all_prompts_file = session_context.get_output_path("logs", "all_veo_prompts.json")
             with open(all_prompts_file, 'w') as f:
                 json.dump(self._veo_prompt_details, f, indent=2)
+            
+            # Save JSON prompts separately for easy access
+            if 'json_prompt' in prompt_data and prompt_data['json_prompt']:
+                json_prompts_file = session_context.get_output_path("logs", "veo_json_prompts.json")
+                
+                # Load existing JSON prompts if file exists
+                json_prompts = []
+                if os.path.exists(json_prompts_file):
+                    try:
+                        with open(json_prompts_file, 'r') as f:
+                            json_prompts = json.load(f)
+                    except:
+                        json_prompts = []
+                
+                # Add new JSON prompt
+                json_prompts.append({
+                    'clip_number': clip_number,
+                    'json_prompt': prompt_data['json_prompt'],
+                    'duration': prompt_data.get('duration', 0),
+                    'style': prompt_data.get('style', 'unknown')
+                })
+                
+                # Save updated JSON prompts
+                with open(json_prompts_file, 'w') as f:
+                    json.dump(json_prompts, f, indent=2)
+                    
+                logger.info(f"💾 Saved JSON prompt to: {json_prompts_file}")
                 
         except Exception as e:
             logger.error(f"❌ Failed to save VEO prompt: {e}")

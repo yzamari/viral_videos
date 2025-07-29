@@ -92,7 +92,9 @@ class VertexAIVeo2Client(BaseVeoClient):
 
         logger.info(f"🎬 Starting VEO-2 generation for clip: {clip_id}")
         logger.info(f"⏱️ VEO-2 Duration Requested: {duration}s")
-        logger.info(f"📝 VEO-2 Prompt: {prompt[:100]}...")
+        # Handle both string and dict prompts
+        prompt_preview = str(prompt)[:100] if prompt else "No prompt"
+        logger.info(f"📝 VEO-2 Prompt: {prompt_preview}...")
         logger.info(f"📐 VEO-2 Aspect Ratio: {aspect_ratio}")
 
         try:
@@ -154,7 +156,16 @@ class VertexAIVeo2Client(BaseVeoClient):
 
     def _enhance_prompt_with_gemini(self, prompt: str) -> str:
         """Enhance prompt for VEO-2 with cinematic instructions"""
-        enhanced_prompt = prompt
+        # Handle JSON prompts by converting to string first
+        if isinstance(prompt, dict):
+            # For JSON prompts, extract the description from the scene
+            if 'scene' in prompt and 'description' in prompt['scene']:
+                enhanced_prompt = prompt['scene']['description']
+            else:
+                # Fallback to string representation
+                enhanced_prompt = str(prompt)
+        else:
+            enhanced_prompt = str(prompt)
 
         # Add cinematic quality instructions
         if "cinematic" not in enhanced_prompt.lower():
