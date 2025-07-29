@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep3_20250729_002318",
+  "mission": "EPISODE 3: To Infinity and Beyond!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Family Guy space comedy! Dragon astronaut explores INFINITY SPACE STATION where different sequences live! Divergent sequences are friendly rockets zooming to infinity, convergent ones land safely. Dragon demonstrates ratio test as space multiplication game, root test as cosmic plant growth experiment, and comparison test as rocket races. Include funny zero-gravity math demonstrations, dragon's space jokes, and visual explanations of convergence tests. Make infinity concepts approachable and fun!",
+  "platform": "instagram",
+  "duration_seconds": 40,
+  "created_at": "2025-07-29T00:37:27.251933",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep3_20250729_002318/final_output/final_video_calculus_dragon_ep3_20250729_002318__final.mp4",
+      "file_size_mb": 13.862963676452637
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep3_20250729_002318/final_output/final_video_calculus_dragon_ep3_20250729_002318__audio_only.mp4",
+      "file_size_mb": 14.207784652709961
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep3_20250729_002318/temp_files/base_video.mp4",
+      "file_size_mb": 0
+    }
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "hashtags": [
+    {
+      "tag": "#DragonsCrystalBall",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Unique and memorable, directly references the video's theme and title.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#TaylorPolynomials",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Core subject matter, highly searchable for educational content.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#MathIsMagic",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Connects the magical theme with the educational content, appealing to a broader audience.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#CalculusExplained",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Clear and direct, targets users looking for calculus explanations.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#SeriesApproximations",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Specific to the advanced topic, but crucial for users already in the know.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#LearnOnTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A popular TikTok tag for educational content, leveraging platform trends.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#EduTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A widely used tag for educational content on TikTok and Instagram Reels.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#ScienceTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Broader science tag that can capture users interested in STEM.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#MathTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Specific to math content on TikTok, very relevant.",
+      "trend_score": 0.93
+    },
+    {
+      "tag": "#BackToSchool",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Seasonal trend, highly relevant for students and educators.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#StudyGram",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Popular aesthetic and community tag for students and learning.",
+      "trend_score": 0.87
+    },
+    {
+      "tag": "#MemeEducation",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Leverages the Family Guy style comedy to attract users who enjoy meme-infused learning.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#AnimationStation",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the animated title card and visual style.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#TaylorSeriesProof",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Highly specific, targets advanced calculus students and enthusiasts.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#EulersNumber",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets users interested in the irrationality of 'e', a specific proof mentioned.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#PowerSeriesMagic",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Combines the 'magic' theme with the technical term, appealing to a specific interest.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MathHumor",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to users who enjoy humorous takes on math.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#EducationalContent",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "A standard but effective tag for educational videos.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#STEMeducation",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Broad STEM category, good for discoverability among science and tech learners.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#MathTeacher",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets educators who might share or learn from the content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#LearnMath",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General appeal for anyone wanting to improve their math skills.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Education",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Massive reach, ensures visibility to a wide audience interested in learning.",
+      "trend_score": 0.98
+    },
+    {
+      "tag": "#Science",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Broad category for science enthusiasts, increasing overall visibility.",
+      "trend_score": 0.97
+    },
+    {
+      "tag": "#Mathematics",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "The most general math tag, essential for broad reach.",
+      "trend_score": 0.99
+    },
+    {
+      "tag": "#InstaLearn",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages learning specifically on Instagram.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#StudyTips",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to students looking for learning resources and study aids.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ExplainLikeImFive",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Encourages the creator to break down complex topics simply, fostering engagement.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#AskADragon",
+      "category": "engagement",
+      "estimated_reach": "low",
+      "reasoning": "Interactive and fun, prompts questions and community involvement.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ShareYourWisdom",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages community sharing and discussion related to the topic.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MathChallenge",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Invites viewers to test their understanding or engage with concepts.",
+      "trend_score": 0.8
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "Instagram (primary focus, but with considerations for TikTok and general discoverability)",
+    "trend_analysis": "Incorporates trending educational tags (#EduTok, #MathTok, #LearnOnTikTok) and seasonal relevance (#BackToSchool). Also leverages broader discovery tags and niche mathematical concepts. The 'meme education' and 'animation' tags are included to capture interest based on the comedic and visual style.",
+    "engagement_strategy": "Uses call-to-action style hashtags like #ExplainLikeImFive and #AskADragon to encourage interaction and community building. #MathChallenge invites active participation from viewers. The primary and niche tags attract a targeted audience seeking specific knowledge."
+  },
+  "usage_tips": [
+    "For Instagram: Mix a variety of hashtag sizes (primary, niche, broad) within the caption. Place less crucial hashtags in the first comment to maintain caption cleanliness.",
+    "For Reels: Utilize trending audio and visually engaging effects alongside these hashtags. Prioritize the most relevant trending and primary tags.",
+    "For TikTok: Focus heavily on #EduTok, #MathTok, #LearnOnTikTok, and any currently trending audio/challenge hashtags. Keep descriptions concise.",
+    "For YouTube: Integrate primary and niche hashtags into the video title and description for SEO, and use a broader set in the dedicated hashtag section.",
+    "Monitor performance: Track which hashtags drive the most views and engagement, and adjust your strategy for future posts."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-29T02:22:14.162898",
+    "topic": "EPISODE 12: Dragon's Crystal Ball!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy style comedy where fortune teller dragon teaches Taylor polynomials and series. Cover linear and quadratic approximations, Taylor's theorem, remainder estimates, famous series for exponential, trigonometric and logarithmic functions, and the proof that e is irrational. Use visual metaphors: crystal ball predictions, increasing precision, shrinking errors. Make power series accessible and magical.",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

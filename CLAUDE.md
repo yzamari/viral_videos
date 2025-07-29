@@ -287,4 +287,19 @@ outputs/session_YYYYMMDD_HHMMSS/
 ## Generation Order
 - The video generation order is: video generation -> image generation -> colored fallback (this is the fallbacks order)
 
+## Visual Instruction Guidelines
+- Use `[VISUAL: description]` tags for visual-only elements that shouldn't be narrated
+- Examples:
+  - `[VISUAL: Show 'EPISODE 1: Title' as animated title card for 3 seconds]`
+  - `[VISUAL: Display logo in corner throughout video]`
+  - `[VISUAL: Transition with sparkle effects]`
+- These tags are preserved in video generation but excluded from audio narration
+- This prevents the text validator from removing important visual instructions as "metadata"
+
+## Audio-Subtitle Sync Guidelines
+- Audio files with 'audio_segment_' prefix are counted for subtitles
+- Pause files (e.g., 'pause_*.mp3') are excluded from subtitle segment count
+- Each subtitle corresponds to one audio segment for perfect sync
+- Padding between segments is handled by concatenation, not counted as segments
+
 This system provides a robust, scalable, and maintainable architecture for AI-powered video generation with comprehensive social media integration, ZERO hardcoded values, and seamless AI provider switching.

@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep8_20250729_012456",
+  "mission": "EPISODE 8: Smooth Dragon Flights!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy style comedy where dragon pilot teaches function limits and continuity. Cover epsilon-delta definition, one-sided limits, Cauchy criterion, continuity conditions, types of discontinuities, and the intermediate value theorem. Use visual metaphors: smooth flying vs teleporting, landing from different directions, altitude changes. Make limits and continuity intuitive through flight analogies.",
+  "platform": "instagram",
+  "duration_seconds": 40,
+  "created_at": "2025-07-29T01:35:43.037371",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep8_20250729_012456/final_output/final_video_calculus_dragon_ep8_20250729_012456__final.mp4",
+      "file_size_mb": 14.266331672668457
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep8_20250729_012456/final_output/final_video_calculus_dragon_ep8_20250729_012456__audio_only.mp4",
+      "file_size_mb": 14.856590270996094
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep8_20250729_012456/temp_files/base_video.mp4",
+      "file_size_mb": 0
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 5,
+  "hook_text": "This is about EPISODE 9: Finding Dragon Treasures!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy style comedy where dragon treasure hunter teaches extreme value theorem, uniform continuity, and introduces derivatives. Cover finding max/min on closed intervals, monotonic bijections, Heine-Cantor theorem, and derivative as instantaneous rate of change. Use visual metaphors: treasure hunting, dragon velocity, measuring slopes. Show relationship between differentiability and continuity. - part 1",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "Family Guy style comedy, animated title card, and general audience on Instagram all point to a cartoon style. Vibrant colors will enhance the 'epic effects' and visual metaphors like treasure hunting and dragon velocity, making it engaging for a broad audience.  This style allows for the visual humor and exaggerated elements inherent in the Family Guy inspiration.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "The instruction specifies 'HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects'. To best showcase a large, impactful title card without obscuring important visual elements or being cut off by platform-specific safe zones (especially for Instagram's avoidance of the bottom 20%), the top center is the most suitable position.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i /var/folders/p9/8_jtm3l55v921154bg2xg5vr0000gn/T/tmpoko4390o.mp4 -vf drawtext=text='MONOTONIC BIJECTIONS':fontcolor=#54A0FF:fontsize=30:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.85:boxborderw=1:x=(w-text_w)/2:y=200:enable=between(t\\,17.0\\,20.0),drawtext=text='INSTANT RATE \ud83d\udca8':fontcolor=#96CEB4:fontsize=40:font='Trebuchet-Bold':box=1:boxcolor=#2C3E50@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,26.0\\,29.0),drawtext=text='DIFFERENTIABLE \ud83e\udd2f':fontcolor=#E74C3C:fontsize=35:font='Impact':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,35.0\\,38.0),drawtext=text='#MathAdventures':fontcolor=#FFFFFF:fontsize=30:font='Arial-Bold':box=1:boxcolor=#5F27CD@0.8:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,38.5\\,40.0),drawtext=text='Follow for more':fontcolor=#FFFFFF:fontsize=52:font='Impact':box=1:boxcolor=#FF0080@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,34.0\\,35.4) -c:a copy -y outputs/calculus_dragon_ep9_20250729_013550/temp_files/timed_overlays_tmpoko4390o.mp4",
+  "filter_complex": "drawtext=text='MONOTONIC BIJECTIONS':fontcolor=#54A0FF:fontsize=30:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.85:boxborderw=1:x=(w-text_w)/2:y=200:enable=between(t\\,17.0\\,20.0),drawtext=text='INSTANT RATE \ud83d\udca8':fontcolor=#96CEB4:fontsize=40:font='Trebuchet-Bold':box=1:boxcolor=#2C3E50@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,26.0\\,29.0),drawtext=text='DIFFERENTIABLE \ud83e\udd2f':fontcolor=#E74C3C:fontsize=35:font='Impact':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,35.0\\,38.0),drawtext=text='#MathAdventures':fontcolor=#FFFFFF:fontsize=30:font='Arial-Bold':box=1:boxcolor=#5F27CD@0.8:boxborderw=1:x=(w-text_w)/2:y=1152:enable=between(t\\,38.5\\,40.0),drawtext=text='Follow for more':fontcolor=#FFFFFF:fontsize=52:font='Impact':box=1:boxcolor=#FF0080@0.7:boxborderw=2:x=(w-text_w)/2:y=1720:enable=between(t\\,34.0\\,35.4)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 40.0,
+    "overlay_count": 5
+  }
+}

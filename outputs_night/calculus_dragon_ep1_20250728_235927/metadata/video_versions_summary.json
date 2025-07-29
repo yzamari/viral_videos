@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep1_20250728_235927",
+  "mission": "EPISODE 1: Numbers Are My Friends!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Family Guy style comedy! Baby dragon professor Epsilon discovers his classroom has been turned into a NUMBER MUSEUM! Natural numbers are friendly counting cookies, integers are temperature-changing penguins, rationals are pizza-loving fraction friends, and irrational numbers are mysterious infinite artists drawing spirals! Dragon gives a hilarious guided tour explaining each number type with funny demonstrations and visual gags. Students learn number sets through comedy and memorable characters. Include dragon's witty commentary and educational jokes!",
+  "platform": "instagram",
+  "duration_seconds": 40,
+  "created_at": "2025-07-29T00:10:20.917792",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep1_20250728_235927/final_output/final_video_calculus_dragon_ep1_20250728_235927__final.mp4",
+      "file_size_mb": 10.2449312210083
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep1_20250728_235927/final_output/final_video_calculus_dragon_ep1_20250728_235927__audio_only.mp4",
+      "file_size_mb": 10.58746337890625
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep1_20250728_235927/temp_files/base_video.mp4",
+      "file_size_mb": 0
+    }
+  }
+}

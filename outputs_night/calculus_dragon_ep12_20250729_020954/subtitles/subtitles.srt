@@ -1,0 +1,42 @@
+1
+00:00:00,000 --> 00:00:03,604
+Welcome, mortals, to the Dragon's Crystal
+Ball!
+
+2
+00:00:03,904 --> 00:00:07,405
+Today, we unlock the magic of Taylor
+polynomials.
+
+3
+00:00:07,705 --> 00:00:12,616
+See how these series predict with growing
+precision, like my visions getting
+
+4
+00:00:12,916 --> 00:00:17,017
+We'll explore magical series for e, trig,
+and logs.
+
+5
+00:00:17,317 --> 00:00:20,164
+Errors shrink, predictions soar!
+
+6
+00:00:20,464 --> 00:00:24,984
+Even proving 'e' is irrational is a
+mystical quest we shall conquer.
+
+7
+00:00:25,284 --> 00:00:27,687
+Power series are not just math;
+
+8
+00:00:27,987 --> 00:00:30,834
+they are accessible, wonderful magic!
+
+9
+00:00:31,134 --> 00:00:33,616
+Welcome, mortals, to the Dragon's Crystal
+Ball
+

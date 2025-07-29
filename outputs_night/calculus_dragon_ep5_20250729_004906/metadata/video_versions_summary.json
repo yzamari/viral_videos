@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep5_20250729_004906",
+  "mission": "EPISODE 5: Cauchy Dragons Stick Together!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Family Guy teamwork comedy! Baby dragon coaches the CAUCHY TEAM in mathematical synchronized swimming! Team members must stay within epsilon distance while performing routines. Heine-Borel theorem is the pool boundaries, Dedekind cuts are diving board positions. Dragon gives hilarious coaching advice explaining completeness through swimming formations. Include funny synchronized swimming mishaps, dragon's coaching pep talks, and visual demonstrations of Cauchy sequences. Mathematical precision meets comedy!",
+  "platform": "instagram",
+  "duration_seconds": 40,
+  "created_at": "2025-07-29T01:01:32.675912",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep5_20250729_004906/final_output/final_video_calculus_dragon_ep5_20250729_004906__final.mp4",
+      "file_size_mb": 14.708298683166504
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep5_20250729_004906/final_output/final_video_calculus_dragon_ep5_20250729_004906__audio_only.mp4",
+      "file_size_mb": 15.163293838500977
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep5_20250729_004906/final_output/final_video_calculus_dragon_ep5_20250729_004906__overlays_only.mp4",
+      "file_size_mb": 78.32593154907227
+    }
+  }
+}

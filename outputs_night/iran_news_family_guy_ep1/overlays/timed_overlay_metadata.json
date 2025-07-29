@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 3,
+  "hook_text": "This is about Family Guy style animated news. Professional news overlay graphics. Iran International logo top-right. News anchor Maryam (Persian Lois Griffin with hijab, huge eyes) reports: 'BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address.' Show cartoon map of Iran with water droplets running away with suitcases. News ticker: 'WATER CRISIS DAY 1,847'. Peter Griffin-style official: 'Water? Never heard of her.' Citizens licking morning dew. Lower third: 'EXCLUSIVE: Dew Licking Tutorial at 11' - part 1",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "The request explicitly asks for 'Family Guy style animated news' and features cartoon characters. The visual descriptions like 'huge eyes,' 'suitcases,' and 'licking morning dew' all lean heavily into a cartoon aesthetic. A vibrant color palette will enhance the comedic and exaggerated nature of the Family Guy style.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "The YouTube lower third is a crucial element for conveying information like the 'EXCLUSIVE: Dew Licking Tutorial at 11' and adhering to the safe zone. Placing the primary overlay in the bottom center allows for good visibility of this lower third while also accommodating the news ticker and other graphical elements in a balanced way. The 'bottom_center' positioning on YouTube also generally aligns with where users expect to find tickers and additional text information, making it a natural fit for the requested content.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i /var/folders/p9/8_jtm3l55v921154bg2xg5vr0000gn/T/tmp2x1kc2dk.mp4 -vf drawtext=text='DEW LICKING \ud83e\udd22':fontcolor=#C44569:fontsize=48:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=648:enable=between(t\\,13.0\\,15.5),drawtext=text='TUTORIAL OUT SOON':fontcolor=#4ECDC4:fontsize=48:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=648:enable=between(t\\,26.5\\,29.0),drawtext=text='Follow for more':fontcolor=#FFFFFF:fontsize=58:font='Impact':box=1:boxcolor=#FF0000@0.7:boxborderw=3:x=(w-text_w)/2:y=880:enable=between(t\\,34.0\\,35.4) -c:a copy -y outputs/iran_news_family_guy_ep1/temp_files/timed_overlays_tmp2x1kc2dk.mp4",
+  "filter_complex": "drawtext=text='DEW LICKING \ud83e\udd22':fontcolor=#C44569:fontsize=48:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=648:enable=between(t\\,13.0\\,15.5),drawtext=text='TUTORIAL OUT SOON':fontcolor=#4ECDC4:fontsize=48:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=648:enable=between(t\\,26.5\\,29.0),drawtext=text='Follow for more':fontcolor=#FFFFFF:fontsize=58:font='Impact':box=1:boxcolor=#FF0000@0.7:boxborderw=3:x=(w-text_w)/2:y=880:enable=between(t\\,34.0\\,35.4)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 40.0,
+    "overlay_count": 3
+  }
+}

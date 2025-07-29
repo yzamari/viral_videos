@@ -1,0 +1,66 @@
+{
+  "session_id": "iran_news_family_guy_ep6",
+  "session_dir": "outputs/iran_news_family_guy_ep6",
+  "subdirs": {
+    "logs": "outputs/iran_news_family_guy_ep6/logs",
+    "scripts": "outputs/iran_news_family_guy_ep6/scripts",
+    "audio": "outputs/iran_news_family_guy_ep6/audio",
+    "video_clips": "outputs/iran_news_family_guy_ep6/video_clips",
+    "images": "outputs/iran_news_family_guy_ep6/images",
+    "ai_agents": "outputs/iran_news_family_guy_ep6/ai_agents",
+    "discussions": "outputs/iran_news_family_guy_ep6/discussions",
+    "final_output": "outputs/iran_news_family_guy_ep6/final_output",
+    "metadata": "outputs/iran_news_family_guy_ep6/metadata",
+    "comprehensive_logs": "outputs/iran_news_family_guy_ep6/comprehensive_logs",
+    "temp_files": "outputs/iran_news_family_guy_ep6/temp_files",
+    "fallback_content": "outputs/iran_news_family_guy_ep6/fallback_content",
+    "debug_info": "outputs/iran_news_family_guy_ep6/debug_info",
+    "performance_metrics": "outputs/iran_news_family_guy_ep6/performance_metrics",
+    "user_configs": "outputs/iran_news_family_guy_ep6/user_configs",
+    "error_logs": "outputs/iran_news_family_guy_ep6/error_logs",
+    "success_metrics": "outputs/iran_news_family_guy_ep6/success_metrics",
+    "decisions": "outputs/iran_news_family_guy_ep6/decisions",
+    "subtitles": "outputs/iran_news_family_guy_ep6/subtitles",
+    "overlays": "outputs/iran_news_family_guy_ep6/overlays",
+    "agent_discussions": "outputs/iran_news_family_guy_ep6/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-29T03:35:05.877978",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Family Guy news finale. Maryam (completely disheveled) slurs: 'ELECTION RESULTS: Guy with beard wins!' Show identical candidates. Joe-style voter: 'I voted for the one with policies!' Everyone laughs. Cutaway: Ballot box labeled 'Suggestions'. Chris-style official: 'We counted all vote. Both of them!' News ticker: 'BREAKING: Democracy Postponed Due to Weather'. Lower third: 'EXCLUSIVE: Winner Promises More Committees'. Maryam removes hijab, reveals second Maryam. Both drink.",
+        "platform": "youtube",
+        "duration": 40
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 12,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 16
+}

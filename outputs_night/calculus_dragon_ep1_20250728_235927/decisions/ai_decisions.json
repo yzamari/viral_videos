@@ -1,0 +1,23 @@
+{
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "The 'Family Guy style comedy' strongly suggests a bold, exaggerated cartoon aesthetic. Vibrant colors will enhance the comedic and energetic nature of the show, making the characters and concepts visually appealing and memorable for a general Instagram audience. The 'huge animated title card' and 'hilarious guided tour' with 'funny demonstrations and visual gags' all lend themselves perfectly to the expressive and flexible nature of cartoon animation.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "The prompt specifies 'HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects!' for the episode title. Instagram's 'avoid bottom 20%' rule makes the bottom less ideal for a prominent, animated title. Placing it at the top center ensures maximum visibility and impact for this crucial introductory element, allowing the rest of the screen to be dedicated to the animated gags and character introductions.",
+    "mobile_optimized": true
+  },
+  "timestamp": "2025-07-29T00:07:47.844412",
+  "config": {
+    "mission": "EPISODE 1: Numbers Are My Friends!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Family Guy style comedy! Baby dragon professor Epsilon discovers his classroom has been turned into a NUMBER MUSEUM! Natural numbers are friendly counting cookies, integers are temperature-changing penguins, rationals are pizza-loving fraction friends, and irrational numbers are mysterious infinite artists drawing spirals! Dragon gives a hilarious guided tour explaining each number type with funny demonstrations and visual gags. Students learn number sets through comedy and memorable characters. Include dragon's witty commentary and educational jokes!",
+    "platform": "Platform.INSTAGRAM",
+    "category": "VideoCategory.EDUCATIONAL",
+    "duration": 40,
+    "visual_style": "family guy animation",
+    "tone": "funny"
+  }
+}

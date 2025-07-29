@@ -1,0 +1,236 @@
+{
+  "hashtags": [
+    {
+      "tag": "#StudioGhibliMagic",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly references the core aesthetic and theme.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ShimonPeres",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Key figure in the content, highly searchable.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#IsraelInnovation",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Connects the Israeli context with the futuristic elements.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#DreamersDo",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Captures the essence of Peres' visionary nature and action.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#FutureOfPeace",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the outcome and aspiration of the narrative.",
+      "trend_score": 0.72
+    },
+    {
+      "tag": "#GhibliTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Specific to TikTok's Ghibli community, often goes viral.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ArtTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Broad art community on TikTok, good for visual appeal.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#InspirationalTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the motivational aspect of the content.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#LearnOnTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Highlights the educational and insightful elements of the story.",
+      "trend_score": 0.82
+    },
+    {
+      "tag": "#CreativeProcess",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Focuses on the 'how' of his dreams manifesting.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#SciFiArt",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to the futuristic and imaginative elements.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MagicRealism",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Captures the blend of fantasy and reality.",
+      "trend_score": 0.72
+    },
+    {
+      "tag": "#TechMeetsArt",
+      "category": "trending",
+      "estimated_reach": "low",
+      "reasoning": "Niche trend for technology and art intersection.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#RoboDance",
+      "category": "trending",
+      "estimated_reach": "low",
+      "reasoning": "Specific, quirky element that could spark interest.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#GhibliInspired",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Connects to the vast Ghibli fanbase without being an official tag.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#AnimationInspiration",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets those interested in the art of animation.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#PeaceBuilding",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Focuses on the political and social message.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#AtomicEnergy",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the specific mention of the Dimona reactor.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#OrigamiArt",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Connects to the specific detail of peace agreements as cranes.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#VisionaryLeader",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Describes Peres' impactful legacy.",
+      "trend_score": 0.72
+    },
+    {
+      "tag": "#IsraeliHistory",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets a more specific historical interest.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#Art",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General art tag for broad discovery.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Inspiration",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Widely used tag for motivational content.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Dreams",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Universal theme that resonates with many.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Innovation",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Relevant to the technological and visionary aspects.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#Peace",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A globally relevant and important theme.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#Future",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Connects to the forward-thinking nature of the content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#PositiveVibes",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Aligns with the optimistic tone.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ShareYourDreams",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages user participation and storytelling.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#WhatIf",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Sparks curiosity and imaginative thinking.",
+      "trend_score": 0.68
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "tiktok",
+    "trend_analysis": "Leverages trending TikTok communities like #GhibliTok and #ArtTok. Incorporates broader trends like #InspirationalTok and #LearnOnTikTok to maximize reach. Includes niche hashtags for specific content elements like #OrigamiArt and #RoboDance to capture specialized audiences. Broad hashtags ensure general discoverability. Engagement hashtags are designed to prompt user interaction and build community.",
+    "engagement_strategy": "The mix of broad and niche hashtags aims to attract a diverse audience. The inclusion of engagement-focused tags like #ShareYourDreams and #WhatIf directly invites user participation, comments, and duets. Responding to comments and encouraging user-generated content related to these themes will further amplify reach and foster community."
+  },
+  "usage_tips": [
+    "On TikTok, aim for a mix of highly popular and more specific hashtags to balance reach and relevance.",
+    "Consider adding location-specific hashtags if relevant to the content (e.g., #Israel).",
+    "For TikTok, prioritize the first 3-5 hashtags as they are most visible.",
+    "On other platforms like Instagram, use a wider variety of niche and aesthetic hashtags.",
+    "On YouTube, focus on descriptive and searchable tags for SEO.",
+    "On Twitter, use trending and conversational hashtags to join ongoing discussions."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-28T23:19:28.753517",
+    "topic": "Studio Ghibli magic! Shimon Peres, the visionary dreamer, stands in a field of high-tech flowers blooming from ancient desert sand. His dreams manifest as colorful birds carrying startup ideas across the sky. With gentle smile and wise eyes, he builds bridges of light between old and new Israel. The Dimona reactor glows with peaceful atomic energy as he whispers secrets to the wind. In his magical workshop, peace agreements transform into origami cranes. At 90, he still dreams of tomorrow, teaching robots to dance the hora. Inspiring music of eternal optimism.",
+    "platform": "tiktok",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

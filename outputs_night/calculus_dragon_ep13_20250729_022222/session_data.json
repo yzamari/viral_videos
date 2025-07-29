@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep13_20250729_022222",
+  "mission": "EPISODE 13: Dragon Detective Agency!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy style comedy where dragon detective investigates functions completely. Teach systematic function analysis: finding domain, critical points, using first and second derivative tests, finding inflection points, asymptotes, and sketching curves. Use visual metaphors: detective investigation, solving cases, mood swings for concavity. Make the complete function investigation process entertaining and memorable.",
+  "duration_seconds": 40,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: HUGE animated title card: 'EPISODE 13: Dragon Detective Agency!' with epic, fiery effects, fading to a cartoon dragon in a trench coat examining a complex graph.] DIALOGUE: Welcome to Dragon Detective Agency! Today, we crack the case of the crazy curve. [VISUAL: The dragon points a magnifying glass at the graph's x-axis. Text overlays show 'Domain: All Real Numbers'.] DIALOGUE: First, we check the domain, the suspects' possible hiding spots. [VISUAL: The dragon finds peaks and valleys on the graph, marking them as 'Critical Points'. An animation shows 'Derivative Test 1: Ups/Downs'.] DIALOGUE: Next, critical points reveal mood swings, using the first derivative test for direction. [VISUAL: The dragon analyzes the curve's bend, showing 'Concavity' and 'Inflection Points'. An animation shows 'Derivative Test 2: Curve Ball!'.] DIALOGUE: The second derivative test uncovers hidden curves and inflection points, the plot twists! [VISUAL: The dragon draws the complete sketched curve, highlighting asymptotes. Final shot of the dragon looking satisfied.] DIALOGUE: With all clues gathered, we sketch the curve, including asymptotes, solving the case for good!",
+    "final_script": "Welcome to Dragon Detective Agency! Today, we crack the case of the crazy curve. First, we check the domain, the suspects' possible hiding spots. Next, critical points reveal mood swings, using the first derivative test for direction. The second derivative test uncovers hidden curves and inflection points, the plot twists! With all clues gathered, we sketch the curve, including asymptotes, solving the case for good! Welcome to Dragon Detective Agency! Today, we c",
+    "word_count": 73,
+    "tts_ready": false
+  }
+}

@@ -1,0 +1,251 @@
+{
+  "session_id": "iran_news_family_guy_ep1",
+  "mission": "Family Guy style animated news. Professional news overlay graphics. Iran International logo top-right. News anchor Maryam (Persian Lois Griffin with hijab, huge eyes) reports: 'BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address.' Show cartoon map of Iran with water droplets running away with suitcases. News ticker: 'WATER CRISIS DAY 1,847'. Peter Griffin-style official: 'Water? Never heard of her.' Citizens licking morning dew. Lower third: 'EXCLUSIVE: Dew Licking Tutorial at 11'",
+  "timestamp": "2025-07-29T02:47:41.009920",
+  "generation_metadata": {
+    "platform": "Platform.YOUTUBE",
+    "category": "VideoCategory.ENTERTAINMENT",
+    "duration_seconds": 40,
+    "visual_style": "family guy animation",
+    "tone": "darkly_humorous"
+  },
+  "agents": {
+    "script_processor": {
+      "agent_name": "EnhancedScriptProcessor",
+      "role": "Script optimization and TTS preparation",
+      "input": {
+        "original_mission": "Family Guy style animated news. Professional news overlay graphics. Iran International logo top-right. News anchor Maryam (Persian Lois Griffin with hijab, huge eyes) reports: 'BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address.' Show cartoon map of Iran with water droplets running away with suitcases. News ticker: 'WATER CRISIS DAY 1,847'. Peter Griffin-style official: 'Water? Never heard of her.' Citizens licking morning dew. Lower third: 'EXCLUSIVE: Dew Licking Tutorial at 11'",
+        "target_duration": 40,
+        "platform": "Platform.YOUTUBE",
+        "hook": "This is about Family Guy style animated news. Professional news overlay graphics. Iran International logo top-right. News anchor Maryam (Persian Lois Griffin with hijab, huge eyes) reports: 'BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address.' Show cartoon map of Iran with water droplets running away with suitcases. News ticker: 'WATER CRISIS DAY 1,847'. Peter Griffin-style official: 'Water? Never heard of her.' Citizens licking morning dew. Lower third: 'EXCLUSIVE: Dew Licking Tutorial at 11' - part 1",
+        "call_to_action": "Follow for more!"
+      },
+      "output": {
+        "optimized_script": "BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address. Our ticker shows the Water Crisis is now on day 1,847. This is a severe situation for the entire nation. When asked about the missing water, one official stated, 'Water? Never heard of her.' This is truly baffling. Desperate citizens are now resorting to licking morning dew for survival. This is the harsh reality they face daily. Stay with us for an exclusive tutorial on effective dew licking techniques at eleven. You will not want to miss this",
+        "segments": [
+          {
+            "text": "BREAKING NEWS: Scientists confirm water has officially ghosted Iran",
+            "duration": 3.2142857142857144,
+            "word_count": 9,
+            "voice_suggestion": null
+          },
+          {
+            "text": "It left no forwarding address",
+            "duration": 1.7857142857142858,
+            "word_count": 5,
+            "voice_suggestion": null
+          },
+          {
+            "text": "The Water Crisis is now on day",
+            "duration": 3.928571428571429,
+            "word_count": 11,
+            "voice_suggestion": null
+          },
+          {
+            "text": "This is a severe situation for the entire nation",
+            "duration": 3.2142857142857144,
+            "word_count": 9,
+            "voice_suggestion": null
+          },
+          {
+            "text": "When asked about the missing water, one official stated, 'Water?'",
+            "duration": 3.5714285714285716,
+            "word_count": 10,
+            "voice_suggestion": null
+          },
+          {
+            "text": "Never heard of her",
+            "duration": 1.4285714285714286,
+            "word_count": 4,
+            "voice_suggestion": null
+          },
+          {
+            "text": "' This is truly baffling",
+            "duration": 1.7857142857142858,
+            "word_count": 5,
+            "voice_suggestion": null
+          },
+          {
+            "text": "Desperate citizens are now resorting to licking morning dew for survival",
+            "duration": 3.928571428571429,
+            "word_count": 11,
+            "voice_suggestion": null
+          },
+          {
+            "text": "This is the harsh reality they face daily",
+            "duration": 2.857142857142857,
+            "word_count": 8,
+            "voice_suggestion": null
+          },
+          {
+            "text": "Stay with us for an exclusive tutorial on effective dew licking techniques at eleven",
+            "duration": 5.0,
+            "word_count": 14,
+            "voice_suggestion": null
+          },
+          {
+            "text": "You will not want to miss this",
+            "duration": 2.5,
+            "word_count": 7,
+            "voice_suggestion": null
+          }
+        ],
+        "total_duration": 33.214285714285715,
+        "word_count": 92,
+        "optimization_notes": "Reprocessed for exact 40s duration",
+        "duration_match": "adjusted"
+      },
+      "reasoning": "AI-enhanced script processing with precise duration matching and TTS optimization",
+      "performance": {
+        "accuracy": "high",
+        "duration_precision": "exact",
+        "engagement_optimization": "enabled"
+      }
+    },
+    "visual_style": {
+      "agent_name": "VisualStyleAgent",
+      "role": "Visual aesthetics and engagement optimization",
+      "input": {
+        "mission": "Family Guy style animated news. Professional news overlay graphics. Iran International logo top-right. News anchor Maryam (Persian Lois Griffin with hijab, huge eyes) reports: 'BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address.' Show cartoon map of Iran with water droplets running away with suitcases. News ticker: 'WATER CRISIS DAY 1,847'. Peter Griffin-style official: 'Water? Never heard of her.' Citizens licking morning dew. Lower third: 'EXCLUSIVE: Dew Licking Tutorial at 11'",
+        "audience": "general audience",
+        "platform": "Platform.YOUTUBE",
+        "content_type": "VideoCategory.ENTERTAINMENT"
+      },
+      "output": {
+        "primary_style": "cartoon",
+        "color_palette": "vibrant",
+        "engagement_score": "high",
+        "visual_elements": [],
+        "style_confidence": 0.85
+      },
+      "reasoning": "The request explicitly asks for 'Family Guy style animated news' and features cartoon characters. The visual descriptions like 'huge eyes,' 'suitcases,' and 'licking morning dew' all lean heavily into a cartoon aesthetic. A vibrant color palette will enhance the comedic and exaggerated nature of the Family Guy style.",
+      "performance": {
+        "trend_analysis": "enabled",
+        "platform_optimization": "active",
+        "engagement_prediction": "high"
+      }
+    },
+    "positioning": {
+      "agent_name": "OverlayPositioningAgent",
+      "role": "Subtitle and overlay positioning optimization",
+      "input": {
+        "mission": "Family Guy style animated news. Professional news overlay graphics. Iran International logo top-right. News anchor Maryam (Persian Lois Griffin with hijab, huge eyes) reports: 'BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address.' Show cartoon map of Iran with water droplets running away with suitcases. News ticker: 'WATER CRISIS DAY 1,847'. Peter Griffin-style official: 'Water? Never heard of her.' Citizens licking morning dew. Lower third: 'EXCLUSIVE: Dew Licking Tutorial at 11'",
+        "style": "cartoon",
+        "platform": "Platform.YOUTUBE",
+        "duration": 40
+      },
+      "output": {
+        "primary_position": "bottom_center",
+        "strategy": "static",
+        "safety_zones": [],
+        "positioning_confidence": 0.9
+      },
+      "reasoning": "The YouTube lower third is a crucial element for conveying information like the 'EXCLUSIVE: Dew Licking Tutorial at 11' and adhering to the safe zone. Placing the primary overlay in the bottom center allows for good visibility of this lower third while also accommodating the news ticker and other graphical elements in a balanced way. The 'bottom_center' positioning on YouTube also generally aligns with where users expect to find tickers and additional text information, making it a natural fit for the requested content.",
+      "performance": {
+        "platform_compliance": "verified",
+        "readability_score": "high",
+        "accessibility": "optimized"
+      }
+    },
+    "voice_director": {
+      "agent_name": "VoiceDirectorAgent",
+      "role": "Voice selection and audio strategy optimization",
+      "input": {
+        "mission": "Family Guy style animated news. Professional news overlay graphics. Iran International logo top-right. News anchor Maryam (Persian Lois Griffin with hijab, huge eyes) reports: 'BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address.' Show cartoon map of Iran with water droplets running away with suitcases. News ticker: 'WATER CRISIS DAY 1,847'. Peter Griffin-style official: 'Water? Never heard of her.' Citizens licking morning dew. Lower third: 'EXCLUSIVE: Dew Licking Tutorial at 11'",
+        "script": "BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address. Our ticker shows the Water Crisis is now on day 1,847. This is a severe situation for the entire nation. When asked about the missing water, one official stated, 'Water? Never heard of her.' This is truly baffling. Desperate citizens are now resorting to licking morning dew for survival. This is the harsh reality they face daily. Stay with us for an exclusive tutorial on effective dew licking techniques at eleven. You will not want to miss this",
+        "platform": "Platform.YOUTUBE",
+        "duration": 40
+      },
+      "output": {
+        "strategy": "single",
+        "voices": [
+          {
+            "clip_index": 0,
+            "voice": "en-US-Neural2-F",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 1,
+            "voice": "en-US-Neural2-F",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 2,
+            "voice": "en-US-Neural2-F",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 3,
+            "voice": "en-US-Neural2-F",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 4,
+            "voice": "en-US-Neural2-F",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          }
+        ],
+        "primary_personality": "custom",
+        "voice_variety": false,
+        "total_voices": 5
+      },
+      "reasoning": "User specified voice: en-US-Neural2-F",
+      "performance": {
+        "voice_matching": "optimal",
+        "engagement_optimization": "active",
+        "personality_alignment": "high"
+      }
+    }
+  },
+  "discussion_summary": {
+    "consensus": "All agents achieved optimal consensus for viral video generation",
+    "key_decisions": [
+      "Visual style: cartoon with vibrant colors",
+      "Positioning: bottom_center using static strategy",
+      "Voice strategy: single with custom personality",
+      "Script optimization: 92 words optimized for 40s duration"
+    ],
+    "performance_metrics": {
+      "total_agents": 4,
+      "decisions_made": 4,
+      "consensus_achieved": true,
+      "optimization_level": "high",
+      "processing_time": "optimized",
+      "ai_confidence": 0.92
+    },
+    "technical_details": {
+      "veo_model": "veo-2.0-generate-001",
+      "tts_engine": "enhanced_multilingual",
+      "script_processor": "ai_enhanced",
+      "session_tracking": "comprehensive"
+    }
+  },
+  "generation_insights": {
+    "content_analysis": {
+      "mission_relevance": "high",
+      "viral_potential": "optimized",
+      "engagement_factors": [
+        "visual_appeal",
+        "audio_quality",
+        "script_optimization",
+        "platform_targeting"
+      ]
+    },
+    "optimization_summary": {
+      "script_enhancement": "Optimized from basic mission to 92 words",
+      "duration_matching": "Achieved adjusted duration alignment",
+      "style_optimization": "Selected cartoon style for maximum engagement",
+      "voice_optimization": "Configured single voice strategy"
+    }
+  }
+}

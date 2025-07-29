@@ -1,0 +1,24 @@
+{
+  "session_id": "iran_news_family_guy_ep5",
+  "mission": "Family Guy news apocalypse. Maryam (wearing gas mask over hijab) reports through filter: 'Today's air quality: Chunky!' Show Brian-style scientist: 'Air shouldn't have texture, but here we are.' Tehran skyline completely invisible. Herbert-style elder: 'Back in my day, we could SEE the buildings we crashed into!' Cutaway: Kids playing 'Guess That Smell'. News ticker: 'AIR QUALITY INDEX: YES'. Lower third: 'HEALTH TIP: Breathing is Optional'. Maryam coughs, pulls out second mask.",
+  "platform": "youtube",
+  "duration_seconds": 40,
+  "created_at": "2025-07-29T03:33:25.312070",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/iran_news_family_guy_ep5/final_output/final_video_iran_news_family_guy_ep5__final.mp4",
+      "file_size_mb": 10.713276863098145
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/iran_news_family_guy_ep5/final_output/final_video_iran_news_family_guy_ep5__audio_only.mp4",
+      "file_size_mb": 11.172155380249023
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/iran_news_family_guy_ep5/temp_files/base_video.mp4",
+      "file_size_mb": 0
+    }
+  }
+}

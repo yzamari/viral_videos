@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep9_20250729_013550",
+  "mission": "EPISODE 9: Finding Dragon Treasures!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy style comedy where dragon treasure hunter teaches extreme value theorem, uniform continuity, and introduces derivatives. Cover finding max/min on closed intervals, monotonic bijections, Heine-Cantor theorem, and derivative as instantaneous rate of change. Use visual metaphors: treasure hunting, dragon velocity, measuring slopes. Show relationship between differentiability and continuity.",
+  "duration_seconds": 40,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: Huge, animated title card: EPISODE 9: Finding Dragon Treasures!! with epic fire and gold effects.] DIALOGUE: Welcome, treasure hunters! Today, we hunt dragon gold, and learn about math! [VISUAL: Treasure hunter character points to a graph with a dragon icon showing max/min on a closed interval.] DIALOGUE: To find the most treasure, we check endpoints of our quest! That's the Extreme Value Theorem in action. [VISUAL: A smooth, continuous line representing dragon flight across a map. Then a bumpy, discontinuous line.] DIALOGUE: Smooth flights mean uniform continuity; jumpy flights do not! Our dragon must fly without sudden breaks. [VISUAL: A dragon's shadow morphing to show instantaneous velocity at different points.] DIALOGUE: The dragon's speed at any exact moment? That's a derivative, the instantaneous rate of change! [VISUAL: A smooth curve representing the dragon's path. A tangent line is drawn on the curve.] DIALOGUE: If it's smooth enough to draw a tangent line, it's differentiable and continuous. Like finding treasure on a predictable path!",
+    "final_script": "Welcome, treasure hunters! Today, we hunt dragon gold and learn about math. To find the most treasure, we must check the endpoints of our quest. This is the Extreme Value Theorem in action. Smooth, continuous dragon flights are essential; jerky flights are not. Our dragon must fly without sudden stops. The dragon's speed at any moment is its derivative, the instantaneous rate of change. If its path allows a tangent line, it is differentiable and continuous. Finding treasure is like following a predictable path",
+    "word_count": 89,
+    "tts_ready": false
+  }
+}

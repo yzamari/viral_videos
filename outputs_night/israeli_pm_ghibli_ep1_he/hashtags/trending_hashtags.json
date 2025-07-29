@@ -1,0 +1,234 @@
+{
+  "hashtags": [
+    {
+      "tag": "#DavidBenGurion",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly identifies the main subject of the content, David Ben-Gurion, crucial for discoverability.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#StudioGhibliStyle",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the unique and popular artistic style, attracting fans of Ghibli.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#IsraeliHistory",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Places the content within a specific historical context, appealing to history enthusiasts.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#IndependenceDayIsrael",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Connects to a significant national event, broadening the potential audience.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#JewishHeritage",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Emphasizes the cultural and religious roots, resonating with a specific community.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MagicArt",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Describes the fantastical and artistic elements, for a more niche audience interested in the creative aspect.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#GhibliInspired",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Another variation to capture the Ghibli aesthetic, potentially reaching different users.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#TikTokIsrael",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Targets users specifically on TikTok within Israel, leveraging local trends.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ViralAnimation",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Aims for virality by categorizing the content as trending animation.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#AnimationChallenge",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "If there's an existing animation trend, this could tap into it. Otherwise, it positions the content as a potential challenge.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Storytelling",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Broad appeal for content that tells a compelling narrative.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#EmotionalVideo",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "The script mentions emotional music, so this targets users looking for impactful content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#HistoricalFigures",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "A popular category on social media, attracting users interested in learning about important people.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MagicMoments",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Reflects the magical and wondrous elements described in the content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#NostalgiaTrip",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to a sense of remembrance and historical connection.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#GhibliArt",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "More specific than #StudioGhibliStyle, targeting users who actively seek Ghibli-related art.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#GalanHa'aretz",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Hebrew for 'The Land of Israel', a specific and resonant term for the target audience.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#FoundingFathersIsrael",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Precisely describes Ben-Gurion's role, attracting users interested in this specific historical aspect.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#AnimatedHistory",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Combines the animation style with the historical subject matter.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#MythicalCreatures",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "The mention of a 'wise old eagle' and 'holy spirits' fits this category.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#IsraeliCulture",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Connects the content to broader Israeli cultural themes.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#AncientWisdom",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Reflects the 'ancient Jewish spirit' and 'father of the nation' aspects.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#Art",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General tag for art, reaching a wide audience interested in visual content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#History",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Broad tag for history, increasing the potential for discovery by a large user base.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Animation",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General tag for animation, attracting a large audience interested in this medium.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Story",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A fundamental and widely searched tag for any narrative content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Culture",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Broad tag to capture users interested in cultural content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#Inspiration",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to users seeking motivational or uplifting content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MustWatch",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages immediate viewing by labeling the content as important.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ShareYourThoughts",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Direct call to action for comments and engagement.",
+      "trend_score": 0.65
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "tiktok",
+    "trend_analysis": "The strategy incorporates current trends by leveraging popular animation and storytelling hashtags, appealing to the emotional resonance of the content, and targeting specific platform and regional trends like #TikTokIsrael. It also acknowledges the broad appeal of art, history, and inspiration. The inclusion of Ghibli-style tags taps into a significant fan base.",
+    "engagement_strategy": "Engagement is driven through direct calls to action like #ShareYourThoughts and #MustWatch, encouraging interaction. Hashtags like #ConnectWithHistory invite users to actively participate with the historical narrative. The broad categories ensure wider visibility, increasing the pool of potential engagers."
+  },
+  "usage_tips": [
+    "For TikTok, prioritize a mix of trending, niche, and primary hashtags. Consider the first 3-5 hashtags to be the most impactful for initial visibility. Use trending sounds and effects to further enhance reach.",
+    "On Instagram, focus on the aesthetic and discoverability of niche and broad hashtags, alongside primary tags. A balance between popular and less competitive tags is key.",
+    "For YouTube, emphasize searchable and descriptive hashtags like #IsraeliHistory, #DavidBenGurion, and #AnimatedHistory to improve SEO. The primary and niche tags are crucial for discoverability in search results.",
+    "On Twitter, trending and conversational hashtags are most effective. Focus on timely and relevant tags that can spark discussion or tie into current events, in addition to primary topic tags."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-28T23:24:52.878466",
+    "topic": "בסגנון סטודיו גיבלי קסום! פגשו את דוד בן-גוריון, ראש הממשלה הראשון של ישראל. ביער קסום של הגליל, נשר זקן בעיניים כחולות זוהרות מכריז על עצמאות ישראל מתוך עץ זית עתיק. רוחות קדושות של אבות האומה מרחפות סביבו כשהוא הופך מדבר לגן עדן עם כוחות קסם. נוכחותו מלאת הרוח היהודית העתיקה משעמת עמו הפזור ברחבי העולם. עם שיער לבן זורם ובגדים פשוטים, הוא אבא של האומה שהחזיר את עמו הביתה. לבביים גיבלי עם מוזיקה רגשית.",
+    "platform": "tiktok",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

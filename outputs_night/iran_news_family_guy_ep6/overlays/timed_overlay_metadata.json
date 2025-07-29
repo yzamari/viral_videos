@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 5,
+  "hook_text": "This is about Family Guy news finale. Maryam (completely disheveled) slurs: 'ELECTION RESULTS: Guy with beard wins!' Show identical candidates. Joe-style voter: 'I voted for the one with policies!' Everyone laughs. Cutaway: Ballot box labeled 'Suggestions'. Chris-style official: 'We counted all vote. Both of them!' News ticker: 'BREAKING: Democracy Postponed Due to Weather'. Lower third: 'EXCLUSIVE: Winner Promises More Committees'. Maryam removes hijab, reveals second Maryam. Both drink. - part 1",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "The 'Family Guy news finale' and 'Joe-style voter' clearly indicate a comedic, exaggerated, and often absurd tone that aligns perfectly with a cartoon style. The described scenarios (disheveled Maryam, identical candidates, ballot box labeled 'Suggestions', etc.) are all typical of a satirical cartoon. A vibrant color palette enhances the comedic and attention-grabbing nature suitable for YouTube.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "The user specified a YouTube platform. For YouTube, lower thirds are common for news tickers and attribution, and placing the primary overlay in the bottom center aligns with this convention for maximum visibility without obstructing the main action.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i /var/folders/p9/8_jtm3l55v921154bg2xg5vr0000gn/T/tmpphg9_t4u.mp4 -vf drawtext=text='Policy Voter \ud83e\udd23':fontcolor=#54A0FF:fontsize=50:font='Trebuchet-Bold':box=1:boxcolor=#2C3E50@0.9:boxborderw=2:x=(w-text_w)/2:y=648:enable=between(t\\,12.5\\,15.0),drawtext=text='More Committees':fontcolor=#5F27CD:fontsize=55:font='Impact':box=1:boxcolor=#96CEB4@0.92:boxborderw=3:x=(w-text_w)/2:y=648:enable=between(t\\,24.5\\,27.0),drawtext=text='#FamilyGuy #Viral':fontcolor=#FFFFFF:fontsize=40:font='Helvetica-Bold':box=1:boxcolor=#5F27CD@0.85:boxborderw=2:x=(w-text_w)/2:y=648:enable=between(t\\,38.0\\,40.0),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#FF00E5@0.7:boxborderw=3:x=(w-text_w)/2:y=880:enable=between(t\\,34.0\\,35.4),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#FF00E5@0.7:boxborderw=3:x=(w-text_w)/2:y=800:enable=between(t\\,35.5\\,36.9) -c:a copy -y outputs/iran_news_family_guy_ep6/temp_files/timed_overlays_tmpphg9_t4u.mp4",
+  "filter_complex": "drawtext=text='Policy Voter \ud83e\udd23':fontcolor=#54A0FF:fontsize=50:font='Trebuchet-Bold':box=1:boxcolor=#2C3E50@0.9:boxborderw=2:x=(w-text_w)/2:y=648:enable=between(t\\,12.5\\,15.0),drawtext=text='More Committees':fontcolor=#5F27CD:fontsize=55:font='Impact':box=1:boxcolor=#96CEB4@0.92:boxborderw=3:x=(w-text_w)/2:y=648:enable=between(t\\,24.5\\,27.0),drawtext=text='#FamilyGuy #Viral':fontcolor=#FFFFFF:fontsize=40:font='Helvetica-Bold':box=1:boxcolor=#5F27CD@0.85:boxborderw=2:x=(w-text_w)/2:y=648:enable=between(t\\,38.0\\,40.0),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#FF00E5@0.7:boxborderw=3:x=(w-text_w)/2:y=880:enable=between(t\\,34.0\\,35.4),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Montserrat-Bold':box=1:boxcolor=#FF00E5@0.7:boxborderw=3:x=(w-text_w)/2:y=800:enable=between(t\\,35.5\\,36.9)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 40.0,
+    "overlay_count": 5
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 9,
+  "hook_text": "EPISODE 1: Numbers Are My Friends! Classroom becomes a museum of numbers.",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "The 'Family Guy style comedy' strongly suggests a bold, exaggerated cartoon aesthetic. Vibrant colors will enhance the comedic and energetic nature of the show, making the characters and concepts visually appealing and memorable for a general Instagram audience. The 'huge animated title card' and 'hilarious guided tour' with 'funny demonstrations and visual gags' all lend themselves perfectly to the expressive and flexible nature of cartoon animation.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "The prompt specifies 'HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects!' for the episode title. Instagram's 'avoid bottom 20%' rule makes the bottom less ideal for a prominent, animated title. Placing it at the top center ensures maximum visibility and impact for this crucial introductory element, allowing the rest of the screen to be dedicated to the animated gags and character introductions.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i /var/folders/p9/8_jtm3l55v921154bg2xg5vr0000gn/T/tmpfw2mwb3f.mp4 -vf drawtext=text='Counting Cookies \ud83c\udf6a':fontcolor=#FF6B6B:fontsize=35:font='Verdana-Bold':box=1:boxcolor=#2C3E50@0.9:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,4.0\\,6.5),drawtext=text='Penguin Temps \ud83d\udc27':fontcolor=#4ECDC4:fontsize=38:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,7.0\\,9.5),drawtext=text='Pizza Fractions \ud83c\udf55':fontcolor=#FFFFFF:fontsize=40:font='Georgia-Bold':box=1:boxcolor=#C44569@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,10.0\\,12.5),drawtext=text='Infinite Art \ud83c\udf00':fontcolor=#96CEB4:fontsize=42:font='Helvetica-Bold':box=1:boxcolor=#2C3E50@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,13.0\\,15.5),drawtext=text='Baby Dragon <3':fontcolor=#54A0FF:fontsize=30:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,19.0\\,21.5),drawtext=text='Smart Gags \ud83e\udde0':fontcolor=#FFFFFF:fontsize=37:font='Arial-Bold':box=1:boxcolor=#00D2D3@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,22.0\\,24.5),drawtext=text='#MathComedy':fontcolor=#FFFFFF:fontsize=40:font='Helvetica-Bold':box=1:boxcolor=#5F27CD@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,38.0\\,40.0),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Anton':box=1:boxcolor=#FF3366@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,34.0\\,35.4),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Anton':box=1:boxcolor=#FF3366@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,35.5\\,36.9) -c:a copy -y outputs/calculus_dragon_ep1_20250728_235927/temp_files/timed_overlays_tmpfw2mwb3f.mp4",
+  "filter_complex": "drawtext=text='Counting Cookies \ud83c\udf6a':fontcolor=#FF6B6B:fontsize=35:font='Verdana-Bold':box=1:boxcolor=#2C3E50@0.9:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,4.0\\,6.5),drawtext=text='Penguin Temps \ud83d\udc27':fontcolor=#4ECDC4:fontsize=38:font='Arial-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,7.0\\,9.5),drawtext=text='Pizza Fractions \ud83c\udf55':fontcolor=#FFFFFF:fontsize=40:font='Georgia-Bold':box=1:boxcolor=#C44569@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,10.0\\,12.5),drawtext=text='Infinite Art \ud83c\udf00':fontcolor=#96CEB4:fontsize=42:font='Helvetica-Bold':box=1:boxcolor=#2C3E50@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,13.0\\,15.5),drawtext=text='Baby Dragon <3':fontcolor=#54A0FF:fontsize=30:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,19.0\\,21.5),drawtext=text='Smart Gags \ud83e\udde0':fontcolor=#FFFFFF:fontsize=37:font='Arial-Bold':box=1:boxcolor=#00D2D3@0.95:boxborderw=2:x=(w-text_w)/2:y=200:enable=between(t\\,22.0\\,24.5),drawtext=text='#MathComedy':fontcolor=#FFFFFF:fontsize=40:font='Helvetica-Bold':box=1:boxcolor=#5F27CD@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,38.0\\,40.0),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=56:font='Anton':box=1:boxcolor=#FF3366@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,34.0\\,35.4),drawtext=text='more':fontcolor=#FFFFFF:fontsize=56:font='Anton':box=1:boxcolor=#FF3366@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,35.5\\,36.9)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 40.0,
+    "overlay_count": 9
+  }
+}

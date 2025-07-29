@@ -1,0 +1,236 @@
+{
+  "duration_seconds": {
+    "key": "duration_seconds",
+    "value": 64,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI - Adjusted to 8 x 8s clips",
+    "timestamp": "2025-07-28T22:43:49.024406"
+  },
+  "platform": {
+    "key": "platform",
+    "value": "tiktok",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Platform: tiktok",
+    "timestamp": "2025-07-28T22:43:49.024544"
+  },
+  "category": {
+    "key": "category",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Category: Entertainment",
+    "timestamp": "2025-07-28T22:43:49.024664"
+  },
+  "category_string": {
+    "key": "category_string",
+    "value": "Entertainment",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Original category string: Entertainment",
+    "timestamp": "2025-07-28T22:43:49.024769"
+  },
+  "target_audience": {
+    "key": "target_audience",
+    "value": "israeli zionist diaspora jews",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Target audience: israeli zionist diaspora jews",
+    "timestamp": "2025-07-28T22:43:49.024878"
+  },
+  "language": {
+    "key": "language",
+    "value": "he",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Primary language from CLI: he",
+    "timestamp": "2025-07-28T22:43:49.024989"
+  },
+  "all_languages": {
+    "key": "all_languages",
+    "value": [
+      "he"
+    ],
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "All languages: he",
+    "timestamp": "2025-07-28T22:43:49.025095"
+  },
+  "style": {
+    "key": "style",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-28T22:43:49.025201"
+  },
+  "style_string": {
+    "key": "style_string",
+    "value": "cinematic",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original style string: cinematic",
+    "timestamp": "2025-07-28T22:43:49.025305"
+  },
+  "tone": {
+    "key": "tone",
+    "value": "inspiring",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Tone: inspiring",
+    "timestamp": "2025-07-28T22:43:49.025408"
+  },
+  "tone_string": {
+    "key": "tone_string",
+    "value": "inspiring",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original tone string: inspiring",
+    "timestamp": "2025-07-28T22:43:49.025506"
+  },
+  "visual_style": {
+    "key": "visual_style",
+    "value": "studio ghibli magical realism realistic characters",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Visual style: studio ghibli magical realism realistic characters",
+    "timestamp": "2025-07-28T22:43:49.025609"
+  },
+  "visual_style_string": {
+    "key": "visual_style_string",
+    "value": "studio ghibli magical realism realistic characters",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original visual style string: studio ghibli magical realism realistic characters",
+    "timestamp": "2025-07-28T22:43:49.025711"
+  },
+  "theme_id": {
+    "key": "theme_id",
+    "value": "whimsical",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Theme specified by user: whimsical",
+    "timestamp": "2025-07-28T22:43:49.025818"
+  },
+  "style_reference_id": {
+    "key": "style_reference_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No style reference specified",
+    "timestamp": "2025-07-28T22:43:49.025918"
+  },
+  "character_id": {
+    "key": "character_id",
+    "value": "Shimon Peres with accurate realistic appearance - distinguished elder statesman look, white hair, kind wise eyes behind glasses, gentle smile, elegant suit, surrounded by futuristic holograms and peace doves in Ghibli style",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character specified by user: Shimon Peres with accurate realistic appearance - distinguished elder statesman look, white hair, kind wise eyes behind glasses, gentle smile, elegant suit, surrounded by futuristic holograms and peace doves in Ghibli style",
+    "timestamp": "2025-07-28T22:43:49.026021"
+  },
+  "character_scene": {
+    "key": "character_scene",
+    "value": null,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character scene: None",
+    "timestamp": "2025-07-28T22:43:49.026129"
+  },
+  "frame_continuity": {
+    "key": "frame_continuity",
+    "value": true,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.95,
+    "reasoning": "AI decision: 64s duration on tiktok - continuity preferred for quality",
+    "timestamp": "2025-07-28T22:43:54.684770"
+  },
+  "continuous_generation": {
+    "key": "continuous_generation",
+    "value": true,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified continuous: True",
+    "timestamp": "2025-07-28T22:43:54.684928"
+  },
+  "mode": {
+    "key": "mode",
+    "value": "enhanced",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mode: enhanced",
+    "timestamp": "2025-07-28T22:43:54.685052"
+  },
+  "cheap_mode": {
+    "key": "cheap_mode",
+    "value": false,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode: False",
+    "timestamp": "2025-07-28T22:43:54.685167"
+  },
+  "cheap_mode_level": {
+    "key": "cheap_mode_level",
+    "value": "full",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode level: full",
+    "timestamp": "2025-07-28T22:43:54.685275"
+  },
+  "mission": {
+    "key": "mission",
+    "value": "Studio Ghibli magic! Shimon Peres, the visionary dreamer, stands in a field of high-tech flowers blooming from ancient desert sand. His dreams manifest as colorful birds carrying startup ideas across the sky. With gentle smile and wise eyes, he builds bridges of light between old and new Israel. The Dimona reactor glows with peaceful atomic energy as he whispers secrets to the wind. In his magical workshop, peace agreements transform into origami cranes. At 90, he still dreams of tomorrow, teaching robots to dance the hora. Inspiring music of eternal optimism.",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mission: Studio Ghibli magic! Shimon Peres, the visionary d...",
+    "timestamp": "2025-07-28T22:43:54.685386"
+  },
+  "hook": {
+    "key": "hook",
+    "value": "Amazing content ahead!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated hook",
+    "timestamp": "2025-07-28T22:43:54.685512"
+  },
+  "call_to_action": {
+    "key": "call_to_action",
+    "value": "Follow for more!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated CTA",
+    "timestamp": "2025-07-28T22:43:54.685622"
+  },
+  "voice_strategy": {
+    "key": "voice_strategy",
+    "value": "variety",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: 64s duration",
+    "timestamp": "2025-07-28T22:43:54.685728"
+  },
+  "color_palette": {
+    "key": "color_palette",
+    "value": "studio ghibli magical realism realistic characters palette",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 0.5,
+    "reasoning": "Style-based fallback",
+    "timestamp": "2025-07-28T22:43:54.685838"
+  },
+  "background_music_style": {
+    "key": "background_music_style",
+    "value": "ambient",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: cinematic style, inspiring tone",
+    "timestamp": "2025-07-28T22:43:54.685945"
+  },
+  "num_clips": {
+    "key": "num_clips",
+    "value": 8,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.9,
+    "reasoning": "Two clips allow for a strong visual impact and emotional arc within the time constraint.  One clip focuses on the magical realism, the other on the tangible legacy.  More clips would risk sacrificing impact due to brevity.",
+    "timestamp": "2025-07-28T22:44:16.234178"
+  }
+}

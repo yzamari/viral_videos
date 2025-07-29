@@ -1,0 +1,44 @@
+1
+00:00:00,000 --> 00:00:02,403
+Welcome to Infinity Space Station!
+
+2
+00:00:02,703 --> 00:00:05,628
+Our dragon astronaut embarks on a
+thrilling adventure.
+
+3
+00:00:05,928 --> 00:00:09,377
+Friendly rockets zoom to infinity in our
+ratio test game.
+
+4
+00:00:09,677 --> 00:00:11,766
+Witness cosmic plant growth;
+
+5
+00:00:12,066 --> 00:00:15,097
+our root test reveals amazing expansion.
+
+6
+00:00:15,397 --> 00:00:17,591
+It is a rocket race to infinity!
+
+7
+00:00:17,891 --> 00:00:20,973
+Convergent sequences ensure safe landings.
+
+8
+00:00:21,273 --> 00:00:24,460
+Sequences are compared in our comparison
+test.
+
+9
+00:00:24,760 --> 00:00:28,104
+Infinity is fun, and math is surprisingly
+comedic.
+
+10
+00:00:28,404 --> 00:00:30,938
+Join us for more mathematical adventures
+

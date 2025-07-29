@@ -1,0 +1,235 @@
+{
+  "hashtags": [
+    {
+      "tag": "#FunctionDragon",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Directly names the character and core concept, highly specific to the content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MathIsMagic",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Connects the magical transformation theme with mathematics, appealing to a broader audience seeking fun learning.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#LearnWithMe",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Encourages viewer participation and positions the content as educational and interactive.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#TransformYourMath",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Action-oriented and highlights the core theme of transformation in mathematics.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#FamilyGuyMath",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "References the style, but might be too niche or could face copyright issues if not handled carefully. Use with caution.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#ShapeShifterScience",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the character's ability with a relevant scientific field, broadening appeal.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#AnimationEducation",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the visual medium and educational purpose.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#MathTransformationChallenge",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Taps into the challenge culture prevalent on platforms like TikTok and Instagram Reels.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ViralMath",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Aims for broad virality and discovery.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#EducationalTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Targets the highly active #EduTok community on TikTok, transferable to Instagram.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ScienceTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the broad reach of science-related content on TikTok and Instagram.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#LearnOnReels",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Specific to Instagram's Reels format and encourages learning within short-form video.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ComedyMath",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the comedic aspect, attracting viewers interested in funny educational content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MathMadeEasy",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Addresses a common pain point for students and appeals to a broad audience seeking accessible math.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#AnimationNation",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects with the large animation community on social media.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#FunctionConcepts",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Highly specific to the mathematical topic, attracting a targeted audience of students and educators.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#DomainAndRange",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Specific mathematical terms for those searching for these concepts.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#Bijection",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Very specific mathematical term, useful for advanced learners or educators.",
+      "trend_score": 0.45
+    },
+    {
+      "tag": "#FunctionComposition",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Another specific mathematical concept search term.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#EvenAndOddFunctions",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Targets a specific sub-topic within functions.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#PeriodicFunctions",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Specific mathematical concept search term.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#AlgebraicFunctions",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Broadens the mathematical context slightly but still niche.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#Mathematics",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General term to reach anyone interested in math.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Education",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to a massive audience interested in learning and educational content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#Learning",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General term for discovery and content consumption.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#STEMEducation",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Connects with a significant and actively engaged community.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#InstaLearn",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Platform-specific term for educational content discovery on Instagram.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#CreativeLearning",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the unique, creative approach to learning.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#WatchAndLearn",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Clear call-to-action, encouraging immediate viewership.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ShareTheKnowledge",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages sharing and community building around educational content.",
+      "trend_score": 0.65
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The hashtags incorporate a mix of highly specific primary tags related to the 'Function Dragon' concept, current trending challenges and communities like #MathTransformationChallenge and #ScienceTok, niche mathematical terms to attract dedicated learners, broad educational and STEM tags for maximum discovery, and engagement-driven calls to action. The strategy leans into visual and learning trends prevalent on Instagram Reels and Stories.",
+    "engagement_strategy": "Engagement is driven by using direct calls to action like #WatchAndLearn and #ShareTheKnowledge, creating a sense of community with #LearnWithMe, and leveraging trending challenge formats (#MathTransformationChallenge) that encourage participation and sharing. The fun, character-driven nature of the content, amplified by hashtags like #MathIsMagic and #ComedyMath, also aims to foster positive engagement and virality."
+  },
+  "usage_tips": [
+    "On Instagram, aim to use a mix of 10-20 relevant hashtags. Place them in the caption or the first comment.",
+    "Prioritize the primary and trending hashtags for initial reach. Sprinkle in niche and broad hashtags for deeper discovery.",
+    "Monitor the performance of different hashtags to refine your strategy over time.",
+    "Consider creating branded hashtags for future episodes or related content to build your community.",
+    "For Reels, prioritize trending audio and visual effects in conjunction with these hashtags for maximum impact."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-29T01:24:48.403858",
+    "topic": "EPISODE 7: Function Dragon Transform!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy style comedy where baby dragon shape-shifter teaches functions. Explain transformation rules, domain and range, one-to-one and onto functions, bijections, function composition, even/odd functions, and periodic functions. Use visual metaphors: dragon transformation machine, territory maps, mirror and rotational symmetry. Make abstract function concepts concrete and entertaining.",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

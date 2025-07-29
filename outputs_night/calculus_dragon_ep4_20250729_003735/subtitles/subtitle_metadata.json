@@ -1,0 +1,21 @@
+{
+  "total_segments": 12,
+  "total_duration": 33.34081600000001,
+  "script_content": "Prepare for a hilariously epic, Family Guy-style time-travel adventure! My mathematical time machine is ready. Let us witness history unfold. Monotonic sequences are simply upwardly mobile operators. Nested intervals are my personal time portals. We will explore paradoxes and possibilities. Time itself bends to my will. This journey will be unforgettable. Expect the unexpected. Prepare to laugh. Prepare to be amazed. The adventure begins now",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_9.mp3",
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_10.mp3",
+    "outputs/calculus_dragon_ep4_20250729_003735/audio/padded/padded_audio_segment_11.mp3"
+  ],
+  "target_duration": 33.34081600000001,
+  "capped_to_target": false
+}

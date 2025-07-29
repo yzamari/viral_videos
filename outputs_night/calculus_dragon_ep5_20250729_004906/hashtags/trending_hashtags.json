@@ -1,0 +1,234 @@
+{
+  "hashtags": [
+    {
+      "tag": "#CauchyDragons",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Directly names the show and its unique concept, creating a dedicated community tag.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MathSynchronizedSwimming",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Clearly describes the core comedic and educational premise, highly searchable.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#FamilyGuyComedy",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popular show's brand recognition to attract fans of similar humor.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#MathHumor",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to a broad audience interested in humorous takes on mathematics.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#HeineBorelTheorem",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Specific mathematical concept for those seeking precise educational content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#DedekindCuts",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Another specific mathematical concept for educational targeting.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#BabyDragon",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the cute and central character, appealing to a wider audience.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MathIsFun",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A universally positive and often trending tag for making math accessible.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#FunnyMath",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Directly taps into the desire for entertaining educational content.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#EducationalContent",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Broad category for users actively looking for learning opportunities.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ComedySketch",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Describes the format and appeals to fans of short, funny videos.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Animation",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Targets users interested in animated content, a broad appeal.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Teamwork",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Universal theme that resonates with many and is often used in motivational or observational content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#WhatsNew",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "A general tag for discovery, encouraging users to check out new content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MathEd",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Specific to math education, targeting educators and students.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#RealAnalysis",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Connects to the mathematical concepts of Cauchy sequences and completeness, attracting advanced learners.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#Calculus",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Broader mathematical field that includes concepts related to sequences and limits.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MathematicalArt",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Appeals to those who appreciate the beauty and structure of mathematics, often seen in visual content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MathPhysics",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Connects mathematics to a related scientific field, broadening the potential audience.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#STEM",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Positions the content within the broader STEM education landscape.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#LearnOnInstagram",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets users looking for educational experiences on the platform.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Comedy",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Massively popular tag for all comedic content, ensuring broad discovery.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#AnimationComedy",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Combines two popular content types for wider reach.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Funny",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Essential for any content aiming for virality and broad appeal.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Viral",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Aspirational tag aiming for maximum exposure.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#InstaGood",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "A popular lifestyle tag for visually appealing or generally positive content.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ForYouPage",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "While more associated with TikTok, it's a common aspirational tag on Instagram to signal interest in being featured.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ShareThis",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Direct call to action encouraging sharing and amplification.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#TellMeWhatYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Invites comments and interaction, boosting engagement metrics.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#TagAFriend",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages users to bring in their networks, expanding reach organically.",
+      "trend_score": 0.7
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The hashtag strategy incorporates a mix of niche mathematical terms for targeted discovery, broad comedic and animation tags for maximum reach, and trending tags related to educational content and humor. It also includes community-building and engagement-driving hashtags to foster interaction. The current trend analysis suggests a high demand for entertaining and educational content, particularly humorous takes on complex subjects.",
+    "engagement_strategy": "Engagement is driven by using 'call-to-action' hashtags like #ShareThis and #TagAFriend, along with question-based tags like #TellMeWhatYouThink. The inclusion of popular, high-reach tags also increases the likelihood of content being discovered and interacted with. The primary tags are designed to build a specific community around the 'Cauchy Dragons' concept."
+  },
+  "usage_tips": [
+    "On Instagram, aim to use a diverse mix of hashtags from different categories to maximize discoverability. Don't overuse the most popular, hyper-competitive tags; sprinkle in niche and mid-tier hashtags as well.",
+    "Place your hashtags in the first comment to keep your caption clean and aesthetically pleasing, a common Instagram practice.",
+    "Monitor the performance of your hashtags over time and adjust your strategy based on which ones are driving the most impressions and engagement.",
+    "Consider creating a unique hashtag for each episode of the series to build a chronological library of content."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-29T01:01:32.673452",
+    "topic": "EPISODE 5: Cauchy Dragons Stick Together!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Family Guy teamwork comedy! Baby dragon coaches the CAUCHY TEAM in mathematical synchronized swimming! Team members must stay within epsilon distance while performing routines. Heine-Borel theorem is the pool boundaries, Dedekind cuts are diving board positions. Dragon gives hilarious coaching advice explaining completeness through swimming formations. Include funny synchronized swimming mishaps, dragon's coaching pep talks, and visual demonstrations of Cauchy sequences. Mathematical precision meets comedy!",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

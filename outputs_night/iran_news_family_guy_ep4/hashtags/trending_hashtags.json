@@ -1,0 +1,226 @@
+{
+  "hashtags": [
+    {
+      "tag": "#FamilyGuyNews",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly identifies the content and is searchable for fans.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#NoInstagramChallenge",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the core concept and relates to potential challenges.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ActualConversations",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Emphasizes the humor and relatable 'symptoms' described.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#InternetOverload",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Captures the broader theme of digital detox and internet addiction.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#DigitalDetox",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "A widely used term for disconnecting from social media, increasing discoverability.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#SmokeSignals",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "A specific, humorous reference from the script that niche fans will appreciate.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#FamilyGuyEdit",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Targets viewers specifically looking for Family Guy content, often edits.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ComedySketch",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Classifies the content type and attracts fans of comedic shorts.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#SatireNews",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Accurately describes the humorous take on news reporting.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#TVShowHumor",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Broadens the appeal to fans of animated comedy in general.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#AnimationComedy",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "A strong category for animation fans, highly searchable.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MillennialHumor",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets a specific demographic that might relate to the themes.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#TheHorror",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A trending phrase for dramatic, exaggerated reactions, fitting the Meg-style line.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#IYKYK",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "For 'If You Know, You Know,' this taps into the inside jokes and specific Family Guy references.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#RelatableContent",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "The 'talking to parents' and social media detox are highly relatable to many.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#InternetTrends",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Positions the content within broader internet culture discussions.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#DigitalWellbeing",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Connects to the growing conversation around mental health and technology.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#FunnyClips",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "General but effective for discovery of humorous short-form content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#WhatHappened",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Creates curiosity and encourages viewers to watch to find out.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#OutOfTouch",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Plays into the humor of older generations or disconnected individuals trying to understand modern tech.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#YouTubeShorts",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Essential for visibility on YouTube's short-form content feed.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#FunnyVideos",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "One of the most searched and widely used tags for humorous content.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Comedy",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "A foundational tag for any humorous content, maximizing general reach.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Animation",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Targets the entire animation fan base, regardless of specific show.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Entertainment",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "The broadest category, ensuring visibility across all entertainment seekers.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Meme",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "The content has meme-like qualities and will attract meme enthusiasts.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ShareYourThoughts",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Directly encourages viewers to comment and share their experiences.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Prompts engagement by asking for audience opinion on the topic.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#DoubleTapIfYouAgree",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "A classic call to action that encourages likes and interaction.",
+      "trend_score": 0.75
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "youtube",
+    "trend_analysis": "Incorporated trending phrases like '#TheHorror' and '#IYKYK' which are currently popular for relatable or humorous reactions. Leveraged broad, searchable terms for animation and comedy to capture a wide audience. Emphasized terms related to digital detox and internet overload as these are ongoing societal discussions. Specific Family Guy tags ensure targeting of dedicated fans.",
+    "engagement_strategy": "The engagement hashtags '#ShareYourThoughts', '#WhatDoYouThink', and '#DoubleTapIfYouAgree' are designed to prompt direct interaction from the audience in the comments section and with likes, boosting video performance metrics and community building."
+  },
+  "usage_tips": [
+    "For YouTube, mix highly specific, searchable tags with broader, more general ones. Aim for 5-15 hashtags per video, prioritizing those most relevant. Place them in the video description or as the first comment.",
+    "While the prompt is for YouTube, be aware that for TikTok, shorter, more impactful trending tags are key. For Instagram, a mix of aesthetic, niche, and broad hashtags is important. For Twitter, focus on trending topics and conversational tags.",
+    "Monitor hashtag performance over time and adjust your strategy based on which tags are driving the most views and engagement for your specific content."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-29T03:22:27.805477",
+    "topic": "Family Guy news breakdown. Maryam (makeup smeared) announces: 'Celebrating 1000 days without Instagram! Citizens report strange symptoms: actual conversations.' Show Meg-style teenager: 'I had to... talk to my parents. THE HORROR!' Cleveland-style IT minister: 'Internet is overrated. Try smoke signals!' Cutaway: Pigeons carrying USB drives. News ticker: 'BREAKING: Youth Discover Books Exist'. Lower third: 'COMING UP: How to Like Things Without a Button'. Studio lights flicker. Maryam drinks from flask.",
+    "platform": "youtube",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 29
+  }
+}

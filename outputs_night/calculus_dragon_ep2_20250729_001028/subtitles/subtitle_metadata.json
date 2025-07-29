@@ -1,0 +1,19 @@
+{
+  "total_segments": 10,
+  "total_duration": 34.020817,
+  "script_content": "Welcome aboard the Sequence Dragon Express! Each car holds a term approaching its limit. Epsilon and Delta, our expert inspectors, ensure everything remains within bounds. Next stop, convergence! Watch these terms draw closer to their destination. Observe the Squeeze Theorem in action; parallel tracks merge beautifully, mirroring our converging sequences. For safety, we rely on bounded sequences, our dependable safety rails. Hold on tight, everyone! The journey is about to get exciting",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep2_20250729_001028/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep2_20250729_001028/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep2_20250729_001028/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep2_20250729_001028/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep2_20250729_001028/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep2_20250729_001028/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep2_20250729_001028/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/calculus_dragon_ep2_20250729_001028/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/calculus_dragon_ep2_20250729_001028/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/calculus_dragon_ep2_20250729_001028/audio/padded/padded_audio_segment_9.mp3"
+  ],
+  "target_duration": 34.020817,
+  "capped_to_target": false
+}

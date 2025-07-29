@@ -1,0 +1,46 @@
+1
+00:00:00,000 --> 00:00:02,795
+Welcome aboard the Sequence Dragon
+Express!
+
+2
+00:00:03,095 --> 00:00:05,785
+Each car holds a term approaching its
+limit.
+
+3
+00:00:06,085 --> 00:00:11,545
+Epsilon and Delta, our expert inspectors,
+ensure everything remains within bounds.
+
+4
+00:00:11,845 --> 00:00:13,804
+Next stop, convergence!
+
+5
+00:00:14,104 --> 00:00:17,082
+Watch these terms draw closer to their
+destination.
+
+6
+00:00:17,382 --> 00:00:19,864
+Observe the Squeeze Theorem in action;
+
+7
+00:00:20,164 --> 00:00:24,369
+parallel tracks merge beautifully,
+mirroring our converging sequences.
+
+8
+00:00:24,669 --> 00:00:29,528
+For safety, we rely on bounded sequences,
+our dependable safety rails.
+
+9
+00:00:29,828 --> 00:00:31,787
+Hold on tight, everyone!
+
+10
+00:00:32,087 --> 00:00:34,020
+The journey is about to get exciting
+

@@ -1,0 +1,235 @@
+{
+  "hashtags": [
+    {
+      "tag": "#ArielSharon",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly names the central figure, essential for discoverability.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#StudioGhibli",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Connects the content to a globally recognized and beloved animation style, boosting appeal.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#GhibliMagic",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the topic with the enchanting Ghibli aesthetic, creating a unique descriptor.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#MagicalRealism",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Accurately describes the blend of real-world elements with fantastical ones.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#WarriorFarmer",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Highlights a key descriptive aspect of Sharon's persona.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#GazaDisengagement",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Specifically names the historical event central to the narrative.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ArielSharonLegacy",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Positions the content as a deeper look into the leader's impact.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#TikTokTrends",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Broad hashtag to tap into the general TikTok discovery algorithm.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#ViralVideo",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Aims for widespread reach by piggybacking on the aspiration of virality.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#FYP",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Essential for TikTok's 'For You Page' algorithm.",
+      "trend_score": 0.98
+    },
+    {
+      "tag": "#TrendingNow",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the desire for current and popular content.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#CreativeStorytelling",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the artistic and narrative quality of the content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#ArtTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects to the artistic and visual aspect of the content, popular on TikTok.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#AnimationArt",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to users interested in animated visuals.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#HistoryReimagined",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Emphasizes the creative reinterpretation of historical events.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#StopMotionArt",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "If the animation style resembles stop-motion or implies it, this taps into a dedicated community.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#GhibliInspired",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets audiences specifically seeking content inspired by Studio Ghibli.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#PoliticalArt",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Categorizes the content within the realm of art with political undertones.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#IsraeliHistory",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Connects to a specific geographical and historical context.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MilitaryHistory",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets users interested in military events and figures.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#ComplexLeaders",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Addresses the nuanced portrayal of the leader, appealing to those who appreciate depth.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#PeaceAndWar",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the thematic duality present in the content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Animation",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General term for the visual medium, attracting a wide audience.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Art",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Extremely broad tag for artistic content, maximizing general discoverability.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Storytelling",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to users looking for engaging narratives.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#History",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Targets a vast audience interested in historical content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Creative",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Captures users interested in original and imaginative content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ForYou",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Similar to FYP, helps signal content for the algorithm.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#ShareYourStory",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages user interaction and community building.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Directly prompts comments and discussion.",
+      "trend_score": 0.75
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "tiktok",
+    "trend_analysis": "The strategy incorporates general TikTok trends like #FYP, #TikTokTrends, and #ViralVideo to maximize broad reach. It also taps into the popular #ArtTok and #AnimationArt for the visual and artistic aspects. The inclusion of #HistoryReimagined and #CreativeStorytelling addresses the unique blend of historical narrative and artistic interpretation. The niche hashtags are chosen to attract specific communities interested in Studio Ghibli, Israeli history, and political art, while also acknowledging the complex nature of the subject.",
+    "engagement_strategy": "Engagement is driven by direct calls to action like #WhatDoYouThink and community-building tags like #ShareYourStory. Targeting existing fan bases with #GhibliFan aims to foster discussion and sharing within that community. The combination of descriptive and trending tags aims to attract a wide audience, with the hope that the compelling narrative and unique artistic style will encourage comments and shares."
+  },
+  "usage_tips": [
+    "On TikTok, use a mix of highly popular, trending, and niche hashtags. Place the most relevant hashtags first.",
+    "Experiment with the order of hashtags to see what performs best for your specific content.",
+    "Keep an eye on trending sounds and challenges on TikTok and see if your content can be adapted or if related hashtags can be incorporated.",
+    "Avoid using too many irrelevant hashtags, as this can dilute your reach.",
+    "For maximum impact, ensure your video content is visually appealing and aligns with the 'Studio Ghibli magic' described, making the hashtags truly representative of the content."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-28T23:13:30.941099",
+    "topic": "Studio Ghibli magic! Ariel Sharon, the warrior farmer, rides a magical bulldozer that transforms desert into blooming settlements. His military maps become living landscapes where toy soldiers dance the dance of war and peace. With his iconic paratrooper wings glowing, he commands both armies and orange groves. The controversial Gaza disengagement shows him cutting magical threads with golden scissors, tears in his eyes. His large frame contains the spirit of a lion protecting his cubs. From Sabra warrior to surprising peacemaker. Epic music of a complex leader.",
+    "platform": "tiktok",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "session_id": "israeli_pm_ghibli_ep10_he",
+  "mission": "Studio Ghibli magic! Shimon Peres, the visionary dreamer, stands in a field of high-tech flowers blooming from ancient desert sand. His dreams manifest as colorful birds carrying startup ideas across the sky. With gentle smile and wise eyes, he builds bridges of light between old and new Israel. The Dimona reactor glows with peaceful atomic energy as he whispers secrets to the wind. In his magical workshop, peace agreements transform into origami cranes. At 90, he still dreams of tomorrow, teaching robots to dance the hora. Inspiring music of eternal optimism.",
+  "platform": "tiktok",
+  "duration_seconds": 64,
+  "created_at": "2025-07-28T23:19:28.757045",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/israeli_pm_ghibli_ep10_he/final_output/final_video_israeli_pm_ghibli_ep10_he__final.mp4",
+      "file_size_mb": 26.633054733276367
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/israeli_pm_ghibli_ep10_he/final_output/final_video_israeli_pm_ghibli_ep10_he__audio_only.mp4",
+      "file_size_mb": 27.915553092956543
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/israeli_pm_ghibli_ep10_he/final_output/final_video_israeli_pm_ghibli_ep10_he__overlays_only.mp4",
+      "file_size_mb": 126.28622150421143
+    }
+  }
+}

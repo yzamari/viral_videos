@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep1_20250728_235927",
+  "mission": "EPISODE 1: Numbers Are My Friends!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Family Guy style comedy! Baby dragon professor Epsilon discovers his classroom has been turned into a NUMBER MUSEUM! Natural numbers are friendly counting cookies, integers are temperature-changing penguins, rationals are pizza-loving fraction friends, and irrational numbers are mysterious infinite artists drawing spirals! Dragon gives a hilarious guided tour explaining each number type with funny demonstrations and visual gags. Students learn number sets through comedy and memorable characters. Include dragon's witty commentary and educational jokes!",
+  "duration_seconds": 40,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: HUGE ANIMATED TITLE CARD: EPISODE 1: Numbers Are My Friends!! with epic Family Guy-style effects.] DIALOGUE: Welcome, class, to a most peculiar museum! [VISUAL: Professor Epsilon, a baby dragon, looks bewildered as his classroom transforms into a Number Museum. Natural numbers appear as friendly, anthropomorphic cookies.] DIALOGUE: Our natural numbers are these delightful counting cookies. Deliciously simple, do you not agree? [VISUAL: Integers appear as penguins that change temperature, shivering then sweating dramatically. Epsilon chuckles.] DIALOGUE: Next, the integers! These chaps are a bit bipolar with their temperatures. Watch them shiver! [VISUAL: Rational numbers are depicted as pizzas with slices being shared, animated characters happily eating fractions.] DIALOGUE: And these pizza-loving fraction friends are rationals. They love sharing their delicious slices, do not they? [VISUAL: Irrational numbers are shown as mysterious artists drawing infinite, intricate spirals with cosmic dust.] DIALOGUE: Finally, the infinite artists, the irrationals, creating endless, wondrous spirals. Truly magnificent!",
+    "final_script": "Welcome, class, to a most peculiar museum! Our natural numbers are these delightful counting cookies. Deliciously simple, do you not agree? Next, the integers! These chaps are a bit bipolar with their temperatures. Watch them shiver! And these pizza-loving fraction friends are rationals. They love sharing their delicious slices, do not they? Finally, the infinite artists, the irrationals, creating endless, wondrous spirals. Truly magnificent",
+    "word_count": 64,
+    "tts_ready": false
+  }
+}

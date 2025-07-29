@@ -1,0 +1,234 @@
+{
+  "hashtags": [
+    {
+      "tag": "#YitzhakShamir",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Directly targets the subject of the content, essential for discoverability.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#StudioGhibliVibes",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Connects the historical figure to the popular Ghibli aesthetic, broadening appeal.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#JerusalemHistory",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the significant historical and geographical context.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#LehiFighter",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Specific to Shamir's past, appeals to a more informed audience.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#NationBuilder",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Describes his transformation and role as a leader.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ShadowWarrior",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Evocative imagery that captures the narrative's essence.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#GhibliInspired",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Reinforces the aesthetic connection for Ghibli fans.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#PoliticalTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popular political commentary niche on TikTok.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#HistoricalGlowUp",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Plays on the popular 'glow up' trend, applying it to a historical context.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#UndergroundLegend",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Ties into narratives of hidden figures rising to prominence.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#VoiceOfDetermination",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Reflects the dramatic music and unwavering spirit described.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#DiplomaticIllusions",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights a key characteristic of his leadership, making it relatable to current discussions.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#AncientWisdom",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects to themes of historical knowledge and timeless truths.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#IsraelHistoryTok",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Specific to Israeli history content on TikTok.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MightySpirit",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Emphasizes the character's inner strength, a popular theme.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#GhibliEdit",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Targets users interested in Ghibli-style edits and fan creations.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#HistoricalRemix",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Positions the content as a creative reinterpretation of history.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#IsraeliPrimeMinister",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets users specifically searching for information about Israeli PMs.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#SecretHistory",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to curiosity about lesser-known aspects of historical figures.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#LehiUnderground",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Very specific to the Lehi organization, for a dedicated audience.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#PoliticalFigures",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Places the content within the broader category of political figures.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#JewishHistory",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Broad but relevant for those interested in Jewish heritage and historical narratives.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#HistoryTok",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A very popular hashtag for history-related content on TikTok.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#LearnOnTikTok",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Attracts users looking for educational or informative content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ForYouPage",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "A common hashtag used to try and get content onto the FYP.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#TrendingNow",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A general tag to indicate current relevance.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#ViralVideo",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Aims for broad viral reach.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#ExplorePage",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Helps with discoverability on platforms like Instagram, but also used on TikTok.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#TellMeMore",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages comments and further discussion about the topic.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Directly prompts audience interaction and opinions.",
+      "trend_score": 0.75
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "tiktok",
+    "trend_analysis": "This strategy incorporates current TikTok trends like 'Glow Up' narratives, political commentary, and the popularization of historical figures through creative edits. It also leverages the broad reach of educational and trending hashtags, with a specific focus on the Studio Ghibli aesthetic which is highly visual and shareable on TikTok. Niche hashtags are included to capture dedicated audiences interested in Israeli history and political figures.",
+    "engagement_strategy": "Engagement is driven by using clear call-to-action hashtags like #TellMeMore, #WhatDoYouThink, and #ShareYourThoughts, prompting viewers to comment and share their opinions. The Ghibli and historical narrative elements are designed to be inherently shareable and evoke emotional responses, encouraging engagement through appreciation and discussion."
+  },
+  "usage_tips": [
+    "For TikTok, mix broad, trending, and niche hashtags. Prioritize the most relevant and trending ones, but include a few broader tags for wider reach. Ensure hashtags are relevant to the video content itself.",
+    "On TikTok, you can use up to 20 hashtags, but 5-10 highly relevant ones often perform better. Don't overcrowd.",
+    "Adapt hashtag usage slightly for other platforms: For Instagram, focus on aesthetic and discoverable tags like #StudioGhibliVibes, #JerusalemHistory, #HistoricalGlowUp. For Twitter, focus on trending topics and conversational tags like #YitzhakShamir, #IsraelHistoryTok, #PoliticalTikTok.",
+    "Monitor performance and adjust hashtag strategy based on what resonates with your audience and drives views."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-28T23:15:49.626684",
+    "topic": "Studio Ghibli magic! Yitzhak Shamir, the underground fighter turned Prime Minister, emerges from Jerusalem's ancient stone walls like a guardian spirit. Small in stature but mighty in spirit, he stands firm as mystical winds of change blow around him. Underground tunnels glow with memories of his Lehi days as he transforms from shadow warrior to nation leader. His piercing eyes see through diplomatic illusions. Stone tablets of Jewish history float around him as he declares 'The sea is the same sea, the Arabs are the same Arabs.' Dramatic music of unwavering determination.",
+    "platform": "tiktok",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

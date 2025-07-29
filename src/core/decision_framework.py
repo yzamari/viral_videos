@@ -291,25 +291,22 @@ class DecisionFramework:
             source_desc = "System default"
         
         # Apply 8-second clip constraint: duration must be multiple of 8
-        # Plus 1.5 seconds for fadeout
+        # Videos must be in 8-second aligned segments
         CLIP_DURATION = 8
-        FADEOUT_DURATION = 1.5
         
         # Calculate number of clips needed - use ceiling to ensure we have enough clips
         import math
         num_clips = max(1, math.ceil(requested_duration / CLIP_DURATION))
         actual_content_duration = num_clips * CLIP_DURATION
-        total_duration = actual_content_duration + FADEOUT_DURATION
         
         logger.info(f"📏 Duration calculation:")
         logger.info(f"   Requested: {requested_duration}s")
         logger.info(f"   Clips: {num_clips} x {CLIP_DURATION}s = {actual_content_duration}s")
-        logger.info(f"   Fadeout: {FADEOUT_DURATION}s")
-        logger.info(f"   Total: {total_duration}s")
+        logger.info(f"   Aligned to 8-second segments (no fadeout addition)")
         
-        # Record the actual content duration (without fadeout)
+        # Record the actual content duration
         self._record_decision('duration_seconds', actual_content_duration, source, 1.0, 
-                            f"{source_desc} - Adjusted to {num_clips} x {CLIP_DURATION}s clips")
+                            f"{source_desc} - Aligned to {num_clips} x {CLIP_DURATION}s segments")
         
         return actual_content_duration
     
@@ -353,7 +350,7 @@ class DecisionFramework:
             if languages and len(languages) > 0:
                 # First language in the list is the primary language
                 primary_language = languages[0]
-                self._record_decision('language', primary_language.value, DecisionSource.USER_CLI, 1.0, f"Primary language from CLI: {primary_language.value}")
+                self._record_decision('language', primary_language, DecisionSource.USER_CLI, 1.0, f"Primary language from CLI: {primary_language.value}")
                 # Also record all languages for multi-language support
                 language_values = [lang.value for lang in languages]
                 self._record_decision('all_languages', language_values, DecisionSource.USER_CLI, 1.0, f"All languages: {', '.join(language_values)}")
@@ -364,7 +361,7 @@ class DecisionFramework:
             languages = user_config['languages']
             if languages and len(languages) > 0:
                 primary_language = languages[0]
-                self._record_decision('language', primary_language.value, DecisionSource.USER_CONFIG, 0.9, f"Primary language from config: {primary_language.value}")
+                self._record_decision('language', primary_language, DecisionSource.USER_CONFIG, 0.9, f"Primary language from config: {primary_language.value}")
                 # Also record all languages
                 language_values = [lang.value for lang in languages]
                 self._record_decision('all_languages', language_values, DecisionSource.USER_CONFIG, 0.9, f"All languages: {', '.join(language_values)}")
@@ -372,7 +369,7 @@ class DecisionFramework:
         
         # Default to English
         language = Language.ENGLISH_US
-        self._record_decision('language', language.value, DecisionSource.SYSTEM_DEFAULT, 1.0, "Default language")
+        self._record_decision('language', language, DecisionSource.SYSTEM_DEFAULT, 1.0, "Default language")
         self._record_decision('all_languages', [language.value], DecisionSource.SYSTEM_DEFAULT, 1.0, "Default language only")
         return language
     
@@ -492,7 +489,8 @@ class DecisionFramework:
     def _decide_content_elements(self, mission: str, platform: Platform, ai_available: bool) -> tuple:
         """Decide hook and call-to-action"""
         # Check if we're generating Hebrew content
-        language = self.all_languages[0] if hasattr(self, 'all_languages') and self.all_languages else Language.ENGLISH_US
+        # Get the language decision we already made
+        language = self.decisions.get('language', Decision(key='language', value=Language.ENGLISH_US, source=DecisionSource.SYSTEM_DEFAULT)).value
         
         if language == Language.HEBREW:
             # Hebrew defaults

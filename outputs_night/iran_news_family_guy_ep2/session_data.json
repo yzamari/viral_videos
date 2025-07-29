@@ -1,0 +1,15 @@
+{
+  "session_id": "iran_news_family_guy_ep2",
+  "mission": "Family Guy news continues. Same anchor Maryam announces: 'BREAKING: Government unveils master plan - Committee to form committee about committees.' Professional news graphics show organizational chart exploding. Cutaway: Stewie-style minister: 'I propose we form a sub-committee!' Room of identical officials nodding. News ticker: 'COMMITTEE COUNT: \u221e'. Lower third: 'EXCLUSIVE INTERVIEW: Chairman of Nothing Committee'. Maryam's eye twitches. Map shows committee buildings multiplying like cancer cells. 'This is fine' meme in corner.",
+  "duration_seconds": 40,
+  "platform": "Platform.YOUTUBE",
+  "category": "VideoCategory.ENTERTAINMENT",
+  "visual_style": "family guy animation",
+  "tone": "darkly_humorous",
+  "script_processing": {
+    "original_script": "[VISUAL: Anchor Maryam speaking, professional news graphics show organizational chart exploding] DIALOGUE: Family Guy news continues. BREAKING: Government unveils master plan. Committee to form committee about committees. [VISUAL: Cutaway to Stewie-style minister, room of identical officials nodding] DIALOGUE: A Stewie-style minister declares, 'I propose we form a sub-committee!' Identical officials all nod. [VISUAL: News ticker displaying 'COMMITTEE COUNT: \u221e', lower third with 'EXCLUSIVE INTERVIEW: Chairman of Nothing Committee'] DIALOGUE: The committee count is now infinite. We have an exclusive interview with the Chairman of Nothing Committee. [VISUAL: Maryam's eye twitches, map shows committee buildings multiplying like cancer cells] DIALOGUE: Meanwhile, Maryam's eye twitches as committee buildings multiply. The situation escalates rapidly. [VISUAL: 'This is fine' meme appears in corner] DIALOGUE: Despite the chaos, the 'this is fine' meme perfectly captures the mood. This plan is certainly thorough.",
+    "final_script": "Family Guy news continues. Breaking news: The government unveils a master plan involving committees. A Stewie-style minister proposes a sub-committee, prompting identical officials to nod in agreement. The committee count is now infinite. We have an exclusive interview with the Chairman of the Nothing Committee. Maryam's eye twitches as committee buildings rapidly multiply. The situation escalates. Despite the chaos, the 'this is fine' meme perfectly captures the mood. This plan is remarkably thorough",
+    "word_count": 81,
+    "tts_ready": false
+  }
+}

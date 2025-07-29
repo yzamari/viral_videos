@@ -1,0 +1,214 @@
+{
+  "hashtags": [
+    {
+      "tag": "#FamilyGuyApocalypse",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly references the core concept of the Family Guy-style news report about an environmental crisis.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#AirQuality",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Broad and searchable term related to the environmental issue, highly relevant for SEO.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ChunkyAir",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Memorable and descriptive phrase from the script, likely to be searched by those who saw the content.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#BrianGriffin",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "References a popular character and style, attracting fans of the show.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#Tehran",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Specifically mentions the location, appealing to local audiences and those interested in Middle Eastern news.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#GuessThatSmell",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Relates to a viral TikTok/Reels trend, adaptable to the cutaway scene.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#ComedyNews",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the comedic news format, appealing to fans of satire and humor.",
+      "trend_score": 0.87
+    },
+    {
+      "tag": "#ViralNews",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Aims for broad virality, aligning with the goal of maximizing reach.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#Satire",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Identifies the genre of the content, attracting audiences who enjoy satirical takes.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#CurrentEvents",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects the fictional scenario to real-world concerns about air quality.",
+      "trend_score": 0.82
+    },
+    {
+      "tag": "#EnvironmentalHumor",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "A specific blend of topics that could resonate with a niche but engaged audience.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#ClimateChangeComedy",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Addresses a significant global issue with a humorous twist.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#DystopianHumor",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Captures the dark humor aspect of a world facing environmental collapse.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#AnimationParody",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the Family Guy style and the act of parodying news.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#PoliticalSatire",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "While not explicitly political, the commentary on news reporting and societal issues can fit this category.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#HealthCrisis",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "References the health tip and the serious implications of poor air quality.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#ComedySketch",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Describes the format of the content, useful for YouTube searches.",
+      "trend_score": 0.82
+    },
+    {
+      "tag": "#Cartoons",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General category for animated content, appealing to a wide audience.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Humor",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A very general but effective tag for comedy content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#FunnyVideos",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Standard tag for humorous video content on YouTube.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#News",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Broad term that can attract viewers interested in news, even in a satirical context.",
+      "trend_score": 0.72
+    },
+    {
+      "tag": "#Entertainment",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Matches the YouTube category and broadly describes the content's purpose.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ComedyCentral",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Associates with a known platform for this type of humor.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#TrendingNow",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A very common tag to indicate timely and popular content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ShareYourThoughts",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages comments and discussion about the content or the issue.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#CommentBelow",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Direct call to action for audience interaction.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Prompts viewers to share their opinions, fostering community.",
+      "trend_score": 0.78
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 27,
+    "platform_optimization": "youtube",
+    "trend_analysis": "The strategy incorporates trending memes like #GuessThatSmell and broader comedic formats like #ComedyNews and #Satire. It also leverages platform-specific tags for YouTube discoverability and engagement calls.",
+    "engagement_strategy": "Engagement hashtags like #ShareYourThoughts, #CommentBelow, and #WhatDoYouThink encourage viewer interaction in the comments section, which is crucial for YouTube's algorithm. Primary and niche tags aim to attract viewers already interested in Family Guy, satire, and environmental humor, increasing the likelihood of deeper engagement."
+  },
+  "usage_tips": [
+    "For YouTube, place the most important and descriptive hashtags in the title and the first few in the description. Use a mix of broad, niche, and primary tags.",
+    "On Instagram, focus on aesthetic and discoverable tags. Consider breaking up longer hashtags for readability if used in captions.",
+    "For TikTok, prioritize trending and challenge-based hashtags. #GuessThatSmell would be particularly effective here.",
+    "On Twitter, focus on trending topics and conversational tags. #CurrentEvents and #ViralNews would be relevant for discussions.",
+    "Avoid using all 30 hashtags in every post. Tailor the selection based on the specific platform and content within that platform."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-29T03:33:25.308291",
+    "topic": "Family Guy news apocalypse. Maryam (wearing gas mask over hijab) reports through filter: 'Today's air quality: Chunky!' Show Brian-style scientist: 'Air shouldn't have texture, but here we are.' Tehran skyline completely invisible. Herbert-style elder: 'Back in my day, we could SEE the buildings we crashed into!' Cutaway: Kids playing 'Guess That Smell'. News ticker: 'AIR QUALITY INDEX: YES'. Lower third: 'HEALTH TIP: Breathing is Optional'. Maryam coughs, pulls out second mask.",
+    "platform": "youtube",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 27
+  }
+}

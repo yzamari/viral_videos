@@ -1,0 +1,235 @@
+{
+  "hashtags": [
+    {
+      "tag": "#DragonTreasureMath",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly combines the treasure hunting theme with the educational topic, making it highly relevant and discoverable.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ExtremeValueTheorem",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "A specific and crucial concept covered in the content, attracting users actively seeking this information.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MathIsTreasure",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Connects the treasure hunt metaphor to the core message of the educational content, making it catchy.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#CalculusAdventures",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the calculus aspect in an engaging, adventure-themed way.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#DerivativeDiscovery",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Focuses on the derivative concept using discovery language, aligning with the treasure hunt theme.",
+      "trend_score": 0.72
+    },
+    {
+      "tag": "#MonotonicMath",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Addresses a more specific niche topic (monotonic bijections) within calculus.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#HeineCantor",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Targets users familiar with or searching for the Heine-Cantor Theorem.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#LearnOnTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A broad, currently trending hashtag on TikTok for educational content, though the primary platform is Instagram, it's good for cross-promotion discovery.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#EducationalTikTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Similar to #LearnOnTikTok, this is a popular hashtag for educational content across short-form video platforms.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#MathTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A very popular and active community hashtag for math-related content on TikTok and Instagram.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#ComedyMath",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the unique comedic style of the content, attracting users who enjoy entertaining learning.",
+      "trend_score": 0.82
+    },
+    {
+      "tag": "#FamilyGuyStyle",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to fans of the specific comedy style, drawing in a targeted audience.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#AnimationMagic",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Emphasizes the visual and animated aspect of the title card, which is a key feature.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#VisualLearning",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A popular hashtag for content that uses visuals to explain complex topics, relevant to the treasure hunting metaphors.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#MemeMath",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Could attract users who enjoy meme-ified educational content, though use with caution as it might misrepresent the depth.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#CalculusMadeEasy",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets users who find calculus challenging and are looking for simplified explanations.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#AdvancedMath",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Positions the content for a more serious student or enthusiast of higher mathematics.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#STEMEducation",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "A broad but important category for educational content, reaching a wide audience interested in science, technology, engineering, and math.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#UniversityMath",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to university students studying calculus or related subjects.",
+      "trend_score": 0.72
+    },
+    {
+      "tag": "#MathConcepts",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "A precise tag for users searching for explanations of specific mathematical concepts.",
+      "trend_score": 0.68
+    },
+    {
+      "tag": "#OnlineLearning",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Relevant to the format of delivering educational content online.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Education",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "A very general but widely searched hashtag for all educational content.",
+      "trend_score": 0.98
+    },
+    {
+      "tag": "#Math",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "The most fundamental and broad hashtag for anything related to mathematics.",
+      "trend_score": 0.99
+    },
+    {
+      "tag": "#Science",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Broader than just math, it attracts a general audience interested in scientific principles.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Learning",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "A general term for acquiring knowledge, applicable to a wide range of users.",
+      "trend_score": 0.97
+    },
+    {
+      "tag": "#InstaLearn",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Instagram-specific for educational content, often used for quick learning takeaways.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#Tutorial",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Indicates the content is instructional and helpful, attracting users seeking guidance.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#AskMeAnythingMath",
+      "category": "engagement",
+      "estimated_reach": "low",
+      "reasoning": "Encourages direct interaction and questions from the audience.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#ShareYourMath",
+      "category": "engagement",
+      "estimated_reach": "low",
+      "reasoning": "Invites users to share their own understanding or related content, fostering community.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#MathChallengeAccepted",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Positions the content as a challenge, encouraging viewers to engage with the concepts.",
+      "trend_score": 0.7
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The strategy incorporates a mix of broad, niche, and trending hashtags. 'MathTok' and 'LearnOnTikTok' are high-reach trend identifiers. 'ComedyMath' and 'FamilyGuyStyle' leverage the unique comedic approach. Primary tags like #DragonTreasureMath and #ExtremeValueTheorem ensure direct relevance. Niche tags like #CalculusMadeEasy and #STEMEducation target specific audiences. Broad tags like #Education and #Math maximize overall discoverability. Engagement tags aim to foster community interaction.",
+    "engagement_strategy": "Engagement is driven by hashtags that invite interaction (#AskMeAnythingMath, #ShareYourMath) and those that position the content as a challenge or community event (#MathChallengeAccepted). The comedic and narrative elements also inherently encourage engagement through entertainment value."
+  },
+  "usage_tips": [
+    "For Instagram, use a mix of 15-30 hashtags. Place them in the caption or the first comment.",
+    "Prioritize primary and trending hashtags first, then fill with niche and broad tags.",
+    "If cross-posting to TikTok, ensure the trending hashtags are highly relevant to that platform's current trends.",
+    "Monitor the performance of different hashtag categories and adjust your strategy based on which ones drive the most reach and engagement.",
+    "Avoid using too many very low-reach or irrelevant hashtags, as this can dilute the effectiveness of your primary tags."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-29T01:47:27.436025",
+    "topic": "EPISODE 9: Finding Dragon Treasures!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy style comedy where dragon treasure hunter teaches extreme value theorem, uniform continuity, and introduces derivatives. Cover finding max/min on closed intervals, monotonic bijections, Heine-Cantor theorem, and derivative as instantaneous rate of change. Use visual metaphors: treasure hunting, dragon velocity, measuring slopes. Show relationship between differentiability and continuity.",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

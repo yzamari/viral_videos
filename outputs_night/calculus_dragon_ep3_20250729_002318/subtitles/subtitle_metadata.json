@@ -1,0 +1,19 @@
+{
+  "total_segments": 10,
+  "total_duration": 30.938367000000003,
+  "script_content": "Welcome to Infinity Space Station! Our dragon astronaut embarks on a thrilling adventure. Friendly rockets zoom to infinity in our ratio test game. Witness cosmic plant growth; our root test reveals amazing expansion. It is a rocket race to infinity! Convergent sequences ensure safe landings. Sequences are compared in our comparison test. Infinity is fun, and math is surprisingly comedic. Join us for more mathematical adventures",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep3_20250729_002318/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep3_20250729_002318/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep3_20250729_002318/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep3_20250729_002318/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep3_20250729_002318/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep3_20250729_002318/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep3_20250729_002318/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/calculus_dragon_ep3_20250729_002318/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/calculus_dragon_ep3_20250729_002318/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/calculus_dragon_ep3_20250729_002318/audio/padded/padded_audio_segment_9.mp3"
+  ],
+  "target_duration": 30.938367000000003,
+  "capped_to_target": false
+}

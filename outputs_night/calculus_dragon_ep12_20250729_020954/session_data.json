@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep12_20250729_020954",
+  "mission": "EPISODE 12: Dragon's Crystal Ball!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy style comedy where fortune teller dragon teaches Taylor polynomials and series. Cover linear and quadratic approximations, Taylor's theorem, remainder estimates, famous series for exponential, trigonometric and logarithmic functions, and the proof that e is irrational. Use visual metaphors: crystal ball predictions, increasing precision, shrinking errors. Make power series accessible and magical.",
+  "duration_seconds": 40,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: HUGE ANIMATED TITLE CARD: EPISODE 12: Dragon's Crystal Ball!! Epic, magical effects. Dragon fortune teller appears.] DIALOGUE: Welcome, mortals, to the Dragon's Crystal Ball! Today, we unlock the magic of Taylor polynomials. [VISUAL: Crystal ball shows a fuzzy line approximation, then sharpens to a parabola.] DIALOGUE: See how these series predict with growing precision, like my visions getting clearer. [VISUAL: A shimmering dragon's breath transforms into 'e^x' series. Error shrinks like a fading smoke.] DIALOGUE: We'll explore magical series for e, trig, and logs. Errors shrink, predictions soar! [VISUAL: Dragon points to a swirling number 'e' within the crystal ball.] DIALOGUE: Even proving 'e' is irrational is a mystical quest we shall conquer. [VISUAL: Taylor series visualized as glowing magical runes.] DIALOGUE: Power series are not just math; they are accessible, wonderful magic!",
+    "final_script": "Welcome, mortals, to the Dragon's Crystal Ball! Today, we unlock the magic of Taylor polynomials. See how these series predict with growing precision, like my visions getting clearer. We'll explore magical series for e, trig, and logs. Errors shrink, predictions soar! Even proving 'e' is irrational is a mystical quest we shall conquer. Power series are not just math; they are accessible, wonderful magic! Welcome, mortals, to the Dragon's Crystal Ball",
+    "word_count": 71,
+    "tts_ready": false
+  }
+}

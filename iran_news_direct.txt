@@ -1,0 +1,71 @@
+🎬 Iran International News - Family Guy Style
+=============================================
+🎨 Family Guy animation style
+📺 Professional news overlay
+🌐 Language: English
+⏱️  35 seconds duration (~5-6 clips of 5-8s each)
+
+✨ Features:
+   - 6 satirical news episodes
+   - Consistent anchor character (Maryam)
+   - Progressive deterioration storyline
+   - Professional news graphics
+   - Iran International branding
+
+📺 Episodes to generate: 1
+
+
+═══════════════════════════════════════════════════════════════
+📺 Episode 1: Water Crisis - Breaking News
+═══════════════════════════════════════════════════════════════
+
+🌐 Generating episode...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[32m2025-07-29 05:55:43 - __main__ - INFO - 🔐 Checking authentication...[0m
+[32m2025-07-29 05:55:47 - __main__ - INFO - ✅ Authentication already configured[0m
+[31m2025-07-29 05:55:47 - __main__ - ERROR - ❌ Generation failed: unterminated triple-quoted string literal (detected at line 542) (visual_style_agent.py, line 516)[0m
+Traceback (most recent call last):
+  File "/Users/yahavzamari/viralAi/main.py", line 142, in generate
+    from src.workflows.generate_viral_video import main as generate_main
+  File "/Users/yahavzamari/viralAi/src/workflows/generate_viral_video.py", line 17, in <module>
+    from src.agents.working_orchestrator import WorkingOrchestrator, OrchestratorMode
+  File "/Users/yahavzamari/viralAi/src/agents/working_orchestrator.py", line 13, in <module>
+    from ..generators.video_generator  import VideoGenerator
+  File "/Users/yahavzamari/viralAi/src/generators/video_generator.py", line 31, in <module>
+    from ..agents.visual_style_agent import VisualStyleAgent
+  File "/Users/yahavzamari/viralAi/src/agents/visual_style_agent.py", line 516
+    Return only the descriptive phrase, no explanations:"""
+                                                        ^
+SyntaxError: unterminated triple-quoted string literal (detected at line 542)
+❌ Episode failed with exit code: 1
+
+📊 Episode 1 Generation Summary:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Status: ❌ FAILED
+
+Output folder: outputs/iran_news_family_guy_ep1/
+
+
+🎬 News Generation Complete!
+═══════════════════════════════════════════════════════════════
+
+📌 Episode Summary:
+   Episode 1: Water Crisis - Water has ghosted Iran
+   Episode 2: Committee Madness - Committees about committees
+   Episode 3: Economic Meltdown - Rial reaches Earth's core
+   Episode 4: Internet Shutdown - 1000 days of digital darkness
+   Episode 5: Tehran Air Quality - Chewable atmosphere
+   Episode 6: Election Special - Democracy on permanent vacation
+
+🎭 Character Arc:
+   Maryam progressively deteriorates from professional anchor
+   to completely unhinged by episode 6
+
+💡 To run specific episodes:
+   ./run_iran_news_family_guy_final.sh -e 1,3,5
+
+💡 To run in background:
+   nohup ./run_iran_news_family_guy_final.sh -e 1,2,3,4,5,6 > iran_news_log.txt 2>&1 &
+   tail -f iran_news_log.txt
+
+📺 'And now, back to your regularly scheduled water crisis!' - Iran International

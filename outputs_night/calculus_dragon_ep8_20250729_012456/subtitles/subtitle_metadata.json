@@ -1,0 +1,19 @@
+{
+  "total_segments": 10,
+  "total_duration": 30.598776000000004,
+  "script_content": "Welcome to Smooth Dragon Flights, where calculus takes flight! We do not teleport; we fly smoothly. We approach our destination with precision, like approaching a limit. Limits must agree from all directions. Smooth flying means a successful landing from any approach. Continuous flight means no sudden stops; our flight path is unbroken. If our flight path connects smoothly, we always reach our destination. This is continuity in action",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep8_20250729_012456/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep8_20250729_012456/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep8_20250729_012456/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep8_20250729_012456/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep8_20250729_012456/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep8_20250729_012456/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep8_20250729_012456/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/calculus_dragon_ep8_20250729_012456/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/calculus_dragon_ep8_20250729_012456/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/calculus_dragon_ep8_20250729_012456/audio/padded/padded_audio_segment_9.mp3"
+  ],
+  "target_duration": 30.598776000000004,
+  "capped_to_target": false
+}

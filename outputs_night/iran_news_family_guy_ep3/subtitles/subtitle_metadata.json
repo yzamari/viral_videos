@@ -1,0 +1,24 @@
+{
+  "total_segments": 15,
+  "total_duration": 49.28734599999999,
+  "script_content": "The Rial's value has plummeted. Mathematicians created new numbers to describe it. Peter Griffin, our impromptu economist, comments, \"The economy is like my diet - non-existent!\" A Quagmire-esque trader shouts, \"Giggity! My house for that sandwich!\" This economic chaos continues, impacting markets globally. The situation is dire, affecting everyday people. Experts predict further instability. Citizens are worried about their savings. The government is scrambling for solutions. A sense of uncertainty hangs heavy in the air. International markets react with volatility. The future remains uncertain. This unprecedented crisis demands immediate action. We will continue to provide updates as the situation unfolds",
+  "audio_files_used": [
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_9.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_10.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_11.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_12.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_13.mp3",
+    "outputs/iran_news_family_guy_ep3/audio/padded/padded_audio_segment_14.mp3"
+  ],
+  "target_duration": 49.28734599999999,
+  "capped_to_target": false
+}

@@ -1,0 +1,47 @@
+1
+00:00:00,000 --> 00:00:01,906
+Welcome, treasure hunters!
+
+2
+00:00:02,206 --> 00:00:05,550
+Today, we hunt dragon gold and learn about
+math.
+
+3
+00:00:05,850 --> 00:00:10,134
+To find the most treasure, we must check
+the endpoints of our quest.
+
+4
+00:00:10,434 --> 00:00:13,229
+This is the Extreme Value Theorem in
+action.
+
+5
+00:00:13,529 --> 00:00:16,377
+Smooth, continuous dragon flights are
+essential;
+
+6
+00:00:16,677 --> 00:00:18,505
+jerky flights are not.
+
+7
+00:00:18,805 --> 00:00:21,809
+Our dragon must fly without sudden stops.
+
+8
+00:00:22,109 --> 00:00:27,255
+The dragon's speed at any moment is its
+derivative, the instantaneous rate of
+
+9
+00:00:27,555 --> 00:00:31,944
+If its path allows a tangent line, it
+is differentiable and continuous.
+
+10
+00:00:32,244 --> 00:00:35,222
+Finding treasure is like following a
+predictable path
+

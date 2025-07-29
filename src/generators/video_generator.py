@@ -1587,7 +1587,7 @@ The last frame of this scene connects to the next.
         for i in range(num_segments):
             clip_voices.append({
                 "clip_index": i,
-                "voice": voice,
+                "voice_name": voice,
                 "speed": 1.0,
                 "pitch": 0,
                 "emotion": "neutral"
@@ -2178,7 +2178,7 @@ The last frame of this scene connects to the next.
             if config.duration_seconds >= 10:
                 current_duration = self._get_video_duration(video_audio_only)
                 if current_duration and current_duration < target_duration - 1.0:
-                    video_audio_only = self._add_fade_out_ending(video_audio_only, session_context)
+                    video_audio_only = self._add_fade_out_ending(video_audio_only, session_context, audio_files)
             
             # Save VERSION 1
             audio_only_path = session_context.save_final_video(video_audio_only, suffix="_audio_only")
@@ -2206,7 +2206,7 @@ The last frame of this scene connects to the next.
             if config.duration_seconds >= 10:
                 current_duration = self._get_video_duration(video_overlays_only)
                 if current_duration and current_duration < target_duration - 1.0:
-                    video_overlays_only = self._add_fade_out_ending(video_overlays_only, session_context)
+                    video_overlays_only = self._add_fade_out_ending(video_overlays_only, session_context, audio_files)
             
             # Save VERSION 2
             overlays_only_path = session_context.save_final_video(video_overlays_only, suffix="_overlays_only")
@@ -2225,7 +2225,7 @@ The last frame of this scene connects to the next.
                 # Check if adding fadeout would exceed target duration
                 current_duration = self._get_video_duration(oriented_video_path)
                 if current_duration and current_duration < target_duration - 1.0:  # Leave room for fadeout
-                    final_video_path = self._add_fade_out_ending(oriented_video_path, session_context)
+                    final_video_path = self._add_fade_out_ending(oriented_video_path, session_context, audio_files)
                     logger.info(f"🎬 Added fadeout ending (current: {current_duration:.1f}s, target: {target_duration}s)")
                 else:
                     logger.info(f"🎬 Skipping fadeout to maintain target duration (current: {current_duration:.1f}s, target: {target_duration}s)")
@@ -3181,7 +3181,7 @@ The last frame of this scene connects to the next.
             if session_context:
                 audio_dir = session_context.get_output_path("audio")
                 if os.path.exists(audio_dir):
-                    audio_files = [f for f in os.listdir(audio_dir) if f.endswith('.mp3') or f.endswith('.wav')]
+                    audio_files = [f for f in os.listdir(audio_dir) if (f.endswith('.mp3') or f.endswith('.wav')) and not f.startswith('pause_')]
                     audio_segment_count = len(audio_files)
             
             # Parse the actual script into meaningful segments
@@ -4169,21 +4169,38 @@ The last frame of this scene connects to the next.
             logger.error(f"❌ Standard composition error: {e}")
             return ""
     
-    def _compose_with_subtitle_aligned_audio(self, base_video_path: str, audio_segments: list, 
-                                             subtitle_segments: list, output_path: str) -> Optional[str]:
+    def _compose_with_subtitle_aligned_audio(self, clips: List[str], audio_segments: list, 
+                                             subtitle_segments: list, output_path: str,
+                                             session_context: SessionContext, target_duration: Optional[float] = None,
+                                             platform: Optional[str] = None) -> Optional[str]:
         """
         Compose video with audio aligned to subtitle timings - SIMPLE approach
         """
         try:
-            from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_audioclips, CompositeAudioClip
+            from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_audioclips, CompositeAudioClip, concatenate_videoclips
             from moviepy.audio.AudioClip import AudioClip
             import numpy as np
             
             logger.info("🎵 Creating subtitle-aligned audio track (SIMPLE METHOD)")
             
-            # Load base video
-            video = VideoFileClip(base_video_path)
+            # First create base video from clips
+            logger.info(f"🎬 Creating base video from {len(clips)} clips")
+            video_clips = []
+            for clip_path in clips:
+                if os.path.exists(clip_path):
+                    video_clips.append(VideoFileClip(clip_path))
+            
+            if not video_clips:
+                logger.error("❌ No valid video clips found")
+                return None
+            
+            # Concatenate video clips
+            video = concatenate_videoclips(video_clips, method="compose")
             video_duration = video.duration
+            
+            # Clean up individual clips
+            for clip in video_clips:
+                clip.close()
             
             # Create silence generator
             def make_silence(duration):
@@ -4830,6 +4847,49 @@ This is a placeholder file. In a full implementation, this would be a complete M
             
             subtitle_files['vtt'] = vtt_path
             
+            # Create CSV for debugging audio-subtitle timing
+            csv_path = session_context.get_output_path("audio", "audio_subtitle_timing.csv")
+            os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+            
+            import csv
+            with open(csv_path, 'w', newline='') as csvfile:
+                fieldnames = ['segment_index', 'audio_file', 'subtitle_text', 'subtitle_start', 'subtitle_end', 'subtitle_duration', 'audio_duration', 'difference']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+                
+                for i, (segment, audio_file) in enumerate(zip(segments[:len(audio_files)], audio_files)):
+                    # Get actual audio duration
+                    try:
+                        import subprocess
+                        result = subprocess.run([
+                            'ffprobe', '-v', 'quiet', '-print_format', 'json', 
+                            '-show_format', audio_file
+                        ], capture_output=True, text=True)
+                        
+                        if result.returncode == 0:
+                            data = json.loads(result.stdout)
+                            audio_duration = float(data['format']['duration'])
+                        else:
+                            audio_duration = 0.0
+                    except:
+                        audio_duration = 0.0
+                    
+                    subtitle_duration = segment['end'] - segment['start']
+                    difference = subtitle_duration - audio_duration
+                    
+                    writer.writerow({
+                        'segment_index': i + 1,
+                        'audio_file': os.path.basename(audio_file),
+                        'subtitle_text': segment['text'][:50] + '...' if len(segment['text']) > 50 else segment['text'],
+                        'subtitle_start': f"{segment['start']:.3f}",
+                        'subtitle_end': f"{segment['end']:.3f}",
+                        'subtitle_duration': f"{subtitle_duration:.3f}",
+                        'audio_duration': f"{audio_duration:.3f}",
+                        'difference': f"{difference:.3f}"
+                    })
+            
+            logger.info(f"📊 Created audio-subtitle timing CSV: {csv_path}")
+            
             # Create subtitle metadata
             metadata = {
                 'total_segments': len(segments),
@@ -4945,10 +5005,10 @@ This is a placeholder file. In a full implementation, this would be a complete M
             logger.error(f"❌ Platform orientation failed: {e}")
             return video_path
 
-    def _add_fade_out_ending(self, video_path: str, session_context: SessionContext) -> str:
-        """Add fade out effect at the end of the video without adding extra time"""
+    def _add_fade_out_ending(self, video_path: str, session_context: SessionContext, audio_files: Optional[List[str]] = None) -> str:
+        """Add fade out effect at the end of the video, extending if needed for audio"""
         try:
-            logger.info("🎬 Adding fade out effect (no extra time)")
+            logger.info("🎬 Adding fade out effect")
             
             # Create output path
             output_path = session_context.get_output_path("temp_files", f"fade_out_{os.path.basename(video_path)}")
@@ -4965,31 +5025,86 @@ This is a placeholder file. In a full implementation, this would be a complete M
             # Extract video info
             video_duration = float(probe_data['format']['duration'])
             video_stream = next((s for s in probe_data['streams'] if s['codec_type'] == 'video'), None)
+            audio_stream = next((s for s in probe_data['streams'] if s['codec_type'] == 'audio'), None)
+            
             if video_stream:
                 width = int(video_stream['width'])
                 height = int(video_stream['height'])
             else:
                 width, height = 1080, 1920  # Default
             
-            # CRITICAL FIX: Create fadeout within the existing video duration (no extra time)
-            fade_duration = video_config.animation.fade_out_duration
-            fade_start_time = video_duration - fade_duration  # Start fade before end
+            # Get audio duration if available
+            audio_duration = video_duration  # Default to video duration
+            if audio_stream and 'duration' in audio_stream:
+                audio_duration = float(audio_stream['duration'])
+            elif audio_files:
+                # Calculate total audio duration from files
+                total_audio_duration = 0
+                for audio_file in audio_files:
+                    if os.path.exists(audio_file):
+                        try:
+                            audio_probe = subprocess.run([
+                                'ffprobe', '-v', 'quiet', '-print_format', 'json',
+                                '-show_format', audio_file
+                            ], capture_output=True, text=True)
+                            if audio_probe.returncode == 0:
+                                audio_data = json.loads(audio_probe.stdout)
+                                total_audio_duration += float(audio_data['format']['duration'])
+                        except:
+                            pass
+                if total_audio_duration > 0:
+                    audio_duration = total_audio_duration
+                    logger.info(f"📊 Calculated total audio duration from files: {audio_duration:.2f}s")
+            
+            # Determine if we need to extend video for audio
+            extension_needed = max(0, audio_duration - video_duration)
             
             # Import hardware acceleration utilities
             from ..utils.ffmpeg_utils import FFmpegAcceleration
-            
-            # FFmpeg command to add fadeout effect to existing video (no concatenation)
             base_cmd = FFmpegAcceleration.get_optimized_ffmpeg_base()
             hw_encoder = FFmpegAcceleration.get_hw_encoder('h264')
             
-            cmd = base_cmd + [
-                '-i', video_path,
-                '-vf', f'fade=t=out:st={fade_start_time}:d={fade_duration}',
-                '-c:v', hw_encoder or 'libx264', 
-                '-c:a', 'copy',  # Copy audio stream without re-encoding to avoid corruption
-                '-preset', video_config.encoding.fallback_preset,
-                output_path
-            ]
+            if extension_needed > 0:
+                logger.info(f"🎬 Audio is {extension_needed:.2f}s longer than video - extending with black fadeout")
+                
+                # Calculate total fadeout duration (default 1.5s + extension)
+                total_fade_duration = video_config.animation.fade_out_duration + extension_needed
+                fade_start_time = video_duration - video_config.animation.fade_out_duration
+                
+                # Create a black video for the extension
+                black_duration = extension_needed + 0.5  # Add a bit extra for safety
+                
+                # Complex filter to extend video with black and apply fade
+                filter_complex = (
+                    f"[0:v]fade=t=out:st={fade_start_time}:d={video_config.animation.fade_out_duration}[fade_video];"
+                    f"color=black:size={width}x{height}:duration={black_duration}[black];"
+                    f"[fade_video][black]concat=n=2:v=1:a=0[outv]"
+                )
+                
+                cmd = base_cmd + [
+                    '-i', video_path,
+                    '-filter_complex', filter_complex,
+                    '-map', '[outv]',
+                    '-map', '0:a?',  # Map audio if exists
+                    '-c:v', hw_encoder or 'libx264',
+                    '-c:a', 'copy',
+                    '-preset', video_config.encoding.fallback_preset,
+                    output_path
+                ]
+            else:
+                # Standard fadeout within existing video duration
+                logger.info("🎬 Adding standard fade out effect (no extension needed)")
+                fade_duration = video_config.animation.fade_out_duration
+                fade_start_time = video_duration - fade_duration
+                
+                cmd = base_cmd + [
+                    '-i', video_path,
+                    '-vf', f'fade=t=out:st={fade_start_time}:d={fade_duration}',
+                    '-c:v', hw_encoder or 'libx264', 
+                    '-c:a', 'copy',
+                    '-preset', video_config.encoding.fallback_preset,
+                    output_path
+                ]
             
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             
@@ -6776,7 +6891,7 @@ Return ONLY the modified script text, no explanations."""
                     current_duration = self._get_video_duration(video_path)
                     if current_duration and current_duration < config.duration_seconds - 1.0:
                         logger.info("🎬 Adding fadeout to cheap mode video")
-                        final_video_path = self._add_fade_out_ending(video_path, session_context)
+                        final_video_path = self._add_fade_out_ending(video_path, session_context, audio_files)
                         if final_video_path:
                             video_path = final_video_path
                         else:

@@ -1,0 +1,45 @@
+1
+00:00:00,000 --> 00:00:03,343
+Welcome, class, to a most peculiar museum
+
+2
+00:00:03,643 --> 00:00:06,961
+Our natural numbers are these delightful
+counting cookies
+
+3
+00:00:07,261 --> 00:00:09,925
+Deliciously simple, do you not agree
+
+4
+00:00:10,225 --> 00:00:12,002
+Next, the integers
+
+5
+00:00:12,302 --> 00:00:15,410
+These chaps are a bit bipolar with their
+temperatures
+
+6
+00:00:15,710 --> 00:00:17,147
+Watch them shiver
+
+7
+00:00:17,447 --> 00:00:20,555
+And these pizza-loving fraction friends
+are rationals
+
+8
+00:00:20,855 --> 00:00:23,964
+They love sharing their delicious slices,
+do not they
+
+9
+00:00:24,264 --> 00:00:29,776
+Finally, the infinite artists, the
+irrationals, creating endless, wondrous
+
+10
+00:00:30,076 --> 00:00:31,486
+Truly magnificent
+

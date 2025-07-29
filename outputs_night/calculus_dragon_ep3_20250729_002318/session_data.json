@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep3_20250729_002318",
+  "mission": "EPISODE 3: To Infinity and Beyond!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Family Guy space comedy! Dragon astronaut explores INFINITY SPACE STATION where different sequences live! Divergent sequences are friendly rockets zooming to infinity, convergent ones land safely. Dragon demonstrates ratio test as space multiplication game, root test as cosmic plant growth experiment, and comparison test as rocket races. Include funny zero-gravity math demonstrations, dragon's space jokes, and visual explanations of convergence tests. Make infinity concepts approachable and fun!",
+  "duration_seconds": 40,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: EPIC animated title card: \"EPISODE 3: To Infinity and Beyond!!\" flashes across the screen with cosmic explosions and dragon astronaut silhouette.] DIALOGUE: Welcome to Infinity Space Station! Our dragon astronaut is ready for adventure. [VISUAL: Dragon juggles glowing orbs, demonstrating a multiplication game with numbers flying off. Friendly rockets zoom past.] DIALOGUE: See how friendly rockets zoom to infinity with our ratio test game! [VISUAL: A vibrant cosmic plant grows rapidly as the dragon explains using root test. Zero-gravity math demonstration with floating equations.] DIALOGUE: Witness cosmic plant growth! Our root test shows amazing expansion. [VISUAL: Dragon races two rockets, one faster, one slower. Visual representation of comparison test in action.] DIALOGUE: It is a rocket race! See how sequences compare with our comparison test. [VISUAL: Dragon floats, telling a space joke, while convergent sequences land safely. Dynamic visuals reinforce approachable infinity concepts.] DIALOGUE: Infinity is fun! Convergent sequences land safely. Join us for more math comedy!",
+    "final_script": "Welcome to Infinity Space Station! Our dragon astronaut embarks on a thrilling adventure. Friendly rockets zoom to infinity in our ratio test game. Witness cosmic plant growth; our root test reveals amazing expansion. It is a rocket race to infinity! Convergent sequences ensure safe landings. Sequences are compared in our comparison test. Infinity is fun, and math is surprisingly comedic. Join us for more mathematical adventures",
+    "word_count": 61,
+    "tts_ready": false
+  }
+}

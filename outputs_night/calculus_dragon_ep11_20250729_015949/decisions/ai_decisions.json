@@ -1,0 +1,23 @@
+{
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "A 'Family Guy style comedy' inherently points to a cartoon aesthetic. The 'HUGE ANIMATED TITLE CARD' and 'epic effects' further support a dynamic, animated cartoon style. Vibrant colors will enhance the comedic and energetic nature suitable for Instagram's general audience, making the complex calculus concepts more approachable and visually engaging.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "The prompt specifies the title card to be HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects. Placing it at the top center for the initial 3 seconds will ensure maximum visibility and impact for the title. For the rest of the video, a static top center position will keep the content clear and avoid interfering with the visual gags and mathematical explanations happening in the main frame, while adhering to Instagram's 'avoid bottom 20%' rule.",
+    "mobile_optimized": true
+  },
+  "timestamp": "2025-07-29T02:07:20.897738",
+  "config": {
+    "mission": "EPISODE 11: Dragon's Secret Techniques!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy style comedy where baby dragon in ninja dojo learns secret calculus techniques. Teach Darboux theorem, L'H\u00f4pital's rule for various indeterminate forms, and advanced limit techniques. Use visual metaphors: ninja training, secret scrolls, ultimate techniques. Show how to handle 0/0, infinity/infinity, and other indeterminate forms with humor and clarity.",
+    "platform": "Platform.INSTAGRAM",
+    "category": "VideoCategory.EDUCATIONAL",
+    "duration": 40,
+    "visual_style": "family guy animation",
+    "tone": "funny"
+  }
+}

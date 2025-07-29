@@ -1,0 +1,19 @@
+{
+  "total_segments": 10,
+  "total_duration": 34.7,
+  "script_content": "Family Guy news continues. Breaking news: The government unveils a master plan involving committees. A Stewie-style minister proposes a sub-committee, prompting identical officials to nod in agreement. The committee count is now infinite. We have an exclusive interview with the Chairman of the Nothing Committee. Maryam's eye twitches as committee buildings rapidly multiply. The situation escalates. Despite the chaos, the 'this is fine' meme perfectly captures the mood. This plan is remarkably thorough",
+  "audio_files_used": [
+    "outputs/iran_news_family_guy_ep2/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/iran_news_family_guy_ep2/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/iran_news_family_guy_ep2/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/iran_news_family_guy_ep2/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/iran_news_family_guy_ep2/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/iran_news_family_guy_ep2/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/iran_news_family_guy_ep2/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/iran_news_family_guy_ep2/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/iran_news_family_guy_ep2/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/iran_news_family_guy_ep2/audio/padded/padded_audio_segment_9.mp3"
+  ],
+  "target_duration": 34.7,
+  "capped_to_target": false
+}

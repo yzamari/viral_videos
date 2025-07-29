@@ -1,0 +1,19 @@
+{
+  "total_segments": 10,
+  "total_duration": 35.692653,
+  "script_content": "Election results are in. The candidate with the beard has won. I cast my vote for the candidate with the most compelling policies. Every single vote was carefully counted. It was a close race, both candidates receiving significant support. Unfortunately, due to severe weather, the official celebration is postponed. The victorious candidate promises to form numerous new committees to address the people's concerns. He also spoke of his commitment to transparency and accountability. Let us hope this is a new era of progress. Cheers to the new leader",
+  "audio_files_used": [
+    "outputs/iran_news_family_guy_ep6/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/iran_news_family_guy_ep6/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/iran_news_family_guy_ep6/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/iran_news_family_guy_ep6/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/iran_news_family_guy_ep6/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/iran_news_family_guy_ep6/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/iran_news_family_guy_ep6/audio/padded/padded_audio_segment_6.mp3",
+    "outputs/iran_news_family_guy_ep6/audio/padded/padded_audio_segment_7.mp3",
+    "outputs/iran_news_family_guy_ep6/audio/padded/padded_audio_segment_8.mp3",
+    "outputs/iran_news_family_guy_ep6/audio/padded/padded_audio_segment_9.mp3"
+  ],
+  "target_duration": 35.692653,
+  "capped_to_target": false
+}

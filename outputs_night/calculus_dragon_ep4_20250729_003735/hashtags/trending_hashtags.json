@@ -1,0 +1,234 @@
+{
+  "hashtags": [
+    {
+      "tag": "#DragonStairs",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly references the episode's unique element and is likely to be searched by viewers.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#TimeLoopComedy",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Clearly defines the genre and core premise of the content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MathTimeMachine",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the innovative and educational aspect of the time machine.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#FamilyGuyStyle",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popular show's brand recognition for immediate appeal.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#EulerNumber",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "References a key mathematical concept (e) driving the plot.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#LearnMath",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Targets the educational aspect and attracts users interested in math.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MathHumor",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Combines the core elements of math and comedy.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#TimeTravelTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popular #Tok suffix for platform relevance and trending potential.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#EduTok",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A very broad and active tag for educational content on TikTok, transferable to Instagram's discoverability.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#ComedySkit",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Indicates the format and genre, appealing to users looking for short, funny content.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#AnimationArt",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Highlights the visual aspect, attracting users interested in animation.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#FunnyMoments",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to a general audience seeking entertainment and humor.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ViralVideo",
+      "category": "trending",
+      "estimated_reach": "very high",
+      "reasoning": "A common aspiration for content creators, attracting a broad audience.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#InstaFunny",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Instagram-specific tag for humorous content, promoting discoverability.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#LearnOnInstagram",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Promotes the educational aspect within the Instagram ecosystem.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Recurrence",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Specific mathematical term directly related to the plot, targeting a more specialized audience.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#MonotonicSequence",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Key mathematical concept explained in the video, attracting math enthusiasts.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#BolzanoWeierstrass",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Specific theorem mentioned, targeting advanced math learners and educators.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#NestedIntervals",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Another specific mathematical concept, attracting a niche audience.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#MathematicalHistory",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to users interested in the intersection of math and history.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#MathEducation",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Targets educators and students looking for engaging math content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#EducationalContent",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "General tag for educational videos, increasing discoverability.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#Comedy",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "The most general tag for humor, reaching a massive audience.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#Animation",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "Broad tag for animation, attracting a large visual-seeking audience.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#SciFiComedy",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Combines popular genres for broader appeal.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#TimeTravel",
+      "category": "broad",
+      "estimated_reach": "very high",
+      "reasoning": "A very popular and widely searched topic that fits the content.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#WeekendVibes",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Seasonal/contextual tag if the content is released on a weekend, promoting engagement.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ShareTheLaughs",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages sharing and interaction, driving engagement.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Asks a question, prompting comments and interaction.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#TagAFriend",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Direct call-to-action to increase reach through user sharing.",
+      "trend_score": 0.8
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "instagram",
+    "trend_analysis": "The hashtag strategy incorporates a mix of primary, trending, niche, broad, and engagement-focused tags. Trending hashtags like #TimeTravelTok, #EduTok, and #ComedySkit are crucial for leveraging current platform virality. Niche tags like #MonotonicSequence and #BolzanoWeierstrass target a specific educational audience, while broad tags like #Comedy and #TimeTravel ensure maximum discoverability. Engagement tags prompt user interaction. The strategy aims to balance immediate reach with long-term audience building within the educational and entertainment spheres of Instagram.",
+    "engagement_strategy": "Engagement is driven through a combination of curiosity-inducing primary tags, broad appeal trending tags, and direct calls-to-action like #ShareTheLaughs, #WhatDoYouThink, and #TagAFriend. Asking questions in the caption alongside these hashtags will further encourage comments and shares, boosting the content's visibility and interaction rate on Instagram."
+  },
+  "usage_tips": [
+    "For Instagram Reels and Posts: Aim to use a mix of 15-25 hashtags, placing them at the end of your caption or in the first comment. Prioritize primary and trending hashtags, then supplement with niche and broad tags for comprehensive reach.",
+    "Instagram Stories: Use fewer, more targeted hashtags (3-5) that are highly relevant to the specific segment of the video being shared to avoid clutter.",
+    "Consider creating a branded hashtag for your series (e.g., #DragonMathAdventures) to build community and track engagement.",
+    "Monitor hashtag performance and adjust your strategy based on what drives the most engagement and reach for your content."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-29T00:48:58.937901",
+    "topic": "EPISODE 4: Dragon Stairs & Time Loops!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Family Guy time-travel comedy! Dragon discovers a MATHEMATICAL TIME MACHINE powered by the number e! Each recursive step takes him through mathematical history, meeting famous mathematicians. Monotonic sequences are elevator operators, Bolzano-Weierstrass theorem is a helpful time guide, and nested intervals are time portals. Dragon hilariously explains each concept while time-traveling. Include funny historical encounters, dragon's time-travel jokes, and visual demonstrations of recursive concepts!",
+    "platform": "instagram",
+    "category": "educational",
+    "model": "gemini-2.5-flash",
+    "total_generated": 30
+  }
+}

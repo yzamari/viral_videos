@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 4,
+  "hook_text": "This is about EPISODE 10: Dragon Calculus Olympics!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy Olympics special where dragons compete in calculus events. Cover chain rule, inverse function derivatives, higher derivatives, critical points, Fermat's theorem, Rolle's theorem, Lagrange mean value theorem, and Cauchy mean value theorem. Use visual metaphors: relay races, gymnastics, marathon running, treasure hunting. Make derivative rules and theorems exciting through Olympic competition format. - part 1",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "anime",
+    "color_palette": "vibrant",
+    "reasoning": "Anime excels at creating dynamic, energetic visuals that can effectively translate complex concepts like calculus into exciting Olympic events. The 'epic effects' requested for the title card, coupled with visual metaphors like relay races and treasure hunting, align perfectly with the expressive and often over-the-top nature of anime. A vibrant color palette will further enhance the energetic and celebratory Olympic theme, appealing to a broad, general audience on Instagram.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "The request specifies a 'HUGE ANIMATED TITLE CARD' at the beginning for 3 seconds. For Instagram, placing this prominent title card at the top center will ensure it's easily visible without obstructing the main visual content, especially as the video progresses into the calculus-themed Olympic events. This position also allows the title card to be a strong opening statement.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i outputs/calculus_dragon_ep10_20250729_014735/temp_files/base_video.mp4 -vf drawtext=text='\ud83d\udccd CRITICAL POINTS':fontcolor=#00D2D3:fontsize=38:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,15.5\\,19.0),drawtext=text='\ud83c\udfc6 LAGRANGE MVP':fontcolor=#45B7D1:fontsize=40:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,27.5\\,31.0),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=52:font='Montserrat-ExtraBold':box=1:boxcolor=#FF3366@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,34.0\\,35.4),drawtext=text='more':fontcolor=#FFFFFF:fontsize=52:font='Montserrat-ExtraBold':box=1:boxcolor=#FF3366@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,35.5\\,36.9) -c:a copy -y outputs/calculus_dragon_ep10_20250729_014735/temp_files/timed_overlays_base_video.mp4",
+  "filter_complex": "drawtext=text='\ud83d\udccd CRITICAL POINTS':fontcolor=#00D2D3:fontsize=38:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,15.5\\,19.0),drawtext=text='\ud83c\udfc6 LAGRANGE MVP':fontcolor=#45B7D1:fontsize=40:font='Helvetica-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,27.5\\,31.0),drawtext=text='Follow for':fontcolor=#FFFFFF:fontsize=52:font='Montserrat-ExtraBold':box=1:boxcolor=#FF3366@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,34.0\\,35.4),drawtext=text='more':fontcolor=#FFFFFF:fontsize=52:font='Montserrat-ExtraBold':box=1:boxcolor=#FF3366@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,35.5\\,36.9)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 40.0,
+    "overlay_count": 4
+  }
+}

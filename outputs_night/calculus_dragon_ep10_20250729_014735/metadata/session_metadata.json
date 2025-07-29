@@ -1,0 +1,66 @@
+{
+  "session_id": "calculus_dragon_ep10_20250729_014735",
+  "session_dir": "outputs/calculus_dragon_ep10_20250729_014735",
+  "subdirs": {
+    "logs": "outputs/calculus_dragon_ep10_20250729_014735/logs",
+    "scripts": "outputs/calculus_dragon_ep10_20250729_014735/scripts",
+    "audio": "outputs/calculus_dragon_ep10_20250729_014735/audio",
+    "video_clips": "outputs/calculus_dragon_ep10_20250729_014735/video_clips",
+    "images": "outputs/calculus_dragon_ep10_20250729_014735/images",
+    "ai_agents": "outputs/calculus_dragon_ep10_20250729_014735/ai_agents",
+    "discussions": "outputs/calculus_dragon_ep10_20250729_014735/discussions",
+    "final_output": "outputs/calculus_dragon_ep10_20250729_014735/final_output",
+    "metadata": "outputs/calculus_dragon_ep10_20250729_014735/metadata",
+    "comprehensive_logs": "outputs/calculus_dragon_ep10_20250729_014735/comprehensive_logs",
+    "temp_files": "outputs/calculus_dragon_ep10_20250729_014735/temp_files",
+    "fallback_content": "outputs/calculus_dragon_ep10_20250729_014735/fallback_content",
+    "debug_info": "outputs/calculus_dragon_ep10_20250729_014735/debug_info",
+    "performance_metrics": "outputs/calculus_dragon_ep10_20250729_014735/performance_metrics",
+    "user_configs": "outputs/calculus_dragon_ep10_20250729_014735/user_configs",
+    "error_logs": "outputs/calculus_dragon_ep10_20250729_014735/error_logs",
+    "success_metrics": "outputs/calculus_dragon_ep10_20250729_014735/success_metrics",
+    "decisions": "outputs/calculus_dragon_ep10_20250729_014735/decisions",
+    "subtitles": "outputs/calculus_dragon_ep10_20250729_014735/subtitles",
+    "overlays": "outputs/calculus_dragon_ep10_20250729_014735/overlays",
+    "agent_discussions": "outputs/calculus_dragon_ep10_20250729_014735/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-29T01:49:38.507843",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "EPISODE 10: Dragon Calculus Olympics!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy Olympics special where dragons compete in calculus events. Cover chain rule, inverse function derivatives, higher derivatives, critical points, Fermat's theorem, Rolle's theorem, Lagrange mean value theorem, and Cauchy mean value theorem. Use visual metaphors: relay races, gymnastics, marathon running, treasure hunting. Make derivative rules and theorems exciting through Olympic competition format.",
+        "platform": "instagram",
+        "duration": 40
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 0,
+    "audio": 0,
+    "video_clips": 0,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 24,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 28
+}

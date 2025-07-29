@@ -1,0 +1,227 @@
+{
+  "hashtags": [
+    {
+      "tag": "#FamilyGuyNews",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly identifies the show's style, attracting fans and those interested in animated news.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#IranWaterCrisis",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Specific and searchable, addressing the core news topic.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#AnimatedNews",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Clearly defines the content format for broader discovery.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#MaryamReports",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the anchor character, creating a unique identifier and potential for follow-up.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#WaterGhosted",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Catchy and memorable phrase from the script, likely to be quoted.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#PeterGriffin",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages the popularity of a core Family Guy character, tapping into existing fan searches.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#NeverHeardOfHer",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A direct quote from Peter Griffin, part of current meme culture, highly shareable.",
+      "trend_score": 0.98
+    },
+    {
+      "tag": "#DailyDoseOfComedy",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to users seeking lighthearted or funny content, a common search term.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#ViralNews",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Aims to capitalize on the desire for trending and widely shared content.",
+      "trend_score": 0.92
+    },
+    {
+      "tag": "#FunnyAnimation",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Broad appeal to users who enjoy humorous animated content.",
+      "trend_score": 0.87
+    },
+    {
+      "tag": "#SketchComedy",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Describes the comedic format, appealing to a relevant audience.",
+      "trend_score": 0.78
+    },
+    {
+      "tag": "#IranNews",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects to broader news discussions about Iran, increasing discoverability.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#ClimateHumor",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Combines a serious topic with humor, attracting a specific, engaged audience.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#WaterScarcity",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Addresses the underlying issue in a factual, searchable way.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#AnimationSatire",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the satirical nature of the content, appealing to those who appreciate political/social commentary through animation.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#PersianCulture",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Connects to the cultural aspects of the character and potential audience.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#IranInternational",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Directly references the logo, potentially attracting viewers of that specific news outlet.",
+      "trend_score": 0.72
+    },
+    {
+      "tag": "#AnimatedSatire",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Similar to AnimationSatire, but broader, targeting users interested in animated commentary.",
+      "trend_score": 0.73
+    },
+    {
+      "tag": "#YouTubeComedy",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Standard searchable term for comedy content on YouTube.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#FunnyVideos",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A very general but highly searched tag for humorous content.",
+      "trend_score": 0.95
+    },
+    {
+      "tag": "#AnimationLover",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Targets a broad audience interested in animation in general.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#NewsParody",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Clearly communicates the format as a humorous take on news.",
+      "trend_score": 0.82
+    },
+    {
+      "tag": "#SketchNews",
+      "category": "broad",
+      "estimated_reach": "medium",
+      "reasoning": "Describes the hybrid format, appealing to those who enjoy sketch comedy and news commentary.",
+      "trend_score": 0.77
+    },
+    {
+      "tag": "#CurrentEvents",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Connects the humorous take to actual real-world issues, broadening the audience.",
+      "trend_score": 0.83
+    },
+    {
+      "tag": "#LikeAndSubscribe",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Direct call to action, standard practice on YouTube to encourage channel growth.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#WhatDoYouThink",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages comments and discussion in the comment section.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#ShareThisVideo",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Direct call to action to increase virality and reach.",
+      "trend_score": 0.88
+    },
+    {
+      "tag": "#JoinTheConversation",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Invites viewers to participate in discussions related to the content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#FamilyGuyFans",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Targets a dedicated fan base, encouraging them to engage with this new content.",
+      "trend_score": 0.92
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "youtube",
+    "trend_analysis": "The strategy leverages current meme culture (Peter Griffin quotes), broad comedy and animation search terms, and specific topical tags related to Iran and water crises. It balances discoverability with direct relevance, aiming to capture both existing fan bases and new audiences interested in satirical animated news.",
+    "engagement_strategy": "Engagement is driven by direct calls to action like 'LikeAndSubscribe' and 'ShareThisVideo', alongside prompts for discussion ('WhatDoYouThink', 'JoinTheConversation') to foster a community around the content. Targeting existing fan bases (#FamilyGuyFans) also encourages early engagement and sharing."
+  },
+  "usage_tips": [
+    "On YouTube, place relevant hashtags in the video description for SEO and within the first few lines to ensure visibility. You can also use the hashtag feature at the end of the title or in the dedicated hashtag section of the upload form.",
+    "Mix broad, niche, and trending hashtags to maximize reach across different user search behaviors. Prioritize primary and trending hashtags at the beginning.",
+    "Monitor hashtag performance over time and adjust your strategy based on what's driving the most views and engagement.",
+    "For YouTube Shorts, consider using a combination of Shorts-specific tags like #YouTubeShorts and #Shorts alongside these topic-specific tags for optimal visibility within the Shorts feed."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-29T02:47:41.001514",
+    "topic": "Family Guy style animated news. Professional news overlay graphics. Iran International logo top-right. News anchor Maryam (Persian Lois Griffin with hijab, huge eyes) reports: 'BREAKING NEWS: Scientists confirm water has officially ghosted Iran. It left no forwarding address.' Show cartoon map of Iran with water droplets running away with suitcases. News ticker: 'WATER CRISIS DAY 1,847'. Peter Griffin-style official: 'Water? Never heard of her.' Citizens licking morning dew. Lower third: 'EXCLUSIVE: Dew Licking Tutorial at 11'",
+    "platform": "youtube",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 29
+  }
+}

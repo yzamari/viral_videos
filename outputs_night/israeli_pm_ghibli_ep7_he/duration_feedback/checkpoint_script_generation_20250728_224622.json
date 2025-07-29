@@ -1,0 +1,13 @@
+{
+  "stage": "script_generation",
+  "timestamp": "2025-07-28T22:46:22.160647",
+  "target_duration": 64,
+  "actual_duration": 66.4,
+  "component": "script_processor",
+  "is_within_tolerance": true,
+  "details": {
+    "segments": 19
+  },
+  "warnings": [],
+  "errors": []
+}

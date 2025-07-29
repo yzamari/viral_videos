@@ -1,0 +1,127 @@
+{
+  "discussion_summary": {
+    "topic": "Audio Production & Voice Strategy",
+    "participants": [
+      "AudioMaster",
+      "CutMaster",
+      "SyncMaster"
+    ],
+    "duration_seconds": 4.915176153182983,
+    "total_rounds": 1,
+    "final_consensus": 1.0,
+    "target_consensus": 0.7,
+    "success": true
+  },
+  "round_by_round": [
+    {
+      "round": 1,
+      "contributions": [
+        {
+          "agent": "AudioMaster",
+          "message": "To maximize engagement for this 'Family Guy news breakdown', we need rapid-fire pacing with distinct, over-the-top character voices and perfectly synchronized sound effects. The humor relies on quick cuts and unexpected audio cues.",
+          "vote": "agree",
+          "timestamp": "2025-07-29 03:11:22.792825"
+        },
+        {
+          "agent": "CutMaster",
+          "message": "For this Family Guy news breakdown, we need to hit the ground running with distinct character voices and rapid visual gags to maintain YouTube engagement. Prioritizing sharp timing for each element\u2014Maryam's announcement, the teen's horror, the IT minister's bizarre solution, the pigeon cutaway, and the news ticker\u2014is key to landing the humor within the 40-second window.",
+          "vote": "agree",
+          "timestamp": "2025-07-29 03:11:24.931619"
+        },
+        {
+          "agent": "SyncMaster",
+          "message": "To maximize engagement for this 'Family Guy news breakdown,' we need distinct, over-the-top character voices for Maryam, the teen, and the IT minister, paired with rapid-fire visual cuts and sound cues. Prioritizing precise timing for each gag, especially the pigeon cutaway and news ticker, is crucial for hitting the 40-second target and maintaining comedic momentum.",
+          "vote": "agree",
+          "timestamp": "2025-07-29 03:11:26.171742"
+        }
+      ],
+      "votes": {
+        "agree": 3,
+        "disagree": 0,
+        "neutral": 0
+      }
+    }
+  ],
+  "consensus_progression": [
+    {
+      "round": 1,
+      "consensus": 1.0,
+      "timestamp": "2025-07-29 03:11:26.173101"
+    }
+  ],
+  "agent_contributions": {
+    "AudioMaster": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-29 03:11:22.792825",
+      "last_contribution": "2025-07-29 03:11:22.792825"
+    },
+    "CutMaster": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-29 03:11:24.931619",
+      "last_contribution": "2025-07-29 03:11:24.931619"
+    },
+    "SyncMaster": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-29 03:11:26.171742",
+      "last_contribution": "2025-07-29 03:11:26.171742"
+    }
+  },
+  "timeline": [
+    {
+      "timestamp": "2025-07-29 03:11:21.260663",
+      "event": "discussion_started",
+      "description": "Discussion 'Audio Production & Voice Strategy' started"
+    },
+    {
+      "timestamp": "2025-07-29 03:11:22.792825",
+      "event": "agent_contribution",
+      "agent": "AudioMaster",
+      "round": 1,
+      "description": "AudioMaster contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 03:11:24.931619",
+      "event": "agent_contribution",
+      "agent": "CutMaster",
+      "round": 1,
+      "description": "CutMaster contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 03:11:26.171742",
+      "event": "agent_contribution",
+      "agent": "SyncMaster",
+      "round": 1,
+      "description": "SyncMaster contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 03:11:26.173101",
+      "event": "consensus_update",
+      "round": 1,
+      "consensus_level": 1.0,
+      "description": "Consensus updated to 100.0% in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 03:11:26.175839",
+      "event": "discussion_completed",
+      "description": "Discussion completed with 100.0% consensus"
+    }
+  ]
+}

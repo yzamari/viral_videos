@@ -1,0 +1,77 @@
+{
+  "session_id": "israeli_pm_ghibli_ep5_he",
+  "session_dir": "outputs/israeli_pm_ghibli_ep5_he",
+  "subdirs": {
+    "logs": "outputs/israeli_pm_ghibli_ep5_he/logs",
+    "scripts": "outputs/israeli_pm_ghibli_ep5_he/scripts",
+    "audio": "outputs/israeli_pm_ghibli_ep5_he/audio",
+    "video_clips": "outputs/israeli_pm_ghibli_ep5_he/video_clips",
+    "images": "outputs/israeli_pm_ghibli_ep5_he/images",
+    "ai_agents": "outputs/israeli_pm_ghibli_ep5_he/ai_agents",
+    "discussions": "outputs/israeli_pm_ghibli_ep5_he/discussions",
+    "final_output": "outputs/israeli_pm_ghibli_ep5_he/final_output",
+    "metadata": "outputs/israeli_pm_ghibli_ep5_he/metadata",
+    "comprehensive_logs": "outputs/israeli_pm_ghibli_ep5_he/comprehensive_logs",
+    "temp_files": "outputs/israeli_pm_ghibli_ep5_he/temp_files",
+    "fallback_content": "outputs/israeli_pm_ghibli_ep5_he/fallback_content",
+    "debug_info": "outputs/israeli_pm_ghibli_ep5_he/debug_info",
+    "performance_metrics": "outputs/israeli_pm_ghibli_ep5_he/performance_metrics",
+    "user_configs": "outputs/israeli_pm_ghibli_ep5_he/user_configs",
+    "error_logs": "outputs/israeli_pm_ghibli_ep5_he/error_logs",
+    "success_metrics": "outputs/israeli_pm_ghibli_ep5_he/success_metrics",
+    "decisions": "outputs/israeli_pm_ghibli_ep5_he/decisions",
+    "subtitles": "outputs/israeli_pm_ghibli_ep5_he/subtitles",
+    "overlays": "outputs/israeli_pm_ghibli_ep5_he/overlays",
+    "agent_discussions": "outputs/israeli_pm_ghibli_ep5_he/agent_discussions"
+  },
+  "ai_decisions": {},
+  "generation_log": [
+    {
+      "timestamp": "2025-07-28T22:24:34.038414",
+      "step": "video_generation_started",
+      "status": "in_progress",
+      "details": {
+        "mission": "Studio Ghibli magic! Yitzhak Rabin, the soldier turned peacemaker, stands in a magical battlefield as swords transform into olive trees. With military uniform changing to white peace garments, he extends his hand toward yesterday's enemies. Peace angels hover around him as he signs the Oslo Accords under the ancient olive tree. Blue eyes full of pain and compassion, he knows peace requires sacrifice. The handshake with Arafat becomes a rainbow bridge of light over Jerusalem. Heart-touching music of a peace hero who fell holy.",
+        "platform": "tiktok",
+        "duration": 64
+      }
+    }
+  ],
+  "errors": [
+    {
+      "timestamp": "2025-07-28T22:32:46.797682",
+      "type": "audio_duration_validation_failed",
+      "message": "Audio is critically short (46% of target) - regenerate with more content",
+      "details": {
+        "total_duration": 29.690000000000005,
+        "target_duration": 64,
+        "quality_score": 0.4639062500000001
+      }
+    }
+  ],
+  "warnings": [],
+  "tracked_files": {},
+  "file_counts": {
+    "logs": 0,
+    "scripts": 4,
+    "audio": 16,
+    "video_clips": 8,
+    "images": 0,
+    "ai_agents": 0,
+    "discussions": 13,
+    "final_output": 0,
+    "metadata": 0,
+    "comprehensive_logs": 0,
+    "temp_files": 0,
+    "fallback_content": 0,
+    "debug_info": 0,
+    "performance_metrics": 0,
+    "user_configs": 0,
+    "error_logs": 0,
+    "success_metrics": 0,
+    "decisions": 0,
+    "subtitles": 0,
+    "overlays": 0
+  },
+  "total_files_created": 65
+}

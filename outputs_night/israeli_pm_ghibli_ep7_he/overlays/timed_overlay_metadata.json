@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 4,
+  "hook_text": "\u05d2'\u05d9\u05d1\u05dc\u05d9 \u05e4\u05d5\u05d2\u05e9 \u05d0\u05ea \u05d9\u05e6\u05d7\u05e7 \u05e9\u05de\u05d9\u05e8: \u05de\u05e8\u05d5\u05d7 \u05de\u05d2\u05df \u05e2\u05ea\u05d9\u05e7\u05d4, \u05dc\u05d5\u05d7\u05dd \u05d4\u05e6\u05dc\u05dc\u05d9\u05dd \u05d4\u05d7\u05d3 \u05de\u05d9\u05dc\u05ea?",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "anime",
+    "color_palette": "vibrant",
+    "reasoning": "The description heavily leans into fantastical and 'magical' elements, with 'guardian spirit,' 'mystical winds,' and glowing tunnels. Anime is the best fit for conveying these visual metaphors and the 'Studio Ghibli magic' precisely. The vibrant colors will enhance the dramatic and determined mood.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "bottom_center",
+    "positioning_strategy": "static",
+    "reasoning": "The description emphasizes Yitzhak Shamir emerging from ancient stone walls and standing firm against mystical winds. Placing the text at the bottom center allows the visual of Shamir and the 'ancient stone walls' and 'mystical winds' to be the primary focus, while the text provides context and thematic elements. This position is also generally safe for TikTok, as it avoids the very bottom edge where UI elements might obscure text.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i /var/folders/p9/8_jtm3l55v921154bg2xg5vr0000gn/T/tmpl2iqsbvs.mp4 -vf drawtext=text='Mighty Spirit \ud83d\udcaa':fontcolor=#54A0FF:fontsize=48:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,9.5\\,12.0),drawtext=text='Unwavering Resolve \ud83d\udd25':fontcolor=#5F27CD:fontsize=54:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,21.5\\,24.0),drawtext=text='Follow for':fontcolor=#FFFF00:fontsize=56:font='Impact':box=1:boxcolor=#FF0096@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,58.0\\,59.4),drawtext=text='more':fontcolor=#FFFF00:fontsize=56:font='Impact':box=1:boxcolor=#FF0096@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,59.5\\,60.9) -c:a copy -y outputs/israeli_pm_ghibli_ep7_he/temp_files/timed_overlays_tmpl2iqsbvs.mp4",
+  "filter_complex": "drawtext=text='Mighty Spirit \ud83d\udcaa':fontcolor=#54A0FF:fontsize=48:font='Verdana-Bold':box=1:boxcolor=#FFFFFF@0.9:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,9.5\\,12.0),drawtext=text='Unwavering Resolve \ud83d\udd25':fontcolor=#5F27CD:fontsize=54:font='Georgia-Bold':box=1:boxcolor=#FFFFFF@0.95:boxborderw=2:x=(w-text_w)/2:y=1152:enable=between(t\\,21.5\\,24.0),drawtext=text='Follow for':fontcolor=#FFFF00:fontsize=56:font='Impact':box=1:boxcolor=#FF0096@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,58.0\\,59.4),drawtext=text='more':fontcolor=#FFFF00:fontsize=56:font='Impact':box=1:boxcolor=#FF0096@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,59.5\\,60.9)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 64.0,
+    "overlay_count": 4
+  }
+}

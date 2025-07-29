@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep7_20250729_011337",
+  "mission": "EPISODE 7: Function Dragon Transform!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy style comedy where baby dragon shape-shifter teaches functions. Explain transformation rules, domain and range, one-to-one and onto functions, bijections, function composition, even/odd functions, and periodic functions. Use visual metaphors: dragon transformation machine, territory maps, mirror and rotational symmetry. Make abstract function concepts concrete and entertaining.",
+  "duration_seconds": 40,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: EPIC ANIMATED TITLE CARD: 'EPISODE 7: FUNCTION DRAGON TRANSFORM!!' with dazzling dragon effects] DIALOGUE: Prepare for a mind-bending transformation! [VISUAL: Baby dragon in a 'transformation machine' with input/output slots] DIALOGUE: I am the Function Dragon! Watch as I change forms, following strict transformation rules. [VISUAL: 'Territory maps' showing domain and range, then a dragon that is only one-to-one] DIALOGUE: My domain is where I can go; my range is where I can appear. Sometimes, each input has only one output. [VISUAL: Dragon showing mirror symmetry (even) and rotational symmetry (odd), then two dragons combining] DIALOGUE: My reflections define me. And sometimes, my powers combine, creating new forms! [VISUAL: Dragon cycling through forms on a loop] DIALOGUE: From simple shifts to complex cycles, functions are the magic of change!",
+    "final_script": "Prepare for a mind-bending transformation! I am the Function Dragon! Watch as I change forms, following strict transformation rules. My domain is where I can go; my range is where I can appear. Sometimes, each input has only one output. My reflections define me. And sometimes, my powers combine, creating new forms! From simple shifts to complex cycles, functions are the magic of change! Prepare for a mind-bending transformation! I am",
+    "word_count": 71,
+    "tts_ready": false
+  }
+}

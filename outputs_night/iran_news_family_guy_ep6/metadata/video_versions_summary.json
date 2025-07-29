@@ -1,0 +1,24 @@
+{
+  "session_id": "iran_news_family_guy_ep6",
+  "mission": "Family Guy news finale. Maryam (completely disheveled) slurs: 'ELECTION RESULTS: Guy with beard wins!' Show identical candidates. Joe-style voter: 'I voted for the one with policies!' Everyone laughs. Cutaway: Ballot box labeled 'Suggestions'. Chris-style official: 'We counted all vote. Both of them!' News ticker: 'BREAKING: Democracy Postponed Due to Weather'. Lower third: 'EXCLUSIVE: Winner Promises More Committees'. Maryam removes hijab, reveals second Maryam. Both drink.",
+  "platform": "youtube",
+  "duration_seconds": 40,
+  "created_at": "2025-07-29T03:43:11.052223",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/iran_news_family_guy_ep6/final_output/final_video_iran_news_family_guy_ep6__final.mp4",
+      "file_size_mb": 11.94819450378418
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/iran_news_family_guy_ep6/final_output/final_video_iran_news_family_guy_ep6__audio_only.mp4",
+      "file_size_mb": 12.923830032348633
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/iran_news_family_guy_ep6/temp_files/base_video.mp4",
+      "file_size_mb": 0
+    }
+  }
+}

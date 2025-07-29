@@ -1,0 +1,15 @@
+{
+  "session_id": "calculus_dragon_ep5_20250729_004906",
+  "mission": "EPISODE 5: Cauchy Dragons Stick Together!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Family Guy teamwork comedy! Baby dragon coaches the CAUCHY TEAM in mathematical synchronized swimming! Team members must stay within epsilon distance while performing routines. Heine-Borel theorem is the pool boundaries, Dedekind cuts are diving board positions. Dragon gives hilarious coaching advice explaining completeness through swimming formations. Include funny synchronized swimming mishaps, dragon's coaching pep talks, and visual demonstrations of Cauchy sequences. Mathematical precision meets comedy!",
+  "duration_seconds": 40,
+  "platform": "Platform.INSTAGRAM",
+  "category": "VideoCategory.EDUCATIONAL",
+  "visual_style": "family guy animation",
+  "tone": "funny",
+  "script_processing": {
+    "original_script": "[VISUAL: HUGE, EPIC ANIMATED TITLE CARD: 'EPISODE 5: Cauchy Dragons Stick Together!!'] DIALOGUE: Welcome to synchronized swimming with the Cauchy Dragons! [VISUAL: Baby dragon coach frantically blowing a whistle at a team of dragons attempting synchronized swimming. Mishaps abound.] DIALOGUE: Stay within epsilon distance, team! The Heine-Borel theorem keeps us in bounds! [VISUAL: Dragons attempting a complex formation, one dragon slightly out of sync. Coach facepalms.] DIALOGUE: Dedekind cuts define our dives! Be precise or face the consequences! [VISUAL: Animated depiction of Cauchy sequences converging, showing dragons getting closer. Coach shouts encouragement.] DIALOGUE: Completeness is key! Each movement must lead us closer to perfection! [VISUAL: The team finally executes a perfect synchronized move. Coach beams with pride. Quick cuts of funny mishaps and pep talks throughout.] DIALOGUE: That is mathematical teamwork! We stick together, always!",
+    "final_script": "Welcome to synchronized swimming, Cauchy Dragons! Maintain epsilon distance, team. The Heine-Borel theorem ensures our boundaries. Dedekind cuts guide our dives. Precision is paramount; consequences await errors. Completeness is essential. Each movement must refine our performance. This is mathematical teamwork; we are united. Our synchronicity is our strength. We strive for flawless execution. Success depends on our collective precision. We will achieve perfection together. Our unity is our power. This performance is a testament to our collaboration. We are the Cauchy Dragons",
+    "word_count": 86,
+    "tts_ready": false
+  }
+}

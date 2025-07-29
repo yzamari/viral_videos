@@ -1,0 +1,24 @@
+{
+  "session_id": "calculus_dragon_ep2_20250729_001028",
+  "mission": "EPISODE 2: Sequence Dragon Express!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Family Guy comedy! Dragon conductor runs the SEQUENCE EXPRESS train where each car represents a term approaching the limit station! Epsilon and delta are friendly train inspectors ensuring passengers stay within bounds. Dragon explains convergence through hilarious train announcements, shows the squeeze theorem as trains merging on parallel tracks, and bounded sequences as safety rails. Include funny passenger reactions, dragon's train conductor jokes, and visual demonstrations of limits. Educational and entertaining!",
+  "platform": "instagram",
+  "duration_seconds": 40,
+  "created_at": "2025-07-29T00:23:10.132913",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/calculus_dragon_ep2_20250729_001028/final_output/final_video_calculus_dragon_ep2_20250729_001028__final.mp4",
+      "file_size_mb": 13.846793174743652
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/calculus_dragon_ep2_20250729_001028/final_output/final_video_calculus_dragon_ep2_20250729_001028__audio_only.mp4",
+      "file_size_mb": 14.491792678833008
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/calculus_dragon_ep2_20250729_001028/temp_files/base_video.mp4",
+      "file_size_mb": 0
+    }
+  }
+}

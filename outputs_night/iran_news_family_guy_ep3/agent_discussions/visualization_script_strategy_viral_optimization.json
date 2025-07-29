@@ -1,0 +1,127 @@
+{
+  "discussion_summary": {
+    "topic": "Script Strategy & Viral Optimization",
+    "participants": [
+      "StoryWeaver",
+      "VisionCraft",
+      "AudioMaster"
+    ],
+    "duration_seconds": 5.601669073104858,
+    "total_rounds": 1,
+    "final_consensus": 1.0,
+    "target_consensus": 0.7,
+    "success": true
+  },
+  "round_by_round": [
+    {
+      "round": 1,
+      "contributions": [
+        {
+          "agent": "StoryWeaver",
+          "message": "To maximize engagement for this 'Family Guy news chaos' on YouTube, we need a rapid-fire, visually driven script that delivers punchlines instantly, reflecting the chaotic energy of the show and mirroring viral news commentary.",
+          "vote": "agree",
+          "timestamp": "2025-07-29 02:58:44.195702"
+        },
+        {
+          "agent": "VisionCraft",
+          "message": "To maximize engagement for this 'Family Guy news chaos' on YouTube, we need a rapid-fire, visually driven script that delivers punchlines instantly, mirroring the show's chaotic energy and leveraging the absurdity of the economic scenario for viral potential within the 40-second timeframe.",
+          "vote": "agree",
+          "timestamp": "2025-07-29 02:58:46.142092"
+        },
+        {
+          "agent": "AudioMaster",
+          "message": "To maximize engagement for this 'Family Guy news chaos' on YouTube, we need rapid-fire, visually punchy segments with exaggerated audio cues that mirror the show's frantic humor and the economic absurdity. Each element, from the crooked hijab to the plunging graph and character quips, must be synchronized for maximum comedic impact within the strict 40-second timeframe.",
+          "vote": "agree",
+          "timestamp": "2025-07-29 02:58:48.394243"
+        }
+      ],
+      "votes": {
+        "agree": 3,
+        "disagree": 0,
+        "neutral": 0
+      }
+    }
+  ],
+  "consensus_progression": [
+    {
+      "round": 1,
+      "consensus": 1.0,
+      "timestamp": "2025-07-29 02:58:48.395710"
+    }
+  ],
+  "agent_contributions": {
+    "StoryWeaver": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-29 02:58:44.195702",
+      "last_contribution": "2025-07-29 02:58:44.195702"
+    },
+    "VisionCraft": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-29 02:58:46.142092",
+      "last_contribution": "2025-07-29 02:58:46.142092"
+    },
+    "AudioMaster": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-29 02:58:48.394243",
+      "last_contribution": "2025-07-29 02:58:48.394243"
+    }
+  },
+  "timeline": [
+    {
+      "timestamp": "2025-07-29 02:58:42.796274",
+      "event": "discussion_started",
+      "description": "Discussion 'Script Strategy & Viral Optimization' started"
+    },
+    {
+      "timestamp": "2025-07-29 02:58:44.195702",
+      "event": "agent_contribution",
+      "agent": "StoryWeaver",
+      "round": 1,
+      "description": "StoryWeaver contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 02:58:46.142092",
+      "event": "agent_contribution",
+      "agent": "VisionCraft",
+      "round": 1,
+      "description": "VisionCraft contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 02:58:48.394243",
+      "event": "agent_contribution",
+      "agent": "AudioMaster",
+      "round": 1,
+      "description": "AudioMaster contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 02:58:48.395710",
+      "event": "consensus_update",
+      "round": 1,
+      "consensus_level": 1.0,
+      "description": "Consensus updated to 100.0% in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 02:58:48.397949",
+      "event": "discussion_completed",
+      "description": "Discussion completed with 100.0% consensus"
+    }
+  ]
+}

@@ -1,0 +1,239 @@
+{
+  "session_id": "iran_news_family_guy_ep2",
+  "mission": "Family Guy news continues. Same anchor Maryam announces: 'BREAKING: Government unveils master plan - Committee to form committee about committees.' Professional news graphics show organizational chart exploding. Cutaway: Stewie-style minister: 'I propose we form a sub-committee!' Room of identical officials nodding. News ticker: 'COMMITTEE COUNT: \u221e'. Lower third: 'EXCLUSIVE INTERVIEW: Chairman of Nothing Committee'. Maryam's eye twitches. Map shows committee buildings multiplying like cancer cells. 'This is fine' meme in corner.",
+  "timestamp": "2025-07-29T02:57:48.828212",
+  "generation_metadata": {
+    "platform": "Platform.YOUTUBE",
+    "category": "VideoCategory.ENTERTAINMENT",
+    "duration_seconds": 40,
+    "visual_style": "family guy animation",
+    "tone": "darkly_humorous"
+  },
+  "agents": {
+    "script_processor": {
+      "agent_name": "EnhancedScriptProcessor",
+      "role": "Script optimization and TTS preparation",
+      "input": {
+        "original_mission": "Family Guy news continues. Same anchor Maryam announces: 'BREAKING: Government unveils master plan - Committee to form committee about committees.' Professional news graphics show organizational chart exploding. Cutaway: Stewie-style minister: 'I propose we form a sub-committee!' Room of identical officials nodding. News ticker: 'COMMITTEE COUNT: \u221e'. Lower third: 'EXCLUSIVE INTERVIEW: Chairman of Nothing Committee'. Maryam's eye twitches. Map shows committee buildings multiplying like cancer cells. 'This is fine' meme in corner.",
+        "target_duration": 40,
+        "platform": "Platform.YOUTUBE",
+        "hook": "This is about Family Guy news continues. Same anchor Maryam announces: 'BREAKING: Government unveils master plan - Committee to form committee about committees.' Professional news graphics show organizational chart exploding. Cutaway: Stewie-style minister: 'I propose we form a sub-committee!' Room of identical officials nodding. News ticker: 'COMMITTEE COUNT: \u221e'. Lower third: 'EXCLUSIVE INTERVIEW: Chairman of Nothing Committee'. Maryam's eye twitches. Map shows committee buildings multiplying like cancer cells. 'This is fine' meme in corner. - part 1",
+        "call_to_action": "Follow for more!"
+      },
+      "output": {
+        "optimized_script": "Family Guy news continues. Breaking news: The government unveils a master plan involving committees. A Stewie-style minister proposes a sub-committee, prompting identical officials to nod in agreement. The committee count is now infinite. We have an exclusive interview with the Chairman of the Nothing Committee. Maryam's eye twitches as committee buildings rapidly multiply. The situation escalates. Despite the chaos, the 'this is fine' meme perfectly captures the mood. This plan is remarkably thorough",
+        "segments": [
+          {
+            "text": "Family Guy news continues",
+            "duration": 2.2,
+            "word_count": 4,
+            "voice_suggestion": "newscaster"
+          },
+          {
+            "text": "The government unveils a master plan involving committees",
+            "duration": 5.1,
+            "word_count": 11,
+            "voice_suggestion": "newscaster"
+          },
+          {
+            "text": "A Stewie-style minister proposes a sub-committee, prompting identical officials to nod in agreement",
+            "duration": 7.4,
+            "word_count": 16,
+            "voice_suggestion": "newscaster"
+          },
+          {
+            "text": "The committee count is now infinite",
+            "duration": 3.3,
+            "word_count": 7,
+            "voice_suggestion": "newscaster"
+          },
+          {
+            "text": "We have an exclusive interview with the Chairman of the Nothing Committee",
+            "duration": 6.0,
+            "word_count": 13,
+            "voice_suggestion": "newscaster"
+          },
+          {
+            "text": "Maryam's eye twitches as committee buildings rapidly multiply",
+            "duration": 5.4,
+            "word_count": 11,
+            "voice_suggestion": "narrator"
+          },
+          {
+            "text": "The situation escalates",
+            "duration": 2.2,
+            "word_count": 3,
+            "voice_suggestion": "narrator"
+          },
+          {
+            "text": "Despite the chaos, the 'this is fine' meme perfectly captures the mood",
+            "duration": 6.6,
+            "word_count": 14,
+            "voice_suggestion": "narrator"
+          },
+          {
+            "text": "This plan is remarkably thorough",
+            "duration": 3.8,
+            "word_count": 6,
+            "voice_suggestion": "newscaster"
+          }
+        ],
+        "total_duration": 42.0,
+        "word_count": 81,
+        "optimization_notes": "Reduced word count by removing redundancy and streamlining phrasing.  Adjusted wording for clearer TTS pronunciation. Maintained core narrative.",
+        "duration_match": "close"
+      },
+      "reasoning": "AI-enhanced script processing with precise duration matching and TTS optimization",
+      "performance": {
+        "accuracy": "high",
+        "duration_precision": "exact",
+        "engagement_optimization": "enabled"
+      }
+    },
+    "visual_style": {
+      "agent_name": "VisualStyleAgent",
+      "role": "Visual aesthetics and engagement optimization",
+      "input": {
+        "mission": "Family Guy news continues. Same anchor Maryam announces: 'BREAKING: Government unveils master plan - Committee to form committee about committees.' Professional news graphics show organizational chart exploding. Cutaway: Stewie-style minister: 'I propose we form a sub-committee!' Room of identical officials nodding. News ticker: 'COMMITTEE COUNT: \u221e'. Lower third: 'EXCLUSIVE INTERVIEW: Chairman of Nothing Committee'. Maryam's eye twitches. Map shows committee buildings multiplying like cancer cells. 'This is fine' meme in corner.",
+        "audience": "general audience",
+        "platform": "Platform.YOUTUBE",
+        "content_type": "VideoCategory.ENTERTAINMENT"
+      },
+      "output": {
+        "primary_style": "cartoon",
+        "color_palette": "vibrant",
+        "engagement_score": "high",
+        "visual_elements": [],
+        "style_confidence": 0.85
+      },
+      "reasoning": "The 'Family Guy news' and 'Stewie-style minister' strongly indicate a cartoon style. The narrative of bureaucratic absurdity and visual cues like multiplying buildings and an exploding org chart lend themselves to a vibrant, exaggerated cartoon aesthetic that aligns with the humor of the show. This style is also highly engaging on YouTube for a general audience.",
+      "performance": {
+        "trend_analysis": "enabled",
+        "platform_optimization": "active",
+        "engagement_prediction": "high"
+      }
+    },
+    "positioning": {
+      "agent_name": "OverlayPositioningAgent",
+      "role": "Subtitle and overlay positioning optimization",
+      "input": {
+        "mission": "Family Guy news continues. Same anchor Maryam announces: 'BREAKING: Government unveils master plan - Committee to form committee about committees.' Professional news graphics show organizational chart exploding. Cutaway: Stewie-style minister: 'I propose we form a sub-committee!' Room of identical officials nodding. News ticker: 'COMMITTEE COUNT: \u221e'. Lower third: 'EXCLUSIVE INTERVIEW: Chairman of Nothing Committee'. Maryam's eye twitches. Map shows committee buildings multiplying like cancer cells. 'This is fine' meme in corner.",
+        "style": "cartoon",
+        "platform": "Platform.YOUTUBE",
+        "duration": 40
+      },
+      "output": {
+        "primary_position": "bottom_center",
+        "strategy": "static",
+        "safety_zones": [],
+        "positioning_confidence": 0.9
+      },
+      "reasoning": "The request specifies 'lower third' for the 'Chairman of Nothing Committee' and the 'This is fine' meme. 'bottom_center' is the most appropriate choice to accommodate these elements while adhering to YouTube's lower third safe zone and the general platform requirement.",
+      "performance": {
+        "platform_compliance": "verified",
+        "readability_score": "high",
+        "accessibility": "optimized"
+      }
+    },
+    "voice_director": {
+      "agent_name": "VoiceDirectorAgent",
+      "role": "Voice selection and audio strategy optimization",
+      "input": {
+        "mission": "Family Guy news continues. Same anchor Maryam announces: 'BREAKING: Government unveils master plan - Committee to form committee about committees.' Professional news graphics show organizational chart exploding. Cutaway: Stewie-style minister: 'I propose we form a sub-committee!' Room of identical officials nodding. News ticker: 'COMMITTEE COUNT: \u221e'. Lower third: 'EXCLUSIVE INTERVIEW: Chairman of Nothing Committee'. Maryam's eye twitches. Map shows committee buildings multiplying like cancer cells. 'This is fine' meme in corner.",
+        "script": "Family Guy news continues. Breaking news: The government unveils a master plan involving committees. A Stewie-style minister proposes a sub-committee, prompting identical officials to nod in agreement. The committee count is now infinite. We have an exclusive interview with the Chairman of the Nothing Committee. Maryam's eye twitches as committee buildings rapidly multiply. The situation escalates. Despite the chaos, the 'this is fine' meme perfectly captures the mood. This plan is remarkably thorough",
+        "platform": "Platform.YOUTUBE",
+        "duration": 40
+      },
+      "output": {
+        "strategy": "single",
+        "voices": [
+          {
+            "clip_index": 0,
+            "voice": "en-US-Neural2-F",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 1,
+            "voice": "en-US-Neural2-F",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 2,
+            "voice": "en-US-Neural2-F",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 3,
+            "voice": "en-US-Neural2-F",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          },
+          {
+            "clip_index": 4,
+            "voice": "en-US-Neural2-F",
+            "speed": 1.0,
+            "pitch": 0,
+            "emotion": "neutral"
+          }
+        ],
+        "primary_personality": "custom",
+        "voice_variety": false,
+        "total_voices": 5
+      },
+      "reasoning": "User specified voice: en-US-Neural2-F",
+      "performance": {
+        "voice_matching": "optimal",
+        "engagement_optimization": "active",
+        "personality_alignment": "high"
+      }
+    }
+  },
+  "discussion_summary": {
+    "consensus": "All agents achieved optimal consensus for viral video generation",
+    "key_decisions": [
+      "Visual style: cartoon with vibrant colors",
+      "Positioning: bottom_center using static strategy",
+      "Voice strategy: single with custom personality",
+      "Script optimization: 81 words optimized for 40s duration"
+    ],
+    "performance_metrics": {
+      "total_agents": 4,
+      "decisions_made": 4,
+      "consensus_achieved": true,
+      "optimization_level": "high",
+      "processing_time": "optimized",
+      "ai_confidence": 0.92
+    },
+    "technical_details": {
+      "veo_model": "veo-2.0-generate-001",
+      "tts_engine": "enhanced_multilingual",
+      "script_processor": "ai_enhanced",
+      "session_tracking": "comprehensive"
+    }
+  },
+  "generation_insights": {
+    "content_analysis": {
+      "mission_relevance": "high",
+      "viral_potential": "optimized",
+      "engagement_factors": [
+        "visual_appeal",
+        "audio_quality",
+        "script_optimization",
+        "platform_targeting"
+      ]
+    },
+    "optimization_summary": {
+      "script_enhancement": "Optimized from basic mission to 81 words",
+      "duration_matching": "Achieved close duration alignment",
+      "style_optimization": "Selected cartoon style for maximum engagement",
+      "voice_optimization": "Configured single voice strategy"
+    }
+  }
+}

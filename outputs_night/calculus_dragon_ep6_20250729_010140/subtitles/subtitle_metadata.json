@@ -1,0 +1,16 @@
+{
+  "total_segments": 7,
+  "total_duration": 33.695510000000006,
+  "script_content": "Welcome, young dragons, to the power-up workshop! Fractional powers are like magic roots, transforming power into smaller, more manageable flames. Real exponents represent infinite dragon gatherings, their limits shaping true power. Topology explores dragon shapes and their connections, beyond simply counting fireballs. Even intricate fractal magic patterns hold special mathematical secrets for dragons. Mastering these concepts unlocks unimaginable power for you all. Embrace the challenge, young ones, and let your flames soar",
+  "audio_files_used": [
+    "outputs/calculus_dragon_ep6_20250729_010140/audio/padded/padded_audio_segment_0.mp3",
+    "outputs/calculus_dragon_ep6_20250729_010140/audio/padded/padded_audio_segment_1.mp3",
+    "outputs/calculus_dragon_ep6_20250729_010140/audio/padded/padded_audio_segment_2.mp3",
+    "outputs/calculus_dragon_ep6_20250729_010140/audio/padded/padded_audio_segment_3.mp3",
+    "outputs/calculus_dragon_ep6_20250729_010140/audio/padded/padded_audio_segment_4.mp3",
+    "outputs/calculus_dragon_ep6_20250729_010140/audio/padded/padded_audio_segment_5.mp3",
+    "outputs/calculus_dragon_ep6_20250729_010140/audio/padded/padded_audio_segment_6.mp3"
+  ],
+  "target_duration": 33.695510000000006,
+  "capped_to_target": false
+}

@@ -1,0 +1,236 @@
+{
+  "duration_seconds": {
+    "key": "duration_seconds",
+    "value": 40,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI - Adjusted to 5 x 8s clips",
+    "timestamp": "2025-07-29T00:49:14.663930"
+  },
+  "platform": {
+    "key": "platform",
+    "value": "instagram",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Platform: instagram",
+    "timestamp": "2025-07-29T00:49:14.664072"
+  },
+  "category": {
+    "key": "category",
+    "value": "Educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Category: Educational",
+    "timestamp": "2025-07-29T00:49:14.664190"
+  },
+  "category_string": {
+    "key": "category_string",
+    "value": "Educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original category string: Educational",
+    "timestamp": "2025-07-29T00:49:14.664291"
+  },
+  "target_audience": {
+    "key": "target_audience",
+    "value": "general audience",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "Target audience: general audience",
+    "timestamp": "2025-07-29T00:49:14.664395"
+  },
+  "language": {
+    "key": "language",
+    "value": "en-US",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Primary language from CLI: en-US",
+    "timestamp": "2025-07-29T00:49:14.664507"
+  },
+  "all_languages": {
+    "key": "all_languages",
+    "value": [
+      "en-US"
+    ],
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "All languages: en-US",
+    "timestamp": "2025-07-29T00:49:14.664609"
+  },
+  "style": {
+    "key": "style",
+    "value": "educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified via CLI",
+    "timestamp": "2025-07-29T00:49:14.664714"
+  },
+  "style_string": {
+    "key": "style_string",
+    "value": "educational",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original style string: educational",
+    "timestamp": "2025-07-29T00:49:14.664812"
+  },
+  "tone": {
+    "key": "tone",
+    "value": "funny",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Tone: funny",
+    "timestamp": "2025-07-29T00:49:14.664912"
+  },
+  "tone_string": {
+    "key": "tone_string",
+    "value": "funny",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original tone string: funny",
+    "timestamp": "2025-07-29T00:49:14.665008"
+  },
+  "visual_style": {
+    "key": "visual_style",
+    "value": "family guy animation",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Visual style: family guy animation",
+    "timestamp": "2025-07-29T00:49:14.665107"
+  },
+  "visual_style_string": {
+    "key": "visual_style_string",
+    "value": "family guy animation",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Original visual style string: family guy animation",
+    "timestamp": "2025-07-29T00:49:14.665205"
+  },
+  "theme_id": {
+    "key": "theme_id",
+    "value": "preset_university",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Theme specified by user: preset_university",
+    "timestamp": "2025-07-29T00:49:14.665311"
+  },
+  "style_reference_id": {
+    "key": "style_reference_id",
+    "value": null,
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 1.0,
+    "reasoning": "No style reference specified",
+    "timestamp": "2025-07-29T00:49:14.665418"
+  },
+  "character_id": {
+    "key": "character_id",
+    "value": "Young clever dragon professor with glasses, purple scales, wearing a lab coat, Family Guy animation style, holding advanced calculus textbook, confident and witty expression",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character specified by user: Young clever dragon professor with glasses, purple scales, wearing a lab coat, Family Guy animation style, holding advanced calculus textbook, confident and witty expression",
+    "timestamp": "2025-07-29T00:49:14.665518"
+  },
+  "character_scene": {
+    "key": "character_scene",
+    "value": "University lecture hall with complex equations on multiple blackboards, Family Guy style, mathematical symbols and formulas floating around, epsilon-delta proofs visualized, engineering diagrams in background",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Character scene: University lecture hall with complex equations on multiple blackboards, Family Guy style, mathematical symbols and formulas floating around, epsilon-delta proofs visualized, engineering diagrams in background",
+    "timestamp": "2025-07-29T00:49:14.665621"
+  },
+  "frame_continuity": {
+    "key": "frame_continuity",
+    "value": true,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.95,
+    "reasoning": "AI decision: 40s duration on instagram - continuity preferred for quality",
+    "timestamp": "2025-07-29T00:49:21.002679"
+  },
+  "continuous_generation": {
+    "key": "continuous_generation",
+    "value": true,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "User specified continuous: True",
+    "timestamp": "2025-07-29T00:49:21.002995"
+  },
+  "mode": {
+    "key": "mode",
+    "value": "professional",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mode: professional",
+    "timestamp": "2025-07-29T00:49:21.003253"
+  },
+  "cheap_mode": {
+    "key": "cheap_mode",
+    "value": false,
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode: False",
+    "timestamp": "2025-07-29T00:49:21.003511"
+  },
+  "cheap_mode_level": {
+    "key": "cheap_mode_level",
+    "value": "full",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Cheap mode level: full",
+    "timestamp": "2025-07-29T00:49:21.003763"
+  },
+  "mission": {
+    "key": "mission",
+    "value": "EPISODE 5: Cauchy Dragons Stick Together!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Family Guy teamwork comedy! Baby dragon coaches the CAUCHY TEAM in mathematical synchronized swimming! Team members must stay within epsilon distance while performing routines. Heine-Borel theorem is the pool boundaries, Dedekind cuts are diving board positions. Dragon gives hilarious coaching advice explaining completeness through swimming formations. Include funny synchronized swimming mishaps, dragon's coaching pep talks, and visual demonstrations of Cauchy sequences. Mathematical precision meets comedy!",
+    "source": "DecisionSource.USER_CLI",
+    "confidence": 1.0,
+    "reasoning": "Mission: EPISODE 5: Cauchy Dragons Stick Together!! Show th...",
+    "timestamp": "2025-07-29T00:49:21.004041"
+  },
+  "hook": {
+    "key": "hook",
+    "value": "Amazing content ahead!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated hook",
+    "timestamp": "2025-07-29T00:49:21.004348"
+  },
+  "call_to_action": {
+    "key": "call_to_action",
+    "value": "Follow for more!",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI-generated CTA",
+    "timestamp": "2025-07-29T00:49:21.004591"
+  },
+  "voice_strategy": {
+    "key": "voice_strategy",
+    "value": "variety",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: 40s duration",
+    "timestamp": "2025-07-29T00:49:21.004835"
+  },
+  "color_palette": {
+    "key": "color_palette",
+    "value": "family guy animation palette",
+    "source": "DecisionSource.SYSTEM_DEFAULT",
+    "confidence": 0.5,
+    "reasoning": "Style-based fallback",
+    "timestamp": "2025-07-29T00:49:21.005084"
+  },
+  "background_music_style": {
+    "key": "background_music_style",
+    "value": "ambient",
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.8,
+    "reasoning": "AI decision: educational style, funny tone",
+    "timestamp": "2025-07-29T00:49:21.005329"
+  },
+  "num_clips": {
+    "key": "num_clips",
+    "value": 5,
+    "source": "DecisionSource.AI_AGENT",
+    "confidence": 0.9,
+    "reasoning": "Two clips allow for a clear introduction and a focused demonstration.  More clips would risk losing the audience's attention within the short timeframe.",
+    "timestamp": "2025-07-29T00:50:07.293740"
+  }
+}

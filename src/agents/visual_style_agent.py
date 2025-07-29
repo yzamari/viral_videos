@@ -34,40 +34,23 @@ class VisualStyleAgent:
                             content_type: str = "general", humor_level: str = "medium") -> Dict[str, Any]:
         """
         Analyze and determine optimal visual style for content
+        
+        Args:
+            mission: Content mission/subject
+            target_audience: Target audience description
+            platform: Target platform (tiktok, youtube, instagram, etc.)
+            content_type: Type of content (educational, entertainment, etc.)
+            humor_level: Level of humor (low, medium, high)
+            
+        Returns:
+            Dictionary with style decision and reasoning
         """
         try:
             logger.info(f"🎨 Analyzing optimal visual style for: {mission}")
             logger.info(f"👥 Audience: {target_audience}, Platform: {platform}")
             
-            # Enhanced prompt with internet research
+            # Optimized concise prompt for faster processing
             style_prompt = f"""
-IMPORTANT: Research the visual style thoroughly. If the mission mentions specific styles like "Ghibli", "Family Guy", etc., 
-research what these styles actually look like and provide detailed visual descriptions.
-
-Mission: "{mission}"
-Platform: {platform}
-Audience: {target_audience}
-
-Tasks:
-1. If specific animation/art styles are mentioned (e.g., "Studio Ghibli", "Family Guy"), research their visual characteristics
-2. Provide DETAILED visual descriptions, not just style names
-3. For animated styles, specify if it's 2D hand-drawn, 3D CGI, vector animation, etc.
-4. Include specific color palettes, line styles, character proportions
-
-Return JSON with DETAILED descriptions:
-{{
-    "primary_style": "style_name",
-    "detailed_visual_description": "Comprehensive visual description of the style",
-    "animation_type": "2D hand-drawn|3D CGI|vector|realistic",
-    "color_palette": "specific colors used",
-    "line_style": "thick outlines|thin lines|no outlines",
-    "character_design": "proportions and design specifics",
-    "reasoning": "Why this style fits",
-    "engagement_prediction": "high|medium|low"
-}}
-"""
-
-            response = self.model.generate_content(style_prompt)
 Analyze visual style for: "{mission}"
 Platform: {platform}
 Audience: {target_audience}

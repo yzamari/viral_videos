@@ -1,0 +1,127 @@
+{
+  "discussion_summary": {
+    "topic": "Script Strategy & Viral Optimization",
+    "participants": [
+      "StoryWeaver",
+      "VisionCraft",
+      "AudioMaster"
+    ],
+    "duration_seconds": 4.287506103515625,
+    "total_rounds": 1,
+    "final_consensus": 1.0,
+    "target_consensus": 0.7,
+    "success": true
+  },
+  "round_by_round": [
+    {
+      "round": 1,
+      "contributions": [
+        {
+          "agent": "StoryWeaver",
+          "message": "To maximize engagement for this Family Guy news breakdown, we need rapid-fire pacing with distinct character voices and visual gags. The humor hinges on the absurd contrast of digital detox symptoms, so precise timing of each element is crucial for landing punchlines within the 40-second window.",
+          "vote": "agree",
+          "timestamp": "2025-07-29 03:11:14.293650"
+        },
+        {
+          "agent": "VisionCraft",
+          "message": "To maximize engagement on YouTube for this 'Family Guy news breakdown,' we need a visually dynamic, rapid-fire presentation that captures the show's signature humor. The script should lean into sharp, quick cuts and distinct character vocalizations, mirroring the chaotic energy of a Family Guy segment.",
+          "vote": "agree",
+          "timestamp": "2025-07-29 03:11:15.726233"
+        },
+        {
+          "agent": "AudioMaster",
+          "message": "To maximize engagement for this 'Family Guy news breakdown,' we need a fast-paced, audio-centric delivery that mimics the show's chaotic humor. Distinct, over-the-top voice acting for Maryam, the teenager, and the IT minister, coupled with sharp audio cues for visual gags, will be crucial for viral potential on YouTube within the 40-second limit.",
+          "vote": "agree",
+          "timestamp": "2025-07-29 03:11:17.196644"
+        }
+      ],
+      "votes": {
+        "agree": 3,
+        "disagree": 0,
+        "neutral": 0
+      }
+    }
+  ],
+  "consensus_progression": [
+    {
+      "round": 1,
+      "consensus": 1.0,
+      "timestamp": "2025-07-29 03:11:17.197792"
+    }
+  ],
+  "agent_contributions": {
+    "StoryWeaver": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-29 03:11:14.293650",
+      "last_contribution": "2025-07-29 03:11:14.293650"
+    },
+    "VisionCraft": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-29 03:11:15.726233",
+      "last_contribution": "2025-07-29 03:11:15.726233"
+    },
+    "AudioMaster": {
+      "total_contributions": 1,
+      "votes": {
+        "agree": 1,
+        "disagree": 0,
+        "neutral": 0
+      },
+      "avg_message_length": 0,
+      "first_contribution": "2025-07-29 03:11:17.196644",
+      "last_contribution": "2025-07-29 03:11:17.196644"
+    }
+  },
+  "timeline": [
+    {
+      "timestamp": "2025-07-29 03:11:12.913954",
+      "event": "discussion_started",
+      "description": "Discussion 'Script Strategy & Viral Optimization' started"
+    },
+    {
+      "timestamp": "2025-07-29 03:11:14.293650",
+      "event": "agent_contribution",
+      "agent": "StoryWeaver",
+      "round": 1,
+      "description": "StoryWeaver contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 03:11:15.726233",
+      "event": "agent_contribution",
+      "agent": "VisionCraft",
+      "round": 1,
+      "description": "VisionCraft contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 03:11:17.196644",
+      "event": "agent_contribution",
+      "agent": "AudioMaster",
+      "round": 1,
+      "description": "AudioMaster contributed in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 03:11:17.197792",
+      "event": "consensus_update",
+      "round": 1,
+      "consensus_level": 1.0,
+      "description": "Consensus updated to 100.0% in round 1"
+    },
+    {
+      "timestamp": "2025-07-29 03:11:17.201460",
+      "event": "discussion_completed",
+      "description": "Discussion completed with 100.0% consensus"
+    }
+  ]
+}

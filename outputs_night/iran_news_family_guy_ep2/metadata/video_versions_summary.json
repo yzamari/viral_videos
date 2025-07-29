@@ -1,0 +1,24 @@
+{
+  "session_id": "iran_news_family_guy_ep2",
+  "mission": "Family Guy news continues. Same anchor Maryam announces: 'BREAKING: Government unveils master plan - Committee to form committee about committees.' Professional news graphics show organizational chart exploding. Cutaway: Stewie-style minister: 'I propose we form a sub-committee!' Room of identical officials nodding. News ticker: 'COMMITTEE COUNT: \u221e'. Lower third: 'EXCLUSIVE INTERVIEW: Chairman of Nothing Committee'. Maryam's eye twitches. Map shows committee buildings multiplying like cancer cells. 'This is fine' meme in corner.",
+  "platform": "youtube",
+  "duration_seconds": 40,
+  "created_at": "2025-07-29T02:57:48.807263",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/iran_news_family_guy_ep2/final_output/final_video_iran_news_family_guy_ep2__final.mp4",
+      "file_size_mb": 89.00553607940674
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/iran_news_family_guy_ep2/final_output/final_video_iran_news_family_guy_ep2__audio_only.mp4",
+      "file_size_mb": 77.2485179901123
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/iran_news_family_guy_ep2/temp_files/base_video.mp4",
+      "file_size_mb": 0
+    }
+  }
+}

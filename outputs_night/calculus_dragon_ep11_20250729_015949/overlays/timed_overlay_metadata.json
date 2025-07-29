@@ -1,0 +1,24 @@
+{
+  "overlays_applied": 3,
+  "hook_text": "This is about EPISODE 11: Dragon's Secret Techniques!! Show this as HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects! Create a Family Guy style comedy where baby dragon in ninja dojo learns secret calculus techniques. Teach Darboux theorem, L'H\u00f4pital's rule for various indeterminate forms, and advanced limit techniques. Use visual metaphors: ninja training, secret scrolls, ultimate techniques. Show how to handle 0/0, infinity/infinity, and other indeterminate forms with humor and clarity. - part 1",
+  "cta_text": "Follow for more!",
+  "style_decision": {
+    "primary_style": "cartoon",
+    "color_palette": "vibrant",
+    "reasoning": "A 'Family Guy style comedy' inherently points to a cartoon aesthetic. The 'HUGE ANIMATED TITLE CARD' and 'epic effects' further support a dynamic, animated cartoon style. Vibrant colors will enhance the comedic and energetic nature suitable for Instagram's general audience, making the complex calculus concepts more approachable and visually engaging.",
+    "engagement_prediction": "high"
+  },
+  "positioning_decision": {
+    "primary_overlay_position": "top_center",
+    "positioning_strategy": "static",
+    "reasoning": "The prompt specifies the title card to be HUGE ANIMATED TITLE CARD at the beginning for 3 seconds with epic effects. Placing it at the top center for the initial 3 seconds will ensure maximum visibility and impact for the title. For the rest of the video, a static top center position will keep the content clear and avoid interfering with the visual gags and mathematical explanations happening in the main frame, while adhering to Instagram's 'avoid bottom 20%' rule.",
+    "mobile_optimized": true
+  },
+  "ffmpeg_command": "ffmpeg -i /var/folders/p9/8_jtm3l55v921154bg2xg5vr0000gn/T/tmpyd28o73n.mp4 -vf drawtext=text='#CalculusNinja \u2694\ufe0f':fontcolor=#FFFFFF:fontsize=50:font='Impact':box=1:boxcolor=#C44569@1:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,33.0\\,36.0),drawtext=text='Follow for':fontcolor=#FFFF00:fontsize=52:font='Anton':box=1:boxcolor=#FF00FF@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,34.0\\,35.4),drawtext=text='more':fontcolor=#FFFF00:fontsize=52:font='Anton':box=1:boxcolor=#FF00FF@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,35.5\\,36.9) -c:a copy -y outputs/calculus_dragon_ep11_20250729_015949/temp_files/timed_overlays_tmpyd28o73n.mp4",
+  "filter_complex": "drawtext=text='#CalculusNinja \u2694\ufe0f':fontcolor=#FFFFFF:fontsize=50:font='Impact':box=1:boxcolor=#C44569@1:boxborderw=3:x=(w-text_w)/2:y=1152:enable=between(t\\,33.0\\,36.0),drawtext=text='Follow for':fontcolor=#FFFF00:fontsize=52:font='Anton':box=1:boxcolor=#FF00FF@0.7:boxborderw=3:x=(w-text_w)/2:y=1720:enable=between(t\\,34.0\\,35.4),drawtext=text='more':fontcolor=#FFFF00:fontsize=52:font='Anton':box=1:boxcolor=#FF00FF@0.7:boxborderw=3:x=(w-text_w)/2:y=1640:enable=between(t\\,35.5\\,36.9)",
+  "timing_info": {
+    "line_duration": 2.0,
+    "total_duration": 40.0,
+    "overlay_count": 3
+  }
+}

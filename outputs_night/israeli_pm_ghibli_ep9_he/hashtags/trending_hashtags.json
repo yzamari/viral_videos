@@ -1,0 +1,228 @@
+{
+  "hashtags": [
+    {
+      "tag": "#NetanyahuMagic",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "Directly references the core concept of the video: Netanyahu as a political magician.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#StudioGhibliInspired",
+      "category": "primary",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the artistic style and influences, appealing to Ghibli fans.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#PoliticalSorcerer",
+      "category": "primary",
+      "estimated_reach": "high",
+      "reasoning": "A creative and memorable description of Netanyahu's portrayal.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#JerusalemCrystalTower",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Specific visual detail that can attract viewers looking for unique imagery.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#EagleEyesLeader",
+      "category": "primary",
+      "estimated_reach": "low",
+      "reasoning": "Focuses on a specific, evocative descriptor from the script.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#TikTokViralMagic",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Leverages TikTok's algorithm for viral content and the 'magic' theme.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#GhibliChallenge",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Connects to potential Ghibli-themed trends or challenges on TikTok.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#PoliticalHumor",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Broad category that captures a significant audience on TikTok.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#LeaderVibes",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "A popular TikTok term for content showcasing leadership or influential figures.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#EpicStorytelling",
+      "category": "trending",
+      "estimated_reach": "medium",
+      "reasoning": "Highlights the narrative quality of the content, appealing to storytelling trends.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#CurrentEvents",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Although not directly event-based, it taps into the general interest in political figures.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#POV",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "Common TikTok format that can frame the content from a specific perspective.",
+      "trend_score": 0.85
+    },
+    {
+      "tag": "#AIAnimation",
+      "category": "trending",
+      "estimated_reach": "high",
+      "reasoning": "If AI was used in creation, this taps into a very hot trend.",
+      "trend_score": 0.9
+    },
+    {
+      "tag": "#GhibliFan",
+      "category": "niche",
+      "estimated_reach": "high",
+      "reasoning": "Targets the dedicated Studio Ghibli fan base who appreciate such artistic interpretations.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#IsraeliPolitics",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Specific to the political context, attracting those interested in Israeli affairs.",
+      "trend_score": 0.65
+    },
+    {
+      "tag": "#PoliticalTactics",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Highlights the intellectual/strategic aspect of the portrayal.",
+      "trend_score": 0.5
+    },
+    {
+      "tag": "#AnimationArt",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Appeals to users interested in animation as an art form.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#FantasyPolitics",
+      "category": "niche",
+      "estimated_reach": "low",
+      "reasoning": "Combines the fantasy elements with the political theme, creating a unique niche.",
+      "trend_score": 0.55
+    },
+    {
+      "tag": "#LeaderOfIsrael",
+      "category": "niche",
+      "estimated_reach": "medium",
+      "reasoning": "Directly identifies the subject's role.",
+      "trend_score": 0.6
+    },
+    {
+      "tag": "#Magician",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A general term that can attract a wide audience interested in magic and illusion.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Leaders",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Broadly targets individuals interested in political figures and leadership.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Politics",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Essential for reaching a general audience interested in political content.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#Art",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Attracts users who appreciate visual arts and creative content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#Animation",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Broadly targets users interested in animated content.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#Fantasy",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "Appeals to a large audience interested in fictional and imaginative content.",
+      "trend_score": 0.7
+    },
+    {
+      "tag": "#ViralVideo",
+      "category": "broad",
+      "estimated_reach": "high",
+      "reasoning": "A direct aspiration, targeting content that goes viral.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#WhatsYourTake",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Direct call to action to encourage comments and discussion.",
+      "trend_score": 0.8
+    },
+    {
+      "tag": "#CommentBelow",
+      "category": "engagement",
+      "estimated_reach": "high",
+      "reasoning": "Classic engagement prompt to drive interaction.",
+      "trend_score": 0.75
+    },
+    {
+      "tag": "#ShareYourThoughts",
+      "category": "engagement",
+      "estimated_reach": "medium",
+      "reasoning": "Encourages viewers to express their opinions on the content.",
+      "trend_score": 0.7
+    }
+  ],
+  "strategy": {
+    "total_hashtags": 30,
+    "platform_optimization": "tiktok",
+    "trend_analysis": "Incorporates viral TikTok trends like #TikTokViralMagic, #GhibliChallenge, #LeaderVibes, and #AIAnimation. Also includes broad terms for discoverability and niche tags to target specific interest groups. The 'magic' and 'leader' themes are amplified through popular trend terms.",
+    "engagement_strategy": "Uses direct calls-to-action like #WhatsYourTake and #CommentBelow to actively encourage user interaction, comments, and shares. The combination of primary, trending, and broad hashtags aims to attract a diverse audience, increasing the likelihood of engagement from various communities."
+  },
+  "usage_tips": [
+    "For TikTok, mix trending and niche hashtags. Place the most important ones at the beginning of your caption.",
+    "Use a variety of hashtag lengths – short, medium, and long-tail.",
+    "Monitor which hashtags perform best for your content and adjust your strategy accordingly.",
+    "Consider creating a unique, branded hashtag for this specific video series if it's part of a larger campaign.",
+    "Don't overstuff your caption. Aim for a strategic selection that is relevant and impactful."
+  ],
+  "generation_metadata": {
+    "generated_at": "2025-07-28T23:21:53.620781",
+    "topic": "Studio Ghibli magic! Benjamin Netanyahu, the political magician, sits in a crystal tower above Jerusalem as spellbooks full of political tactics float around him. With a dark suit shining like magical armor and eagle-sharp eyes, he controls political forces like a king. His voice echoes with his powerful staff as he makes statements that move nations. But beneath the magic, his heart still beats with love for Israel. A typhoon of controversies surrounds him, but he stands firm as a rock against the storm. Epic music of an eternal leader.",
+    "platform": "tiktok",
+    "category": "entertainment",
+    "model": "gemini-2.5-flash",
+    "total_generated": 29
+  }
+}

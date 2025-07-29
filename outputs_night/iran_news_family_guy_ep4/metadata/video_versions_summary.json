@@ -1,0 +1,24 @@
+{
+  "session_id": "iran_news_family_guy_ep4",
+  "mission": "Family Guy news breakdown. Maryam (makeup smeared) announces: 'Celebrating 1000 days without Instagram! Citizens report strange symptoms: actual conversations.' Show Meg-style teenager: 'I had to... talk to my parents. THE HORROR!' Cleveland-style IT minister: 'Internet is overrated. Try smoke signals!' Cutaway: Pigeons carrying USB drives. News ticker: 'BREAKING: Youth Discover Books Exist'. Lower third: 'COMING UP: How to Like Things Without a Button'. Studio lights flicker. Maryam drinks from flask.",
+  "platform": "youtube",
+  "duration_seconds": 40,
+  "created_at": "2025-07-29T03:22:27.809831",
+  "versions": {
+    "final": {
+      "description": "Final video with subtitles and overlays",
+      "path": "outputs/iran_news_family_guy_ep4/final_output/final_video_iran_news_family_guy_ep4__final.mp4",
+      "file_size_mb": 2.86212158203125
+    },
+    "audio_only": {
+      "description": "Video with audio only (no subtitles, no overlays)",
+      "path": "outputs/iran_news_family_guy_ep4/final_output/final_video_iran_news_family_guy_ep4__audio_only.mp4",
+      "file_size_mb": 2.516855239868164
+    },
+    "overlays_only": {
+      "description": "Video with overlays only (no subtitles)",
+      "path": "outputs/iran_news_family_guy_ep4/final_output/final_video_iran_news_family_guy_ep4__overlays_only.mp4",
+      "file_size_mb": 14.469979286193848
+    }
+  }
+}

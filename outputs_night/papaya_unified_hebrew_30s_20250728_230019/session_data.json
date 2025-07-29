@@ -1,0 +1,15 @@
+{
+  "session_id": "papaya_unified_hebrew_30s_20250728_230019",
+  "mission": "Create a hilarious 30-second TikTok ad for Papaya Bar in Rosh HaAyin! \nStart with dramatic Marvel-style hero entrance - superhero crashes through wall, exhausted and dehydrated. \nSuddenly, magical Ghibli-style transformation! The bar becomes an enchanted forest with floating papaya fruits. \nGrandma appears with glowing healing smoothie, hero drinks and transforms into muscular god. \nCut to reality - it's just a regular person feeling amazing after a papaya shake. \nNight scene: same bar transforms into cocktail paradise with shake-based alcohol drinks. \nYoung crowd partying with glowing drinks. Funny twist: drunk guy tries to order 'healthy' shake at 2am. \nEnd with catchy Hebrew slogan about being healthy heroes by day, party legends by night! \nBusiness: Shabazi 47, Rosh HaAyin, 054-222-2617, Always Open.",
+  "duration_seconds": 32,
+  "platform": "Platform.TIKTOK",
+  "category": "VideoCategory.ENTERTAINMENT",
+  "visual_style": "marvel comics meets studio ghibli hybrid colorful vibrant",
+  "tone": "funny refreshing energetic",
+  "script_processing": {
+    "original_script": "[VISUAL: Dramatic superhero crashes through a wall, looking exhausted and dehydrated.] DIALOGUE: \u05d0\u05d5\u05d9, \u05d0\u05e0\u05d9 \u05d2\u05de\u05d5\u05e8! \u05e6\u05e8\u05d9\u05da \u05db\u05d5\u05d7! [VISUAL: The bar transforms into an enchanted forest with floating papaya fruits. Grandma offers a glowing smoothie.] DIALOGUE: \u05e7\u05e1\u05dd \u05d4\u05d2'\u05d5\u05e0\u05d2\u05dc! \u05e1\u05d1\u05ea\u05d0 \u05ea\u05e8\u05e4\u05d0 \u05d0\u05d5\u05ea\u05da! [VISUAL: Person drinks the shake, looks energized. Cuts to night, bar is a cocktail paradise, young crowd partying with glowing drinks. Drunk guy asks for a 'healthy' shake.] DIALOGUE: \u05d2\u05d9\u05d1\u05d5\u05e8\u05d9 \u05d4\u05d9\u05d5\u05dd, \u05d0\u05d2\u05d3\u05d5\u05ea \u05d4\u05dc\u05d9\u05dc\u05d4! \u05d1\u05e8\u05d9\u05d0\u05d5\u05ea \u05d0\u05d5 \u05de\u05e1\u05d9\u05d1\u05d4? [VISUAL: Papaya Bar logo, address, phone number, and 'Always Open' flash on screen.] DIALOGUE: \u05e4\u05e4\u05d0\u05d9\u05d4 \u05d1\u05e8, \u05e9\u05d1\u05d6\u05d9 47, \u05e8\u05d0\u05e9 \u05d4\u05e2\u05d9\u05df. \u05ea\u05de\u05d9\u05d3 \u05e4\u05ea\u05d5\u05d7!",
+    "final_script": "\u200f\u05d0\u05d5\u05d9, \u05d0\u05e0\u05d9 \u05d2\u05de\u05d5\u05e8! \u05e6\u05e8\u05d9\u05da \u05db\u05d5\u05d7! \u05e7\u05e1\u05dd \u05d4\u05d2'\u05d5\u05e0\u05d2\u05dc! \u05e1\u05d1\u05ea\u05d0 \u05ea\u05e8\u05e4\u05d0 \u05d0\u05d5\u05ea\u05da! \u05d2\u05d9\u05d1\u05d5\u05e8\u05d9 \u05d4\u05d9\u05d5\u05dd, \u05d0\u05d2\u05d3\u05d5\u05ea \u05d4\u05dc\u05d9\u05dc\u05d4! \u05d1\u05e8\u05d9\u05d0\u05d5\u05ea \u05d0\u05d5 \u05de\u05e1\u05d9\u05d1\u05d4",
+    "word_count": 17,
+    "tts_ready": false
+  }
+}
