@@ -4189,47 +4189,26 @@ The last frame of this scene connects to the next.
             video_concat_inputs = "".join([f"[v{i}]" for i in range(len(clips))])
             video_filter = f"{scale_filter_str};{video_concat_inputs}concat=n={len(clips)}:v=1:a=0[outv]"
             
-            # Create properly timed audio by concatenating with silence gaps
-            # First, we need to create silence segments between audio clips
-            audio_concat_parts = []
-            last_end_time = 0.0
-            
+            # Create audio filter with adelay to position each segment at subtitle timing
+            audio_filters = []
             for i, (audio_file, timing) in enumerate(zip(audio_files, subtitle_timings)):
                 input_idx = len(clips) + i
-                start_time = timing['start']
+                delay_ms = int(timing['start'] * 1000)  # Convert to milliseconds
                 
-                # Calculate silence duration needed before this audio
-                silence_duration = start_time - last_end_time
+                # Apply delay to position audio at subtitle start time
+                if delay_ms > 0:
+                    audio_filters.append(f"[{input_idx}:a]adelay={delay_ms}|{delay_ms}[a{i}]")
+                else:
+                    audio_filters.append(f"[{input_idx}:a]acopy[a{i}]")
                 
-                if i == 0 and silence_duration > 0:
-                    # Create initial silence
-                    audio_concat_parts.append(f"anullsrc=duration={silence_duration:.3f}:sample_rate=44100")
-                elif silence_duration > 0.1:  # Only add silence if gap is significant
-                    # Create silence between segments
-                    audio_concat_parts.append(f"anullsrc=duration={silence_duration:.3f}:sample_rate=44100")
-                
-                # Add the actual audio segment
-                audio_concat_parts.append(f"[{input_idx}:a]")
-                
-                # Update last end time (estimate based on typical segment duration)
-                # This will be more accurate if we had actual audio durations
-                estimated_duration = timing.get('duration', timing['end'] - timing['start'])
-                last_end_time = start_time + estimated_duration
-                
-                logger.info(f"🎵 Audio {i+1}: Positioned at {timing['start']:.2f}s with {silence_duration:.2f}s gap")
+                logger.info(f"🎵 Audio {i+1}: Positioned at {timing['start']:.2f}s (delay: {delay_ms}ms)")
             
-            # Add final silence if needed to reach target duration
-            if target_duration and last_end_time < target_duration:
-                final_silence = target_duration - last_end_time
-                if final_silence > 0.1:
-                    audio_concat_parts.append(f"anullsrc=duration={final_silence:.3f}:sample_rate=44100")
-                    logger.info(f"🔇 Adding {final_silence:.2f}s of silence at end")
+            # Mix all delayed audio streams together
+            audio_filter_str = ";".join(audio_filters)
+            audio_inputs = "".join([f"[a{i}]" for i in range(len(audio_files))])
             
-            # Build the audio concatenation filter
-            if len(audio_concat_parts) > 1:
-                audio_concat = f"{';'.join(audio_concat_parts)};concat=n={len(audio_concat_parts)}:v=0:a=1[outa]"
-            else:
-                audio_concat = f"{audio_concat_parts[0]}[outa]"
+            # Use amix to combine all audio streams
+            audio_concat = f"{audio_filter_str};{audio_inputs}amix=inputs={len(audio_files)}:duration=longest[outa]"
             
             # Combine video and audio filters
             filter_complex = f"{video_filter};{audio_concat}"
