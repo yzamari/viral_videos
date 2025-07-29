@@ -2518,19 +2518,53 @@ The last frame of this scene connects to the next.
                         'segments': subtitle_segments
                     }
                     
-                    # Run async function in sync context
+                    # Run async function properly handling event loop
                     import asyncio
+                    import sys
+                    
+                    # Check if we're already in an async context
                     try:
+                        # Try to get the current event loop
                         loop = asyncio.get_event_loop()
+                        if loop.is_running():
+                            # We're in a running loop, use a thread to run the async function
+                            import concurrent.futures
+                            import functools
+                            
+                            def run_async_in_thread():
+                                new_loop = asyncio.new_event_loop()
+                                asyncio.set_event_loop(new_loop)
+                                try:
+                                    return new_loop.run_until_complete(
+                                        ffmpeg_composer.compose_final_video(
+                                            clips, audio_files, subtitle_segments, ffmpeg_config, output_path
+                                        )
+                                    )
+                                finally:
+                                    new_loop.close()
+                            
+                            with concurrent.futures.ThreadPoolExecutor() as executor:
+                                future = executor.submit(run_async_in_thread)
+                                result = future.result()
+                        else:
+                            # Loop exists but not running, use it
+                            result = loop.run_until_complete(
+                                ffmpeg_composer.compose_final_video(
+                                    clips, audio_files, subtitle_segments, ffmpeg_config, output_path
+                                )
+                            )
                     except RuntimeError:
+                        # No event loop, create one
                         loop = asyncio.new_event_loop()
                         asyncio.set_event_loop(loop)
-                    
-                    result = loop.run_until_complete(
-                        ffmpeg_composer.compose_final_video(
-                            clips, audio_files, subtitle_segments, ffmpeg_config, output_path
-                        )
-                    )
+                        try:
+                            result = loop.run_until_complete(
+                                ffmpeg_composer.compose_final_video(
+                                    clips, audio_files, subtitle_segments, ffmpeg_config, output_path
+                                )
+                            )
+                        finally:
+                            loop.close()
                     
                     if result and os.path.exists(result):
                         logger.info("✅ FFmpeg subtitle-aligned composition successful")

@@ -168,8 +168,15 @@ class DurationCoordinator:
             freeze_duration = target_duration - current_duration
             logger.info(f"🎬 Extending video from {current_duration:.1f}s to {target_duration:.1f}s (freeze last frame for {freeze_duration:.1f}s)")
             
-            # Extract last frame
+            # Extract last frame - ensure directory exists
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
             last_frame_path = output_path.replace('.mp4', '_last_frame.png')
+            
+            # Check if input video exists
+            if not os.path.exists(video_path):
+                logger.error(f"Input video does not exist: {video_path}")
+                return False
+            
             extract_cmd = [
                 'ffmpeg', '-y',
                 '-sseof', '-0.1',  # 0.1 seconds from end
