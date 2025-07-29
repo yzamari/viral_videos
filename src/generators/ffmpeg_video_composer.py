@@ -7,8 +7,12 @@ import logging
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-from ..utils.ffmpeg_processor import FFmpegProcessor
-from ..agents.enhanced_overlay_agent import EnhancedOverlayAgent
+try:
+    from ..utils.ffmpeg_processor import FFmpegProcessor
+    from ..agents.enhanced_overlay_agent import EnhancedOverlayAgent
+except ImportError:
+    from src.utils.ffmpeg_processor import FFmpegProcessor
+    from src.agents.enhanced_overlay_agent import EnhancedOverlayAgent
 
 logger = logging.getLogger(__name__)
 

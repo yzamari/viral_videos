@@ -2414,18 +2414,70 @@ The last frame of this scene connects to the next.
                 logger.warning("⚠️ No audio files available")
                 return ""
             
-            # CRITICAL: Use subtitle-aligned audio if timings are available
+            # CRITICAL: Use FFmpeg-based composition instead of MoviePy
             if subtitle_timings:
-                logger.info("🎯 Using subtitle-aligned audio composition for perfect sync")
+                logger.info("🎯 Using FFmpeg-based subtitle-aligned composition for perfect sync")
+                try:
+                    # Use our new FFmpeg video composer
+                    from .ffmpeg_video_composer import FFmpegVideoComposer
+                    from ..ai.manager import AIServiceManager
+                    
+                    # Create AI manager for overlay generation
+                    ai_manager = AIServiceManager()
+                    ffmpeg_composer = FFmpegVideoComposer(ai_manager)
+                    
+                    # Convert subtitle timings to expected format
+                    subtitle_segments = []
+                    for timing in subtitle_timings:
+                        subtitle_segments.append({
+                            'start': timing.get('start', 0),
+                            'end': timing.get('end', timing.get('start', 0) + 3),
+                            'text': timing.get('text', '')
+                        })
+                    
+                    # Compose with FFmpeg
+                    ffmpeg_config = {
+                        'mission': getattr(config, 'mission', ''),
+                        'script': getattr(config, 'mission', ''),
+                        'platform': platform or 'instagram',
+                        'style': 'viral',
+                        'segments': subtitle_segments
+                    }
+                    
+                    # Run async function in sync context
+                    import asyncio
+                    try:
+                        loop = asyncio.get_event_loop()
+                    except RuntimeError:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                    
+                    result = loop.run_until_complete(
+                        ffmpeg_composer.compose_final_video(
+                            clips, audio_files, subtitle_segments, ffmpeg_config, output_path
+                        )
+                    )
+                    
+                    if result and os.path.exists(result):
+                        logger.info("✅ FFmpeg subtitle-aligned composition successful")
+                        return result
+                    else:
+                        logger.warning("⚠️ FFmpeg composition failed, falling back to MoviePy")
+                        
+                except Exception as e:
+                    logger.warning(f"⚠️ FFmpeg composition error: {e}, falling back to MoviePy")
+                
+                # Fallback to MoviePy (old system)
+                logger.info("🎯 Falling back to MoviePy subtitle-aligned composition")
                 result = self._compose_with_subtitle_aligned_audio(
                     clips, audio_files, subtitle_timings, output_path, 
                     session_context, target_duration, platform
                 )
                 if result and os.path.exists(result):
-                    logger.info("✅ Subtitle-aligned composition successful")
+                    logger.info("✅ MoviePy subtitle-aligned composition successful")
                     return result
                 else:
-                    logger.warning("⚠️ Subtitle-aligned composition failed, falling back to standard methods")
+                    logger.warning("⚠️ MoviePy subtitle-aligned composition failed, falling back to standard methods")
             
             # ENHANCED: Always prefer frame continuity for better video quality
             if len(clips) > 1:
