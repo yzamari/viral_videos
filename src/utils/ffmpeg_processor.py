@@ -367,6 +367,55 @@ class FFmpegProcessor:
         self._run_command(cmd, f"Adding {len(text_overlays)} text overlays")
         return output_path
     
+    def extend_video_with_fadeout(self, video_path: str, audio_path: str, 
+                                  output_path: str, fade_duration: float = 2.0) -> str:
+        """Extend video to match audio duration with fade-out effect
+        
+        Args:
+            video_path: Input video file
+            audio_path: Audio file to match duration
+            output_path: Output video file
+            fade_duration: Duration of fade-out in seconds
+        """
+        video_duration = self.get_duration(video_path)
+        audio_duration = self.get_duration(audio_path)
+        
+        if audio_duration <= video_duration:
+            # No need to extend, just copy
+            cmd = ['ffmpeg', '-y', '-i', video_path, '-i', audio_path, 
+                   '-c:v', 'copy', '-c:a', 'copy', '-shortest', output_path]
+        else:
+            # Calculate how much to extend
+            extension_duration = audio_duration - video_duration
+            
+            # Create filter for extending video with last frame + fade
+            # 1. Loop last frame for extension duration
+            # 2. Apply fade-out starting before video ends
+            fade_start = video_duration - fade_duration
+            
+            filter_complex = (
+                f"[0:v]tpad=stop_mode=clone:stop_duration={extension_duration},"
+                f"fade=t=out:st={fade_start}:d={fade_duration + extension_duration}[v]"
+            )
+            
+            cmd = [
+                'ffmpeg', '-y',
+                '-i', video_path,
+                '-i', audio_path,
+                '-filter_complex', filter_complex,
+                '-map', '[v]',
+                '-map', '1:a',
+                '-c:v', 'libx264',
+                '-preset', 'fast',
+                '-crf', '23',
+                '-c:a', 'copy',
+                '-t', str(audio_duration),
+                output_path
+            ]
+        
+        self._run_command(cmd, f"Extending video to {audio_duration:.1f}s with fade-out")
+        return output_path
+    
     def add_subtitles(self, video_path: str, subtitle_path: str, 
                      output_path: str, style: Dict[str, Any] = None) -> str:
         """Add subtitles with custom styling"""

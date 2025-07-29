@@ -22,6 +22,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="imageio_ffmpeg")
 from ..models.video_models import GeneratedVideoConfig, Platform, VideoCategory
 from ..utils.logging_config import get_logger
 from ..utils.timeline_visualizer import TimelineVisualizer
+from ..utils.ffmpeg_processor import FFmpegProcessor
 from ..generators.veo_client_factory import VeoClientFactory, VeoModel
 from ..generators.gemini_image_client import GeminiImageClient
 from ..generators.enhanced_multilang_tts import EnhancedMultilingualTTS
@@ -2251,20 +2252,61 @@ The last frame of this scene connects to the next.
                 session_context
             )
             
-            # Step 7: Add final fadeout ending (for all videos)
-            # CRITICAL FIX: Only add fadeout if it won't exceed target duration
-            if config.duration_seconds >= 10:  # Add fadeout for videos 10s+
-                # Check if adding fadeout would exceed target duration
-                current_duration = self._get_video_duration(oriented_video_path)
-                if current_duration and current_duration < target_duration - 1.0:  # Leave room for fadeout
-                    final_video_path = self._add_fade_out_ending(oriented_video_path, session_context, audio_files)
-                    logger.info(f"🎬 Added fadeout ending (current: {current_duration:.1f}s, target: {target_duration}s)")
+            # Step 7: Check audio duration and handle overflow
+            # Calculate total audio duration
+            total_audio_duration = 0
+            if audio_files:
+                with FFmpegProcessor() as ffmpeg:
+                    for audio_file in audio_files:
+                        if os.path.exists(audio_file):
+                            try:
+                                duration = ffmpeg.get_duration(audio_file)
+                                total_audio_duration += duration
+                            except:
+                                pass
+            
+            current_video_duration = self._get_video_duration(oriented_video_path)
+            
+            # Check if audio extends beyond video
+            if total_audio_duration > current_video_duration + 0.5:  # 0.5s tolerance
+                logger.warning(f"⚠️ Audio ({total_audio_duration:.1f}s) extends beyond video ({current_video_duration:.1f}s)")
+                logger.info("🎬 Extending video with fade-out to match audio duration")
+                
+                # Create concatenated audio file for fade-out extension
+                concat_audio_path = session_context.get_output_path("temp_files", "full_audio_for_fadeout.mp3")
+                with FFmpegProcessor() as ffmpeg:
+                    ffmpeg.concatenate_audio(audio_files, concat_audio_path, crossfade=False)
+                
+                # Extend video with fade-out
+                extended_path = session_context.get_output_path("temp_files", "video_extended_fadeout.mp4")
+                with FFmpegProcessor() as ffmpeg:
+                    ffmpeg.extend_video_with_fadeout(
+                        oriented_video_path, 
+                        concat_audio_path,
+                        extended_path,
+                        fade_duration=3.0  # 3 second fade-out
+                    )
+                
+                if os.path.exists(extended_path):
+                    final_video_path = extended_path
+                    logger.info(f"✅ Video extended to {total_audio_duration:.1f}s with fade-out")
                 else:
-                    logger.info(f"🎬 Skipping fadeout to maintain target duration (current: {current_duration:.1f}s, target: {target_duration}s)")
+                    logger.warning("⚠️ Failed to extend video with fade-out, using original")
                     final_video_path = oriented_video_path
             else:
-                logger.info(f"🎬 Skipping fadeout for short video ({config.duration_seconds}s)")
-                final_video_path = oriented_video_path
+                # Original fade-out logic for videos without audio overflow
+                if config.duration_seconds >= 10:  # Add fadeout for videos 10s+
+                    # Check if adding fadeout would exceed target duration
+                    current_duration = self._get_video_duration(oriented_video_path)
+                    if current_duration and current_duration < target_duration - 1.0:  # Leave room for fadeout
+                        final_video_path = self._add_fade_out_ending(oriented_video_path, session_context, audio_files)
+                        logger.info(f"🎬 Added fadeout ending (current: {current_duration:.1f}s, target: {target_duration}s)")
+                    else:
+                        logger.info(f"🎬 Skipping fadeout to maintain target duration (current: {current_duration:.1f}s, target: {target_duration}s)")
+                        final_video_path = oriented_video_path
+                else:
+                    logger.info(f"🎬 Skipping fadeout for short video ({config.duration_seconds}s)")
+                    final_video_path = oriented_video_path
             
             # Validate final video duration is within tolerance
             final_duration = self._get_video_duration(final_video_path)

@@ -119,10 +119,13 @@ CRITICAL REQUIREMENTS:
 Visual Style: {style_enhancement}
 Character Details: {character_description or "Standard realistic appearance"}
 
-VISUAL STORYTELLING STRUCTURE:
-- Segment 1: Opening/establishing shot
-- Middle segments: Key story moments with visual progression
-- Final segment: Climactic visual conclusion
+COHERENT VISUAL STORYTELLING:
+- Focus on ONE MAIN TOPIC throughout all segments
+- Ensure visual continuity - each scene flows to the next
+- Beginning (Segment 1): Establish setting and introduce topic
+- Middle (Segments 2-{num_segments-1}): Develop the single concept step-by-step
+- End (Segment {num_segments}): Complete the visual story with satisfying conclusion
+- NO ABRUPT CUTS - ensure the story feels complete
 
 Return JSON array:
 [
@@ -242,6 +245,15 @@ Create EXACTLY {num_segments} dialogue/narration segments for: "{mission}"
 7. Total word limit: {total_words} words (~{words_per_segment} words per segment)
 8. Focus on compelling storytelling through SPOKEN WORD ONLY
 9. CRITICAL: Generate EXACTLY {num_segments} segments - no more, no less!
+
+📚 EDUCATIONAL COHERENCE REQUIREMENTS:
+- Focus on teaching ONE SINGLE CONCEPT throughout
+- No tangents or multiple topics - stay focused
+- Beginning: Clear introduction of what we'll learn
+- Middle: Step-by-step explanation building knowledge
+- End: Satisfying summary and key takeaway
+- Each segment should flow naturally to the next
+- Ensure the lesson feels COMPLETE, not cut off
 {language_instruction}
 
 ❌ BAD EXAMPLES (DON'T DO):
