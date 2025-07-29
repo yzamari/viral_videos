@@ -199,15 +199,28 @@ class TextValidator:
             try:
                 # Ask AI to identify and remove metadata
                 prompt = f"""
-                Analyze this text and identify any metadata, configuration values, or non-content elements:
+                Analyze this text and identify ONLY genuine metadata, configuration values, or system-generated non-content elements.
+                
+                DO NOT REMOVE:
+                - Brand names (like "Family Guy", "Instagram", "TikTok")
+                - Character names or show references
+                - Creative content descriptions
+                - Story elements or narrative text
+                
+                ONLY REMOVE:
+                - System timestamps
+                - Configuration parameters
+                - Debug information
+                - Auto-generated IDs or codes
+                - Technical metadata
                 
                 Text: "{text}"
                 
                 Return JSON:
                 {{
                     "is_metadata": true/false,
-                    "cleaned_text": "text with metadata removed",
-                    "metadata_found": ["list of metadata elements found"]
+                    "cleaned_text": "text with metadata removed",  
+                    "metadata_found": ["list of ONLY genuine metadata elements"]
                 }}
                 """
                 
