@@ -194,53 +194,9 @@ class TextValidator:
         cleaned = text
         issues = []
         
-        # Try AI-powered metadata detection first
-        if self.use_ai and self.ai_analyzer:
-            try:
-                # Ask AI to identify and remove metadata
-                prompt = f"""
-                Analyze this text and identify ONLY genuine metadata, configuration values, or system-generated non-content elements.
-                
-                DO NOT REMOVE:
-                - Brand names (like "Family Guy", "Instagram", "TikTok")
-                - Character names or show references
-                - Creative content descriptions
-                - Story elements or narrative text
-                
-                ONLY REMOVE:
-                - System timestamps
-                - Configuration parameters
-                - Debug information
-                - Auto-generated IDs or codes
-                - Technical metadata
-                
-                Text: "{text}"
-                
-                Return JSON:
-                {{
-                    "is_metadata": true/false,
-                    "cleaned_text": "text with metadata removed",  
-                    "metadata_found": ["list of ONLY genuine metadata elements"]
-                }}
-                """
-                
-                # Use the AI's text service directly for quick analysis
-                from ..ai.interfaces.text_generation import TextGenerationRequest
-                text_service = self.ai_analyzer.model
-                if text_service:
-                    response = text_service.generate_content(prompt)
-                    result = self.ai_analyzer._extract_json(response.text)
-                    
-                    if result and result.get('is_metadata'):
-                        cleaned = result.get('cleaned_text', '')
-                        metadata_found = result.get('metadata_found', [])
-                        for item in metadata_found:
-                            issues.append(f"AI detected metadata: {item}")
-                        return cleaned.strip(), issues
-                    elif result:
-                        cleaned = result.get('cleaned_text', text)
-            except Exception as e:
-                logger.debug(f"AI metadata detection failed, using fallback: {e}")
+        # Skip AI metadata detection - it was incorrectly removing legitimate content
+        # The AI was misidentifying creative content like "Family Guy" as metadata
+        logger.debug("Using pattern-based metadata detection only (AI detection disabled due to false positives)")
         
         # Fallback to basic pattern matching
         # Check if text is RTL (Hebrew/Arabic) - be less aggressive
