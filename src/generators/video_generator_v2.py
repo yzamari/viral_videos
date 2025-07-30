@@ -68,7 +68,7 @@ class VideoGeneratorV2:
                  vertex_location: Optional[str] = None,
                  vertex_gcs_bucket: Optional[str] = None,
                  output_dir: Optional[str] = None,
-                 prefer_veo3: bool = False):
+                 prefer_veo3: bool = True):  # Default to True to prefer VEO-3 fast
         """
         Initialize video generator with AI service interfaces
         

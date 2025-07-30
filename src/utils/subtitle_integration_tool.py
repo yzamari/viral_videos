@@ -23,23 +23,23 @@ class SubtitleIntegrationTool:
             Language.HEBREW: {
                 'font_family': 'Arial Hebrew',
                 'fallback_fonts': ['Arial', 'DejaVu Sans', 'Noto Sans Hebrew', 'Helvetica'],
-                'font_size': 32,  # Increased from 24 for better readability
+                'font_size': 38,  # Increased from 32 for better readability
                 'outline': 3,  # Thicker outline for Hebrew
                 'shadow': 2  # More prominent shadow
             },
             Language.ARABIC: {
                 'font_family': 'Arial Arabic',
                 'fallback_fonts': ['Arial', 'DejaVu Sans', 'Noto Sans Arabic'],
-                'font_size': 24,
-                'outline': 2,
-                'shadow': 1
+                'font_size': 36,  # Increased from 24 for better readability
+                'outline': 3,     # Increased from 2 for better visibility
+                'shadow': 2       # Increased from 1 for better contrast
             },
             'default': {
                 'font_family': 'Arial',
                 'fallback_fonts': ['DejaVu Sans', 'Liberation Sans'],
-                'font_size': 22,
-                'outline': 2,
-                'shadow': 1
+                'font_size': 36,  # Increased from 22 for better readability
+                'outline': 3,     # Increased from 2 for better visibility
+                'shadow': 2       # Increased from 1 for better contrast
             }
         }
     
@@ -48,7 +48,9 @@ class SubtitleIntegrationTool:
                                       subtitle_path: str, 
                                       output_path: str,
                                       language: Language = Language.ENGLISH_US,
-                                      style_override: Optional[Dict[str, Any]] = None) -> bool:
+                                      style_override: Optional[Dict[str, Any]] = None,
+                                      video_width: Optional[int] = None,
+                                      video_height: Optional[int] = None) -> bool:
         """
         Integrate subtitles using FFmpeg with language-specific formatting
         
@@ -71,10 +73,26 @@ class SubtitleIntegrationTool:
                 logger.error(f"Subtitle file not found: {subtitle_path}")
                 return False
             
+            # Get video dimensions if not provided
+            if not video_width or not video_height:
+                video_width, video_height = self._get_video_dimensions(video_path)
+                logger.info(f"📐 Video dimensions: {video_width}x{video_height}")
+            
             # Get font configuration for language
             font_config = self.font_configs.get(language, self.font_configs['default'])
             if style_override:
                 font_config.update(style_override)
+            
+            # Calculate dynamic font size based on video resolution
+            from ..config import video_config
+            calculated_font_size = video_config.get_font_size('subtitle', video_width)
+            font_config['font_size'] = calculated_font_size
+            
+            # Scale outline and shadow based on font size
+            font_config['outline'] = max(2, int(calculated_font_size * 0.08))  # 8% of font size
+            font_config['shadow'] = max(1, int(calculated_font_size * 0.05))   # 5% of font size
+            
+            logger.info(f"📝 Dynamic subtitle styling: font_size={calculated_font_size}, outline={font_config['outline']}, shadow={font_config['shadow']}")
             
             # Find available font
             font_path = self._find_available_font(font_config)
@@ -87,15 +105,17 @@ class SubtitleIntegrationTool:
                 subtitle_path, language, font_config, font_path
             )
             
-            # Construct FFmpeg command
+            # Construct FFmpeg command with high quality settings
             cmd = [
                 'ffmpeg', '-y',  # Overwrite output
                 '-i', video_path,
                 '-vf', subtitle_filter,
                 '-c:a', 'copy',  # Copy audio stream
                 '-c:v', 'libx264',  # Re-encode video for subtitle burn-in
-                '-preset', 'medium',
-                '-crf', '23',
+                '-preset', 'slow',  # Better quality
+                '-crf', '18',  # Lower CRF = higher quality (18 is visually lossless)
+                '-pix_fmt', 'yuv420p',  # Compatibility
+                '-movflags', '+faststart',  # Web optimization
                 output_path
             ]
             
@@ -164,6 +184,33 @@ class SubtitleIntegrationTool:
         
         return None
     
+    def _get_video_dimensions(self, video_path: str) -> tuple:
+        """Get video dimensions using ffprobe"""
+        try:
+            cmd = [
+                'ffprobe', '-v', 'quiet',
+                '-print_format', 'json',
+                '-show_streams',
+                video_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode == 0:
+                import json
+                data = json.loads(result.stdout)
+                for stream in data.get('streams', []):
+                    if stream.get('codec_type') == 'video':
+                        width = stream.get('width', 1920)
+                        height = stream.get('height', 1080)
+                        return width, height
+            
+            logger.warning("Failed to get video dimensions, using defaults")
+            return 1920, 1080  # Default HD dimensions
+            
+        except Exception as e:
+            logger.warning(f"Error getting video dimensions: {e}, using defaults")
+            return 1920, 1080
+    
     def _build_subtitle_filter(self, 
                              subtitle_path: str, 
                              language: Language,
@@ -171,32 +218,46 @@ class SubtitleIntegrationTool:
                              font_path: Optional[str]) -> str:
         """Build FFmpeg subtitle filter with language-specific settings"""
         
-        # Base subtitle filter
-        filter_parts = [f"subtitles='{subtitle_path}'"]
+        # Build proper force_style string for subtitles filter
+        style_parts = []
         
         # Font settings
-        if font_path:
-            filter_parts.append(f"fontsfile='{font_path}'")
+        if font_config.get('font_family'):
+            style_parts.append(f"FontName={font_config['font_family']}")
         
-        filter_parts.append(f"fontname='{font_config['font_family']}'")
-        filter_parts.append(f"fontsize={font_config['font_size']}")
+        style_parts.append(f"FontSize={font_config['font_size']}")
         
-        # Style settings
-        filter_parts.append(f"outline={font_config['outline']}")
-        filter_parts.append(f"shadow={font_config['shadow']}")
-        filter_parts.append("fontcolor=white")
-        filter_parts.append("outlinecolour=black")
-        filter_parts.append("shadowcolour=black@0.5")
+        # Colors - CRITICAL: Transparent background
+        style_parts.append("PrimaryColour=&H00FFFFFF")  # White text
+        style_parts.append("OutlineColour=&H00000000")  # Black outline
+        style_parts.append("BackColour=&H80000000")  # Transparent background
+        
+        # Border and shadow
+        style_parts.append(f"BorderStyle=1")  # Outline + drop shadow
+        style_parts.append(f"Outline={font_config['outline']}")
+        style_parts.append(f"Shadow={font_config['shadow']}")
+        
+        # Positioning
+        style_parts.append("Alignment=2")  # Bottom center
+        style_parts.append("MarginV=80")  # Distance from bottom - matches perfect video
+        
+        # Bold text for better readability
+        style_parts.append("Bold=1")
         
         # RTL language specific settings
         if language in self.rtl_languages:
-            filter_parts.append("force_style='Alignment=2'")  # Center alignment
+            style_parts.append("Alignment=2")  # Center alignment for RTL
             logger.info(f"Applied RTL settings for {language.value}")
         
-        # Position subtitles at bottom
-        filter_parts.append("force_style='MarginV=50'")
+        # Combine all style settings
+        force_style = ",".join(style_parts)
         
-        return ":".join(filter_parts)
+        # Build final filter with proper escaping
+        subtitle_filter = f"subtitles='{subtitle_path}':force_style='{force_style}'"
+        
+        logger.debug(f"Subtitle filter: {subtitle_filter}")
+        
+        return subtitle_filter
     
     def create_styled_srt(self, 
                          input_srt_path: str, 

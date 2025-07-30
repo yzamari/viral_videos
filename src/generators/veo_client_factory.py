@@ -28,10 +28,10 @@ except ImportError:
     except ImportError:
         # Fallback settings if config not available
         class Settings:
-            disable_veo3 = True  # VEO-3 disabled in fallback too
-            prefer_veo2_over_veo3 = True
-            prefer_veo3_fast = False
-            veo_model_preference_order = "veo2"  # VEO-2 only
+            disable_veo3 = False  # VEO-3 enabled by default
+            prefer_veo2_over_veo3 = False
+            prefer_veo3_fast = True  # Always prefer VEO-3 fast for cost savings
+            veo_model_preference_order = "veo3-fast,veo3,veo2"  # VEO-3 fast first
         
         # Simple logger fallback
         import logging
@@ -72,6 +72,8 @@ class VeoClientFactory:
         logger.info(f"   GCS Bucket: {self.gcs_bucket}")
         logger.info(f"   VEO3 Disabled: {'✅ YES' if self.settings.disable_veo3 else '❌ NO'}")
         logger.info(f"   Prefer VEO2: {'✅ YES' if self.settings.prefer_veo2_over_veo3 else '❌ NO'}")
+        logger.info(f"   Model Preference Order: {self.settings.veo_model_preference_order}")
+        logger.info(f"   Using Settings class: {self.settings.__class__.__module__}.{self.settings.__class__.__name__}")
 
     def create_client(self, model: Union[VeoModel, str], output_dir: str):
         """Create VEO client for specified model"""
@@ -239,7 +241,7 @@ class VeoClientFactory:
 
         return available_models
 
-def get_best_veo_client(output_dir: str, prefer_veo3: bool = False) -> Optional[any]:
+def get_best_veo_client(output_dir: str, prefer_veo3: bool = True) -> Optional[any]:  # Default to True for VEO-3 fast
     """Convenience function to get the best VEO client"""
     factory = VeoClientFactory()
     return factory.get_best_available_client(output_dir, prefer_veo3)

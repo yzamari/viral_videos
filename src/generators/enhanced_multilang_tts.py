@@ -84,7 +84,8 @@ class EnhancedMultilingualTTS:
                                        duration_seconds: int,
                                        num_clips: int,
                                        clip_index: Optional[int] = None,
-                                       cheap_mode: bool = False) -> List[str]:
+                                       cheap_mode: bool = False,
+                                       force_single_voice: bool = True) -> List[str]:
         """Generate audio with AI-selected voices for optimal content delivery"""
 
         logger.info(f"🎤 Generating intelligent voice audio for {language.value}")
@@ -107,7 +108,8 @@ class EnhancedMultilingualTTS:
                 platform=platform,
                 category=category,
                 duration_seconds=duration_seconds,
-                num_clips=num_clips
+                num_clips=num_clips,
+                force_single_voice=force_single_voice
             )
 
             if not voice_strategy:

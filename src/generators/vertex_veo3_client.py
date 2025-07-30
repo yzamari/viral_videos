@@ -767,9 +767,6 @@ class VertexAIVeo3Client(BaseVeoClient):
                 logger.error(f"❌ Failed to create VEO-3 fallback clip: {e}")
                 return None
 
-    def is_available(self) -> bool:
-        """Check if VEO-3 is available"""
-        return self.veo3_available
 
     def get_capabilities(self) -> Dict[str, bool]:
         """Get VEO-3 capabilities"""

@@ -32,7 +32,7 @@ class JSONVEOAdapter:
     def generate_video_from_json(self,
                                 json_prompt: Union[VEOJsonPrompt, Dict[str, Any], str],
                                 session_context: SessionContext,
-                                veo_model: VeoModel = VeoModel.VEO2,
+                                veo_model: VeoModel = VeoModel.VEO3_FAST,  # Default to VEO-3 fast for cost savings
                                 clip_id: str = "json-clip") -> str:
         """
         Generate video using JSON prompt
@@ -189,7 +189,7 @@ class JSONVEOAdapter:
     def generate_multi_segment_video(self,
                                    json_prompt: VEOJsonPrompt,
                                    session_context: SessionContext,
-                                   veo_model: VeoModel = VeoModel.VEO2) -> Dict[str, Any]:
+                                   veo_model: VeoModel = VeoModel.VEO3_FAST) -> Dict[str, Any]:  # Default to VEO-3 fast
         """Generate video with multiple segments"""
         
         if not json_prompt.segments:

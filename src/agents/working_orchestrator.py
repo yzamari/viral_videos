@@ -1515,7 +1515,7 @@ class WorkingOrchestrator:
                 cmd_subtitles = [
                     'ffmpeg', '-y',
                     '-i', temp_video,
-                    '-vf', f"subtitles='{escaped_subtitle_path}':force_style='FontName=Arial,Fontsize=24,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,Outline=2,Alignment={rtl_alignment},MarginV=40'",
+                    '-vf', f"subtitles='{escaped_subtitle_path}':force_style='FontName=Arial-Bold,Fontsize=9,PrimaryColour=&HFFFFFF&,OutlineColour=&H000000&,Outline=1,Alignment={rtl_alignment},MarginV=80'",
                     '-c:a', 'copy',
                     output_path
                 ]

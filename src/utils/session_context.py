@@ -57,7 +57,10 @@ class SessionContext:
             "analysis",
             "decisions",
             "hashtags",
-            "final_output"
+            "final_output",
+            "temp_files",  # Added for temporary video processing files
+            "subtitles",   # Added for subtitle files
+            "overlays"     # Added for overlay metadata
         ]
         
         for subdir in essential_dirs:

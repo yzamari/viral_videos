@@ -74,10 +74,9 @@ generate_episode() {
         --character "$CHARACTER" \
         --platform "$PLATFORM" \
         --voice "$VOICE" \
-        --language "$LANGUAGE" \
+        --languages "$LANGUAGE" \
         --session-id "$session_id" \
-        --hashtags "dragoncalculus calculus mathematics education animation studioghibli dragon math learning episode${episode_num}" \
-        --auto-post-instagram \
+        --auto-post \
         2>&1 | tee -a "$LOG_FILE"
     
     if [ $? -eq 0 ]; then

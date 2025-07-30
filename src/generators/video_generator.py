@@ -385,15 +385,10 @@ class VideoGenerator:
         
         try:
             # Create VEO client using the factory - prefer VEO-3 for realistic/cinematic
-            prefer_veo3_for_style = (
-                self.prefer_veo3 or 
-                (hasattr(config, 'visual_style') and config.visual_style and 
-                 config.visual_style.lower() in ['realistic', 'cinematic', 'hyper-realistic', 'photorealistic'])
-            )
-            
+            # Always prefer VEO-3 fast for cost savings - no special logic needed
             veo_client = self.veo_factory.get_best_available_client(
                 output_dir=session_context.get_output_path("video_clips"),
-                prefer_veo3=prefer_veo3_for_style
+                prefer_veo3=True  # Always use VEO-3 fast for cost savings
             )
             
             # Generate continuous video prompts with seamless transitions
@@ -493,7 +488,7 @@ The last frame of this scene connects to the next.
     def __init__(self, api_key: str, use_real_veo2: bool = True, use_vertex_ai: bool = True,
                  vertex_project_id: Optional[str] = None, vertex_location: Optional[str] = None, 
                  vertex_gcs_bucket: Optional[str] = None, output_dir: Optional[str] = None,
-                 prefer_veo3: bool = False):
+                 prefer_veo3: bool = True):  # Default to True to prefer VEO-3 fast
         """
         Initialize video generator with all AI components
         
@@ -708,8 +703,9 @@ The last frame of this scene connects to the next.
             
             # Initialize VEO client with session context
             if self.use_real_veo2 and self.use_vertex_ai:
+                # Always use VEO-3 fast for cost savings
                 self.veo_client = self.veo_factory.get_veo_client(
-                    model=VeoModel.VEO2 if not self.prefer_veo3 else VeoModel.VEO3,
+                    model=VeoModel.VEO3_FAST,  # Always use VEO-3 fast
                     output_dir=session_context.get_output_path("video_clips")
                 )
                 
@@ -857,10 +853,10 @@ The last frame of this scene connects to the next.
             timeline_visualizer = TimelineVisualizer(session_context)
             timeline_visualizer.set_video_duration(config.duration_seconds)
             
-            # Step 6: Create subtitles and get timing information
-            subtitle_data = self._create_subtitles_with_timings(script_result, audio_files, session_context, timeline_visualizer)
-            subtitle_files = subtitle_data.get('files', {})
-            subtitle_timings = subtitle_data.get('timings', [])
+            # Step 6: Subtitle creation moved to compose method for better integration
+            # subtitle_data = self._create_subtitles_with_timings(script_result, audio_files, session_context, timeline_visualizer)
+            # subtitle_files = subtitle_data.get('files', {})
+            subtitle_timings = []  # Will be populated in compose method
             
             # Get optimal duration from coordinator
             optimal_duration = duration_coordinator.get_optimal_duration()
@@ -1391,16 +1387,10 @@ The last frame of this scene connects to the next.
         # Get the best available VEO client using factory
         veo_client = None
         if self.use_real_veo2:
-            # Prefer VEO-3 for realistic/cinematic videos
-            prefer_veo3_for_style = (
-                self.prefer_veo3 or 
-                (hasattr(config, 'visual_style') and config.visual_style and 
-                 config.visual_style.lower() in ['realistic', 'cinematic', 'hyper-realistic', 'photorealistic'])
-            )
-            
+            # Always prefer VEO-3 fast for cost savings - no special logic needed
             veo_client = self.veo_factory.get_best_available_client(
                 output_dir=session_context.get_output_path("video_clips"),
-                prefer_veo3=prefer_veo3_for_style
+                prefer_veo3=True  # Always use VEO-3 fast for cost savings
             )
             
             if veo_client:
@@ -1465,10 +1455,16 @@ The last frame of this scene connects to the next.
                 # Convert to JSON prompt format
                 # For now, create a simple JSON structure directly
                 # TODO: Add proper async support or synchronous method
+                # Check if this is satirical/comedy content
+                is_satire = any(word in str(config.mission).lower() + " " + enhanced_prompt.lower() 
+                              for word in ['satire', 'satirical', 'parody', 'comedy', 'comedic', 
+                                         'family guy', 'joke', 'humor', 'funny'])
+                
                 json_prompt = {
                     "scene": {
                         "description": enhanced_prompt,
-                        "segment_index": i
+                        "segment_index": i,
+                        "content_type": "satirical_comedy" if is_satire else "general"
                     },
                     "visual_style": {
                         "style": style_decision.get('primary_style', 'dynamic'),
@@ -1479,7 +1475,12 @@ The last frame of this scene connects to the next.
                         "movement": "smooth"
                     },
                     "duration": clip_duration,
-                    "mission_context": config.mission
+                    "mission_context": config.mission,
+                    "content_context": {
+                        "type": "satirical_parody" if is_satire else "general",
+                        "intent": "comedic_entertainment" if is_satire else "informational",
+                        "disclaimer": "This is a comedic/satirical portrayal for entertainment purposes" if is_satire else None
+                    }
                 }
                 
                 # CRITICAL: Save ALL VEO prompts to session for debugging
@@ -1507,6 +1508,11 @@ The last frame of this scene connects to the next.
                         try:
                             # Use increasingly safer prompts for retries
                             current_prompt = enhanced_prompt
+                            
+                            # Add satire context to the prompt if detected
+                            if is_satire and "satirical" not in current_prompt.lower():
+                                current_prompt = f"SATIRICAL COMEDY CONTENT: {current_prompt}. This is a comedic parody in the style of Family Guy for entertainment purposes"
+                            
                             if veo_attempt > 0:
                                 # ALWAYS rephrase on retry attempts, not just when we have an error
                                 logger.info(f"🔄 Attempt {veo_attempt + 1} - applying safety rephrasing")
@@ -1991,7 +1997,8 @@ The last frame of this scene connects to the next.
                     duration_seconds=int(segment_duration),  # Convert to int
                     num_clips=num_segments,  # Use actual number of segments
                     clip_index=i,  # This should now be within range
-                    cheap_mode=getattr(config, 'cheap_mode', False) or (getattr(config, 'cheap_mode', False) and getattr(config, 'cheap_mode_level', 'full') in ['audio', 'full'])  # Use cheap audio only when cheap_mode is enabled
+                    cheap_mode=getattr(config, 'cheap_mode', False) or (getattr(config, 'cheap_mode', False) and getattr(config, 'cheap_mode_level', 'full') in ['audio', 'full']),  # Use cheap audio only when cheap_mode is enabled
+                    force_single_voice=True  # Always use single voice for consistency
                 )
                 
                 if segment_audio_files and len(segment_audio_files) > 0:
@@ -2269,33 +2276,63 @@ The last frame of this scene connects to the next.
             logger.info("🎬 Creating VERSION 1: Video with audio only (no subtitles, no overlays)")
             video_audio_only = self._apply_platform_orientation(temp_video_path, str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform), session_context)
             if config.duration_seconds >= 10:
-                current_duration = self._get_video_duration(video_audio_only)
-                if current_duration and current_duration < target_duration - 1.0:
-                    video_audio_only = self._add_fade_out_ending(video_audio_only, session_context, audio_files)
+                logger.info("🎬 Adding 2-second fadeout to audio-only version")
+                video_audio_only = self._add_fade_out_ending(video_audio_only, session_context, audio_files)
             
             # Save VERSION 1
             audio_only_path = session_context.save_final_video(video_audio_only, suffix="_audio_only")
             logger.info(f"✅ VERSION 1 created: {audio_only_path}")
             
-            # Step 3: Generate subtitles from our known text and audio timing
-            # ALWAYS use MoviePy for better styling (unless language not supported)
-            logger.info("📝 Generating subtitles with MoviePy for better styling")
-            video_with_subtitles = self._add_subtitle_overlays(temp_video_path, config, session_context)
+            # Step 3: Create video with overlays first (no subtitles)
+            logger.info("🎬 Creating video with overlays")
+            video_with_overlays_no_subs = self._add_timed_text_overlays(temp_video_path, style_decision, positioning_decision, config, session_context)
             
-            # Step 4: Add text overlays and hooks
-            video_with_overlays = self._add_timed_text_overlays(video_with_subtitles, style_decision, positioning_decision, config, session_context)
+            # Step 3b: Add PNG overlays (flags, logos, etc.) if requested
+            video_with_overlays_no_subs = self._add_png_overlays(video_with_overlays_no_subs, config, session_context)
             
-            # Step 4b: Add PNG overlays (flags, logos, etc.) if requested
-            video_with_overlays = self._add_png_overlays(video_with_overlays, config, session_context)
+            # Step 4: Now add subtitles to the overlay video using high-quality subtitle integration
+            logger.info("📝 Adding subtitles to overlay video with high quality settings")
+            # Create subtitles first
+            subtitle_data = self._create_subtitles_with_timings(script_result, audio_files, session_context, timeline_visualizer)
+            subtitle_files = subtitle_data.get('files', {})
+            subtitle_timings = subtitle_data.get('timings', [])
+            
+            # Use subtitle integration tool for better quality
+            if subtitle_files.get('srt'):
+                from ..utils.subtitle_integration_tool import SubtitleIntegrationTool
+                subtitle_tool = SubtitleIntegrationTool()
+                video_with_subtitles_path = session_context.get_output_path("temp_files", "video_with_subtitles_hq.mp4")
+                
+                # Get language for subtitle styling
+                languages = getattr(config, 'languages', [])
+                language = languages[0] if languages else None
+                
+                # Get video dimensions for proper scaling
+                video_width, video_height = self._get_video_dimensions(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))
+                
+                success = subtitle_tool.integrate_subtitles_with_ffmpeg(
+                    video_path=video_with_overlays_no_subs,
+                    subtitle_path=subtitle_files['srt'],
+                    output_path=video_with_subtitles_path,
+                    language=language,
+                    video_width=video_width,
+                    video_height=video_height
+                )
+                
+                if success and os.path.exists(video_with_subtitles_path):
+                    video_with_overlays = video_with_subtitles_path
+                    logger.info("✅ Successfully added high-quality subtitles to overlay video")
+                else:
+                    logger.warning("⚠️ Subtitle integration failed, using overlay video without subtitles")
+                    video_with_overlays = video_with_overlays_no_subs
+            else:
+                logger.warning("⚠️ No SRT file available, using overlay video without subtitles")
+                video_with_overlays = video_with_overlays_no_subs
             
             # Step 5: Create VERSION 2 - Video with overlays only (no subtitles)
-            logger.info("🎬 Creating VERSION 2: Video with overlays only (no subtitles)")
-            # Ensure temp_video_path exists, fall back to original_base_video if not
-            if not os.path.exists(temp_video_path):
-                logger.debug(f"Extended video not needed, using original base video path for overlays")
-                temp_video_path = original_base_video
-            # Use the trimmed/original video without subtitles for overlay-only version
-            video_overlays_only = self._add_timed_text_overlays(temp_video_path, style_decision, positioning_decision, config, session_context)
+            logger.info("🎬 Saving VERSION 2: Video with overlays only (no subtitles)")
+            # We already created the overlay-only version in step 3
+            video_overlays_only = video_with_overlays_no_subs
             video_overlays_only = self._apply_platform_orientation(video_overlays_only, str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform), session_context)
             if config.duration_seconds >= 10:
                 current_duration = self._get_video_duration(video_overlays_only)
@@ -2357,14 +2394,9 @@ The last frame of this scene connects to the next.
             else:
                 # Original fade-out logic for videos without audio overflow
                 if config.duration_seconds >= 10:  # Add fadeout for videos 10s+
-                    # Check if adding fadeout would exceed target duration
-                    current_duration = self._get_video_duration(oriented_video_path)
-                    if current_duration and current_duration < target_duration - 1.0:  # Leave room for fadeout
-                        final_video_path = self._add_fade_out_ending(oriented_video_path, session_context, audio_files)
-                        logger.info(f"🎬 Added fadeout ending (current: {current_duration:.1f}s, target: {target_duration}s)")
-                    else:
-                        logger.info(f"🎬 Skipping fadeout to maintain target duration (current: {current_duration:.1f}s, target: {target_duration}s)")
-                        final_video_path = oriented_video_path
+                    # Always add fadeout for videos 10s or longer
+                    logger.info(f"🎬 Adding 2-second fadeout for video >= 10s")
+                    final_video_path = self._add_fade_out_ending(oriented_video_path, session_context, audio_files)
                 else:
                     logger.info(f"🎬 Skipping fadeout for short video ({config.duration_seconds}s)")
                     final_video_path = oriented_video_path
@@ -4909,6 +4941,9 @@ This is a placeholder file. In a full implementation, this would be a complete M
             logger.info(f"📝 Found {len(complete_sentences)} sentences in script")
             
             # Create one subtitle per audio file
+            # NOTE: Audio files may or may not have padding between segments depending on
+            # whether add_padding_between_segments was called earlier in the pipeline.
+            # We need to detect this and adjust subtitle timing accordingly.
             for i, audio_file in enumerate(audio_files):
                 segment_start_time = current_time
                 
@@ -4972,10 +5007,21 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 logger.debug(f"📝 Subtitle {i+1}: {segment_start_time:.2f}s - {segment_end_time:.2f}s: {subtitle_text[:50]}...")
                 
                 # Add padding between segments (except after the last one)
+                # IMPORTANT: Only add padding to subtitle timing if audio files actually have padding
+                # Check if we're using padded audio files by looking at the filename
                 if i < len(audio_files) - 1:
-                    padding = video_config.audio.padding_between_segments
-                    current_time = segment_end_time + padding
-                    logger.debug(f"📝 Added {padding}s padding after segment {i+1}")
+                    # Check if this is a padded audio file
+                    if "padded_" in os.path.basename(audio_file):
+                        # Audio files have padding, so add it to subtitle timing
+                        padding = video_config.audio.padding_between_segments
+                        current_time = segment_end_time + padding
+                        logger.debug(f"📝 Added {padding}s padding after segment {i+1} (padded audio detected)")
+                    else:
+                        # Audio files don't have padding, but still add a small gap for natural timing
+                        # This matches the actual concatenation behavior
+                        padding = 0.3  # Small gap between segments
+                        current_time = segment_end_time + padding
+                        logger.debug(f"📝 Added {padding}s gap after segment {i+1} (no padded audio)")
                 else:
                     current_time = segment_end_time
             
@@ -6151,29 +6197,47 @@ This is a placeholder file. In a full implementation, this would be a complete M
         """Rephrase prompt with progressive safety levels for content filter retries"""
         logger.info(f"🛡️ Applying safety level {safety_level} rephrasing")
         
-        if safety_level == 1:
-            # Mild: Remove potentially problematic words
-            safe_prompt = original_prompt
-            problematic_words = ['explosion', 'violent', 'blood', 'death', 'kill', 'war', 
-                               'attack', 'destroy', 'weapon', 'gun', 'bomb', 'fight']
-            replacements = {'explosion': 'burst', 'violent': 'intense', 'blood': 'energy',
-                          'death': 'transformation', 'kill': 'stop', 'war': 'conflict',
-                          'attack': 'approach', 'destroy': 'change', 'weapon': 'tool',
-                          'gun': 'device', 'bomb': 'surprise', 'fight': 'compete'}
+        # Always use AI-based rephrasing for better results
+        try:
+            # Extract style and visual parameters from the original prompt
+            style = None
+            visual_style = None
+            tone = None
             
-            for word, replacement in replacements.items():
-                safe_prompt = safe_prompt.replace(word, replacement)
-                safe_prompt = safe_prompt.replace(word.capitalize(), replacement.capitalize())
+            # Try to preserve style parameters
+            if "style:" in original_prompt.lower():
+                style_match = original_prompt.lower().split("style:")[1].split(",")[0].strip()
+                style = style_match
             
-            return safe_prompt
+            # Check for visual style keywords
+            for vs in ['family guy', 'realistic', 'cinematic', 'cartoon', 'animated']:
+                if vs in original_prompt.lower():
+                    visual_style = vs
+                    break
             
-        elif safety_level == 2:
-            # Moderate: Focus on educational/documentary style
-            return f"Educational documentary style: {mission}. Scene {scene_number} showing informative content about the topic. Professional presentation suitable for all audiences. Platform: {platform or 'general'}. Focus on facts and learning."
+            # Use the intelligent rephrasing method
+            rephrased = self._rephrase_problematic_prompt(
+                original_prompt=original_prompt,
+                mission=mission,
+                scene_number=scene_number,
+                style=style,
+                visual_style=visual_style,
+                platform=platform
+            )
             
-        else:  # safety_level >= 3
-            # Safe: Generic educational content
-            return f"Educational content for scene {scene_number}: General information presentation. Safe for all audiences. Professional documentary style. Platform: {platform or 'general'}."
+            logger.info(f"✅ AI rephrasing successful for safety level {safety_level}")
+            return rephrased
+            
+        except Exception as e:
+            logger.error(f"❌ AI rephrasing failed: {e}")
+            
+            # Fallback to basic sanitization
+            if safety_level >= 3:
+                # Last resort - very generic
+                return f"Educational content for scene {scene_number}: General information presentation. Safe for all audiences. Professional documentary style. Platform: {platform or 'general'}."
+            else:
+                # Try basic sanitization
+                return self._basic_prompt_sanitization(original_prompt, mission, scene_number)
     
     def _modify_script_for_content_filter(self, original_script: str, mission: str, 
                                          problematic_terms: List[str] = None) -> str:
@@ -6231,7 +6295,7 @@ Return ONLY the modified script text, no explanations."""
 
     def _rephrase_problematic_prompt(self, original_prompt: str, mission: str, scene_number: int, 
                                     style: str = None, tone: str = None, visual_style: str = None,
-                                    duration: float = None, continuous_mode: bool = False) -> str:
+                                    duration: float = None, continuous_mode: bool = False, platform: str = None) -> str:
         """Intelligently rephrase a problematic prompt to preserve ALL original parameters"""
         logger.info(f"🔄 Rephrasing problematic prompt while preserving all parameters: '{original_prompt[:100]}...'")
         
@@ -6271,6 +6335,15 @@ Return ONLY the modified script text, no explanations."""
                 4. REMOVE ONLY THE VIOLATION: Replace only the problematic elements
                 5. KEEP SEGMENT CONTENT: Preserve the narrative/educational value
                 
+                CRITICAL: DO NOT OVER-SANITIZE! The goal is to keep the content as close to the original as possible.
+                - If it's comedy, KEEP IT FUNNY
+                - If it's satire, KEEP IT SATIRICAL
+                - If it's Family Guy style, KEEP THE IRREVERENT HUMOR
+                - Only change the SPECIFIC words that might violate policies
+                - DO NOT turn it into generic educational content
+                - DO NOT remove all personality and humor
+                - MAINTAIN the exaggeration and absurdity
+                
                 CRITICAL RULES:
                 - NEVER change from realistic to cartoon or vice versa
                 - NEVER change the tone (if dramatic, keep dramatic)
@@ -6279,11 +6352,25 @@ Return ONLY the modified script text, no explanations."""
                 - NEVER alter the duration or pacing
                 - ONLY remove/rephrase the specific policy-violating content
                 
+                Common problematic terms and their COMEDIC alternatives (keep it funny!):
+                - "THE HORROR" → "Oh my goodness!" or "How dramatically surprising!"
+                - "flask" → "mysterious beverage container" or "totally-not-suspicious water bottle"
+                - "dehydration/parched" → "extremely thirsty" or "desperately needing water"
+                - "raccoon eyes" → "dramatically tired appearance" or "comedically exhausted look"
+                - "smeared makeup" → "artistic makeup style" or "uniquely applied cosmetics"
+                - "crisis/meltdown" → "dramatic situation" or "comedic chaos"
+                - "drought" → "extreme dry weather" or "water shortage situation"
+                - "Internet shutdown" → "social media vacation" or "digital detox period"
+                - "suffering" → "experiencing challenges" or "dealing with situations"
+                - Strong reactions → Keep them but make them clearly comedic/exaggerated
+                
                 Examples of minimal changes:
                 - "soldiers fighting" → "military personnel in training exercise"
                 - "explosion damages building" → "special effects showing impact" 
                 - "violent conflict" → "intense dramatic scene"
                 - "person gets hurt" → "person faces challenge"
+                - "horror movie scene" → "surprising movie scene"
+                - "drinking from flask" → "drinking from water bottle"
                 
                 Requirements:
                 - Make MINIMAL changes - only what's needed for policy compliance
@@ -6291,6 +6378,20 @@ Return ONLY the modified script text, no explanations."""
                 - Keep the same energy and pacing
                 - Maintain narrative continuity
                 - Add "no text overlays" at the end if not present
+                - Keep character names and visual descriptions intact
+                - Preserve the comedic/satirical intent while using safer language
+                - IMPORTANT: This is COMEDY/SATIRE - maintain the humor and absurdity
+                - Keep it FUNNY - don't make it educational or serious
+                - Maintain the exaggerated, over-the-top nature of the content
+                - If it's Family Guy style, keep the irreverent humor
+                - Add context like "comedic portrayal" or "satirical news parody" to clarify intent
+                
+                EXAMPLE OF GOOD REPHRASING:
+                Original: "Maryam (makeup smeared) announces: 'THE HORROR!' Cleveland-style minister: 'Internet is overrated.' Maryam drinks from flask."
+                Good rephrase: "SATIRICAL NEWS COMEDY: Maryam (dramatically styled makeup) announces: 'How dramatically surprising!' Cleveland-style minister: 'Internet is overrated.' Maryam drinks from mysterious beverage container. Family Guy style animated parody."
+                
+                EXAMPLE OF BAD REPHRASING (too generic):
+                Bad: "Person talks about technology. Another person agrees. They have a conversation about modern life."
                 
                 Return ONLY the rephrased prompt (one line), preserving all original style/tone/visual markers:
                 """
@@ -7118,7 +7219,8 @@ Return ONLY the modified script text, no explanations."""
                 category=config.category,
                 duration_seconds=config.duration_seconds,
                 num_clips=1,
-                cheap_mode=True
+                cheap_mode=True,
+                force_single_voice=True  # Always use single voice for consistency
             )
             
             if not audio_files:

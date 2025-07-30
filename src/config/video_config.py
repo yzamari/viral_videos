@@ -67,7 +67,7 @@ class TextOverlayConfig:
     # Font sizes (relative to video dimensions)
     font_sizes: Dict[str, float] = field(default_factory=lambda: {
         'title': 0.06,          # 6% of video width
-        'subtitle': 0.025,      # 2.5% of video width - reduced for better readability
+        'subtitle': 0.0083,     # 0.83% of video width - optimized for 9px on 1080px width
         'header': 0.05,         # 5% of video width
         'body': 0.04,           # 4% of video width
         'caption': 0.035,       # 3.5% of video width
@@ -79,7 +79,7 @@ class TextOverlayConfig:
     # Minimum font sizes (absolute pixels)
     min_font_sizes: Dict[str, int] = field(default_factory=lambda: {
         'title': 48,
-        'subtitle': 24,         # Reduced from 44 to prevent huge subtitles
+        'subtitle': 9,          # Perfect subtitle size - small and readable
         'header': 40,
         'body': 32,
         'caption': 28,
@@ -88,16 +88,16 @@ class TextOverlayConfig:
         'default': 32
     })
     
-    # Stroke settings
+    # Stroke settings - increased for better visibility
     stroke_widths: Dict[str, int] = field(default_factory=lambda: {
-        'title': 3,
-        'subtitle': 3,
-        'header': 3,
-        'body': 2,
-        'caption': 2,
-        'badge': 2,
-        'news_ticker': 1,
-        'default': 2
+        'title': 5,      # Increased from 3
+        'subtitle': 1,   # Perfect outline width for small subtitles
+        'header': 5,     # Increased from 3
+        'body': 3,       # Increased from 2
+        'caption': 3,    # Increased from 2
+        'badge': 3,      # Increased from 2
+        'news_ticker': 2, # Increased from 1
+        'default': 3     # Increased from 2
     })
     
     # Colors
