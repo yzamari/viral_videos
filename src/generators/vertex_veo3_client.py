@@ -11,7 +11,7 @@ import json
 import subprocess
 import requests
 import shutil
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Union
 
 # Add src to path for imports
 if 'src' not in sys.path:
@@ -27,8 +27,10 @@ except ImportError:
 
 try:
     from src.utils.logging_config import get_logger
+    from src.generators.json_prompt_system import VEOJsonPrompt, JSONPromptValidator, GeneratorType
 except ImportError:
     from utils.logging_config import get_logger
+    from generators.json_prompt_system import VEOJsonPrompt, JSONPromptValidator, GeneratorType
 
 logger = get_logger(__name__)
 
@@ -65,17 +67,98 @@ class VertexAIVeo3Client(BaseVeoClient):
     def get_model_name(self) -> str:
         """Get the model name"""
         if self.is_veo3_fast:
-            return "veo-3.0-fast-generate-preview"  # Official Veo 3 Fast model
+            return "veo-3.0-fast-generate-001"  # Official Veo 3 Fast model
         return self.veo3_model
+    
+    def _convert_json_prompt_to_text(self, json_prompt: VEOJsonPrompt) -> str:
+        """Convert structured JSON prompt to optimized text prompt for VEO-3"""
+        parts = []
+        
+        # Main description
+        parts.append(json_prompt.description)
+        
+        # Camera details
+        if json_prompt.camera:
+            camera_desc = []
+            if json_prompt.camera.shot_type:
+                camera_desc.append(f"{json_prompt.camera.shot_type.value} shot")
+            if json_prompt.camera.movement:
+                camera_desc.append(f"{json_prompt.camera.movement.value} camera movement")
+            if json_prompt.camera.lens:
+                camera_desc.append(f"shot with {json_prompt.camera.lens} lens")
+            if json_prompt.camera.aperture:
+                camera_desc.append(f"at {json_prompt.camera.aperture}")
+            if camera_desc:
+                parts.append(", ".join(camera_desc))
+        
+        # Lighting
+        if json_prompt.lighting:
+            lighting_desc = []
+            if json_prompt.lighting.style:
+                lighting_desc.append(f"{json_prompt.lighting.style.value} lighting")
+            if json_prompt.lighting.mood:
+                lighting_desc.append(f"{json_prompt.lighting.mood} mood")
+            if lighting_desc:
+                parts.append(", ".join(lighting_desc))
+        
+        # Scene details
+        if json_prompt.scene:
+            if json_prompt.scene.location:
+                parts.append(f"location: {json_prompt.scene.location}")
+            if json_prompt.scene.time_of_day:
+                parts.append(f"time: {json_prompt.scene.time_of_day}")
+            if json_prompt.scene.weather:
+                parts.append(f"weather: {json_prompt.scene.weather}")
+        
+        # Subject details
+        if json_prompt.subject:
+            subject_parts = [json_prompt.subject.description]
+            if json_prompt.subject.action:
+                subject_parts.append(json_prompt.subject.action)
+            if json_prompt.subject.expression:
+                subject_parts.append(f"with {json_prompt.subject.expression} expression")
+            parts.append(", ".join(subject_parts))
+        
+        # Visual style
+        if hasattr(json_prompt.style, 'value'):
+            parts.append(f"{json_prompt.style.value} style")
+        else:
+            parts.append(f"{json_prompt.style} style")
+        
+        # Effects
+        if json_prompt.effects:
+            if json_prompt.effects.color_grading:
+                parts.append(f"color grading: {json_prompt.effects.color_grading}")
+            if json_prompt.effects.film_grain:
+                parts.append(f"with {json_prompt.effects.film_grain} film grain")
+        
+        # Keywords
+        if json_prompt.keywords:
+            parts.append(f"keywords: {', '.join(json_prompt.keywords)}")
+        
+        # Constraints
+        if json_prompt.constraints:
+            parts.append(f"constraints: {', '.join(json_prompt.constraints)}")
+        
+        # Multi-segment handling
+        if json_prompt.segments and len(json_prompt.segments) > 0:
+            parts.append("\nSequence breakdown:")
+            for i, segment in enumerate(json_prompt.segments):
+                segment_desc = f"{i+1}. [{segment.duration}s] {segment.description}"
+                if segment.camera:
+                    segment_desc += f" ({segment.camera.shot_type.value} shot, {segment.camera.movement.value} movement)"
+                parts.append(segment_desc)
+        
+        return ". ".join(parts)
 
-    def generate_video(self, prompt: str, duration: float,
+    def generate_video(self, prompt: Union[str, VEOJsonPrompt], duration: float,
                       clip_id: str = "clip", image_path: Optional[str] = None,
                       enable_audio: bool = False, aspect_ratio: str = "9:16") -> str:
         """
         Generate video using VEO-3 with native audio support
 
         Args:
-            prompt: Text description for video generation
+            prompt: Text description or VEOJsonPrompt for video generation
             duration: Video duration in seconds (up to 8 seconds for VEO-3)
             clip_id: Unique identifier for the clip
             image_path: Optional image for image-to-video generation
@@ -85,6 +168,24 @@ class VertexAIVeo3Client(BaseVeoClient):
         Returns:
             Path to generated video file
         """
+        # Handle JSON prompt
+        if isinstance(prompt, VEOJsonPrompt):
+            # Validate JSON prompt
+            valid, errors = JSONPromptValidator.validate(prompt, GeneratorType.VEO3)
+            if not valid:
+                logger.warning(f"⚠️ JSON prompt validation errors: {errors}")
+            
+            # Use JSON prompt's duration and aspect ratio if provided
+            if prompt.duration:
+                duration = prompt.duration
+            if prompt.aspect_ratio:
+                aspect_ratio = prompt.aspect_ratio
+            
+            # Convert JSON to optimized text prompt
+            text_prompt = self._convert_json_prompt_to_text(prompt)
+            logger.info(f"📋 Converted JSON prompt to text: {text_prompt[:200]}...")
+        else:
+            text_prompt = prompt
         if not self.is_available:
             logger.warning("⚠️ FALLBACK WARNING: VEO-3 not available, falling back to VEO-2")
             print("⚠️ FALLBACK WARNING: VEO-3 service unavailable - falling back to VEO-2")
@@ -96,10 +197,10 @@ class VertexAIVeo3Client(BaseVeoClient):
                     self.location,
                     self.gcs_bucket,
                     self.output_dir)
-                return veo2_client.generate_video(prompt, duration, clip_id, image_path, aspect_ratio)
+                return veo2_client.generate_video(text_prompt, duration, clip_id, image_path, aspect_ratio)
             except Exception as e:
                 logger.error(f"❌ VEO-2 fallback failed: {e}")
-                return self._create_fallback_clip(prompt, duration, clip_id)
+                return self._create_fallback_clip(text_prompt, duration, clip_id)
 
         # Cost optimization: Disable audio for VEO-3 (expensive)
         if enable_audio:
@@ -116,7 +217,7 @@ class VertexAIVeo3Client(BaseVeoClient):
 
         try:
             # Enhance prompt for VEO-3 with audio and cinematic instructions
-            enhanced_prompt = self._enhance_prompt_for_veo3(prompt, enable_audio)
+            enhanced_prompt = self._enhance_prompt_for_veo3(text_prompt, enable_audio)
 
             # Submit generation request to Vertex AI VEO-3
             video_result = self._submit_veo3_generation_request(
@@ -147,7 +248,7 @@ class VertexAIVeo3Client(BaseVeoClient):
 
         except Exception as e:
             logger.error(f"❌ VEO-3 generation failed: {e}")
-            return self._create_fallback_clip(prompt, duration, clip_id)
+            return self._create_fallback_clip(text_prompt, duration, clip_id)
 
     def _check_availability(self) -> bool:
         """Check if VEO-3 is available for this project using CORRECT URL format"""
@@ -158,10 +259,19 @@ class VertexAIVeo3Client(BaseVeoClient):
             url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{model_name}:predictLongRunning"
             headers = self._get_auth_headers()
 
-            # Make a minimal test request
+            # Make a minimal test request for VEO-3 Fast
             test_data = {
                 "instances": [{"prompt": "test"}],
-                "parameters": {"aspectRatio": "9:16", "durationSeconds": 5}
+                "parameters": {
+                    "aspectRatio": "9:16",
+                    "durationSeconds": "5",
+                    "sampleCount": 1,
+                    "personGeneration": "allow_all",
+                    "addWatermark": True,
+                    "includeRaiReason": True,
+                    "generateAudio": False,
+                    "resolution": "1080p"
+                }
             }
 
             response = requests.post(url, headers=headers, json=test_data, timeout=30)
@@ -283,20 +393,23 @@ class VertexAIVeo3Client(BaseVeoClient):
 
             headers = self._get_auth_headers()
 
-            # Build request payload for VEO-3
+            # Build request payload for VEO-3 Fast using the example format
             payload = {
                 "instances": [
                     {
                         "prompt": prompt,
-                        "config": {
-                            "aspectRatio": aspect_ratio,
-                            "duration": f"{int(duration)}s",
-                            "enableAudio": enable_audio,  # VEO-3 feature
-                            "cinematicQuality": True,     # VEO-3 feature
-                            "realisticPhysics": True      # VEO-3 feature
-                        }
                     }
-                ]
+                ],
+                "parameters": {
+                    "aspectRatio": aspect_ratio,
+                    "sampleCount": 1,
+                    "durationSeconds": str(int(duration)),
+                    "personGeneration": "allow_all",
+                    "addWatermark": True,
+                    "includeRaiReason": True,
+                    "generateAudio": enable_audio and not self.is_veo3_fast,  # VEO-3 Fast doesn't support audio
+                    "resolution": "1080p",
+                }
             }
 
             # Add image if provided for image-to-video
@@ -387,8 +500,36 @@ class VertexAIVeo3Client(BaseVeoClient):
                             if "response" in result:
                                 response_data = result["response"]
                                 
-                                # VEO-3 can return either GCS URI or base64 encoded video
-                                if "generatedVideo" in response_data and "gcsUri" in response_data["generatedVideo"]:
+                                # VEO-3 Fast returns predictions with metadata
+                                if "predictions" in response_data and len(response_data["predictions"]) > 0:
+                                    prediction = response_data["predictions"][0]
+                                    
+                                    # Check for video data in prediction
+                                    if "video" in prediction:
+                                        video_data = prediction["video"]
+                                        if "gcsUri" in video_data:
+                                            gcs_uri = video_data["gcsUri"]
+                                            logger.info(f"✅ VEO-3 Fast operation completed with GCS URI: {gcs_uri}")
+                                            return gcs_uri
+                                        elif "bytesBase64Encoded" in video_data:
+                                            logger.info(f"✅ VEO-3 Fast operation completed with base64 encoded video")
+                                            return self._save_base64_video(video_data["bytesBase64Encoded"], operation_id)
+                                    
+                                    # Fallback to generatedSamples format
+                                    elif "generatedSamples" in prediction and len(prediction["generatedSamples"]) > 0:
+                                        sample = prediction["generatedSamples"][0]
+                                        if "video" in sample:
+                                            video_data = sample["video"]
+                                            if "gcsUri" in video_data:
+                                                gcs_uri = video_data["gcsUri"]
+                                                logger.info(f"✅ VEO-3 Fast operation completed with GCS URI: {gcs_uri}")
+                                                return gcs_uri
+                                            elif "bytesBase64Encoded" in video_data:
+                                                logger.info(f"✅ VEO-3 Fast operation completed with base64 encoded video")
+                                                return self._save_base64_video(video_data["bytesBase64Encoded"], operation_id)
+                                
+                                # Legacy VEO-3 format support
+                                elif "generatedVideo" in response_data and "gcsUri" in response_data["generatedVideo"]:
                                     gcs_uri = response_data["generatedVideo"]["gcsUri"]
                                     logger.info(f"✅ VEO-3 operation completed with GCS URI: {gcs_uri}")
                                     return gcs_uri

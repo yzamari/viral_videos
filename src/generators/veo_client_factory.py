@@ -44,7 +44,7 @@ class VeoModel(Enum):
     """Available VEO models"""
     VEO2 = "veo-2.0-generate-001"
     VEO3 = "veo-3.0-generate-preview"
-    VEO3_FAST = "veo-3.0-fast-generate-preview"  # Official Veo 3 Fast model - faster and cheaper
+    VEO3_FAST = "veo-3.0-fast-generate-001"  # Official Veo 3 Fast model - faster and cheaper
 
 class VeoClientFactory:
     """Factory for creating and managing VEO clients"""

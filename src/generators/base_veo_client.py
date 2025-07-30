@@ -70,17 +70,30 @@ class BaseVeoClient(ABC):
     def _refresh_access_token(self):
         """Get fresh access token using gcloud CLI"""
         try:
+            # Try application default credentials first
             result = subprocess.run(
-                ["gcloud", "auth", "print-access-token"],
+                ["gcloud", "auth", "application-default", "print-access-token"],
                 capture_output=True,
                 text=True,
                 check=True
             )
             self.access_token = result.stdout.strip()
             self.token_expiry = time.time() + 3600  # Token valid for 1 hour
-            logger.debug("🔑 Access token refreshed")
-        except Exception as e:
-            raise Exception(f"Failed to get access token: {e}")
+            logger.debug("🔑 Access token refreshed (using application default)")
+        except Exception as e1:
+            # Fall back to regular auth if application default fails
+            try:
+                result = subprocess.run(
+                    ["gcloud", "auth", "print-access-token"],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                self.access_token = result.stdout.strip()
+                self.token_expiry = time.time() + 3600  # Token valid for 1 hour
+                logger.debug("🔑 Access token refreshed (using user auth)")
+            except Exception as e2:
+                raise Exception(f"Failed to get access token: {e1} / {e2}")
 
     def _get_auth_headers(self) -> Dict[str, str]:
         """Get authentication headers with fresh token"""
