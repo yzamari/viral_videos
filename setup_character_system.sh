@@ -34,12 +34,12 @@ echo ""
 
 # Test the system
 echo "🔧 Testing character reference system..."
-python main.py test-character-system
+python3 main.py test-character-system
 
 if [ $? -eq 0 ]; then
     echo ""
     echo "🎬 Creating professional news anchor profiles..."
-    python main.py create-news-anchors
+    python3 main.py create-news-anchors
     
     echo ""
     echo "📁 Character Storage Locations:"
@@ -48,13 +48,13 @@ if [ $? -eq 0 ]; then
     echo ""
     
     echo "🎭 Available Characters:"
-    python main.py list-characters
+    python3 main.py list-characters
     
     echo ""
     echo "🚀 Character system ready! You can now:"
     echo "   1. Run: ./create_iran_water_crisis_series.sh"
     echo "   2. Or use: ./manage_characters.sh for more options"
-    echo "   3. Create custom characters with: python main.py store-character photo.jpg --name 'Name'"
+    echo "   3. Create custom characters with: python3 main.py store-character photo.jpg --name 'Name'"
     
 else
     echo ""

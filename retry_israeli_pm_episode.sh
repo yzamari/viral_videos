@@ -1,4 +1,16 @@
 #!/bin/bash
+# Force use of modern bash for associative arrays
+if [[ ${BASH_VERSION%%.*} -lt 4 ]]; then
+    echo "⚠️  This script requires bash 4.0+. macOS default is bash 3.x"
+    echo "Installing modern bash via homebrew..."
+    if command -v brew >/dev/null 2>&1; then
+        brew install bash
+        exec /usr/local/bin/bash "$0" "$@"
+    else
+        echo "❌ Please install bash 4+ or run: brew install bash"
+        exit 1
+    fi
+fi
 # Retry a specific Israeli PM episode
 
 if [ $# -eq 0 ]; then
@@ -67,7 +79,7 @@ echo "Voice: Indian English"
 echo ""
 
 # Run the generation command
-python main.py \
+python3 main.py generate \
     --mission "$MISSION" \
     --duration 40 \
     --style "$STYLE" \

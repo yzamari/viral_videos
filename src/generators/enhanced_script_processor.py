@@ -136,6 +136,36 @@ class EnhancedScriptProcessor:
             if target_duration:
                 logger.info(f"🎯 Target duration: {target_duration} seconds")
 
+            # CRITICAL: Enforce duration constraints BEFORE processing
+            if target_duration:
+                # Calculate maximum words based on target duration
+                # Average speaking rate: 150 words per minute (2.5 words per second)
+                words_per_second = 2.5
+                max_words = int(target_duration * words_per_second * 0.85)  # 85% to account for pauses
+                
+                script_words = script_content.split()
+                current_word_count = len(script_words)
+                
+                if current_word_count > max_words:
+                    logger.warning(f"⚠️  Script has {current_word_count} words but max is {max_words} for {target_duration}s")
+                    logger.warning(f"📄 Truncating script to fit duration constraint")
+                    
+                    # Truncate to sentences that fit within word limit
+                    sentences = self._split_into_sentences(script_content, language_value)
+                    truncated_sentences = []
+                    word_count = 0
+                    
+                    for sentence in sentences:
+                        sentence_words = len(sentence.split())
+                        if word_count + sentence_words <= max_words:
+                            truncated_sentences.append(sentence)
+                            word_count += sentence_words
+                        else:
+                            break
+                    
+                    script_content = ' '.join(truncated_sentences)
+                    logger.info(f"✂️  Truncated script to {word_count} words ({len(truncated_sentences)} sentences)")
+            
             # Enhanced prompt for duration-aware script processing
             # Determine segmentation strategy
             if target_segment_count and target_segment_count > 0:
@@ -385,11 +415,11 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
                 optimized_text = script_content
                 logger.info(f"📏 Keeping original script: {len(words)} words (target: {target_words})")
             
-            # Create segments - ENFORCE ONE SENTENCE PER SEGMENT
+            # Split into sentences for segments
             sentences = self._split_into_sentences(optimized_text, language)
             segments = []
             
-            for sentence in sentences:
+            for i, sentence in enumerate(sentences):
                 sentence_words = len(sentence.split())
                 sentence_duration = tts_config.calculate_duration(sentence_words)
                 
@@ -621,13 +651,13 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
         # Split into sentences - ENFORCE ONE SENTENCE PER SEGMENT
         sentences = self._split_into_sentences(script_content, language)
         
-        # Create segments with exactly one sentence each
+        # Create segments from sentences
         segments = []
         total_words = 0
         
         for sentence in sentences:
             sentence_words = len(sentence.split())
-            sentence_duration = sentence_words / 2.8  # 2.8 words per second
+            sentence_duration = sentence_words / 2.5  # 2.5 words per second
             
             segments.append({
                 "text": sentence,

@@ -21,7 +21,7 @@ fi
 
 # Check dependencies
 echo "📦 Checking dependencies..."
-python -c "import gradio, google.generativeai" 2>/dev/null || {
+python3 -c "import gradio, google.generativeai" 2>/dev/null || {
     echo "📦 Installing missing dependencies..."
     pip install -r requirements.txt
 }
@@ -92,7 +92,7 @@ if [ "$UI_MODE" = true ]; then
     echo "📱 Mobile-optimized for viral content"
     echo ""
     echo "🔄 Starting Gradio server..."
-    python modern_ui.py
+    python3 modern_ui.py
 elif [ "$CLI_MODE" = true ]; then
     echo "🚀 Launching CLI Mode with AI Agents..."
     if [ -z "$MISSION" ]; then
@@ -100,7 +100,7 @@ elif [ "$CLI_MODE" = true ]; then
         echo "Usage: $0 cli --mission 'your mission here'"
         exit 1
     fi
-    python main.py generate --mission "$MISSION" --duration "$DURATION" --platform "$PLATFORM" --category "$CATEGORY" --discussions "$DISCUSSIONS" --no-cheap
+    python3 main.py generate --mission "$MISSION" --duration "$DURATION" --platform "$PLATFORM" --category "$CATEGORY" --discussions "$DISCUSSIONS" --no-cheap
 else
     echo "Usage: $0 [ui|cli] [options]"
     echo ""

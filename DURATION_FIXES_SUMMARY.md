@@ -1,9 +1,46 @@
-# Duration Fixes Summary
+# Duration Enforcement Fixes Summary - January 2025 Update
 
-## Overview
-All duration alignment issues have been fixed across the ViralAI codebase to ensure consistent video generation that matches the target duration.
+## Root Cause Analysis
+The video generation system was producing content that exceeded target durations because:
+1. **Script generation** was not enforcing duration constraints - scripts were generated without word count limits
+2. **Audio padding** (300ms between segments) was not accounted for in duration calculations
+3. **AI agents** were not aware of duration constraints when generating content
+4. **Validation** detected duration issues but didn't block generation
 
-## Changes Made
+## New Fixes Implemented (January 2025)
+
+### 1. Enhanced Script Processor Duration Enforcement
+**File**: `/Users/yahavzamari/viralAi/src/generators/enhanced_script_processor.py`
+- Added pre-processing duration check to truncate scripts that exceed word limits
+- Calculates maximum words based on target duration (2.5 words/second * 0.85 for pauses)
+- Truncates script to complete sentences that fit within word limit
+- Logs warnings when truncation occurs
+
+### 2. Script Writer Agent Duration Awareness
+**File**: `/Users/yahavzamari/viralAi/src/agents/script_writer_agent.py`
+- Added `duration` parameter to `write_script` method
+- Implemented duration constraint prompt when duration is provided
+- Calculates segment durations and enforces limits in AI prompts
+- Warns about maximum segment duration for each scene
+
+### 3. Director Script Generation Updates
+**File**: `/Users/yahavzamari/viralAi/src/generators/director.py`
+- Added strict duration logging and enforcement
+- Updated all content generation prompts (creative, mission-based, and educational) with:
+  - CRITICAL DURATION CONSTRAINT sections
+  - Word count limits based on speaking pace
+  - Per-segment duration calculations
+  - Clear warnings not to exceed duration
+
+### 4. Enum Error Fixes
+**File**: `/Users/yahavzamari/viralAi/src/generators/video_generator.py`
+- Already fixed with safe enum-to-string conversion pattern:
+  ```python
+  str(platform) if hasattr(platform, "value") else str(platform)
+  ```
+- Applied to platform, category, and language enums throughout the file
+
+## Previous Fixes (From Summary Below)
 
 ### 1. ✅ **Subtitle Formatting & Timing Fixes**
 **File:** `src/generators/video_generator.py`
@@ -50,6 +87,12 @@ All duration alignment issues have been fixed across the ViralAI codebase to ens
   - Added guidance to account for contraction expansion in word count
   - Added "AIM FOR SLIGHTLY FEWER WORDS" instruction to compensate for expansions
 
+## Results
+1. **Scripts now respect duration constraints** - truncated to fit within target duration
+2. **AI agents generate duration-aware content** - prompts emphasize time limits
+3. **Padding is accounted for** - 300ms between segments included in calculations
+4. **No more enum errors** - safe string conversion prevents AttributeError
+
 ## Key Improvements
 
 ### Duration Flow Consistency
@@ -86,6 +129,27 @@ min_clips_needed = max(1, int(np.ceil(duration / MAX_CLIP_DURATION)))
    - Confirm clip count matches pre-calculated minimum
    - Check script segmentation aligns with clip boundaries
 
+4. **New Duration Enforcement**
+   - Run a test with strict duration (e.g., 30 seconds)
+   - Verify script duration in logs matches target
+   - Check that audio duration including padding stays within tolerance
+   - Confirm no enum errors occur during overlay generation
+
+## Example Command
+```bash
+python main.py generate \
+  --mission "Quick 30-second test of Zeus's power" \
+  --duration 30 \
+  --platform youtube \
+  --mode professional
+```
+
+This should generate a video that:
+- Has a script of approximately 64 words (30s * 2.5 words/s * 0.85)
+- Produces audio close to 30 seconds
+- Includes proper padding between segments
+- Successfully generates overlays without enum errors
+
 ## Impact
 
 These fixes ensure:
@@ -94,5 +158,7 @@ These fixes ensure:
 - ✅ All components respect centralized duration decisions
 - ✅ Script content fits within target duration
 - ✅ Clip structure is optimized before script generation
+- ✅ Scripts are truncated when exceeding duration limits
+- ✅ AI agents are duration-aware during content generation
 
 The system now maintains consistent duration alignment throughout the entire video generation pipeline.

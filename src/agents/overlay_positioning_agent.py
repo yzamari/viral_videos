@@ -118,14 +118,26 @@ Return JSON:
             TASK: Create engaging colorful text hooks and overlays that will make the video viral.
             
             REQUIREMENTS:
-            1. Create 6-10 text hooks that appear at different times throughout the video
-            2. Use sophisticated colors that grab attention (avoid redundant orange - use #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #54A0FF, #5F27CD, #00D2D3, #C44569, #2C3E50, #E74C3C)
-            3. Choose professional fonts that match the content style (Helvetica-Bold, Arial-Bold, Impact, Georgia-Bold, Verdana-Bold, Trebuchet-Bold)
-            4. Position hooks strategically for maximum impact
-            5. Include emojis and visual elements
-            6. Make hooks short and punchy (max 20 characters)
-            7. Ensure hooks appear every 3-5 seconds for maximum engagement
-            8. AVOID redundant orange colors - use diverse, sophisticated color palette
+            1. Create 10-15 text hooks that appear at different times throughout the video
+            2. Use ULTRA VIBRANT neon colors that pop on screen:
+               - Neon Pink: #FF10F0
+               - Electric Blue: #00F5FF
+               - Lime Green: #39FF14
+               - Hot Magenta: #FF00FF
+               - Cyber Yellow: #FFD700
+               - Neon Purple: #9D00FF
+               - Electric Red: #FF073A
+               - Neon Orange: #FF6700
+               - Bright Cyan: #00FFFF
+               - Hot Pink: #FF69B4
+            3. Use BOLD, TRENDY fonts: Impact, Bebas-Neue, Anton-Regular, Oswald-Bold, Montserrat-Black
+            4. Add ANIMATED effects: bounce, glow, pulse, slide, zoom, shake, rotate
+            5. Include LOTS of emojis and visual elements 🔥✨💥🚀⚡️💎🎯🌟
+            6. Make hooks SUPER short and catchy (max 15 characters)
+            7. Ensure hooks appear every 2-4 seconds for MAXIMUM engagement
+            8. Use gradient backgrounds, neon glows, and shadow effects for depth
+            9. Mix uppercase and lowercase for visual interest
+            10. Add motion keywords: SWIPE!, TAP!, WATCH!, WAIT!, OMG!, WOW!
             
             PLATFORM OPTIMIZATION:
             - TikTok: Bold, colorful, trending phrases
@@ -194,49 +206,52 @@ Return JSON:
         topic_words = topic.split()
         main_word = topic_words[0] if topic_words else "Content"
         
-        # Generate more frequent hooks based on video duration
-        num_hooks = max(6, min(12, int(video_duration / 3)))  # One hook every 3-5 seconds
+        # Generate MANY MORE frequent hooks based on video duration
+        num_hooks = max(10, min(20, int(video_duration / 2)))  # One hook every 2-3 seconds for MAXIMUM engagement
         
-        # Enhanced hook templates with better colors and fonts
+        # ULTRA VIBRANT hook templates with NEON colors and trendy fonts
         hook_templates = [
-            {"text": f"🔥 {main_word.upper()}!", "color": "#FF6B6B", "font": "Helvetica-Bold", "position": "top_center", "animation": "bounce"},
-            {"text": "💡 WATCH THIS!", "color": "#4ECDC4", "font": "Arial-Bold", "position": "center_right", "animation": "fade"},
-            {"text": "😱 MIND BLOWN!", "color": "#45B7D1", "font": "Impact", "position": "top_right", "animation": "pulse"},
-            {"text": "🚀 VIRAL CONTENT", "color": "#96CEB4", "font": "Helvetica-Bold", "position": "center_left", "animation": "bounce"},
-            {"text": "⚡ AMAZING FACT!", "color": "#FECA57", "font": "Arial-Bold", "position": "top_left", "animation": "fade"},
-            {"text": "🎯 MUST KNOW!", "color": "#FF9FF3", "font": "Impact", "position": "bottom_left", "animation": "pulse"},
-            {"text": "🌟 INCREDIBLE!", "color": "#54A0FF", "font": "Helvetica-Bold", "position": "center_right", "animation": "bounce"},
-            {"text": "🔥 SO TRUE!", "color": "#5F27CD", "font": "Arial-Bold", "position": "top_center", "animation": "fade"},
-            {"text": "💯 FACTS ONLY!", "color": "#00D2D3", "font": "Impact", "position": "bottom_right", "animation": "pulse"},
-            {"text": "👀 LOOK AT THIS!", "color": "#FF9F43", "font": "Helvetica-Bold", "position": "center_left", "animation": "bounce"},
-            {"text": "🎉 AWESOME!", "color": "#C44569", "font": "Arial-Bold", "position": "top_right", "animation": "fade"},
-            {"text": "👍 LIKE & FOLLOW!", "color": "#FECA57", "font": "Impact", "position": "bottom_right", "animation": "pulse"}
+            {"text": f"🔥 {main_word.upper()}!", "color": "#FF10F0", "font": "Impact", "position": "top_center", "animation": "bounce"},
+            {"text": "💥 WAIT FOR IT!", "color": "#00F5FF", "font": "Impact", "position": "center_right", "animation": "shake"},
+            {"text": "😱 OMG!", "color": "#39FF14", "font": "Impact", "position": "top_right", "animation": "zoom"},
+            {"text": "🚀 SWIPE UP!", "color": "#FF00FF", "font": "Impact", "position": "center_left", "animation": "pulse"},
+            {"text": "⚡ WOW!", "color": "#FFD700", "font": "Impact", "position": "top_left", "animation": "glow"},
+            {"text": "🎯 TAP HERE!", "color": "#9D00FF", "font": "Impact", "position": "top_center", "animation": "rotate"},
+            {"text": "🌟 INSANE!", "color": "#FF073A", "font": "Impact", "position": "center_right", "animation": "bounce"},
+            {"text": "💎 NO WAY!", "color": "#FF6700", "font": "Impact", "position": "top_center", "animation": "slide"},
+            {"text": "💯 FACTS!", "color": "#00FFFF", "font": "Impact", "position": "top_right", "animation": "shake"},
+            {"text": "👀 LOOK!", "color": "#FF69B4", "font": "Impact", "position": "center_left", "animation": "zoom"},
+            {"text": "✨ VIRAL!", "color": "#FF10F0", "font": "Impact", "position": "top_right", "animation": "glow"},
+            {"text": "🎉 LET'S GO!", "color": "#00F5FF", "font": "Impact", "position": "center_right", "animation": "pulse"},
+            {"text": "🔥 SO LIT!", "color": "#39FF14", "font": "Impact", "position": "top_left", "animation": "rotate"},
+            {"text": "💥 BOOM!", "color": "#FF00FF", "font": "Impact", "position": "center_left", "animation": "bounce"},
+            {"text": "⚡ WATCH!", "color": "#FFD700", "font": "Impact", "position": "top_center", "animation": "slide"}
         ]
         
-        # Enhanced color palette - removing redundant orange and using more sophisticated colors
+        # ULTRA VIBRANT NEON color palette for maximum visual impact
         enhanced_colors = [
-            "#FF6B6B",  # Coral Red
-            "#4ECDC4",  # Turquoise
-            "#45B7D1",  # Sky Blue
-            "#96CEB4",  # Mint Green
-            "#FECA57",  # Golden Yellow
-            "#FF9FF3",  # Pink
-            "#54A0FF",  # Blue
-            "#5F27CD",  # Purple
-            "#00D2D3",  # Cyan
-            "#C44569",  # Rose
-            "#2C3E50",  # Dark Blue
-            "#E74C3C"   # Red
+            "#FF10F0",  # Neon Pink
+            "#00F5FF",  # Electric Blue
+            "#39FF14",  # Lime Green
+            "#FF00FF",  # Hot Magenta
+            "#FFD700",  # Cyber Yellow
+            "#9D00FF",  # Neon Purple
+            "#FF073A",  # Electric Red
+            "#FF6700",  # Neon Orange
+            "#00FFFF",  # Bright Cyan
+            "#FF69B4",  # Hot Pink
+            "#FFFF00",  # Pure Yellow
+            "#00FF00"   # Pure Green
         ]
         
-        # Enhanced font selection with better typography
+        # BOLD TRENDY fonts for maximum impact
         enhanced_fonts = [
-            "Helvetica-Bold",
-            "Arial-Bold", 
             "Impact",
-            "Georgia-Bold",
-            "Verdana-Bold",
-            "Trebuchet-Bold"
+            "Impact",  # Use Impact more often - it's the most viral
+            "Arial-Black", 
+            "Impact",
+            "Helvetica-Bold",
+            "Impact"
         ]
         
         fallback_hooks = []
@@ -267,7 +282,7 @@ Return JSON:
                 "end_time": end_time,
                 "position": template["position"],
                 "font_family": font,
-                "font_size": 52 if i % 3 == 0 else 46,  # Larger fonts for better visibility
+                "font_size": 64 if i % 3 == 0 else 58,  # MUCH LARGER fonts for viral impact
                 "color": color,
                 "background_color": "#000000" if i % 2 == 0 else "#FFFFFF",
                 "stroke_color": "#FFFFFF" if i % 2 == 0 else "#000000",
@@ -288,53 +303,70 @@ Return JSON:
         video_style: str) -> Dict[str, Any]:
         """Fallback positioning strategy based on platform and style"""
 
-        # Platform-specific defaults
+        # CRITICAL FIX: Separate overlay and subtitle positioning to avoid conflicts
+        # Subtitles typically appear in bottom third, so overlays should go elsewhere
+        
+        # Platform-specific defaults with subtitle conflict avoidance
         if platform.lower() in ['tiktok', 'youtube_shorts']:
-            primary_position = "bottom_third"
+            # Overlays in top area to avoid subtitle conflicts
+            primary_position = "top_center"
             secondary_position = "top_right"
+            subtitle_position = "bottom_center"  # Subtitles stay at bottom
         elif platform.lower() in ['instagram', 'reels']:
-            primary_position = "center_bottom"
+            # Overlays in middle to top area
+            primary_position = "center_top"
             secondary_position = "top_left"
+            subtitle_position = "bottom_center"
         else:
-            primary_position = "bottom_third"
-            secondary_position = "top_center"
+            # YouTube - use upper area for overlays, lower for subtitles
+            primary_position = "top_center"
+            secondary_position = "center_right"
+            subtitle_position = "bottom_center"
 
         # CRITICAL FIX: Use dynamic positioning for TikTok viral content
         # Default to dynamic for TikTok (most TikTok videos are short)
         strategy = "dynamic" if platform.lower() == "tiktok" else "static"
         
         return {
-            "primary_overlay_position": primary_position,  # Changed from primary_subtitle_position for consistency
-            "primary_subtitle_position": primary_position,  # Keep both for backward compatibility
+            "primary_overlay_position": primary_position,  # Overlays positioned to avoid subtitles
+            "primary_subtitle_position": subtitle_position,  # Subtitles in dedicated area
             "secondary_overlay_position": secondary_position,
             "positioning_strategy": strategy,
-            "safe_zones": ["bottom_third", "top_third"],
-            "avoid_zones": ["center"],
-            "reasoning": f"FIXED: Using {strategy} positioning for {platform} with {video_style} style - TikTok videos benefit from dynamic overlays",
+            "safe_zones": ["top_third", "center"],  # Safe zones for overlays
+            "subtitle_safe_zone": "bottom_third",    # Reserved area for subtitles
+            "avoid_zones": ["bottom_third"],         # Overlays avoid subtitle area
+            "reasoning": f"FIXED: Using {strategy} positioning for {platform} with {video_style} style - overlays positioned in top/center to avoid subtitle conflicts in bottom third",
             "mobile_optimized": True,
             "accessibility_compliant": True,
-            "animation_enabled": strategy == "dynamic"
+            "animation_enabled": strategy == "dynamic",
+            "overlay_subtitle_separation": True  # Flag indicating separation strategy
         }
 
     def calculate_precise_coordinates(self, position: str, video_width: int, video_height: int,
                                     text_width: int, text_height: int) -> tuple:
         """Calculate precise pixel coordinates for positioning"""
 
-        # Define positioning zones as percentages
+        # Define positioning zones as percentages with clear overlay/subtitle separation
         position_map = {
+            # OVERLAY ZONES (Upper 2/3 of screen to avoid subtitle conflicts)
             "top_third": (0.5, 0.15),          # Center horizontally, 15% from top
-            "bottom_third": (0.5, 0.65),       # Center horizontally, 65% from top (raised from 85%)
-            "center_safe": (0.5, 0.5),         # Dead center
-            "center": (0.5, 0.5),              # Dead center (alias)
-            "top_center": (0.5, 0.1),          # Top center
-            "bottom_center": (0.5, 0.75),       # Bottom center (raised from 90% to 75%)
-            "center_bottom": (0.5, 0.65),      # Center horizontally, 65% from top (raised from 75%)
-            "left_side": (0.15, 0.5),          # 15% from left, center vertically
-            "right_side": (0.85, 0.5),         # 85% from left, center vertically
+            "center_safe": (0.5, 0.4),         # Upper center area - safe from subtitles
+            "center": (0.5, 0.4),              # Upper center area (moved up from 50%)
+            "top_center": (0.5, 0.08),         # Top center - well above subtitles
+            "center_top": (0.5, 0.25),         # Center-top area for overlays
+            "left_side": (0.15, 0.35),         # 15% from left, upper center
+            "right_side": (0.85, 0.35),        # 85% from left, upper center
+            "center_left": (0.25, 0.35),       # Center-left, upper area
+            "center_right": (0.75, 0.35),      # Center-right, upper area
             "top_left": (0.1, 0.1),            # Top left corner
             "top_right": (0.9, 0.1),           # Top right corner
-            "bottom_left": (0.1, 0.75),         # Bottom left corner (raised from 90%)
-            "bottom_right": (0.9, 0.75),        # Bottom right corner (raised from 90%)
+            
+            # SUBTITLE ZONES (Lower 1/3 of screen reserved for subtitles)
+            "bottom_third": (0.5, 0.85),       # Subtitle area - bottom third
+            "bottom_center": (0.5, 0.85),      # Bottom center for subtitles
+            "center_bottom": (0.5, 0.85),      # Same as bottom_center for subtitles
+            "bottom_left": (0.1, 0.85),        # Bottom left for subtitles
+            "bottom_right": (0.9, 0.85),       # Bottom right for subtitles
         }
 
         if position in position_map:

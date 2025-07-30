@@ -67,7 +67,7 @@ class TextOverlayConfig:
     # Font sizes (relative to video dimensions)
     font_sizes: Dict[str, float] = field(default_factory=lambda: {
         'title': 0.06,          # 6% of video width
-        'subtitle': 0.044,      # 4.4% of video width
+        'subtitle': 0.025,      # 2.5% of video width - reduced for better readability
         'header': 0.05,         # 5% of video width
         'body': 0.04,           # 4% of video width
         'caption': 0.035,       # 3.5% of video width
@@ -79,7 +79,7 @@ class TextOverlayConfig:
     # Minimum font sizes (absolute pixels)
     min_font_sizes: Dict[str, int] = field(default_factory=lambda: {
         'title': 48,
-        'subtitle': 44,
+        'subtitle': 24,         # Reduced from 44 to prevent huge subtitles
         'header': 40,
         'body': 32,
         'caption': 28,
@@ -192,21 +192,26 @@ class LayoutConfig:
         'centered': 200
     })
     
-    # Overlay positioning
+    # Overlay positioning (percentage-based to avoid subtitle conflicts)
     overlay_positions: Dict[str, Dict[str, Any]] = field(default_factory=lambda: {
         'hook': {
             'x': 'center',
-            'y': 60,
+            'y_percent': 0.08,    # 8% from top - well above subtitles
             'animation': 'slide_in'
         },
         'cta': {
             'x': 'right-30',
-            'y': 120,
+            'y_percent': 0.15,    # 15% from top - above subtitle area
             'animation': 'slide_in'
         },
         'badge': {
             'x': 50,
-            'y': 150,
+            'y_percent': 0.20,    # 20% from top - safe from subtitles
+            'animation': 'fade'
+        },
+        'overlay_default': {
+            'x': 'center',
+            'y_percent': 0.25,    # 25% from top - default overlay position
             'animation': 'fade'
         },
         'news_ticker': {
@@ -221,6 +226,13 @@ class LayoutConfig:
             'height': 120,
             'animation': 'none'
         }
+    })
+    
+    # Subtitle positioning percentages (reserved area)
+    subtitle_positions: Dict[str, float] = field(default_factory=lambda: {
+        'portrait': 0.75,     # 75% down for mobile/portrait
+        'landscape': 0.80,    # 80% down for desktop/landscape
+        'safe_zone_start': 0.70,  # Overlays should stay above 70%
     })
     
     # Spacing

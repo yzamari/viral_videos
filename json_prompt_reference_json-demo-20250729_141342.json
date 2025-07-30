@@ -1,0 +1,55 @@
+{
+  "original_json": {
+    "shot": {
+      "composition": "Medium tracking shot, 50mm lens, shot on RED V-Raptor 8K with Netflix-approved HDR setup, shallow depth of field",
+      "camera_motion": "smooth Steadicam walk-along, slight handheld bounce for naturalistic rhythm",
+      "frame_rate": "24fps",
+      "film_grain": "clean digital with film-emulated LUT for warmth and vibrancy"
+    },
+    "subject": {
+      "description": "A young woman with a petite frame and soft porcelain complexion. She has oversized, almond-shaped eyes with long lashes, subtle pink-tinted cheeks, and a heart-shaped face. Her inky-black bob is slightly tousled and clipped to one side with a small red strawberry hairpin.",
+      "wardrobe": "Crocheted ivory halter with scalloped trim, fitted high-waisted denim shorts, wide tan belt with red enamel star buckle, oversized red gingham blouse slipped off one shoulder"
+    },
+    "scene": {
+      "location": "a quiet urban street bathed in early morning sunlight",
+      "time_of_day": "early morning",
+      "environment": "empty sidewalks, golden sunlight reflecting off puddles and windows, occasional birds fluttering by, street slightly wet from overnight rain"
+    },
+    "visual_details": {
+      "action": "she walks rhythmically down the sidewalk, swinging her hips slightly with the beat, one hand gesturing playfully, the other adjusting her shirt sleeve as she sings",
+      "props": "morning mist, traffic light turning green in the distance, reflective puddles, subtle sun flare"
+    },
+    "cinematography": {
+      "lighting": "natural golden-hour lighting with soft HDR bounce, gentle lens flare through morning haze",
+      "tone": "playful, stylish, vibrant",
+      "notes": "STRICTLY NO on-screen subtitles, lyrics, captions, or text overlays. Final render must be clean visual-only."
+    },
+    "audio": {
+      "ambient": "city birds chirping, distant traffic hum, her boots tapping pavement",
+      "voice": {
+        "tone": "light, teasing, and melodic",
+        "style": "pop-rap delivery in Japanese with flirtatious rhythm, confident breath control, playful pacing and bounce"
+      },
+      "lyrics": "ラーメンはもういらない、キャビアだけでいいの。 ファイナンスのおかげで、私、星みたいに輝いてる。"
+    },
+    "color_palette": "sun-warmed pastels with vibrant reds and denim blues, soft contrast with warm film LUT",
+    "dialogue": {
+      "character": "Woman (singing in Japanese)",
+      "line": "ラーメンはもういらない、キャビアだけでいいの。 ファイナンスのおかげで、私、星みたいに輝いてる。",
+      "subtitles": false
+    },
+    "visual_rules": {
+      "prohibited_elements": [
+        "subtitles",
+        "captions",
+        "karaoke-style lyrics",
+        "text overlays",
+        "lower thirds",
+        "any written language appearing on screen"
+      ]
+    }
+  },
+  "converted_veo_prompt": "Shot composition: Medium tracking shot, 50mm lens, shot on RED V-Raptor 8K with Netflix-approved HDR setup, shallow depth of field. Camera movement: smooth Steadicam walk-along, slight handheld bounce for naturalistic rhythm. Frame rate: 24fps. Film quality: clean digital with film-emulated LUT for warmth and vibrancy. Subject: A young woman with a petite frame and soft porcelain complexion. She has oversized, almond-shaped eyes with long lashes, subtle pink-tinted cheeks, and a heart-shaped face. Her inky-black bob is slightly tousled and clipped to one side with a small red strawberry hairpin.. Wardrobe: Crocheted ivory halter with scalloped trim, fitted high-waisted denim shorts, wide tan belt with red enamel star buckle, oversized red gingham blouse slipped off one shoulder. Location: a quiet urban street bathed in early morning sunlight. Time of day: early morning. Environment: empty sidewalks, golden sunlight reflecting off puddles and windows, occasional birds fluttering by, street slightly wet from overnight rain. Action: she walks rhythmically down the sidewalk, swinging her hips slightly with the beat, one hand gesturing playfully, the other adjusting her shirt sleeve as she sings. Props: morning mist, traffic light turning green in the distance, reflective puddles, subtle sun flare. Lighting: natural golden-hour lighting with soft HDR bounce, gentle lens flare through morning haze. Visual tone: playful, stylish, vibrant. Production notes: STRICTLY NO on-screen subtitles, lyrics, captions, or text overlays. Final render must be clean visual-only.. Ambient audio: city birds chirping, distant traffic hum, her boots tapping pavement. Voice tone: light, teasing, and melodic. Voice style: pop-rap delivery in Japanese with flirtatious rhythm, confident breath control, playful pacing and bounce. Lyrics: ラーメンはもういらない、キャビアだけでいいの。 ファイナンスのおかげで、私、星みたいに輝いてる。. Color palette: sun-warmed pastels with vibrant reds and denim blues, soft contrast with warm film LUT. Dialogue - Woman (singing in Japanese): ラーメンはもういらない、キャビアだけでいいの。 ファイナンスのおかげで、私、星みたいに輝いてる。. No subtitles or text overlays. Prohibited visual elements: subtitles, captions, karaoke-style lyrics, text overlays, lower thirds, any written language appearing on screen.",
+  "session_id": "json-demo-20250729_141342",
+  "command": "python main.py generate \\\n    --mission \"Create a cinematic Japanese street scene video: Shot composition: Medium tracking shot, 50mm lens, shot on RED V-Raptor 8K with Netflix-approved HDR setup, shallow depth of field. Camera movement: smooth Steadicam walk-along, slight handheld bounce...\" \\\n    --duration 8 \\\n    --platform instagram \\\n    --session-id json-demo-20250729_141342 \\\n    --no-cheap \\\n    --visual-style \"cinematic professional RED camera 8K\""
+}

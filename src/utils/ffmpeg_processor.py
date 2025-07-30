@@ -62,6 +62,19 @@ class FFmpegProcessor:
             logger.error(f"Failed to get duration: {e}")
             return 0.0
     
+    def has_audio_stream(self, media_path: str) -> bool:
+        """Check if media file has an audio stream"""
+        cmd = [
+            'ffprobe', '-v', 'quiet', '-select_streams', 'a:0',
+            '-show_entries', 'stream=codec_type', '-of', 'csv=p=0', media_path
+        ]
+        
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            return result.stdout.strip() == 'audio'
+        except subprocess.CalledProcessError:
+            return False
+    
     def concatenate_videos(self, video_paths: List[str], output_path: str, 
                           method: str = "concat") -> str:
         """Concatenate multiple videos using FFmpeg"""
@@ -99,8 +112,9 @@ class FFmpegProcessor:
         return output_path
     
     def concatenate_audio(self, audio_paths: List[str], output_path: str,
-                         crossfade: bool = True, fade_duration: float = 0.1) -> str:
-        """Concatenate audio files with optional crossfade"""
+                         crossfade: bool = True, fade_duration: float = 0.1, 
+                         normalize: bool = True) -> str:
+        """Concatenate audio files with optional crossfade and normalization"""
         if not audio_paths:
             raise ValueError("No audio files to concatenate")
         
@@ -125,8 +139,16 @@ class FFmpegProcessor:
         audio_paths = valid_audio_paths
         
         if len(audio_paths) == 1:
-            # Single file, just copy
-            cmd = ['ffmpeg', '-y', '-i', audio_paths[0], '-c', 'copy', output_path]
+            # Single file, apply normalization if requested
+            if normalize:
+                cmd = [
+                    'ffmpeg', '-y', '-i', audio_paths[0], 
+                    '-af', 'loudnorm=I=-16:LRA=11:TP=-1.5',
+                    '-c:a', 'libmp3lame' if output_path.endswith('.mp3') else 'aac', 
+                    '-b:a', '192k', output_path
+                ]
+            else:
+                cmd = ['ffmpeg', '-y', '-i', audio_paths[0], '-c', 'copy', output_path]
         elif crossfade and len(audio_paths) > 1:
             # Advanced concatenation with crossfade
             inputs = []
@@ -145,17 +167,22 @@ class FFmpegProcessor:
                 )
                 current_input = f'[a{i}]'
             
-            filter_complex = ';'.join(filter_parts)
+            # Add normalization to the filter chain if requested
+            if normalize:
+                filter_complex += ';[outa]loudnorm=I=-16:LRA=11:TP=-1.5[normalized]'
+                output_map = '[normalized]'
+            else:
+                output_map = '[outa]'
             
             # Check output format
             if output_path.endswith('.mp3'):
-                audio_codec = ['-c:a', 'libmp3lame', '-b:a', '128k']
+                audio_codec = ['-c:a', 'libmp3lame', '-b:a', '192k']
             else:
-                audio_codec = ['-c:a', 'aac', '-b:a', '128k']
+                audio_codec = ['-c:a', 'aac', '-b:a', '192k']
             
             cmd = ['ffmpeg', '-y'] + inputs + [
                 '-filter_complex', filter_complex,
-                '-map', '[outa]'] + audio_codec + [output_path]
+                '-map', output_map] + audio_codec + [output_path]
         else:
             # Simple concatenation
             concat_file = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False)
@@ -165,10 +192,20 @@ class FFmpegProcessor:
                 concat_file.write(f"file '{os.path.abspath(audio_path)}'\n")
             concat_file.close()
             
-            cmd = [
-                'ffmpeg', '-y', '-f', 'concat', '-safe', '0',
-                '-i', concat_file.name, '-c', 'copy', output_path
-            ]
+            if normalize:
+                # Apply normalization for simple concatenation
+                cmd = [
+                    'ffmpeg', '-y', '-f', 'concat', '-safe', '0',
+                    '-i', concat_file.name, 
+                    '-af', 'loudnorm=I=-16:LRA=11:TP=-1.5',
+                    '-c:a', 'libmp3lame' if output_path.endswith('.mp3') else 'aac',
+                    '-b:a', '192k', output_path
+                ]
+            else:
+                cmd = [
+                    'ffmpeg', '-y', '-f', 'concat', '-safe', '0',
+                    '-i', concat_file.name, '-c', 'copy', output_path
+                ]
         
         self._run_command(cmd, f"Concatenating {len(audio_paths)} audio files")
         return output_path

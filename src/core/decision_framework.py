@@ -446,10 +446,13 @@ class DecisionFramework:
         
         # Otherwise let AI decide based on content
         if ai_available:
-            # Continuous generation is good for longer narrative content
-            continuous = duration >= 30 and platform in [Platform.YOUTUBE, Platform.INSTAGRAM]
+            # AI should decide based on content type and platform requirements
+            # Continuous generation is good for longer narrative content but can cause quality issues
+            # Only enable for very specific scenarios where it adds value
+            continuous = (duration >= 60 and platform in [Platform.YOUTUBE]) or \
+                        (duration >= 45 and platform == Platform.INSTAGRAM and "story" in str(cli_args.get('mission', '')).lower())
             self._record_decision('continuous_generation', continuous, DecisionSource.AI_AGENT, 0.85, 
-                                f"AI decision: {duration}s on {platform.value} - continuous={'enabled' if continuous else 'disabled'}")
+                                f"AI decision: {duration}s on {platform.value} - continuous={'enabled' if continuous else 'disabled'} based on content needs")
             return continuous
         
         # Default: Disable continuous generation

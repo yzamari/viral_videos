@@ -27,73 +27,102 @@ class FFmpegVideoComposer:
     async def compose_final_video(self, video_clips: List[str], audio_segments: List[str],
                                 subtitle_segments: List[Dict], config: Dict[str, Any],
                                 output_path: str) -> str:
-        """Compose final video with perfect sync and cool overlays"""
+        """Compose final video with perfect sync and cool overlays
+        
+        CRITICAL: Pipeline reordered to prevent audio loss:
+        1. Create base video
+        2. Add overlays (while no audio)
+        3. Add subtitles (while no audio)
+        4. Create synchronized audio
+        5. Add audio as final step
+        """
         
         logger.info(f"🎬 Composing final video with {len(video_clips)} clips and {len(audio_segments)} audio segments")
+        logger.info("🔄 Using audio-safe pipeline: overlays → subtitles → audio")
         
         with FFmpegProcessor() as ffmpeg:
             try:
-                # Step 1: Create base video from clips
+                # Step 1: Create base video from clips (NO AUDIO YET)
                 if len(video_clips) > 1:
                     base_video = self._create_temp_path("base_video.mp4")
                     ffmpeg.concatenate_videos(video_clips, base_video)
                 else:
                     base_video = video_clips[0]
                 
-                # Step 2: Create synchronized audio
-                if len(audio_segments) > 1:
-                    synced_audio = self._create_temp_path("synced_audio.mp3")
-                    synced_audio = await self._create_subtitle_synced_audio(
-                        ffmpeg, audio_segments, subtitle_segments, synced_audio
-                    )
-                else:
-                    synced_audio = audio_segments[0] if audio_segments else None
+                # Get base video duration for overlay generation
+                base_duration = ffmpeg.get_duration(base_video)
+                logger.info(f"📏 Base video duration: {base_duration:.2f}s")
                 
-                # Step 3: Combine video and audio with perfect sync
-                if synced_audio:
-                    video_with_audio = self._create_temp_path("video_with_audio.mp4")
-                    ffmpeg.add_audio_to_video(base_video, synced_audio, video_with_audio, "exact")
-                else:
-                    video_with_audio = base_video
-                
-                # Step 4: Generate AI-powered viral overlays
+                # Step 2: Generate AI-powered viral overlays
                 overlays = await self.overlay_agent.generate_viral_overlays(
                     mission=config.get('mission', ''),
                     script=config.get('script', ''),
-                    duration=ffmpeg.get_duration(video_with_audio),
+                    duration=base_duration,
                     platform=config.get('platform', 'instagram'),
                     style=config.get('style', 'viral'),
                     segments=config.get('segments', [])
                 )
                 
-                # Step 5: Add cool overlays
+                # Step 3: Add cool overlays to video (NO AUDIO YET)
+                current_video = base_video
                 if overlays:
-                    logger.info(f"🎨 Adding {len(overlays)} viral overlays")
+                    logger.info(f"🎨 Adding {len(overlays)} viral overlays to video (before audio)")
                     overlay_filters = self.overlay_agent.convert_to_ffmpeg_filters(overlays)
                     
                     video_with_overlays = self._create_temp_path("video_with_overlays.mp4")
                     ffmpeg._run_command([
                         'ffmpeg', '-y',
-                        '-i', video_with_audio,
+                        '-i', current_video,
                         '-vf', overlay_filters,
-                        '-c:a', 'copy',
+                        '-c:v', 'libx264',
+                        '-preset', 'medium',
+                        '-an',  # CRITICAL: Discard any audio during overlay processing
                         video_with_overlays
-                    ], "Adding viral overlays")
+                    ], "Adding viral overlays (no audio)")
                     
-                    video_with_audio = video_with_overlays
+                    current_video = video_with_overlays
                 
-                # Step 6: Add subtitles if provided
-                if subtitle_segments:
-                    subtitle_file = self._create_subtitle_file(subtitle_segments)
-                    if subtitle_file:
-                        final_video = self._create_temp_path("final_with_subs.mp4")
-                        ffmpeg.add_subtitles(video_with_audio, subtitle_file, final_video)
-                        video_with_audio = final_video
+                # Step 4: Skip subtitles here - MoviePy will handle them later
+                # This prevents duplicate subtitles and allows better styling
+                logger.info("📝 Skipping subtitles in FFmpeg - MoviePy will add them with better styling")
+                
+                # Step 5: Create synchronized audio
+                synced_audio = None
+                if audio_segments:
+                    if len(audio_segments) > 1:
+                        synced_audio = self._create_temp_path("synced_audio.m4a")
+                        synced_audio = await self._create_subtitle_synced_audio(
+                            ffmpeg, audio_segments, subtitle_segments, synced_audio
+                        )
+                    else:
+                        synced_audio = audio_segments[0]
+                    
+                    logger.info(f"🎵 Audio prepared: {synced_audio}")
+                
+                # Step 6: Add audio to fully processed video as FINAL step
+                if synced_audio:
+                    logger.info("🎼 Adding audio to fully processed video (final step)")
+                    video_with_audio = self._create_temp_path("final_with_audio.mp4")
+                    ffmpeg.add_audio_to_video(current_video, synced_audio, video_with_audio, "exact")
+                    current_video = video_with_audio
+                    
+                    # Verify audio is present
+                    if ffmpeg.has_audio_stream(current_video):
+                        logger.info("✅ Audio successfully added to final video")
+                    else:
+                        logger.error("❌ WARNING: Audio was not properly added!")
+                else:
+                    logger.warning("⚠️ No audio segments provided")
                 
                 # Step 7: Final optimization and copy to output
-                self._optimize_final_video(ffmpeg, video_with_audio, output_path, config)
+                self._optimize_final_video(ffmpeg, current_video, output_path, config)
                 
-                logger.info(f"✅ Video composition complete: {output_path}")
+                # Final audio check
+                if ffmpeg.has_audio_stream(output_path):
+                    logger.info(f"✅ Video composition complete with audio: {output_path}")
+                else:
+                    logger.error(f"❌ WARNING: Final video missing audio: {output_path}")
+                
                 return output_path
                 
             except Exception as e:

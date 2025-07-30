@@ -108,7 +108,7 @@ def test_auth():
 @click.option('--visual-style', help='Visual style (e.g., "dynamic", "minimalist", "professional")')
 @click.option('--mode', type=click.Choice(['simple', 'enhanced', 'advanced', 'professional']), default='enhanced', help='Orchestrator mode (simple=3 agents, enhanced=7 agents, advanced=15 agents, professional=19 agents)')
 @click.option('--auto-post', is_flag=True, help='Automatically post to configured social media platforms')
-@click.option('--cheap/--no-cheap', default=True, help='Enable basic cheap mode (default: enabled)')
+@click.option('--cheap/--no-cheap', default=False, help='Enable basic cheap mode (default: disabled)')
 @click.option('--cheap-mode', type=click.Choice(['full', 'audio', 'video']), default='full', help='Cheap mode level: full=text+gTTS, audio=gTTS only, video=fallback only (default: full)')
 @click.option('--theme', help='Theme preset or custom theme ID (e.g., "preset_news_edition", "preset_sports")')
 @click.option('--style-template', help='Name or ID of style template to use')
@@ -163,7 +163,7 @@ def generate(**kwargs):
             tone=kwargs.get('tone'),
             visual_style=kwargs.get('visual_style'),
             mode=kwargs.get('mode', 'enhanced'),
-            cheap_mode=kwargs.get('cheap', True),
+            cheap_mode=kwargs.get('cheap', False),
             cheap_mode_level=kwargs.get('cheap_mode', 'full'),
             theme=kwargs.get('theme'),
             style_template=kwargs.get('style_template'),

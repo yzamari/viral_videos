@@ -16,10 +16,12 @@ class ScriptWriterAgent:
             genai.configure(api_key=settings.google_api_key)
             self.gemini_model = genai.GenerativeModel(DEFAULT_AI_MODEL)
 
-    def write_script(self, trends, sentiment, style):
+    def write_script(self, trends, sentiment, style, duration=None):
         self.monitoring_service.log(
             f"ScriptWriterAgent: Writing script with sentiment '{sentiment}' and style '{style}'."
         )
+        if duration:
+            self.monitoring_service.log(f"ScriptWriterAgent: Target duration: {duration} seconds")
 
         topic = trends.get("topic", "general trends")
         youtube_trends = trends.get("youtube_trending")
@@ -27,13 +29,26 @@ class ScriptWriterAgent:
             top_video = youtube_trends[0]
             video_title = top_video["snippet"]["title"]
 
-            prompt = """
-            Create a script for a short viral video about '{topic}'.
-            The video should be in a '{style}' style with a '{sentiment}' sentiment.
-            The script should be inspired by the a trending YouTube video titled '{video_title}'.
-            The script should have 3 scenes.
-            Provide the output in JSON format with a "title" and a list of "scenes", where each scene has a "scene" number and a "description".
-            """
+            # Format duration constraint if provided
+            duration_constraint = ""
+            if duration:
+                num_segments = 3  # Default to 3 scenes
+                segment_duration = duration / num_segments
+                duration_constraint = f"""
+CRITICAL DURATION CONSTRAINT: The video MUST be exactly {duration} seconds.
+- Each segment should be approximately {segment_duration:.1f} seconds
+- Account for 300ms padding between segments
+- Total content must fit within duration including pauses
+- DO NOT generate content that exceeds the target duration
+- IMPORTANT: Each scene description should be brief enough to be spoken in {segment_duration:.1f} seconds
+
+"""
+            
+            prompt = f"""{duration_constraint}Create a script for a short viral video about '{topic}'.
+The video should be in a '{style}' style with a '{sentiment}' sentiment.
+The script should be inspired by the a trending YouTube video titled '{video_title}'.
+The script should have 3 scenes.
+Provide the output in JSON format with a "title" and a list of "scenes", where each scene has a "scene" number and a "description"."""
             try:
                 response = self.gemini_model.generate_content(prompt)
 

@@ -14,8 +14,8 @@ export GEMINI_API_KEY="${GEMINI_API_KEY:-your-api-key}"
 export GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT:-your-project}"
 
 # Run the command with cheap flag
-echo "Running: python main.py --cheap --duration 40 --mission 'Dragon episode 7: nested intervals are time portals...'"
-python main.py \
+echo "Running: python3 main.py --cheap --duration 40 --mission 'Dragon episode 7: nested intervals are time portals...'"
+python3 main.py \
     --cheap \
     --duration 40 \
     --mission "Dragon episode 7: nested intervals are time portals. Dragon hilariously explains each concept while time-traveling. Include funny historical encounters, dragon's time-travel jokes, and visual demonstrations of recursive concepts!" \

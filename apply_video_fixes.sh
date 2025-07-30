@@ -5,7 +5,7 @@ echo "=============================================="
 
 # 1. Install RTL text support packages
 echo "📦 Installing RTL text support packages..."
-pip install arabic-reshaper python-bidi
+pip install arabic-reshaper python3-bidi
 
 # 2. Summary of fixes applied
 echo ""
@@ -15,7 +15,7 @@ echo "   - Enhanced style matching to properly detect 'ghibli' in complex style 
 echo "   - Fixed style enhancement to use correct Ghibli animation descriptions"
 echo ""
 echo "2. ✅ Hebrew RTL Text Rendering"
-echo "   - Added arabic-reshaper and python-bidi for proper RTL text shaping"
+echo "   - Added arabic-reshaper and python3-bidi for proper RTL text shaping"
 echo "   - Hebrew text will now display correctly (not reversed)"
 echo "   - Automatic fallback if RTL libraries not available"
 echo ""
@@ -55,4 +55,4 @@ echo "3. Ghibli style will be properly applied"
 echo "4. Audio will be perfectly synced with subtitles"
 echo ""
 echo "🚀 Example command to test:"
-echo "python main.py --mission \"Studio Ghibli style test\" --style \"studio ghibli\" --language he --duration 32"
+echo "python3 main.py generate --mission \"Studio Ghibli style test\" --style \"studio ghibli\" --language he --duration 32"

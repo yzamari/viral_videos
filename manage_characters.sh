@@ -27,14 +27,14 @@ show_storage() {
 # Function to test system
 test_system() {
     echo "🔧 Testing character reference system..."
-    python main.py test-character-system
+    python3 main.py test-character-system
     echo ""
 }
 
 # Function to create professional anchors
 create_anchors() {
     echo "👥 Creating professional news anchor profiles..."
-    python main.py create-news-anchors
+    python3 main.py create-news-anchors
     
     if [ $? -eq 0 ]; then
         echo ""
@@ -49,7 +49,7 @@ create_anchors() {
 # Function to list all characters
 list_characters() {
     echo "🎭 Available Characters:"
-    python main.py list-characters
+    python3 main.py list-characters
     echo ""
 }
 
@@ -63,7 +63,7 @@ create_custom() {
     echo "3. Optional description"
     echo ""
     echo "Example usage:"
-    echo "python main.py store-character /path/to/photo.jpg --name 'John Smith' --description 'Male news anchor, professional attire'"
+    echo "python3 main.py store-character /path/to/photo.jpg --name 'John Smith' --description 'Male news anchor, professional attire'"
     echo ""
     read -p "Do you have a photo ready to add? (y/n): " -n 1 -r
     echo
@@ -73,9 +73,9 @@ create_custom() {
         read -p "Enter description (optional): " description
         
         if [ -n "$description" ]; then
-            python main.py store-character "$photo_path" --name "$char_name" --description "$description"
+            python3 main.py store-character "$photo_path" --name "$char_name" --description "$description"
         else
-            python main.py store-character "$photo_path" --name "$char_name"
+            python3 main.py store-character "$photo_path" --name "$char_name"
         fi
     fi
     echo ""
@@ -120,7 +120,7 @@ while true; do
             read -p "Enter scene description: " scene_desc
             echo ""
             echo "Generating test video..."
-            python main.py generate \
+            python3 main.py generate \
               --mission "Test video featuring $char_id in $scene_desc setting" \
               --character "$char_id" \
               --scene "$scene_desc" \

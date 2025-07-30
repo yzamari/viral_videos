@@ -167,7 +167,7 @@ fi
 
 # Final test
 print_status $BLUE "🧪 Running authentication test..."
-if python -c "
+if python3 -c "
 import sys
 sys.path.append('src')
 from utils.gcloud_auth_tester import test_gcloud_authentication
@@ -176,7 +176,7 @@ success = result.get('analysis', {}).get('can_run_app', False)
 print('SUCCESS' if success else 'PARTIAL')
 " 2>/dev/null | grep -q "SUCCESS"; then
     print_status $GREEN "🎉 Authentication setup completed successfully!"
-    print_status $GREEN "✅ You can now run: python main.py generate --help"
+    print_status $GREEN "✅ You can now run: python3 main.py generate --help"
 else
     print_status $YELLOW "⚠️ Setup completed with some limitations"
     print_status $BLUE "The app will work with fallback methods"

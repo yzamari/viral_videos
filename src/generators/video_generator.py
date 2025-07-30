@@ -111,8 +111,8 @@ class VideoGenerator:
                             "original_mission": config.mission,
                             "target_duration": config.duration_seconds,
                             "platform": str(config.target_platform),
-                            "hook": getattr(config, 'hook', video_config.get_default_hook(config.target_platform.value)),
-                            "call_to_action": getattr(config, 'call_to_action', video_config.get_default_cta(config.target_platform.value))
+                            "hook": getattr(config, 'hook', video_config.get_default_hook(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))),
+                            "call_to_action": getattr(config, 'call_to_action', video_config.get_default_cta(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform)))
                         },
                         "output": {
                             "optimized_script": script_result.get('optimized_script', ''),
@@ -250,8 +250,8 @@ class VideoGenerator:
 - **Session ID**: {config.session_id}
 - **Mission**: {config.mission}
 - **Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-- **Platform**: {config.target_platform.value}
-- **Category**: {config.category.value}
+- **Platform**: {str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform)}
+- **Category**: {str(config.category) if hasattr(config.category, "value") else str(config.category)}
 - **Duration**: {config.duration_seconds} seconds
 
 ## Agent Decisions & Analysis
@@ -442,7 +442,7 @@ The last frame of this scene connects to the next.
                         'prompt': prompt,
                         'duration': script_segments[i].get('duration', 5),
                         'clip_id': f"continuous_clip_{i+1}",
-                        'aspect_ratio': self._get_platform_aspect_ratio(config.target_platform.value)
+                        'aspect_ratio': self._get_platform_aspect_ratio(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))
                     }
                     
                     # Include last frame for continuity (except for first clip)
@@ -595,7 +595,7 @@ The last frame of this scene connects to the next.
         
         # CRITICAL: Store mission context and platform for VEO prompt generation
         self._current_mission = config.mission
-        self._current_platform = config.target_platform.value if hasattr(config.target_platform, 'value') else str(config.target_platform)
+        self._current_platform = str(config.target_platform) if hasattr(config.target_platform, 'value') else str(config.target_platform)
         self._current_config = config  # Store entire config for access in methods
         logger.info(f"🎯 Stored mission context: {self._current_mission}")
         logger.info(f"📱 Stored platform context: {self._current_platform}")
@@ -612,9 +612,9 @@ The last frame of this scene connects to the next.
             logger.info("🆕 Creating new session")
             session_id = session_manager.create_session(
                 mission=config.mission,
-                platform=config.target_platform.value,
+                platform=str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform),
                 duration=config.duration_seconds,
-                category=config.category.value
+                category=str(config.category) if hasattr(config.category, "value") else str(config.category)
             )
         
         # Create session context for this generation
@@ -626,7 +626,7 @@ The last frame of this scene connects to the next.
         
         logger.info(f"🎬 Starting video generation for: {config.mission}")
         logger.info(f"   Duration: {config.duration_seconds}s")
-        logger.info(f"   Platform: {config.target_platform.value}")
+        logger.info(f"   Platform: {str(config.target_platform) if hasattr(config.target_platform, 'value') else str(config.target_platform)}")
         logger.info(f"   Session: {session_id}")
         logger.info(f"   Session Directory: {session_context.session_dir}/")
         
@@ -697,7 +697,7 @@ The last frame of this scene connects to the next.
         
         session_manager.log_generation_step("video_generation_started", "in_progress", {
             "mission": config.mission,
-            "platform": config.target_platform.value,
+            "platform": str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform),
             "duration": config.duration_seconds
         })
         
@@ -720,6 +720,19 @@ The last frame of this scene connects to the next.
             
             # Step 1: Process script with AI
             script_result = await self._process_script_with_ai(config, session_context)
+
+            # CRITICAL: Validate duration before proceeding
+            if hasattr(config, 'duration_seconds') and config.duration_seconds:
+                target_duration = config.duration_seconds
+                
+                # Check if script duration is within acceptable range
+                script_duration = script_result.get('total_duration', 0)
+                if script_duration > target_duration * 1.15:  # 15% tolerance
+                    error_msg = f"❌ Script duration {script_duration:.1f}s exceeds target {target_duration}s by too much"
+                    logger.error(error_msg)
+                    raise ValueError(error_msg)
+                
+                logger.info(f"✅ Script duration {script_duration:.1f}s is within tolerance for {target_duration}s target")
             
             # Store script result for subtitle generation
             self._last_script_result = script_result
@@ -1240,8 +1253,8 @@ The last frame of this scene connects to the next.
         style_decision = self.style_agent.analyze_optimal_style(
             mission=config.mission,
             target_audience=config.target_audience,
-            platform=config.target_platform.value,
-            content_type=config.category.value.lower(),
+            platform=str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform),
+            content_type=str(config.category) if hasattr(config.category, "value") else str(config.category).lower(),
             humor_level="medium"
         )
         
@@ -1256,7 +1269,7 @@ The last frame of this scene connects to the next.
         positioning_decision = self.positioning_agent.analyze_optimal_positioning(
             mission=config.mission,
             video_style=style_decision.get('primary_style', 'dynamic'),
-            platform=config.target_platform.value,
+            platform=str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform),
             duration=float(config.duration_seconds),
             subtitle_count=4
         )
@@ -1459,7 +1472,7 @@ The last frame of this scene connects to the next.
                     },
                     "visual_style": {
                         "style": style_decision.get('primary_style', 'dynamic'),
-                        "platform_optimized": config.target_platform.value
+                        "platform_optimized": str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform)
                     },
                     "camera": {
                         "shot_type": "dynamic",
@@ -1503,7 +1516,7 @@ The last frame of this scene connects to the next.
                                     safety_level,
                                     config.mission,
                                     i + 1,
-                                    platform=config.target_platform.value
+                                    platform=str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform)
                                 )
                                 logger.info(f"🛡️ Using safety level {safety_level} rephrasing")
                             
@@ -1525,7 +1538,7 @@ The last frame of this scene connects to the next.
                                 'prompt': prompt_for_veo,
                                 'duration': clip_duration,
                                 'clip_id': f"clip_{i+1}_attempt_{veo_attempt + 1}",
-                                'aspect_ratio': self._get_platform_aspect_ratio(config.target_platform.value)
+                                'aspect_ratio': self._get_platform_aspect_ratio(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))
                             }
                             
                             # Use last frame for continuity if enabled
@@ -2187,7 +2200,7 @@ The last frame of this scene connects to the next.
                     )
             
             base_video_path = self._create_base_video_from_clips(clips, audio_files, session_context, config.duration_seconds, 
-                                                                platform=config.target_platform.value,
+                                                                platform=str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform),
                                                                 subtitle_timings=subtitle_timings)
             
             if not base_video_path or not os.path.exists(base_video_path):
@@ -2254,7 +2267,7 @@ The last frame of this scene connects to the next.
             
             # Step 2: Create VERSION 1 - Video with audio only (no subtitles, no overlays)
             logger.info("🎬 Creating VERSION 1: Video with audio only (no subtitles, no overlays)")
-            video_audio_only = self._apply_platform_orientation(temp_video_path, config.target_platform.value, session_context)
+            video_audio_only = self._apply_platform_orientation(temp_video_path, str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform), session_context)
             if config.duration_seconds >= 10:
                 current_duration = self._get_video_duration(video_audio_only)
                 if current_duration and current_duration < target_duration - 1.0:
@@ -2283,7 +2296,7 @@ The last frame of this scene connects to the next.
                 temp_video_path = original_base_video
             # Use the trimmed/original video without subtitles for overlay-only version
             video_overlays_only = self._add_timed_text_overlays(temp_video_path, style_decision, positioning_decision, config, session_context)
-            video_overlays_only = self._apply_platform_orientation(video_overlays_only, config.target_platform.value, session_context)
+            video_overlays_only = self._apply_platform_orientation(video_overlays_only, str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform), session_context)
             if config.duration_seconds >= 10:
                 current_duration = self._get_video_duration(video_overlays_only)
                 if current_duration and current_duration < target_duration - 1.0:
@@ -2296,7 +2309,7 @@ The last frame of this scene connects to the next.
             # Step 6: Apply platform orientation to main video
             oriented_video_path = self._apply_platform_orientation(
                 video_with_overlays, 
-                config.target_platform.value, 
+                str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform), 
                 session_context
             )
             
@@ -2484,7 +2497,7 @@ The last frame of this scene connects to the next.
                 duration = float(audio_stream.get('duration', config.duration_seconds)) if audio_stream else config.duration_seconds
             
             # Get platform dimensions
-            aspect_ratio = self._get_platform_aspect_ratio(config.target_platform.value)
+            aspect_ratio = self._get_platform_aspect_ratio(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))
             if aspect_ratio == '16:9':
                 width, height = 1920, 1080
             else:
@@ -2753,12 +2766,12 @@ The last frame of this scene connects to the next.
                 if is_dynamic:
                     # DYNAMIC: Moving hook overlay with AI-styled animation
                     overlay_filters.append(
-                        f"drawtext=text='{escaped_hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x='if(lt(t,1.5),(w-text_w)/2,if(lt(t,3),(w-text_w)/2-20*sin(2*PI*t),w-text_w-20))':y='{video_config.layout.overlay_positions['hook']['y']}+10*sin(4*PI*t)':enable=between(t\\,0\\,{video_config.animation.hook_display_duration})"
+                        f"drawtext=text='{escaped_hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x='if(lt(t,1.5),(w-text_w)/2,if(lt(t,3),(w-text_w)/2-20*sin(2*PI*t),w-text_w-20))':y='h*{video_config.layout.overlay_positions['hook']['y_percent']}+10*sin(4*PI*t)':enable=between(t\\,0\\,{video_config.animation.hook_display_duration})"
                     )
                 else:
                     # STATIC: AI-styled static positioning
                     overlay_filters.append(
-                        f"drawtext=text='{escaped_hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x=(w-text_w)/2:y={video_config.layout.overlay_positions['hook']['y']}:enable=between(t\\,0\\,{video_config.animation.hook_display_duration})"
+                        f"drawtext=text='{escaped_hook_text}':fontcolor={hook_style['color']}:fontsize={hook_style['font_size']}:font='{hook_style['font_family']}':box=1:boxcolor={hook_style['background_color']}@{hook_style['background_opacity']}:boxborderw={hook_style['stroke_width']}:x=(w-text_w)/2:y=h*{video_config.layout.overlay_positions['hook']['y_percent']}:enable=between(t\\,0\\,{video_config.animation.hook_display_duration})"
                     )
             
             # Add call-to-action overlay with DYNAMIC positioning and AI-driven styling
@@ -2768,7 +2781,7 @@ The last frame of this scene connects to the next.
                 if self._is_metadata_or_instruction_text(cta_text_raw):
                     logger.warning(f"⚠️ Detected metadata/instruction in CTA: {cta_text_raw[:50]}...")
                     # Use platform-specific default CTA
-                    cta_text_raw = video_config.get_default_cta(config.target_platform.value)
+                    cta_text_raw = video_config.get_default_cta(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))
                     logger.info(f"✅ Using default CTA: {cta_text_raw}")
                 
                 # Get AI-driven overlay styling for CTA
@@ -2792,12 +2805,12 @@ The last frame of this scene connects to the next.
                 if is_dynamic:
                     # DYNAMIC: Sliding CTA with AI-styled bounce effect
                     overlay_filters.append(
-                        f"drawtext=text='{escaped_cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x='if(lt(t,{cta_start_time}),w+text_w,w-text_w-{video_config.layout.overlay_horizontal_padding}-15*sin(8*PI*(t-{cta_start_time})))':y='{video_config.layout.overlay_positions['cta']['y']}+5*cos(6*PI*t)':enable=between(t\\,{cta_start_time}\\,{video_duration})"
+                        f"drawtext=text='{escaped_cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x='if(lt(t,{cta_start_time}),w+text_w,w-text_w-{video_config.layout.overlay_horizontal_padding}-15*sin(8*PI*(t-{cta_start_time})))':y='h*{video_config.layout.overlay_positions['cta']['y_percent']}+5*cos(6*PI*t)':enable=between(t\\,{cta_start_time}\\,{video_duration})"
                     )
                 else:
                     # STATIC: AI-styled static positioning
                     overlay_filters.append(
-                        f"drawtext=text='{escaped_cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x=w-text_w-{video_config.layout.overlay_horizontal_padding}:y={video_config.layout.overlay_positions['cta']['y']}:enable=between(t\\,{cta_start_time}\\,{video_duration})"
+                        f"drawtext=text='{escaped_cta_text}':fontcolor={cta_style['color']}:fontsize={cta_style['font_size']}:font='{cta_style['font_family']}':box=1:boxcolor={cta_style['background_color']}@{cta_style['background_opacity']}:boxborderw={cta_style['stroke_width']}:x=w-text_w-{video_config.layout.overlay_horizontal_padding}:y=h*{video_config.layout.overlay_positions['cta']['y_percent']}:enable=between(t\\,{cta_start_time}\\,{video_duration})"
                     )
             
             # Use professional text renderer instead of FFmpeg drawtext
@@ -3046,7 +3059,7 @@ The last frame of this scene connects to the next.
                     dynamic_overlays = overlay_agent.analyze_script_for_overlays(
                         script=script,
                         video_duration=video_duration,
-                        platform=config.target_platform.value,
+                        platform=str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform),
                         style=config.visual_style or "dynamic",
                         tone=config.tone or "engaging",
                         mission=config.mission,
@@ -3286,22 +3299,22 @@ The last frame of this scene connects to the next.
                     base_font_size = video_config.get_font_size('subtitle', video_width)
                     # Adjust font size based on video dimensions
                     if is_portrait:
-                        # Slightly larger for portrait videos (TikTok/Instagram)
+                        # Smaller, more elegant size for portrait videos (TikTok/Instagram)
                         font_size = max(
-                            int(video_height * 0.048),  # 4.8% of video height for portrait
+                            int(video_height * 0.02),  # 2% of video height for portrait
                             base_font_size,
-                            36  # Minimum font size for portrait
+                            28  # Minimum font size for portrait
                         )
                     else:
                         # Standard size for landscape
                         font_size = max(
-                            int(video_height * 0.042),  # 4.2% of video height for landscape
+                            int(video_height * 0.018),  # 1.8% of video height for landscape
                             base_font_size,
-                            30  # Minimum font size for landscape
+                            20  # Minimum font size for landscape
                         )
                     
                     # Cap maximum font size to prevent overly large text
-                    font_size = min(font_size, int(video_height * 0.06))  # Max 6% of height
+                    font_size = min(font_size, int(video_height * 0.025))  # Max 2.5% of height
                     logger.info(f"📏 Subtitle font size: {font_size}px for {video_width}x{video_height} video")
                     
                     # Create text clip with modern styling
@@ -3365,7 +3378,7 @@ The last frame of this scene connects to the next.
                 # Render the video with subtitles
                 final_video.write_videofile(
                     output_path,
-                    fps=video_config.get_fps(config.target_platform.value),
+                    fps=video_config.get_fps(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform)),
                     codec=video_config.encoding.video_codec,
                     audio_codec=video_config.encoding.audio_codec,
                     temp_audiofile='temp-audio.m4a',
@@ -3436,7 +3449,7 @@ The last frame of this scene connects to the next.
                 # Generate dynamic content based on mission
                 mission_word = config.mission.split()[0] if config.mission else "content"
                 hook = config.hook or f"Discover {mission_word}!"
-                cta = config.call_to_action or video_config.get_default_cta(config.target_platform.value)
+                cta = config.call_to_action or video_config.get_default_cta(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))
                 actual_script = f"{hook} {' '.join(main_content)} {cta}"
                 logger.warning("⚠️ Using fallback config content for subtitles")
             
@@ -4627,8 +4640,8 @@ The last frame of this scene connects to the next.
 ## Video Information
 - Mission: {config.mission}
 - Duration: {config.duration_seconds} seconds
-- Platform: {config.target_platform.value}
-- Category: {config.category.value}
+- Platform: {str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform)}
+- Category: {str(config.category) if hasattr(config.category, "value") else str(config.category)}
 - Style: {config.style}
 - Tone: {config.tone}
 - Target Audience: {config.target_audience}
@@ -4967,19 +4980,54 @@ This is a placeholder file. In a full implementation, this would be a complete M
                     current_time = segment_end_time
             
             # CRITICAL FIX: Cap subtitles to the target video duration
-            # Get the target duration from the total audio duration
-            target_duration = current_time  # This is the total audio duration from all segments
+            # Get the target duration from the video configuration, not from audio
+            from ..config import video_config
+            
+            # Find the video duration from session context or use a reasonable default
+            target_duration = getattr(session_context, 'target_duration', None)
+            if not target_duration:
+                try:
+                    # Try to get from the first video clip if available
+                    video_clips_dir = session_context.get_output_path("video_clips")
+                    if os.path.exists(video_clips_dir):
+                        for file in os.listdir(video_clips_dir):
+                            if file.endswith('.mp4'):
+                                clip_path = os.path.join(video_clips_dir, file)
+                                import subprocess
+                                result = subprocess.run([
+                                    'ffprobe', '-v', 'quiet', '-show_entries', 'format=duration',
+                                    '-of', 'csv=p=0', clip_path
+                                ], capture_output=True, text=True)
+                                if result.returncode == 0:
+                                    clip_duration = float(result.stdout.strip())
+                                    # Estimate total video duration (assuming 8 clips of 8s each = 64s default)
+                                    target_duration = clip_duration * 8
+                                    break
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not determine video duration: {e}")
+                
+                # Final fallback - use a standard duration
+                if not target_duration:
+                    target_duration = 64.0  # Default 64 seconds
+                    logger.info(f"📝 Using default target duration: {target_duration}s")
+            
+            logger.info(f"📝 Target video duration: {target_duration}s, Total audio duration: {current_time:.2f}s")
+            
             if target_duration and segments:
                 # Ensure no subtitle extends beyond the target duration
+                capped_segments = []
                 for segment in segments:
-                    if segment['end'] > target_duration:
-                        segment['end'] = target_duration
-                        logger.warning(f"⚠️ Capped subtitle end time from {segment['end']:.2f}s to {target_duration}s")
+                    if segment['start'] < target_duration:
+                        # Include segment if it starts before target duration
+                        if segment['end'] > target_duration:
+                            segment['end'] = target_duration
+                            logger.warning(f"⚠️ Capped subtitle end time from {segment['end']:.2f}s to {target_duration}s")
+                        capped_segments.append(segment)
+                    else:
+                        logger.warning(f"⚠️ Removed subtitle starting at {segment['start']:.2f}s (beyond {target_duration}s)")
                 
-                # Remove any segments that start after the target duration
-                segments = [s for s in segments if s['start'] < target_duration]
-                
-                logger.info(f"📝 Capped subtitles to target duration: {target_duration}s")
+                segments = capped_segments
+                logger.info(f"📝 Capped {len(segments)} subtitles to target duration: {target_duration}s")
             
             # Create subtitle files
             subtitle_files = {}
@@ -5302,7 +5350,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
             
             # Get platform-specific dimensions
             if config and hasattr(config, 'target_platform'):
-                platform = config.target_platform.value
+                platform = str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform)
                 width, height = self._get_video_dimensions(platform)
                 logger.info(f"📱 Using platform dimensions for {platform}: {width}x{height}")
             else:
@@ -5400,7 +5448,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                         'prompt': rephrased_prompt,
                         'duration': duration,
                         'clip_id': f"clip_{clip_number}_rephrased",
-                        'aspect_ratio': self._get_platform_aspect_ratio(config.target_platform.value)
+                        'aspect_ratio': self._get_platform_aspect_ratio(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))
                     }
                     
                     if use_frame_continuity and last_frame_image and os.path.exists(last_frame_image):
@@ -5605,7 +5653,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 f"image_video_clip_{clip_number}.mp4"
             )
             
-            width, height = self._get_video_dimensions(config.target_platform.value)
+            width, height = self._get_video_dimensions(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))
             
             # Create video from image with subtle zoom/pan effect
             import subprocess
@@ -5617,7 +5665,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 '-t', str(duration),
                 '-c:v', video_config.encoding.video_codec,
                 '-pix_fmt', video_config.encoding.pixel_format,
-                '-r', str(video_config.get_fps(config.target_platform.value)),
+                '-r', str(video_config.get_fps(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))),
                 output_path
             ]
             
@@ -7125,7 +7173,7 @@ Return ONLY the modified script text, no explanations."""
                 duration = ffmpeg.get_duration(audio_file)
             
             # Get platform dimensions
-            aspect_ratio = self._get_platform_aspect_ratio(config.target_platform.value)
+            aspect_ratio = self._get_platform_aspect_ratio(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))
             if aspect_ratio == '16:9':
                 width, height = 1920, 1080
             else:
@@ -7237,7 +7285,7 @@ Return ONLY the modified script text, no explanations."""
             logger.info(f"💰 Rendering video without audio: {temp_video_path}")
             video.write_videofile(
                 temp_video_path,
-                fps=video_config.get_fps(config.target_platform.value),
+                fps=video_config.get_fps(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform)),
                 codec=video_config.encoding.video_codec,
                 verbose=False,
                 logger=None,
@@ -7606,7 +7654,7 @@ Return ONLY the modified script text, no explanations."""
                 video_height = int(video_stream['height'])
             else:
                 # Use platform-specific defaults
-                aspect_ratio = self._get_platform_aspect_ratio(config.target_platform.value)
+                aspect_ratio = self._get_platform_aspect_ratio(str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform))
                 if aspect_ratio == '16:9':
                     video_width, video_height = 1920, 1080
                 else:
@@ -7688,13 +7736,15 @@ Return ONLY the modified script text, no explanations."""
                         logger.info(f"⏭️ Skipping overlay at {position} position per user preference")
                         continue
                         
-                    # Position based on overlay style
+                    # Position based on overlay style using percentage-based positioning
+                    from ..config import video_config
+                    
                     if overlay.get('position') == 'top_center':
-                        y_pos = 80
+                        y_pos = int(video_height * video_config.layout.overlay_positions['hook']['y_percent'])
                     elif overlay.get('position') == 'center':
-                        y_pos = int(video_height / 2)
+                        y_pos = int(video_height * video_config.layout.overlay_positions['overlay_default']['y_percent'])
                     else:
-                        y_pos = 200
+                        y_pos = int(video_height * video_config.layout.overlay_positions['cta']['y_percent'])
                     
                     # Create overlay filter with properly escaped text
                     escaped_text = self._escape_text_for_ffmpeg(overlay['text'])
@@ -7995,6 +8045,8 @@ Return ONLY the modified script text, no explanations."""
             
             # Check for news logo requests
             news_channels = {
+                'iran thirstional': ('assets/overlays/iran_thirstional/logo_corner.png', 'top-right', 0.15),
+                'thirstional': ('assets/overlays/iran_thirstional/logo_corner.png', 'top-right', 0.15),
                 'water crisis news': ('assets/logos/water_crisis_news.png', 'top-right', 0.12),
                 'thirsty times': ('assets/logos/thirsty_times.png', 'top-right', 0.12),
                 'desert dispatch': ('assets/logos/desert_dispatch.png', 'top-right', 0.12),
@@ -8122,7 +8174,7 @@ Return ONLY the modified script text, no explanations."""
             metrics = {
                 'generation_mode': 'cheap_mode_full',
                 'duration_seconds': config.duration_seconds,
-                'platform': config.target_platform.value,
+                'platform': str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform),
                 'cost_efficiency': 'maximum',
                 'generation_time_estimate': '30-60_seconds',
                 'resources_used': ['gTTS', 'text_video', 'moviepy'],
@@ -8160,7 +8212,7 @@ Return ONLY the modified script text, no explanations."""
             summary = {
                 "session_id": session_context.session_id,
                 "mission": config.mission,
-                "platform": config.target_platform.value,
+                "platform": str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform),
                 "duration_seconds": config.duration_seconds,
                 "created_at": datetime.now().isoformat(),
                 "versions": {

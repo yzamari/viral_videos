@@ -77,6 +77,7 @@ class Director:
         """
         try:
             logger.info(f"Writing script for {mission} ({duration}s) on {platform.value}")
+            logger.info(f"⏱️ STRICT DURATION ENFORCEMENT: Target is {duration} seconds")
 
             # Use Gemini's built-in internet access for current information
             current_context = ""
@@ -371,6 +372,11 @@ class Director:
                 prompt = f"""
                 Create {num_segments} script segments for this creative content: "{mission}"
 
+                DURATION CONSTRAINT: Total video MUST be exactly {duration} seconds.
+                - Each segment should be approximately {duration/num_segments:.1f} seconds
+                - Account for natural speaking pace (2.5 words per second)
+                - Total word count should NOT exceed {int(duration * 2.5 * 0.85)} words
+
                 CRITICAL: Generate the ACTUAL CREATIVE SCRIPT described - the dialogue, narration, or performance content itself.
                 This is NOT educational content ABOUT the topic - this IS the creative content.
                 {language_instruction}
@@ -418,6 +424,12 @@ class Director:
                 
                 prompt = f"""
                 Create {num_segments} content segments for a {duration}-second video to ACCOMPLISH THE MISSION: "{mission}"
+
+                DURATION CONSTRAINT: Total video MUST be exactly {duration} seconds.
+                - Each segment should be approximately {duration/num_segments:.1f} seconds
+                - Account for natural speaking pace (2.5 words per second)
+                - Total word count should NOT exceed {int(duration * 2.5 * 0.85)} words
+                - DO NOT generate content that exceeds the target duration!
 
                 CRITICAL: This is NOT about discussing the topic - this is about ACCOMPLISHING the mission "{mission}" within {duration} seconds.
                 {language_instruction}
@@ -476,6 +488,12 @@ class Director:
                 
                 prompt = f"""
                 Create {num_segments} content segments for a {duration}-second video about: "{mission}"
+
+                CRITICAL DURATION CONSTRAINT: Total video MUST be exactly {duration} seconds.
+                - Each segment should be approximately {duration/num_segments:.1f} seconds
+                - Account for natural speaking pace (2.5 words per second)
+                - Total word count should NOT exceed {int(duration * 2.5 * 0.85)} words
+                - DO NOT generate content that exceeds the target duration!
 
                 CRITICAL: ALL segments MUST be about "{mission}" and fit EXACTLY within {duration} seconds.
                 {language_instruction}

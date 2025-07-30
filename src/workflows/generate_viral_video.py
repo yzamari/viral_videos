@@ -31,7 +31,7 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
          session_id: Optional[str] = None, visual_continuity: bool = True,
          content_continuity: bool = True, target_audience: Optional[str] = None, style: Optional[str] = None,
          tone: Optional[str] = None, visual_style: Optional[str] = None,
-         mode: str = "enhanced", cheap_mode: bool = True, cheap_mode_level: str = "full", 
+         mode: str = "enhanced", cheap_mode: bool = False, cheap_mode_level: str = "full", 
          theme: Optional[str] = None, style_template: Optional[str] = None, 
          reference_style: Optional[str] = None, character: Optional[str] = None,
          scene: Optional[str] = None, voice: Optional[str] = None, 
@@ -327,10 +327,12 @@ def main(*args, **kwargs):
     return asyncio.run(async_main(*args, **kwargs))
 
 if __name__ == "__main__":
-    # Example usage
-    main(
-        mission="Create a funny video about cats learning to use computers",
-        platform="youtube",
-        duration=20,
-        category="Comedy"
-    )
+    # This file should not be run directly. Use the CLI instead:
+    # python main.py generate --mission "Your mission here"
+    print("❌ Error: This file should not be run directly!")
+    print("✅ Please use the CLI instead:")
+    print('   python main.py generate --mission "Your mission here"')
+    print("\nExample:")
+    print('   python main.py generate --mission "Create a video about Zeus"')
+    import sys
+    sys.exit(1)

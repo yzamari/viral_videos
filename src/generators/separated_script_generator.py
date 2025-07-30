@@ -228,12 +228,27 @@ Make each visual description rich and cinematic for compelling image generation.
             language_name = self._get_language_name(language)
             language_instruction = f"\\nIMPORTANT: Generate ALL dialogue and narration in {language_name}."
         
-        # Calculate word limits
+        # Calculate word limits and sentence requirements
         total_words = int(duration * 2.8)  # 2.8 words per second
         words_per_segment = total_words // num_segments
         
+        # CRITICAL: Calculate minimum sentences needed for duration
+        # Average sentence = 10-12 words, at 2.8 words/second = ~4 seconds per sentence
+        min_sentences_needed = max(num_segments * 2, int(duration / 3.5))
+        sentences_per_segment = max(2, min_sentences_needed // num_segments)
+        
+        logger.info(f"📊 Duration: {duration}s needs {total_words} words across {num_segments} segments")
+        logger.info(f"📝 Each segment: {sentences_per_segment} sentences (~{words_per_segment} words)")
+        
         prompt = f"""
 Create EXACTLY {num_segments} dialogue/narration segments for: "{mission}"
+
+🎯 CRITICAL DURATION REQUIREMENTS:
+- Total duration: {duration} seconds
+- Total words needed: {total_words} words (to fill {duration}s at 2.8 words/second)
+- Segments: {num_segments} segments
+- Words per segment: {words_per_segment} words
+- Sentences per segment: {sentences_per_segment} sentences
 
 🎤 AUDIO-ONLY CONTENT REQUIREMENTS:
 1. Generate ONLY what a narrator/character SPEAKS OUT LOUD
@@ -241,10 +256,10 @@ Create EXACTLY {num_segments} dialogue/narration segments for: "{mission}"
 3. DO NOT mention what we "see" - only what we "hear"
 4. NO phrases like "we see", "the camera shows", "visual", "scene", "shot"
 5. Pure spoken dialogue, narration, or voiceover ONLY
-6. Each segment: 1-2 sentences maximum for subtitle readability
-7. Total word limit: {total_words} words (~{words_per_segment} words per segment)
+6. Each segment: EXACTLY {sentences_per_segment} complete sentences
+7. MUST reach total word count of {total_words} words across all segments
 8. Focus on compelling storytelling through SPOKEN WORD ONLY
-9. CRITICAL: Generate EXACTLY {num_segments} segments - no more, no less!
+9. CRITICAL: Generate EXACTLY {num_segments} segments with enough content for {duration} seconds!
 
 📚 EDUCATIONAL COHERENCE REQUIREMENTS:
 - Focus on teaching ONE SINGLE CONCEPT throughout

@@ -10,7 +10,7 @@ if [ -d ".venv" ]; then
 fi
 
 # Test with a short episode
-python main.py \
+python3 main.py generate \
     --mission "Dragon teaches quick math tip: 2+2=4. Dragon says 'Hello friends, today we learn basic addition!'" \
     --duration 10 \
     --style "studio ghibli" \
