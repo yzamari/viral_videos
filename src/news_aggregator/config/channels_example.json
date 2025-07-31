@@ -1,0 +1,99 @@
+{
+  "channels": [
+    {
+      "id": "daily_tech_news",
+      "name": "Daily Tech News",
+      "description": "Daily technology news from around the world",
+      "sources": [
+        "https://www.bbc.com/news/technology",
+        "https://techcrunch.com/",
+        "https://www.theverge.com/tech",
+        "https://www.ynet.co.il/digital"
+      ],
+      "languages": ["en", "he"],
+      "theme": "modern_tech",
+      "schedule": {
+        "type": "daily",
+        "time": "08:00",
+        "timezone": "UTC"
+      },
+      "content_rules": {
+        "max_articles": 5,
+        "min_article_length": 100,
+        "prefer_with_media": true,
+        "time_window_hours": 24
+      },
+      "video_settings": {
+        "target_duration": 300,
+        "intro_duration": 10,
+        "outro_duration": 10,
+        "article_duration": 30,
+        "use_veo3_fast": true
+      }
+    },
+    {
+      "id": "hebrew_news_daily",
+      "name": "חדשות יומיות",
+      "description": "סיכום חדשות יומי בעברית",
+      "sources": [
+        "https://www.ynet.co.il/",
+        "https://www.haaretz.co.il/",
+        "https://www.mako.co.il/news"
+      ],
+      "languages": ["he"],
+      "theme": "hebrew_news",
+      "schedule": {
+        "type": "daily",
+        "time": "20:00",
+        "timezone": "Asia/Jerusalem"
+      },
+      "content_rules": {
+        "max_articles": 7,
+        "categories": ["politics", "economy", "technology", "sports"],
+        "exclude_keywords": ["advertisement", "sponsored"]
+      },
+      "video_settings": {
+        "target_duration": 420,
+        "presenter_enabled": true,
+        "presenter_style": "formal_news"
+      }
+    },
+    {
+      "id": "weekly_sports_highlights",
+      "name": "Weekly Sports Highlights",
+      "description": "Weekly sports news and highlights",
+      "sources": [
+        "https://www.espn.com/",
+        "https://www.bbc.com/sport",
+        "https://www.sport5.co.il/"
+      ],
+      "languages": ["en", "he"],
+      "theme": "professional_news",
+      "schedule": {
+        "type": "weekly",
+        "day": "sunday",
+        "time": "18:00",
+        "timezone": "UTC"
+      },
+      "content_rules": {
+        "max_articles": 10,
+        "categories": ["football", "basketball", "tennis"],
+        "prefer_with_video": true
+      },
+      "video_settings": {
+        "target_duration": 600,
+        "highlight_reels": true,
+        "background_music_volume": 0.4
+      }
+    }
+  ],
+  "global_settings": {
+    "media_cache_dir": "outputs/news_media_cache",
+    "output_dir": "outputs/news_videos",
+    "keep_cache_days": 7,
+    "parallel_scraping": true,
+    "max_concurrent_scrapers": 3,
+    "error_retry_count": 3,
+    "quality_preset": "high"
+  }
+}
