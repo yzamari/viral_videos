@@ -11,6 +11,7 @@ from enum import Enum
 import uuid
 
 from ..utils.logging_config import get_logger
+from ..config.voice_config import get_voice_id, get_voice_settings, EMOTION_MAPPINGS
 
 logger = get_logger(__name__)
 
@@ -58,18 +59,6 @@ class ElevenLabsProvider(AIVoiceProvider):
         self.api_key = api_key
         self.base_url = "https://api.elevenlabs.io/v1"
 
-        # High-quality voices for different emotions
-        self.voice_mapping = {
-            VoiceEmotion.EXCITED: "EXAVITQu4vr4xnSDxMaL",  # Bella - energetic
-            VoiceEmotion.SERIOUS: "21m00Tcm4TlvDq8ikWAM",   # Rachel - professional
-            VoiceEmotion.FUNNY: "AZnzlk1XvdvUeBnXmlld",     # Domi - playful
-            VoiceEmotion.DRAMATIC: "CYw3kZ02Hs0563khs1Fj",  # Dave - dramatic
-            VoiceEmotion.INSPIRATIONAL: "EXAVITQu4vr4xnSDxMaL", # Bella - uplifting
-            VoiceEmotion.CYNICAL: "onwK4e9ZLuTAKqWW03F9",   # Daniel - sardonic
-            VoiceEmotion.CALM: "ThT5KcBeYPX3keUQqHPh",      # Dorothy - soothing
-            VoiceEmotion.NEUTRAL: "21m00Tcm4TlvDq8ikWAM"    # Rachel - default
-        }
-
     def generate_speech(
         self,
         text: str,
@@ -77,20 +66,18 @@ class ElevenLabsProvider(AIVoiceProvider):
         duration_target: float) -> str:
         """Generate ultra-realistic AI speech with ElevenLabs"""
         try:
-            voice_id = self.voice_mapping.get(
-                emotion,
-                self.voice_mapping[VoiceEmotion.NEUTRAL])
+            # Get voice ID from configuration
+            emotion_str = emotion.value.lower()
+            voice_id = get_voice_id("elevenlabs", emotion_str)
 
+            # Get voice settings from configuration
+            voice_settings = get_voice_settings("elevenlabs")
+            
             # Advanced ElevenLabs settings for realistic speech
             data = {
                 "text": text,
                 "model_id": "eleven_multilingual_v2",  # Highest quality model
-                "voice_settings": {
-                    "stability": 0.5,  # Balanced for natural variation
-                    "similarity_boost": 0.75,  # High similarity to voice
-                    "style": 0.5,  # Natural style
-                    "use_speaker_boost": True  # Enhanced clarity
-                }
+                "voice_settings": voice_settings
             }
 
             # Add emotion-specific adjustments
@@ -151,18 +138,6 @@ class OpenAIVoiceProvider(AIVoiceProvider):
     def __init__(self, api_key: str):
         self.api_key = api_key
 
-        # OpenAI voices mapped to emotions
-        self.voice_mapping = {
-            VoiceEmotion.EXCITED: "nova",     # Energetic and bright
-            VoiceEmotion.SERIOUS: "echo",     # Professional and clear
-            VoiceEmotion.FUNNY: "fable",      # Warm and playful
-            VoiceEmotion.DRAMATIC: "onyx",    # Deep and dramatic
-            VoiceEmotion.INSPIRATIONAL: "shimmer", # Uplifting
-            VoiceEmotion.CYNICAL: "alloy",    # Neutral with edge
-            VoiceEmotion.CALM: "nova",        # Gentle
-            VoiceEmotion.NEUTRAL: "alloy"     # Balanced default
-        }
-
     def generate_speech(
         self,
         text: str,
@@ -173,7 +148,10 @@ class OpenAIVoiceProvider(AIVoiceProvider):
             import openai
 
             client = openai.OpenAI(api_key=self.api_key)
-            voice = self.voice_mapping.get(emotion, "alloy")
+            
+            # Get voice from configuration
+            emotion_str = emotion.value.lower()
+            voice = get_voice_id("openai", emotion_str)
 
             logger.info(f"🎤 Generating {emotion} voice with OpenAI ({voice})...")
 

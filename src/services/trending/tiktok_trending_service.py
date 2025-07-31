@@ -62,40 +62,19 @@ class TikTokTrendingService:
     def get_trending_sounds(self, limit: int = 20) -> List[Dict[str, Any]]:
         """Get trending sounds/music from TikTok"""
         try:
-            # This would typically use TikTok's internal API
-            # For now, return common trending sounds
-            trending_sounds = [
-                {
-                    'sound_id': 'trending_sound_1',
-                    'title': 'Trending Audio Mix',
-                    'artist': 'Various Artists',
-                    'usage_count': 1500000,
-                    'trend_score': 0.95,
-                    'category': 'remix'
-                },
-                {
-                    'sound_id': 'trending_sound_2',
-                    'title': 'Viral Dance Beat',
-                    'artist': 'DJ Viral',
-                    'usage_count': 1200000,
-                    'trend_score': 0.92,
-                    'category': 'dance'
-                },
-                {
-                    'sound_id': 'trending_sound_3',
-                    'title': 'Comedy Sound Effect',
-                    'artist': 'Sound Effects',
-                    'usage_count': 900000,
-                    'trend_score': 0.88,
-                    'category': 'comedy'
-                }
-            ]
+            # Try to fetch from API first
+            sounds = self._fetch_trending_sounds_api(limit)
+            if sounds:
+                logger.info(f"✅ Fetched {len(sounds)} trending sounds from TikTok API")
+                return sounds
             
-            return trending_sounds[:limit]
+            # Fallback to known trending patterns
+            logger.info("⚠️ Using fallback trending sounds data")
+            return self._get_fallback_trending_sounds(limit)
             
         except Exception as e:
             logger.error(f"❌ Error fetching trending sounds: {e}")
-            return []
+            return self._get_fallback_trending_sounds(limit)
     
     def get_trending_effects(self, limit: int = 15) -> List[Dict[str, Any]]:
         """Get trending effects/filters from TikTok"""
@@ -196,14 +175,90 @@ class TikTokTrendingService:
     
     def _fetch_from_unofficial_api(self, limit: int) -> List[Dict[str, Any]]:
         """Try to fetch data from unofficial TikTok APIs"""
-        # Note: These endpoints change frequently
-        # This is a placeholder for actual implementation
+        try:
+            # Try TikTok's web API endpoint (subject to change)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/json',
+                'Referer': 'https://www.tiktok.com/'
+            }
+            
+            # Trending discovery endpoint
+            trending_url = "https://www.tiktok.com/api/discover/hashtag"
+            params = {
+                'discoverType': 0,
+                'needItemList': False,
+                'keyWord': '',
+                'count': limit,
+                'language': 'en'
+            }
+            
+            response = requests.get(trending_url, headers=headers, params=params, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                hashtags = []
+                
+                for item in data.get('data', {}).get('list', []):
+                    hashtags.append({
+                        'tag': f"#{item.get('hashtag', {}).get('name', '')}",
+                        'usage_count': item.get('hashtag', {}).get('videoCount', 0),
+                        'view_count': item.get('hashtag', {}).get('viewCount', 0),
+                        'trend_score': min(item.get('hashtag', {}).get('viewCount', 0) / 1000000000, 1.0),
+                        'category': 'trending',
+                        'data_source': 'tiktok_api'
+                    })
+                
+                return hashtags[:limit]
+            
+        except Exception as e:
+            logger.debug(f"Unofficial API failed: {e}")
+        
         return []
     
     def _scrape_trending_page(self, limit: int) -> List[Dict[str, Any]]:
-        """Scrape TikTok trending page (fallback method)"""
-        # Note: Web scraping TikTok is complex due to dynamic content
-        # This is a simplified placeholder
+        """Scrape TikTok trending page using requests and BeautifulSoup"""
+        try:
+            from bs4 import BeautifulSoup
+            
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate',
+                'Connection': 'keep-alive',
+            }
+            
+            # Try to scrape the discover page
+            response = requests.get('https://www.tiktok.com/discover', headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                hashtags = []
+                
+                # Look for trending hashtag elements
+                # Note: TikTok's HTML structure changes frequently
+                hashtag_elements = soup.find_all(['div', 'a'], class_=lambda x: x and 'hashtag' in x.lower())
+                
+                for element in hashtag_elements[:limit]:
+                    text = element.get_text(strip=True)
+                    if text.startswith('#'):
+                        hashtags.append({
+                            'tag': text,
+                            'usage_count': 1000000,  # Placeholder
+                            'trend_score': 0.8,
+                            'category': 'trending',
+                            'data_source': 'web_scrape'
+                        })
+                
+                if hashtags:
+                    logger.info(f"✅ Scraped {len(hashtags)} hashtags from TikTok")
+                    return hashtags[:limit]
+                    
+        except Exception as e:
+            logger.debug(f"Web scraping failed: {e}")
+        
         return []
     
     def _get_fallback_trending_hashtags(self, limit: int) -> List[Dict[str, Any]]:
@@ -264,3 +319,99 @@ class TikTokTrendingService:
             hashtag['data_source'] = 'fallback_patterns'
         
         return all_hashtags[:limit]
+    
+    def _fetch_trending_sounds_api(self, limit: int) -> List[Dict[str, Any]]:
+        """Try to fetch trending sounds from TikTok API"""
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/json',
+                'Referer': 'https://www.tiktok.com/'
+            }
+            
+            # TikTok music/sounds endpoint
+            music_url = "https://www.tiktok.com/api/music/list"
+            params = {
+                'type': 1,  # Trending type
+                'count': limit,
+                'language': 'en'
+            }
+            
+            response = requests.get(music_url, headers=headers, params=params, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                sounds = []
+                
+                for item in data.get('data', {}).get('musicList', []):
+                    sounds.append({
+                        'sound_id': item.get('id', ''),
+                        'title': item.get('title', 'Unknown'),
+                        'artist': item.get('author', 'Unknown Artist'),
+                        'usage_count': item.get('userCount', 0),
+                        'trend_score': min(item.get('userCount', 0) / 10000000, 1.0),
+                        'category': item.get('category', 'music'),
+                        'duration': item.get('duration', 0),
+                        'data_source': 'tiktok_api'
+                    })
+                
+                return sounds[:limit]
+                
+        except Exception as e:
+            logger.debug(f"Sound API failed: {e}")
+        
+        return []
+    
+    def _get_fallback_trending_sounds(self, limit: int) -> List[Dict[str, Any]]:
+        """Get fallback trending sounds based on current trends"""
+        # Current viral sounds (updated regularly)
+        sounds = [
+            {
+                'sound_id': 'trending_2025_1',
+                'title': 'Trending Remix 2025',
+                'artist': 'Various Artists',
+                'usage_count': 5000000,
+                'trend_score': 0.98,
+                'category': 'remix'
+            },
+            {
+                'sound_id': 'dance_trend_1',
+                'title': 'Viral Dance Challenge',
+                'artist': 'TikTok Sounds',
+                'usage_count': 4500000,
+                'trend_score': 0.95,
+                'category': 'dance'
+            },
+            {
+                'sound_id': 'funny_sound_1',
+                'title': 'Comedy Sound Effect',
+                'artist': 'Sound Library',
+                'usage_count': 3000000,
+                'trend_score': 0.90,
+                'category': 'comedy'
+            },
+            {
+                'sound_id': 'transition_1',
+                'title': 'Smooth Transition',
+                'artist': 'Effects',
+                'usage_count': 2500000,
+                'trend_score': 0.88,
+                'category': 'transition'
+            },
+            {
+                'sound_id': 'motivational_1',
+                'title': 'Motivational Speech',
+                'artist': 'Inspiration',
+                'usage_count': 2000000,
+                'trend_score': 0.85,
+                'category': 'motivational'
+            }
+        ]
+        
+        # Add metadata
+        for sound in sounds:
+            sound['platform'] = 'tiktok'
+            sound['fetched_at'] = datetime.now().isoformat()
+            sound['data_source'] = 'fallback'
+        
+        return sounds[:limit]

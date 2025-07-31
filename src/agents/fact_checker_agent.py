@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import re
 import asyncio
 import time
+from ..services.news_api_service import news_service
 
 try:
     import google.generativeai as genai
@@ -271,17 +272,20 @@ class InternetFactCheckerAgent:
             
             for site_query in fact_check_sites[:2]:  # Limit to 2 to avoid rate limits
                 try:
-                    # In production, use proper search APIs
-                    # This is a placeholder for the search functionality
-                    search_url = f"https://www.google.com/search?q={site_query}"
+                    # Use news API to search for fact checks
+                    fact_check_articles = news_service.search_news(
+                        query=site_query,
+                        max_results=3,
+                        days_back=30
+                    )
                     
-                    # For demo purposes, create mock search results
-                    search_results.append({
-                        "title": f"Fact check result for: {claim[:50]}...",
-                        "url": "https://example.com/factcheck",
-                        "snippet": "Relevant information about the claim...",
-                        "source": "Trusted fact checking source"
-                    })
+                    for article in fact_check_articles:
+                        search_results.append({
+                            "title": article.get('title', ''),
+                            "url": article.get('url', ''),
+                            "snippet": article.get('description', ''),
+                            "source": article.get('source', 'Unknown')
+                        })
                     
                     time.sleep(0.5)  # Rate limiting
                     
@@ -393,39 +397,40 @@ class InternetFactCheckerAgent:
             if not self.enable_web_search:
                 return []
             
-            # In production, use proper news APIs like NewsAPI, Google News API, etc.
-            # This is a simplified example
-            
+            # Use real news API service
             news_updates = []
             
-            # Mock news data for demonstration
-            # In production, replace with actual news API calls
-            mock_news = [
-                {
-                    "headline": f"Recent developments in {topic}",
-                    "summary": f"Latest information and updates about {topic} from reliable sources.",
-                    "source": "Reuters",
-                    "publish_date": datetime.now() - timedelta(hours=6),
-                    "relevance_score": 0.9
-                },
-                {
-                    "headline": f"Expert analysis on {topic}",
-                    "summary": f"Professional insights and expert opinions regarding {topic}.",
-                    "source": "Associated Press",
-                    "publish_date": datetime.now() - timedelta(hours=12),
-                    "relevance_score": 0.8
-                }
-            ]
-            
-            for news_item in mock_news:
-                news_updates.append(NewsUpdate(
-                    topic=topic,
-                    headline=news_item["headline"],
-                    summary=news_item["summary"],
-                    source=news_item["source"],
-                    publish_date=news_item["publish_date"],
-                    relevance_score=news_item["relevance_score"]
-                ))
+            # Search for recent news about the topic
+            try:
+                articles = news_service.search_news(
+                    query=topic,
+                    max_results=10,
+                    days_back=7
+                )
+                
+                for article in articles:
+                    # Parse published date
+                    try:
+                        published = datetime.fromisoformat(article.get('published_at', '').replace('Z', '+00:00'))
+                    except:
+                        published = datetime.now()
+                    
+                    news_updates.append(NewsUpdate(
+                        topic=topic,
+                        headline=article.get('title', ''),
+                        summary=article.get('description', ''),
+                        source=article.get('source', 'Unknown'),
+                        publish_date=published,
+                        relevance_score=article.get('relevance_score', 0.5),
+                        url=article.get('url')
+                    ))
+                
+                logger.info(f"✅ Found {len(news_updates)} real news articles for '{topic}'")
+                
+            except Exception as e:
+                logger.warning(f"⚠️ News API error: {e}")
+                # Return empty list if API fails
+                return []
             
             return news_updates
             

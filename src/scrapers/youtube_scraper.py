@@ -16,9 +16,9 @@ logger = get_logger(__name__)
 class YouTubeScraper:
     """Scrape trending videos from YouTube"""
 
-    def __init__(self, api_key: Optional[str] = None, use_mock_data: bool = True):
+    def __init__(self, api_key: Optional[str] = None, use_mock_data: bool = False):
         self.api_key = api_key
-        self.use_mock_data = use_mock_data or not api_key
+        self.use_mock_data = use_mock_data if api_key else True  # Only use mock if no API key
 
         if not self.use_mock_data and api_key:
             self.youtube = build('youtube', 'v3', developerKey=api_key)
