@@ -24,6 +24,8 @@ google-cloud-texttospeech>=2.16.0  # For premium TTS
 # YouTube & Trends
 pytrends==4.9.2
 youtube-transcript-api==0.6.1
+google-api-python-client>=2.111.0  # YouTube Data API v3
+isodate==0.6.1  # For parsing YouTube duration
 
 # Video Generation & Processing
 moviepy==1.0.3

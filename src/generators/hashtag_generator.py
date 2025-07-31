@@ -1,27 +1,32 @@
 """
 Hashtag Generator - AI-powered trending hashtag suggestions
-Generates platform-specific hashtags based on content analysis and current trends
+Generates platform-specific hashtags based on content analysis and REAL current trends
 """
 
 import google.generativeai as genai
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 import json
 import re
 import os
 from ..utils.logging_config import get_logger
 from ..config.ai_model_config import DEFAULT_AI_MODEL
+from ..services.trending import UnifiedTrendingAnalyzer
 
 logger = get_logger(__name__)
 
 class HashtagGenerator:
-    """AI-powered hashtag generator with trend analysis"""
+    """AI-powered hashtag generator with REAL trend analysis from platform APIs"""
 
     def __init__(self, api_key: str):
-        """Initialize the hashtag generator"""
+        """Initialize the hashtag generator with real trending data"""
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
-        logger.info("🏷️ HashtagGenerator initialized")
+        
+        # Initialize unified trending analyzer for REAL data
+        self.trending_analyzer = UnifiedTrendingAnalyzer()
+        
+        logger.info("🏷️ HashtagGenerator initialized with REAL trending data")
 
     def generate_trending_hashtags(self, 
                                  mission: str, 
@@ -35,6 +40,17 @@ class HashtagGenerator:
         logger.info(f"📱 Platform: {platform}, Category: {category}")
         
         try:
+            # Get REAL trending hashtags from platform APIs
+            real_trending_hashtags = self.trending_analyzer.get_trending_hashtags_unified(
+                platform=platform,
+                mission=mission,
+                category=category,
+                limit=num_hashtags + 10  # Get extra for filtering
+            )
+            
+            # Format real trends for the prompt
+            real_trends_text = self._format_real_trends_for_prompt(real_trending_hashtags, platform)
+            trending_hashtags_text = ' '.join([h['tag'] for h in real_trending_hashtags[:10]])
             # Create comprehensive hashtag generation prompt
             hashtag_prompt = f"""
             You are a viral social media hashtag expert with access to current trends and platform-specific insights.
@@ -60,11 +76,11 @@ class HashtagGenerator:
             4. BROAD (5-8 hashtags): General reach and discovery hashtags
             5. ENGAGEMENT (3-5 hashtags): Call-to-action and community hashtags
             
-            CURRENT TRENDS TO CONSIDER:
-            - Recent viral challenges and memes
-            - Seasonal and cultural events
-            - Platform-specific trending topics
-            - Industry-specific trending keywords
+            REAL CURRENT TRENDS TO CONSIDER:
+            {real_trends}
+            
+            ACTUAL TRENDING HASHTAGS ON {platform}:
+            {trending_hashtags}
             
             Return JSON with:
             {{
@@ -87,7 +103,11 @@ class HashtagGenerator:
                     "Platform-specific usage guidelines"
                 ]
             }}
-            """
+            """.format(
+                real_trends=real_trends_text,
+                trending_hashtags=trending_hashtags_text,
+                platform=platform
+            )
             
             response = self.model.generate_content(hashtag_prompt)
             
@@ -96,6 +116,13 @@ class HashtagGenerator:
             if json_match:
                 try:
                     hashtag_data = json.loads(json_match.group())
+                    
+                    # Merge with real trending hashtags
+                    hashtag_data = self._merge_with_real_trends(
+                        hashtag_data, 
+                        real_trending_hashtags,
+                        num_hashtags
+                    )
                     
                     # Validate and enhance hashtag data
                     validated_data = self._validate_hashtag_data(hashtag_data, num_hashtags)
@@ -319,3 +346,75 @@ class HashtagGenerator:
         except Exception as e:
             logger.error(f"❌ Failed to save hashtags: {e}")
             return None
+    
+    def _format_real_trends_for_prompt(self, hashtags: List[Dict], platform: str) -> str:
+        """Format real trending hashtags for AI prompt"""
+        trends_text = f"Based on REAL {platform} API data:\n"
+        
+        # Group by category
+        by_category = {}
+        for hashtag in hashtags[:20]:
+            cat = hashtag.get('category', 'general')
+            if cat not in by_category:
+                by_category[cat] = []
+            by_category[cat].append(hashtag)
+        
+        # Format by category
+        for category, tags in by_category.items():
+            trends_text += f"\n{category.upper()} trends:\n"
+            for tag in tags[:5]:
+                score = tag.get('trend_score', 0.5)
+                usage = tag.get('usage_count', 0)
+                trends_text += f"- {tag['tag']} (score: {score:.2f}, usage: {usage:,})\n"
+        
+        return trends_text
+    
+    def _merge_with_real_trends(self, 
+                               ai_data: Dict[str, Any], 
+                               real_hashtags: List[Dict],
+                               num_hashtags: int) -> Dict[str, Any]:
+        """Merge AI suggestions with real trending hashtags"""
+        
+        # Get AI suggested hashtags
+        ai_hashtags = ai_data.get('hashtags', [])
+        
+        # Create a map of real hashtags for quick lookup
+        real_map = {h['tag'].lower(): h for h in real_hashtags}
+        
+        # Update AI hashtags with real data where available
+        for ai_tag in ai_hashtags:
+            tag_lower = ai_tag['tag'].lower()
+            if tag_lower in real_map:
+                # Merge real data
+                real_data = real_map[tag_lower]
+                ai_tag['trend_score'] = real_data.get('trend_score', ai_tag.get('trend_score', 0.5))
+                ai_tag['usage_count'] = real_data.get('usage_count', 0)
+                ai_tag['data_source'] = 'real_api'
+        
+        # Add top real trending hashtags that AI didn't suggest
+        ai_tags_lower = {tag['tag'].lower() for tag in ai_hashtags}
+        additional_real = []
+        
+        for real_tag in real_hashtags:
+            if real_tag['tag'].lower() not in ai_tags_lower and len(additional_real) < 5:
+                additional_real.append({
+                    'tag': real_tag['tag'],
+                    'category': 'trending',
+                    'estimated_reach': 'high',
+                    'reasoning': f"Currently trending on {real_tag.get('platform', 'platform')}",
+                    'trend_score': real_tag.get('trend_score', 0.9),
+                    'usage_count': real_tag.get('usage_count', 0),
+                    'data_source': 'real_api'
+                })
+        
+        # Combine hashtags
+        all_hashtags = ai_hashtags + additional_real
+        
+        # Sort by trend score
+        all_hashtags.sort(key=lambda x: x.get('trend_score', 0), reverse=True)
+        
+        # Update the data
+        ai_data['hashtags'] = all_hashtags[:num_hashtags]
+        ai_data['real_trends_incorporated'] = True
+        
+        return ai_data
