@@ -1,0 +1,6 @@
+source_url,source_name,category,language,scrape_config
+"https://www.cnn.com","CNN","general","en","full"
+"https://www.ynet.co.il","Ynet","general","he","full"
+"https://www.bbc.com/sport","BBC Sport","sports","en","headlines"
+"https://reddit.com/r/worldnews","Reddit World News","general","en","top_posts"
+"https://t.me/breaking_news","Telegram News","general","multi","recent"

@@ -1,0 +1,161 @@
+{
+  "edition_info": {
+    "source": "Rotter.net",
+    "creation_date": "2025-08-04T15:53:59.914735",
+    "video_path": "/Users/yahavzamari/viralAi/rotter_edition_output/rotter_news_edition_20250804_155357.mp4",
+    "total_duration": 58,
+    "story_count": 10
+  },
+  "stories": [
+    {
+      "position": 1,
+      "title": "זה עתה: רעידת אדמה הורגשה באזור ים המלח",
+      "category": "breaking_news",
+      "urgency": "breaking",
+      "duration": 8,
+      "ai_analysis": {
+        "importance_score": 0.8,
+        "visual_strategy": "single-image-focus",
+        "pacing": "immediate-attention",
+        "summary": "זה עתה: רעידת אדמה הורגשה באזור ים המלח (Confirmed by 5 sources)"
+      },
+      "source_count": 5,
+      "media_used": 2
+    },
+    {
+      "position": 2,
+      "title": "התרסקות מזל\"ט של צה\"ל בגבול הצפון - אין נפגעים",
+      "category": "security",
+      "urgency": "breaking",
+      "duration": 5,
+      "ai_analysis": {
+        "importance_score": 0.6499999999999999,
+        "visual_strategy": "single-image-focus",
+        "pacing": "steady",
+        "summary": "התרסקות מזל\"ט של צה\"ל בגבול הצפון - אין נפגעים (Confirmed by 4 sources)"
+      },
+      "source_count": 4,
+      "media_used": 2
+    },
+    {
+      "position": 3,
+      "title": "חקירת שחיתות: ראש עיריית עיר מרכזית נעצר הבוקר",
+      "category": "crime",
+      "urgency": "breaking",
+      "duration": 5,
+      "ai_analysis": {
+        "importance_score": 0.6499999999999999,
+        "visual_strategy": "single-image-focus",
+        "pacing": "steady",
+        "summary": "חקירת שחיתות: ראש עיריית עיר מרכזית נעצר הבוקר (Confirmed by 4 sources)"
+      },
+      "source_count": 4,
+      "media_used": 2
+    },
+    {
+      "position": 4,
+      "title": "דחוף: התפתחות דרמטית בפרשת הצוללות - מסמכים חדשים נחשפו",
+      "category": "politics",
+      "urgency": "breaking",
+      "duration": 5,
+      "ai_analysis": {
+        "importance_score": 0.6,
+        "visual_strategy": "single-image-focus",
+        "pacing": "steady",
+        "summary": "דחוף: התפתחות דרמטית בפרשת הצוללות - מסמכים חדשים נחשפו. Important points: דחוף: התפתחות דרמטית בפרשת הצוללות - מסמכים חדשים נחשפו"
+      },
+      "source_count": 3,
+      "media_used": 2
+    },
+    {
+      "position": 5,
+      "title": "חשיפה: מכבי תל אביב חותמת שחקן כוכב מהליגה הספרדית",
+      "category": "sports",
+      "urgency": "exclusive",
+      "duration": 5,
+      "ai_analysis": {
+        "importance_score": 0.7,
+        "visual_strategy": "single-image-focus",
+        "pacing": "energetic",
+        "summary": "חשיפה: מכבי תל אביב חותמת שחקן כוכב מהליגה הספרדית"
+      },
+      "source_count": 2,
+      "media_used": 1
+    },
+    {
+      "position": 6,
+      "title": "ענקית הייטק ישראלית נמכרת ב-2 מיליארד דולר",
+      "category": "technology",
+      "urgency": "exclusive",
+      "duration": 5,
+      "ai_analysis": {
+        "importance_score": 0.6499999999999999,
+        "visual_strategy": "single-image-focus",
+        "pacing": "steady",
+        "summary": "ענקית הייטק ישראלית נמכרת ב-2 מיליארד דולר"
+      },
+      "source_count": 2,
+      "media_used": 1
+    },
+    {
+      "position": 7,
+      "title": "בלעדי: ראש הממשלה יכריז הערב על צעדים כלכליים חדשים",
+      "category": "politics",
+      "urgency": "exclusive",
+      "duration": 5,
+      "ai_analysis": {
+        "importance_score": 0.6,
+        "visual_strategy": "single-image-focus",
+        "pacing": "steady",
+        "summary": "בלעדי: ראש הממשלה יכריז הערב על צעדים כלכליים חדשים. Important points: בלעדי: ראש הממשלה יכריז הערב על צעדים כלכליים חדשים"
+      },
+      "source_count": 2,
+      "media_used": 1
+    },
+    {
+      "position": 8,
+      "title": "גל חום קיצוני צפוי בסוף השבוע - 45 מעלות",
+      "category": "weather",
+      "urgency": "alert",
+      "duration": 5,
+      "ai_analysis": {
+        "importance_score": 0.6499999999999999,
+        "visual_strategy": "single-image-focus",
+        "pacing": "steady",
+        "summary": "גל חום קיצוני צפוי בסוף השבוע - 45 מעלות"
+      },
+      "source_count": 1,
+      "media_used": 1
+    },
+    {
+      "position": 9,
+      "title": "סערה במערכת הבריאות: מנהל בית חולים מרכזי מתפטר",
+      "category": "health",
+      "urgency": "developing",
+      "duration": 5,
+      "ai_analysis": {
+        "importance_score": 0.6499999999999999,
+        "visual_strategy": "single-image-focus",
+        "pacing": "steady",
+        "summary": "סערה במערכת הבריאות: מנהל בית חולים מרכזי מתפטר (Confirmed by 3 sources)"
+      },
+      "source_count": 3,
+      "media_used": 1
+    },
+    {
+      "position": 10,
+      "title": "משבר דיפלומטי: ישראל מזמנת את השגריר לבירור",
+      "category": "diplomacy",
+      "urgency": "developing",
+      "duration": 5,
+      "ai_analysis": {
+        "importance_score": 0.6499999999999999,
+        "visual_strategy": "single-image-focus",
+        "pacing": "steady",
+        "summary": "משבר דיפלומטי: ישראל מזמנת את השגריר לבירור (Confirmed by 3 sources)"
+      },
+      "source_count": 3,
+      "media_used": 1
+    }
+  ]
+}

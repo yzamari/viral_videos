@@ -1,0 +1,82 @@
+{
+  "video_info": {
+    "path": "/Users/yahavzamari/viralAi/rotter_summary_output/rotter_summary_50s_20250804_161107.mp4",
+    "duration": 50,
+    "created": "2025-08-04T16:11:07.344986",
+    "story_count": 9
+  },
+  "stories": [
+    {
+      "position": 1,
+      "title": "דחוף: התפתחות דרמטית בפרשת הצוללות - מסמכים חדשים נחשפו",
+      "category": "politics",
+      "urgency": "breaking",
+      "duration": 8,
+      "source_count": 3
+    },
+    {
+      "position": 2,
+      "title": "זה עתה: רעידת אדמה הורגשה באזור ים המלח",
+      "category": "breaking_news",
+      "urgency": "breaking",
+      "duration": 6,
+      "source_count": 5
+    },
+    {
+      "position": 3,
+      "title": "התרסקות מזל\"ט של צה\"ל בגבול הצפון - אין נפגעים",
+      "category": "security",
+      "urgency": "breaking",
+      "duration": 6,
+      "source_count": 4
+    },
+    {
+      "position": 4,
+      "title": "חקירת שחיתות: ראש עיריית עיר מרכזית נעצר הבוקר",
+      "category": "crime",
+      "urgency": "breaking",
+      "duration": 4,
+      "source_count": 4
+    },
+    {
+      "position": 5,
+      "title": "סערה במערכת הבריאות: מנהל בית חולים מרכזי מתפטר",
+      "category": "health",
+      "urgency": "developing",
+      "duration": 4,
+      "source_count": 3
+    },
+    {
+      "position": 6,
+      "title": "בלעדי: ראש הממשלה יכריז הערב על צעדים כלכליים חדשים",
+      "category": "politics",
+      "urgency": "exclusive",
+      "duration": 4,
+      "source_count": 2
+    },
+    {
+      "position": 7,
+      "title": "גל חום קיצוני צפוי בסוף השבוע - 45 מעלות",
+      "category": "weather",
+      "urgency": "alert",
+      "duration": 4,
+      "source_count": 1
+    },
+    {
+      "position": 8,
+      "title": "משבר דיפלומטי: ישראל מזמנת את השגריר לבירור",
+      "category": "diplomacy",
+      "urgency": "developing",
+      "duration": 4,
+      "source_count": 3
+    },
+    {
+      "position": 9,
+      "title": "חשיפה: מכבי תל אביב חותמת שחקן כוכב מהליגה הספרדית",
+      "category": "sports",
+      "urgency": "exclusive",
+      "duration": 4,
+      "source_count": 2
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "title": "Major Earthquake Strikes California - Thousands Evacuated",
+    "category": "breaking_news",
+    "duration": 8,
+    "media_count": 3,
+    "summary": "Major Earthquake Strikes California - Thousands Evacuated (Confirmed by 5 sources)",
+    "importance": 0.8,
+    "pacing": "immediate-attention"
+  },
+  {
+    "title": "Lakers Win Championship in Overtime Thriller",
+    "category": "sports",
+    "duration": 5,
+    "media_count": 2,
+    "summary": "Lakers Win Championship in Overtime Thriller",
+    "importance": 0.7,
+    "pacing": "energetic"
+  },
+  {
+    "title": "Tech Giant Announces Revolutionary AI Assistant",
+    "category": "technology",
+    "duration": 6,
+    "media_count": 2,
+    "summary": "Tech Giant Announces Revolutionary AI Assistant (Confirmed by 3 sources)",
+    "importance": 0.6499999999999999,
+    "pacing": "steady"
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "duration_settings": {
+    "total_duration": 60,
+    "min_clip_duration": 3,
+    "max_clip_duration": 10,
+    "preset": "default"
+  },
+  "content_items": [
+    {
+      "title": "Breaking News Story",
+      "duration": "auto",
+      "category": "breaking_news"
+    },
+    {
+      "title": "Sports Highlight",
+      "duration": 5,
+      "category": "sports"
+    },
+    {
+      "title": "Weather Update",
+      "duration": "auto",
+      "category": "weather"
+    }
+  ]
+}
