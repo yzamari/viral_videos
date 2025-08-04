@@ -1,7 +1,7 @@
 """Aggregation Models for Channel Configuration"""
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any, Callable
+from typing import List, Dict, Optional, Any, Callable, Tuple
 from datetime import datetime, time
 from enum import Enum
 import re

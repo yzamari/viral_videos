@@ -15,9 +15,9 @@ from ...ai.manager import AIServiceManager
 from ...ai.interfaces.base import AIServiceType
 from ...core.decision_framework import DecisionFramework, CoreDecisions, Decision, DecisionSource
 from ...models.video_models import Platform, VideoCategory, Language
-from ...generators.subtitle_generator import SubtitleGenerator
-from ...infrastructure.services.existing_video_generation_service import ExistingVideoGenerationService
-from ...infrastructure.services.existing_audio_generation_service import ExistingAudioGenerationService
+# from ...generators.subtitle_generator import SubtitleGenerator  # TODO: Fix import
+# from ...infrastructure.services.existing_video_generation_service import ExistingVideoGenerationService  # TODO: Fix import
+# from ...infrastructure.services.existing_audio_generation_service import ExistingAudioGenerationService  # TODO: Fix import
 from ...config.video_config import video_config
 
 logger = get_logger(__name__)

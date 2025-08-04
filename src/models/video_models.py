@@ -54,6 +54,7 @@ class VideoCategory(str, Enum):
 
 class ForceGenerationMode(str, Enum):
     AUTO = "auto"  # Use normal fallback chain
+    FORCE_VEO3_FAST = "force_veo3_fast"  # Force VEO-3-fast only
     FORCE_VEO3 = "force_veo3"  # Force VEO-3 only
     FORCE_VEO2 = "force_veo2"  # Force VEO-2 only
     FORCE_IMAGE_GEN = "force_image_gen"  # Force Image Generation only
@@ -156,7 +157,7 @@ class GeneratedVideoConfig:
     realistic_audio: bool = True
 
     # NEW: Force generation options
-    force_generation_mode: ForceGenerationMode = ForceGenerationMode.AUTO
+    force_generation_mode: ForceGenerationMode = ForceGenerationMode.FORCE_VEO3_FAST
     continuous_generation: bool = False  # Keep generating until stopped
 
     # NEW: Video orientation settings

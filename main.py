@@ -118,7 +118,7 @@ def test_auth():
 @click.option('--voice', help='Specific voice to use throughout the video (e.g., "en-US-Journey-F")')
 @click.option('--multiple-voices', is_flag=True, help='Allow multiple voices (default: single voice)')
 @click.option('--languages', multiple=True, default=['en-US'], help='Languages for audio/subtitles (e.g., --languages en-US --languages he --languages fa). First language is primary.')
-@click.option('--veo-model-order', default='veo3-fast,veo3,veo2', help='VEO model preference order (e.g., "veo3-fast,veo3,veo2" or "veo2,veo3,veo3-fast")')
+@click.option('--veo-model-order', default='veo3-fast', help='VEO model preference order (only veo3-fast is enabled)')
 @click.option('--use-whisper/--no-whisper', default=False, help='[DEPRECATED] No longer needed - we use exact text from audio generation')
 @click.option('--business-name', help='Business name to display in overlay')
 @click.option('--business-address', help='Business address to display in overlay')
@@ -173,7 +173,7 @@ def generate(**kwargs):
             voice=kwargs.get('voice'),
             multiple_voices=kwargs.get('multiple_voices', False),
             languages=list(kwargs.get('languages', ['en-US'])),
-            veo_model_order=kwargs.get('veo_model_order', 'veo3-fast,veo3,veo2'),
+            veo_model_order=kwargs.get('veo_model_order', 'veo3-fast'),
             use_whisper=False,  # Deprecated - always use our known text
             business_name=kwargs.get('business_name'),
             business_address=kwargs.get('business_address'),
@@ -221,6 +221,10 @@ add_theme_commands(cli)
 # Add character reference commands
 from src.cli.character_commands import add_character_commands
 add_character_commands(cli)
+
+# Add news aggregator commands
+from src.news_aggregator.cli_integration import add_news_commands
+add_news_commands(cli)
 
 if __name__ == '__main__':
     cli() 

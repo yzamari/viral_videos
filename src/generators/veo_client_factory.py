@@ -28,10 +28,11 @@ except ImportError:
     except ImportError:
         # Fallback settings if config not available
         class Settings:
+            disable_veo2 = True  # VEO-2 disabled by default
             disable_veo3 = False  # VEO-3 enabled by default
             prefer_veo2_over_veo3 = False
             prefer_veo3_fast = True  # Always prefer VEO-3 fast for cost savings
-            veo_model_preference_order = "veo3-fast,veo3,veo2"  # VEO-3 fast first
+            veo_model_preference_order = "veo3-fast"  # Only VEO-3 fast allowed
         
         # Simple logger fallback
         import logging
@@ -70,6 +71,7 @@ class VeoClientFactory:
         logger.info(f"   Project: {self.project_id}")
         logger.info(f"   Location: {self.location}")
         logger.info(f"   GCS Bucket: {self.gcs_bucket}")
+        logger.info(f"   VEO2 Disabled: {'✅ YES' if hasattr(self.settings, 'disable_veo2') and self.settings.disable_veo2 else '❌ NO'}")
         logger.info(f"   VEO3 Disabled: {'✅ YES' if self.settings.disable_veo3 else '❌ NO'}")
         logger.info(f"   Prefer VEO2: {'✅ YES' if self.settings.prefer_veo2_over_veo3 else '❌ NO'}")
         logger.info(f"   Model Preference Order: {self.settings.veo_model_preference_order}")
@@ -94,8 +96,13 @@ class VeoClientFactory:
 
         # CRITICAL: Check if VEO3 is disabled
         if model == VeoModel.VEO3 and self.settings.disable_veo3:
-            logger.info("🚫 VEO3 is disabled in configuration, forcing VEO2")
-            model = VeoModel.VEO2
+            logger.info("🚫 VEO3 is disabled in configuration, forcing VEO3-fast")
+            model = VeoModel.VEO3_FAST
+            
+        # CRITICAL: Check if VEO2 is disabled
+        if model == VeoModel.VEO2 and hasattr(self.settings, 'disable_veo2') and self.settings.disable_veo2:
+            logger.info("🚫 VEO2 is disabled in configuration, forcing VEO3-fast")
+            model = VeoModel.VEO3_FAST
 
         # Create cache key
         cache_key = f"{model.value}_{output_dir}"
@@ -110,8 +117,13 @@ class VeoClientFactory:
 
         # Create new client
         if model == VeoModel.VEO2:
+            # Double check VEO2 is not disabled
+            if hasattr(self.settings, 'disable_veo2') and self.settings.disable_veo2:
+                logger.warning("🚫 VEO2 requested but disabled, falling back to VEO3-fast")
+                return self.create_client(VeoModel.VEO3_FAST, output_dir)
+                
             try:
-                from src.generators.vertex_ai_veo2_client import VertexAIVeo2Client
+                from src.generators.vertex_ai_veo2_client import VertexAiVeo2Client
             except ImportError:
                 from generators.vertex_ai_veo2_client import VertexAIVeo2Client
 
@@ -124,8 +136,8 @@ class VeoClientFactory:
         elif model == VeoModel.VEO3:
             # Double check VEO3 is not disabled
             if self.settings.disable_veo3:
-                logger.warning("🚫 VEO3 requested but disabled, falling back to VEO2")
-                return self.create_client(VeoModel.VEO2, output_dir)
+                logger.warning("🚫 VEO3 requested but disabled, falling back to VEO3-fast")
+                return self.create_client(VeoModel.VEO3_FAST, output_dir)
                 
             try:
                 from src.generators.vertex_veo3_client import VertexAIVeo3Client
@@ -196,6 +208,11 @@ class VeoClientFactory:
                     logger.debug(f"🚫 Skipping {model_name} - VEO3 is disabled")
                     continue
                 
+                # Skip VEO2 models if disabled
+                if model_enum == VeoModel.VEO2 and hasattr(self.settings, 'disable_veo2') and self.settings.disable_veo2:
+                    logger.debug(f"🚫 Skipping {model_name} - VEO2 is disabled")
+                    continue
+                
                 try:
                     client = self.create_client(model_enum, output_dir)
                     if hasattr(client, 'is_available') and client.is_available:
@@ -220,13 +237,16 @@ class VeoClientFactory:
         """Get list of available VEO models"""
         available_models = []
 
-        # Test VEO-2
-        try:
-            veo2_client = self.create_client(VeoModel.VEO2, "/tmp")
-            if hasattr(veo2_client, 'is_available') and veo2_client.is_available:
-                available_models.append(VeoModel.VEO2)
-        except Exception as e:
-            logger.debug(f"VEO-2 not available: {e}")
+        # Test VEO-2 only if not disabled
+        if not (hasattr(self.settings, 'disable_veo2') and self.settings.disable_veo2):
+            try:
+                veo2_client = self.create_client(VeoModel.VEO2, "/tmp")
+                if hasattr(veo2_client, 'is_available') and veo2_client.is_available:
+                    available_models.append(VeoModel.VEO2)
+            except Exception as e:
+                logger.debug(f"VEO-2 not available: {e}")
+        else:
+            logger.info("🚫 VEO-2 disabled in configuration")
 
         # Test VEO-3 only if not disabled
         if not self.settings.disable_veo3:
@@ -238,6 +258,15 @@ class VeoClientFactory:
                 logger.debug(f"VEO-3 not available: {e}")
         else:
             logger.info("🚫 VEO-3 disabled in configuration")
+            
+        # Test VEO-3-fast only if VEO3 is not disabled
+        if not self.settings.disable_veo3:
+            try:
+                veo3_fast_client = self.create_client(VeoModel.VEO3_FAST, "/tmp")
+                if hasattr(veo3_fast_client, 'is_available') and veo3_fast_client.is_available:
+                    available_models.append(VeoModel.VEO3_FAST)
+            except Exception as e:
+                logger.debug(f"VEO-3-fast not available: {e}")
 
         return available_models
 

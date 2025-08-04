@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
+from datetime import datetime
 from ..models.content_models import ContentItem, NewsSource
 
 
