@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import aiohttp
 
 from ...utils.logging_config import get_logger
-from ..models.content_models import ContentItem, NewsSource, MediaAsset, AssetType, ContentStatus
+from ..models.content_models import ContentItem, NewsSource, MediaAsset, AssetType, ContentStatus, SourceType, ScrapingConfig
 from .web_scraper import WebNewsScraper
 
 logger = get_logger(__name__)
@@ -172,25 +172,116 @@ class RotterScraper(IsraeliNewsScraper):
     
     async def scrape_rotter_scoops(self) -> List[ContentItem]:
         """Scrape Rotter scoops section"""
-        source = NewsSource(
-            id="rotter_scoops",
-            name="Rotter Scoops",
-            source_type=SourceType.WEB,
-            url="https://rotter.net/scoops",
-            scraping_config=ScrapingConfig(max_items=15)
-        )
+        # For Rotter, we'll bypass the web_scraper issue by directly fetching
+        import aiohttp
+        import ssl
+        import certifi
+        from bs4 import BeautifulSoup
         
-        # Rotter often has gossip and political scoops
-        articles = await self.scrape_with_scoring(source)
+        url = "https://rotter.net/scoopscache.html"
         
-        # Boost scores for exclusive/scoop content
-        for article in articles:
-            if any(word in article.title for word in ["בלעדי", "חשיפה", "דחוף"]):
-                article.metadata["interest_score"] = min(
-                    article.metadata.get("interest_score", 0) + 0.3, 1.0
-                )
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"RotterScraper: Directly scraping {url}")
         
-        return articles
+        articles = []
+        
+        try:
+            # Create SSL context
+            ssl_context = ssl.create_default_context(cafile=certifi.where())
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+            
+            connector = aiohttp.TCPConnector(ssl=ssl_context)
+            async with aiohttp.ClientSession(connector=connector) as session:
+                async with session.get(url, headers=headers, timeout=30) as response:
+                    if response.status == 200:
+                        html = await response.text()
+                        soup = BeautifulSoup(html, 'html.parser')
+                        
+                        # Parse Rotter scoops
+                        rows = soup.select('table tbody tr')
+                        
+                        for row in rows[:15]:  # Limit to 15 items
+                            try:
+                                # Extract title
+                                title_elem = row.select_one('td font[size="3"] b')
+                                if not title_elem:
+                                    continue
+                                    
+                                title = title_elem.get_text(strip=True)
+                                
+                                # Extract content
+                                content_elem = row.select('td')[1] if len(row.select('td')) > 1 else None
+                                content = content_elem.get_text(strip=True) if content_elem else ""
+                                
+                                # Extract URL
+                                link_elem = row.select_one('a[href*="scoops"]')
+                                article_url = f"https://rotter.net{link_elem['href']}" if link_elem and 'href' in link_elem.attrs else url
+                                
+                                # Create ContentItem
+                                from ..models.content_models import ContentItem, NewsSource, SourceType, ContentStatus
+                                source = NewsSource(
+                                    id="rotter_scoops",
+                                    name="Rotter Scoops",
+                                    source_type=SourceType.WEB,
+                                    url=url
+                                )
+                                
+                                article = ContentItem(
+                                    id=f"rotter_{len(articles)}",
+                                    source=source,
+                                    title=title,
+                                    content=content,
+                                    url=article_url,
+                                    media_assets=[],
+                                    published_date=datetime.now(),
+                                    language='he',
+                                    categories=['gossip', 'politics'],
+                                    status=ContentStatus.SCRAPED,
+                                    metadata={}
+                                )
+                                
+                                # Add humor and interest scores
+                                article.metadata["humor_score"] = self._calculate_humor_score(article)
+                                article.metadata["interest_score"] = self._calculate_interest_score(article)
+                                article.metadata["is_bizarre"] = self._is_bizarre_news(article)
+                                
+                                # Boost scores for exclusive/scoop content
+                                if any(word in title for word in ["בלעדי", "חשיפה", "דחוף"]):
+                                    article.metadata["interest_score"] = min(
+                                        article.metadata.get("interest_score", 0) + 0.3, 1.0
+                                    )
+                                
+                                articles.append(article)
+                                
+                            except Exception as e:
+                                logger.warning(f"Failed to parse Rotter article: {e}")
+                                continue
+                        
+                        logger.info(f"✅ Scraped {len(articles)} articles from Rotter")
+                    else:
+                        logger.error(f"Failed to fetch Rotter: Status {response.status}")
+                        
+        except Exception as e:
+            logger.error(f"Failed to scrape Rotter: {e}")
+        
+        # Sort by combined score
+        articles.sort(key=lambda x: (
+            x.metadata.get("interest_score", 0) + 
+            x.metadata.get("humor_score", 0)
+        ), reverse=True)
+        
+        return articles[:15]  # Return top 15
+    
+    async def scrape_with_scoring(self, source: NewsSource) -> List[ContentItem]:
+        """Override to avoid the web_scraper issue"""
+        # For Rotter, we handle everything in scrape_rotter_scoops
+        return await self.scrape_rotter_scoops()
     
     async def _extract_articles(
         self, 
