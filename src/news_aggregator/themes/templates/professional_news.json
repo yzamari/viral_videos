@@ -1,0 +1,96 @@
+{
+  "name": "Professional News",
+  "style": {
+    "colors": {
+      "primary": "#1E3A8A",
+      "secondary": "#3B82F6",
+      "accent": "#EF4444",
+      "text": "#FFFFFF",
+      "background": "#000000",
+      "ticker_bg": "#1E3A8A",
+      "ticker_text": "#FFFFFF"
+    },
+    "fonts": {
+      "headline": {
+        "family": "Arial",
+        "size": 56,
+        "weight": "bold",
+        "color": "#FFFFFF"
+      },
+      "subtitle": {
+        "family": "Arial",
+        "size": 32,
+        "weight": "normal",
+        "color": "#FFFFFF"
+      },
+      "ticker": {
+        "family": "Arial",
+        "size": 24,
+        "weight": "normal",
+        "color": "#FFFFFF"
+      },
+      "timestamp": {
+        "family": "Arial",
+        "size": 20,
+        "weight": "normal",
+        "color": "#CCCCCC"
+      }
+    },
+    "overlays": {
+      "lower_third": "themes/assets/professional_lower_third.png",
+      "breaking_news": "themes/assets/breaking_news_banner.png",
+      "logo": "themes/assets/news_logo.png",
+      "ticker_bg": "themes/assets/ticker_background.png"
+    }
+  },
+  "layout": {
+    "headline_position": {
+      "x": 100,
+      "y": 100,
+      "anchor": "top-left"
+    },
+    "subtitle_position": {
+      "x": 960,
+      "y": 920,
+      "anchor": "center"
+    },
+    "ticker_position": {
+      "x": 0,
+      "y": 1000,
+      "anchor": "bottom-left"
+    },
+    "logo_position": {
+      "x": 1820,
+      "y": 100,
+      "anchor": "top-right"
+    },
+    "timestamp_position": {
+      "x": 100,
+      "y": 980,
+      "anchor": "bottom-left"
+    },
+    "ticker_enabled": true,
+    "ticker_height": 80,
+    "presenter_enabled": true,
+    "presenter_position": {
+      "x": 1520,
+      "y": 780,
+      "anchor": "bottom-right"
+    },
+    "presenter_size": {
+      "width": 400,
+      "height": 400
+    }
+  },
+  "audio": {
+    "background_music": "themes/audio/professional_news_theme.mp3",
+    "music_volume": 0.3,
+    "transition_sound": "themes/audio/swoosh.mp3",
+    "breaking_news_sound": "themes/audio/breaking_news.mp3"
+  },
+  "metadata": {
+    "author": "ViralAI",
+    "version": "1.0",
+    "description": "Professional news channel theme with blue color scheme"
+  }
+}

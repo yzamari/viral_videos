@@ -1,0 +1,70 @@
+{
+  "name": "Hebrew News Channel",
+  "style": {
+    "colors": {
+      "primary": "#0038A8",
+      "secondary": "#FFFFFF",
+      "accent": "#D4AF37",
+      "text": "#FFFFFF",
+      "background": "#000033"
+    },
+    "fonts": {
+      "headline": {
+        "family": "Arial Hebrew",
+        "size": 52,
+        "weight": "bold",
+        "color": "#FFFFFF"
+      },
+      "subtitle": {
+        "family": "Arial Hebrew",
+        "size": 30,
+        "weight": "normal",
+        "color": "#D4AF37"
+      }
+    },
+    "overlays": {
+      "lower_third": "themes/assets/hebrew_lower_third.png",
+      "logo": "themes/assets/hebrew_news_logo.png"
+    }
+  },
+  "layout": {
+    "headline_position": {
+      "x": 1820,
+      "y": 100,
+      "anchor": "top-right"
+    },
+    "subtitle_position": {
+      "x": 1820,
+      "y": 920,
+      "anchor": "bottom-right"
+    },
+    "logo_position": {
+      "x": 100,
+      "y": 100,
+      "anchor": "top-left"
+    },
+    "ticker_enabled": true,
+    "ticker_position": {
+      "x": 1920,
+      "y": 1000,
+      "anchor": "bottom-right"
+    },
+    "ticker_rtl": true,
+    "presenter_enabled": true,
+    "presenter_position": {
+      "x": 400,
+      "y": 780,
+      "anchor": "bottom-left"
+    }
+  },
+  "audio": {
+    "background_music": "themes/audio/hebrew_news_theme.mp3",
+    "music_volume": 0.25
+  },
+  "metadata": {
+    "author": "ViralAI",
+    "version": "1.0",
+    "description": "Hebrew news theme with RTL support",
+    "rtl": true
+  }
+}

@@ -15,9 +15,9 @@ from ...ai.manager import AIServiceManager
 from ...ai.interfaces.base import AIServiceType
 from ...core.decision_framework import DecisionFramework, CoreDecisions, Decision, DecisionSource
 from ...models.video_models import Platform, VideoCategory, Language
-# from ...generators.subtitle_generator import SubtitleGenerator  # TODO: Fix import
-# from ...infrastructure.services.existing_video_generation_service import ExistingVideoGenerationService  # TODO: Fix import
-# from ...infrastructure.services.existing_audio_generation_service import ExistingAudioGenerationService  # TODO: Fix import
+from ...utils.audio_first_subtitle_generator import AudioFirstSubtitleGenerator as SubtitleGenerator
+from ...infrastructure.services.existing_video_generation_service import ExistingVideoGenerationService
+from ...infrastructure.services.existing_audio_generation_service import ExistingAudioGenerationService
 from ...config.video_config import video_config
 
 logger = get_logger(__name__)
@@ -30,21 +30,20 @@ class ViralAIBridge:
         self,
         session_manager: Optional[SessionManager] = None,
         ai_manager: Optional[AIServiceManager] = None,
-        output_dir: str = "outputs/news_videos"
+        output_dir: str = "outputs/news_videos",
+        decision_framework: Optional[DecisionFramework] = None
     ):
         # Initialize managers
         self.session_manager = session_manager or SessionManager(base_output_dir=output_dir)
         self.ai_manager = ai_manager or AIServiceManager()
-        self.decision_framework = DecisionFramework()
+        self.decision_framework = decision_framework
         
         # Initialize services
         self.video_service = ExistingVideoGenerationService(
-            ai_manager=self.ai_manager,
-            decision_framework=self.decision_framework
+            output_base_path=output_dir
         )
         self.audio_service = ExistingAudioGenerationService(
-            ai_manager=self.ai_manager,
-            decision_framework=self.decision_framework
+            output_base_path=output_dir
         )
         self.subtitle_generator = SubtitleGenerator()
         

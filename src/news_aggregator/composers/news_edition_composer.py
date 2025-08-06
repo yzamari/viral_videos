@@ -10,7 +10,8 @@ from ...utils.logging_config import get_logger
 from ...utils.session_manager import SessionManager
 from ...ai.manager import AIServiceManager
 from ...core.decision_framework import DecisionFramework, CoreDecisions
-from ...agents.discussions.professional_panel import get_professional_discussions
+# from ...agents.discussions.professional_panel import get_professional_discussions
+# TODO: Fix missing module
 from ...models.video_models import Platform, VideoCategory, Language
 from ..models.content_models import ContentItem, ContentCollection
 from ..models.composition_models import CompositionProject, VideoSegment, VideoLayer

@@ -1,0 +1,13 @@
+{
+  "name": "www.sport5.co.il",
+  "base_url": "https://www.sport5.co.il",
+  "language": "en",
+  "selectors": {
+    "article_container": "article, div.article, div.post, div.news-item",
+    "title": "h1, h2, h3, .title, .headline",
+    "url": "a[href]",
+    "description": "p, .summary, .excerpt",
+    "image": "img",
+    "video": "video, iframe[src*=\"video\"]"
+  }
+}

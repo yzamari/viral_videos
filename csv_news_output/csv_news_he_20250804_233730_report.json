@@ -1,0 +1,34 @@
+{
+  "video_path": "/Users/yahavzamari/viralAi/csv_news_output/csv_news_he_20250804_233730.mp4",
+  "created": "2025-08-04T23:37:48.870309",
+  "article_count": 3,
+  "articles": [
+    {
+      "title": "רעידת אדמה 4.2: הבניינים רועדים, הפוליטיקאים לא",
+      "source": "וואלה! סאטירה",
+      "category": "חדשות",
+      "duration": 6.8,
+      "has_image": true,
+      "has_video": false,
+      "priority": 10
+    },
+    {
+      "title": "טנק נעלם - צה״ל: 'הוא בחופשה'",
+      "source": "צבא קומי",
+      "category": "ביטחון",
+      "duration": 6.233333333333334,
+      "has_image": false,
+      "has_video": false,
+      "priority": 10
+    },
+    {
+      "title": "הכל בשליטה - אזרחים: 'של מי?'",
+      "source": "פוליטי צוחק",
+      "category": "פוליטיקה",
+      "duration": 6.233333333333334,
+      "has_image": false,
+      "has_video": false,
+      "priority": 10
+    }
+  ]
+}

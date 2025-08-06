@@ -12,6 +12,8 @@ import json
 import os
 import re
 from datetime import datetime
+import ssl
+import certifi
 
 
 class ScraperConfig:
@@ -20,13 +22,14 @@ class ScraperConfig:
     def __init__(self, config_dict: Dict):
         self.name = config_dict['name']
         self.base_url = config_dict['base_url']
-        self.selectors = config_dict['selectors']
+        self.selectors = config_dict.get('selectors', {})
         self.patterns = config_dict.get('patterns', {})
         self.headers = config_dict.get('headers', {})
         self.encoding = config_dict.get('encoding', 'utf-8')
         self.language = config_dict.get('language', 'en')
         self.category_mapping = config_dict.get('category_mapping', {})
         self.media_extraction = config_dict.get('media_extraction', {})
+        self.fallback_content = config_dict.get('fallback_content', [])
 
 
 class UniversalNewsScraper:
@@ -71,7 +74,27 @@ class UniversalNewsScraper:
         
         articles = []
         
-        async with aiohttp.ClientSession() as session:
+        # Check if this is a fallback content config (for testing/demo)
+        if hasattr(config, 'fallback_content') and config.fallback_content:
+            print(f"  💡 Using fallback content for {config.name}")
+            for item in config.fallback_content:
+                articles.append({
+                    'title': item.get('title', ''),
+                    'description': item.get('description', ''),
+                    'url': config.base_url,
+                    'images': [],
+                    'videos': [],
+                    'category': 'news'
+                })
+            print(f"  ✅ Found {len(articles)} fallback articles from {config.name}")
+            return articles
+        
+        # Create SSL context - disable verification for problematic sites
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
+        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=ssl_context)) as session:
             try:
                 # Add default headers if not specified
                 headers = {
@@ -88,8 +111,16 @@ class UniversalNewsScraper:
                         articles = self._extract_articles(soup, config, max_items)
                         
                         print(f"  ✅ Found {len(articles)} articles from {config.name}")
+                        if len(articles) == 0:
+                            # Debug: Show what containers were found
+                            containers = soup.select(config.selectors.get('article_container', ''))
+                            print(f"  🔍 Debug: Found {len(containers)} article containers with selector '{config.selectors.get('article_container', '')}'")
+                            if len(containers) > 0:
+                                print(f"  🔍 First container HTML: {str(containers[0])[:200]}...")
                     else:
                         print(f"  ❌ Failed to fetch {config.name}: Status {response.status}")
+                        if response.status == 403:
+                            print(f"  💡 Try updating headers in {config.name.lower()}.json config file")
                         
             except Exception as e:
                 print(f"  ❌ Error scraping {config.name}: {e}")
@@ -241,6 +272,142 @@ class UniversalNewsScraper:
     def _validate_article(self, article: Dict) -> bool:
         """Validate that article has minimum required fields"""
         return bool(article.get('title') and len(article.get('title', '')) > 10)
+    
+    async def scrape(self, source, hours_back: int = 24) -> List:
+        """Scrape method to match the expected interface"""
+        from ..models.content_models import ContentItem, MediaAsset, AssetType, ContentStatus
+        
+        # Determine site_id from URL
+        site_id = None
+        if "ynet" in source.url.lower():
+            site_id = "ynet"
+        elif "rotter" in source.url.lower():
+            site_id = "rotter"
+        elif "mako" in source.url.lower():
+            site_id = "mako"
+        elif "sport5" in source.url.lower():
+            site_id = "sport5"
+        elif "cnn" in source.url.lower():
+            site_id = "cnn"
+        elif "i24" in source.url.lower():
+            site_id = "i24news"
+        
+        if not site_id or site_id not in self.configs:
+            # Try to scrape as generic website
+            return await self._scrape_generic_website(source, hours_back)
+        
+        # Use configured scraper
+        articles_data = await self.scrape_website(site_id, max_items=20)
+        
+        # Convert to ContentItem format
+        content_items = []
+        for data in articles_data:
+            media_assets = []
+            
+            # Add image assets
+            for img in data.get('images', []):
+                media_assets.append(MediaAsset(
+                    id=f"img_{len(media_assets)}",
+                    asset_type=AssetType.IMAGE,
+                    source_url=img
+                ))
+            
+            # Add video assets
+            for vid in data.get('videos', []):
+                media_assets.append(MediaAsset(
+                    id=f"vid_{len(media_assets)}",
+                    asset_type=AssetType.VIDEO,
+                    source_url=vid
+                ))
+            
+            content_item = ContentItem(
+                id=f"{site_id}_{datetime.now().timestamp()}_{len(content_items)}",
+                source=source,
+                title=data.get('title', ''),
+                content=data.get('description', ''),
+                url=data.get('url', ''),
+                media_assets=media_assets,
+                published_date=datetime.now(),
+                language=self.configs[site_id].language if site_id in self.configs else 'en',
+                categories=[data.get('category', 'general')],
+                status=ContentStatus.SCRAPED,
+                metadata=data
+            )
+            content_items.append(content_item)
+        
+        return content_items
+    
+    async def _scrape_generic_website(self, source, hours_back: int) -> List:
+        """Fallback generic website scraping"""
+        from ..models.content_models import ContentItem, ContentStatus
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        logger.warning(f"No specific configuration for {source.url}, attempting generic scraping")
+        
+        # For now, return empty list - you can implement generic scraping logic here
+        return []
+    
+    async def _scrape_url(self, url: str, site_id: str) -> Optional[Dict]:
+        """Scrape a specific URL using the site configuration"""
+        if site_id not in self.configs:
+            return None
+        
+        config = self.configs[site_id]
+        
+        # Create SSL context - disable verification for problematic sites
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
+        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=ssl_context)) as session:
+            try:
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    **config.headers
+                }
+                
+                async with session.get(url, headers=headers) as response:
+                    if response.status == 200:
+                        html = await response.text()
+                        soup = BeautifulSoup(html, 'html.parser')
+                        
+                        # Extract data using configured selectors
+                        article = {
+                            'url': url,
+                            'title': '',
+                            'description': '',
+                            'content': '',
+                            'media_url': None
+                        }
+                        
+                        # Extract title
+                        title_elem = soup.select_one(config.selectors.get('title', 'h1'))
+                        if title_elem:
+                            article['title'] = title_elem.get_text(strip=True)
+                        
+                        # Extract description/content
+                        desc_selector = config.selectors.get('description', 'p')
+                        desc_elems = soup.select(desc_selector)
+                        if desc_elems:
+                            article['description'] = ' '.join([elem.get_text(strip=True) for elem in desc_elems[:3]])
+                            article['content'] = ' '.join([elem.get_text(strip=True) for elem in desc_elems])
+                        
+                        # Extract first image
+                        img_selector = config.media_extraction.get('image_selector', 'img')
+                        img_elem = soup.select_one(img_selector)
+                        if img_elem:
+                            src = img_elem.get('src') or img_elem.get('data-src')
+                            if src:
+                                if not src.startswith('http'):
+                                    src = config.base_url.rstrip('/') + '/' + src.lstrip('/')
+                                article['media_url'] = src
+                        
+                        return article
+                        
+            except Exception as e:
+                print(f"Error scraping URL {url}: {e}")
+                return None
 
 
 # Pre-configured website configurations

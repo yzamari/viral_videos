@@ -7,6 +7,9 @@ from .interfaces.base import AIServiceType
 from .config import AIConfiguration
 from .interfaces.base import AIService, AIProvider
 from .interfaces.text_generation import TextGenerationService
+from ..utils.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 T = TypeVar('T', bound=AIService)
 
@@ -48,6 +51,25 @@ class AIServiceManager:
         # Cache and return
         self._services[cache_key] = service
         return service
+    
+    async def generate_content_async(self, prompt: str, max_tokens: int = 1000, temperature: float = 0.7) -> str:
+        """Helper method for backward compatibility with generate_content_async"""
+        try:
+            text_service = self.get_text_service()
+            from .interfaces.text_generation import TextGenerationRequest
+            
+            request = TextGenerationRequest(
+                prompt=prompt,
+                max_tokens=max_tokens,
+                temperature=temperature
+            )
+            
+            response = await text_service.generate(request)
+            return response.text
+        except Exception as e:
+            # Fallback for when AI service is not available
+            logger.warning(f"AI service unavailable: {e}")
+            return ""
     
     def set_fallback_chain(self, 
                           service_type: AIServiceType, 

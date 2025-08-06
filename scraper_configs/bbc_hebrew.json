@@ -1,0 +1,17 @@
+{
+  "name": "BBC Hebrew",
+  "base_url": "https://www.bbc.com/hebrew",
+  "language": "he",
+  "selectors": {
+    "article_container": "article, div.media__content",
+    "title": "h2, h3.media__title",
+    "url": "a[href]",
+    "description": ".media__summary",
+    "author": ".byline",
+    "date": "time"
+  },
+  "media_extraction": {
+    "image_selector": "img.media__image, img[src*=\"bbc\"]",
+    "video_selector": "video, div.media-player"
+  }
+}

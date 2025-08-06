@@ -1,0 +1,13 @@
+{
+  "name": "i24NEWS",
+  "base_url": "https://www.i24news.tv/en",
+  "language": "en",
+  "selectors": {
+    "article_container": "article, div.article-item",
+    "title": "h2, h3, .article-title",
+    "url": "a[href]",
+    "description": ".article-summary",
+    "image": "img.article-image",
+    "video": "video, .video-player"
+  }
+}

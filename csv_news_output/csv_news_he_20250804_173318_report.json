@@ -1,0 +1,52 @@
+{
+  "video_path": "/Users/yahavzamari/viralAi/csv_news_output/csv_news_he_20250804_173318.mp4",
+  "created": "2025-08-04T17:33:42.201413",
+  "article_count": 5,
+  "articles": [
+    {
+      "title": "רעידת אדמה בעוצמה 5.2 הורגשה בצפון הארץ",
+      "source": "חדשות 12",
+      "category": "חדשות",
+      "duration": 14.399999999999999,
+      "has_image": false,
+      "has_video": false,
+      "priority": 9
+    },
+    {
+      "title": "Breaking: Major Tech Company Announces Layoffs",
+      "source": "TechCrunch",
+      "category": "tech",
+      "duration": 14.399999999999999,
+      "has_image": false,
+      "has_video": false,
+      "priority": 8
+    },
+    {
+      "title": "הממשלה אישרה תוכנית כלכלית חדשה",
+      "source": "כלכליסט",
+      "category": "כלכלה",
+      "duration": 14.399999999999999,
+      "has_image": false,
+      "has_video": false,
+      "priority": 7
+    },
+    {
+      "title": "מכבי תל אביב ניצחה 3-1 את הפועל",
+      "source": "ספורט 5",
+      "category": "ספורט",
+      "duration": 10.8,
+      "has_image": false,
+      "has_video": false,
+      "priority": 6
+    },
+    {
+      "title": "מזג האוויר: גשם כבד צפוי בסוף השבוע",
+      "source": "השירות המטאורולוגי",
+      "category": "מזג אוויר",
+      "duration": 10.8,
+      "has_image": false,
+      "has_video": false,
+      "priority": 5
+    }
+  ]
+}

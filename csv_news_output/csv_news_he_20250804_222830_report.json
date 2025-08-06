@@ -1,0 +1,97 @@
+{
+  "video_path": "/Users/yahavzamari/viralAi/csv_news_output/csv_news_he_20250804_222830.mp4",
+  "created": "2025-08-04T22:28:53.825279",
+  "article_count": 10,
+  "articles": [
+    {
+      "title": "רעידת אדמה 4.2: הבניינים רועדים, הפוליטיקאים לא",
+      "source": "וואלה! סאטירה",
+      "category": "חדשות",
+      "duration": 7.199999999999999,
+      "has_image": true,
+      "has_video": false,
+      "priority": 10
+    },
+    {
+      "title": "צה״ל מכחיש: 'לא איבדנו טנק, הוא פשוט יצא לחופשה'",
+      "source": "במחנה הקומי",
+      "category": "ביטחון",
+      "duration": 7.199999999999999,
+      "has_image": false,
+      "has_video": false,
+      "priority": 10
+    },
+    {
+      "title": "ראש הממשלה: 'הכל בשליטה' - האזרחים מחפשים את השלט",
+      "source": "מעריב צוחק",
+      "category": "פוליטיקה",
+      "duration": 7.199999999999999,
+      "has_image": true,
+      "has_video": false,
+      "priority": 10
+    },
+    {
+      "title": "משרד האוצר: 'המצב הכלכלי מצוין' - האזרחים: 'גם לנו יש חוש הומור'",
+      "source": "כלכליסט צוחק",
+      "category": "כלכלה",
+      "duration": 5.4,
+      "has_image": false,
+      "has_video": false,
+      "priority": 9
+    },
+    {
+      "title": "הייטק ישראלי: סטארטאפ גייס 100 מיליון דולר למוצר שעוד לא קיים",
+      "source": "גיקטיים",
+      "category": "טכנולוגיה",
+      "duration": 5.4,
+      "has_image": false,
+      "has_video": false,
+      "priority": 9
+    },
+    {
+      "title": "ארה״ב: הבחירות יהיו הוגנות - המפסיד: 'לא אם אני אפסיד'",
+      "source": "אמריקה משועשעת",
+      "category": "בינלאומי",
+      "duration": 5.4,
+      "has_image": false,
+      "has_video": false,
+      "priority": 9
+    },
+    {
+      "title": "בלעדי: נהגי אוטובוס מאיימים לנהוג בנימוס",
+      "source": "רוטר בדיחות",
+      "category": "תחבורה",
+      "duration": 5.4,
+      "has_image": false,
+      "has_video": false,
+      "priority": 8
+    },
+    {
+      "title": "פעילות רוסית חריגה בכור: 'זה סתם תרגיל אביב'",
+      "source": "ביטחון בינלאומי קומי",
+      "category": "בינלאומי",
+      "duration": 5.4,
+      "has_image": true,
+      "has_video": false,
+      "priority": 8
+    },
+    {
+      "title": "מזג האוויר: גשם צפוי - הממשלה מבטיחה מטריות",
+      "source": "חדשות סרקסטיות",
+      "category": "מזג אוויר",
+      "duration": 5.4,
+      "has_image": true,
+      "has_video": false,
+      "priority": 7
+    },
+    {
+      "title": "תל אביב: חניה חינם למי שיוכיח שהוא לא מתל אביב",
+      "source": "תל אביב הא!",
+      "category": "עירוני",
+      "duration": 5.4,
+      "has_image": true,
+      "has_video": false,
+      "priority": 6
+    }
+  ]
+}

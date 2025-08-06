@@ -15,6 +15,8 @@ from .scrapers.social_media_scraper import SocialMediaScraper
 from .processors.content_analyzer import ContentAnalyzer
 from .processors.news_grouper import NewsGrouper
 from .processors.media_downloader import MediaDownloader
+from ..ai.manager import AIServiceManager
+from ..core.decision_framework import DecisionFramework
 
 from .composers.news_edition_composer import NewsEditionComposer
 from .composers.scraped_media_composer import ScrapedMediaComposer
@@ -30,9 +32,16 @@ class ScrapedMediaNewsAggregator:
     def __init__(self):
         self.session_manager = SessionManager()
         self.media_downloader = MediaDownloader()
-        self.content_analyzer = ContentAnalyzer()
-        self.news_grouper = NewsGrouper()
-        self.edition_composer = NewsEditionComposer()
+        self.ai_manager = AIServiceManager()
+        self.decision_framework = DecisionFramework()
+        self.content_analyzer = ContentAnalyzer(self.ai_manager)
+        self.news_grouper = NewsGrouper(self.ai_manager)
+        self.edition_composer = NewsEditionComposer(
+            self.session_manager,
+            self.ai_manager,
+            self.decision_framework,
+            self.media_downloader
+        )
         self.scraped_media_composer = ScrapedMediaComposer(
             self.session_manager,
             self.media_downloader

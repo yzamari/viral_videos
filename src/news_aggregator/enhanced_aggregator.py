@@ -348,9 +348,24 @@ class EnhancedNewsAggregator:
     async def _scrape_known_source(self, source_name: str, hours_back: int = 24) -> List[Dict[str, Any]]:
         """Scrape from a known source by name using config files"""
         # Look up the source in the universal scraper configs
+        logger.info(f"🔍 Looking for source config: {source_name.lower()}")
+        logger.info(f"📋 Available configs: {list(self.universal_scraper.configs.keys())}")
+        
         if source_name.lower() in self.universal_scraper.configs:
             config = self.universal_scraper.configs[source_name.lower()]
-            return await self._scrape_url(config.base_url, hours_back)
+            logger.info(f"✅ Found config for {source_name}, scraping {config.base_url}")
+            # Use universal scraper directly instead of _scrape_url to avoid double processing
+            articles = await self.universal_scraper.scrape_website(source_name.lower(), max_items=20)
+            # Convert to dict format
+            return [{
+                'title': article.get('title', ''),
+                'content': article.get('description', ''),
+                'url': article.get('url', config.base_url),
+                'source': config.name,
+                'images': article.get('images', []),
+                'videos': article.get('videos', []),
+                'category': article.get('category', 'news')
+            } for article in articles]
         else:
             logger.warning(f"❌ Unknown source: {source_name}")
             logger.info(f"💡 Add a {source_name.lower()}.json config file to scraper_configs/ directory")

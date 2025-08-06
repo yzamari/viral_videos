@@ -2,6 +2,8 @@
 
 import aiohttp
 import asyncio
+import ssl
+import certifi
 from bs4 import BeautifulSoup
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
@@ -89,7 +91,11 @@ class WebNewsScraper(BaseScraper):
     async def validate_source(self, source: NewsSource) -> bool:
         """Check if source URL is accessible"""
         try:
-            async with aiohttp.ClientSession() as session:
+            ssl_context = ssl.create_default_context(cafile=certifi.where())
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            connector = aiohttp.TCPConnector(ssl=ssl_context)
+            async with aiohttp.ClientSession(connector=connector) as session:
                 async with session.head(source.url, timeout=10) as response:
                     return response.status == 200
         except:
@@ -108,7 +114,11 @@ class WebNewsScraper(BaseScraper):
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
         
-        async with aiohttp.ClientSession() as session:
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+        async with aiohttp.ClientSession(connector=connector) as session:
             async with session.get(url, headers=headers, timeout=30) as response:
                 response.raise_for_status()
                 return await response.text()

@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List
 
 from ..utils.logging_config import get_logger
-from ..workflows.generate_viral_video import main as generate_viral_video
+from ..workflows.generate_viral_video import async_main as generate_viral_video
 from .models.content_models import ContentItem, NewsSource, MediaAsset, AssetType, SourceType, ContentStatus
 
 logger = get_logger(__name__)
@@ -210,7 +210,7 @@ class MockNewsAggregator:
             
             # For now, we'll use the existing video generation
             # which will generate content, but we've provided context about scraped media
-            output_path = generate_viral_video(**video_params)
+            output_path = await generate_viral_video(**video_params)
             logger.info(f"✅ News edition created: {output_path}")
             return output_path
         except Exception as e:

@@ -1,0 +1,75 @@
+{
+  "name": "Modern Tech News",
+  "style": {
+    "colors": {
+      "primary": "#10B981",
+      "secondary": "#34D399",
+      "accent": "#8B5CF6",
+      "text": "#FFFFFF",
+      "background": "#111827",
+      "ticker_bg": "#1F2937",
+      "ticker_text": "#10B981"
+    },
+    "fonts": {
+      "headline": {
+        "family": "Roboto",
+        "size": 48,
+        "weight": "bold",
+        "color": "#10B981"
+      },
+      "subtitle": {
+        "family": "Roboto",
+        "size": 28,
+        "weight": "normal",
+        "color": "#FFFFFF"
+      },
+      "ticker": {
+        "family": "Roboto Mono",
+        "size": 22,
+        "weight": "normal",
+        "color": "#34D399"
+      }
+    },
+    "overlays": {
+      "lower_third": "themes/assets/tech_lower_third.png",
+      "logo": "themes/assets/tech_logo.png"
+    }
+  },
+  "layout": {
+    "headline_position": {
+      "x": 80,
+      "y": 80,
+      "anchor": "top-left"
+    },
+    "subtitle_position": {
+      "x": 80,
+      "y": 900,
+      "anchor": "bottom-left"
+    },
+    "logo_position": {
+      "x": 1840,
+      "y": 80,
+      "anchor": "top-right"
+    },
+    "ticker_enabled": false,
+    "presenter_enabled": true,
+    "presenter_position": {
+      "x": 200,
+      "y": 540,
+      "anchor": "center-left"
+    },
+    "presenter_size": {
+      "width": 300,
+      "height": 300
+    }
+  },
+  "audio": {
+    "background_music": "themes/audio/tech_ambient.mp3",
+    "music_volume": 0.2
+  },
+  "metadata": {
+    "author": "ViralAI",
+    "version": "1.0",
+    "description": "Modern tech news theme with green accent colors"
+  }
+}

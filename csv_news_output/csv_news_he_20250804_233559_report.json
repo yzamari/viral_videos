@@ -1,0 +1,88 @@
+{
+  "video_path": "/Users/yahavzamari/viralAi/csv_news_output/csv_news_he_20250804_233559.mp4",
+  "created": "2025-08-04T23:36:49.915961",
+  "article_count": 9,
+  "articles": [
+    {
+      "title": "רעידת אדמה 4.2: הבניינים רועדים, הפוליטיקאים לא",
+      "source": "וואלה! סאטירה",
+      "category": "חדשות",
+      "duration": 3.0,
+      "has_image": true,
+      "has_video": false,
+      "priority": 10
+    },
+    {
+      "title": "טנק נעלם - צה״ל: 'הוא בחופשה'",
+      "source": "צבא קומי",
+      "category": "ביטחון",
+      "duration": 3.0,
+      "has_image": false,
+      "has_video": false,
+      "priority": 10
+    },
+    {
+      "title": "הכל בשליטה - אזרחים: 'של מי?'",
+      "source": "פוליטי צוחק",
+      "category": "פוליטיקה",
+      "duration": 3.0,
+      "has_image": false,
+      "has_video": false,
+      "priority": 10
+    },
+    {
+      "title": "משרד האוצר: 'הכלכלה פורחת' - אזרחים: 'איפה?'",
+      "source": "כלכליסט צוחק",
+      "category": "כלכלה",
+      "duration": 3.0,
+      "has_image": false,
+      "has_video": false,
+      "priority": 9
+    },
+    {
+      "title": "סטארטאפ גייס 100M$ - אין מוצר",
+      "source": "גיקטיים",
+      "category": "טכנולוגיה",
+      "duration": 3.0,
+      "has_image": true,
+      "has_video": false,
+      "priority": 9
+    },
+    {
+      "title": "נהגי אוטובוס: 'ננהג בנימוס'",
+      "source": "רוטר",
+      "category": "תחבורה",
+      "duration": 3.0,
+      "has_image": false,
+      "has_video": false,
+      "priority": 8
+    },
+    {
+      "title": "צדק נעשה - הצדק: 'לא הייתי שם'",
+      "source": "משפט קומי",
+      "category": "משפט",
+      "duration": 3.0,
+      "has_image": false,
+      "has_video": false,
+      "priority": 8
+    },
+    {
+      "title": "קפה ב-20 ש״ח - 'זה בסדר'",
+      "source": "צרכנות קומית",
+      "category": "כלכלה",
+      "duration": 3.0,
+      "has_image": true,
+      "has_video": false,
+      "priority": 8
+    },
+    {
+      "title": "חינוך: 'הבגרויות קלות' - תלמידים: 'אז למה נכשלנו?'",
+      "source": "חינוך משעשע",
+      "category": "חינוך",
+      "duration": 3.0,
+      "has_image": true,
+      "has_video": false,
+      "priority": 8
+    }
+  ]
+}

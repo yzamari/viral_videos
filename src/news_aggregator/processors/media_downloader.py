@@ -114,14 +114,23 @@ class MediaDownloader:
             media_type, extension = self._detect_media_type(url)
             if not media_type:
                 logger.warning(f"Unsupported media type for URL: {url}")
-                return None
+                return {
+                    'url': url,
+                    'local_path': None,
+                    'media_type': None,
+                    'error': 'Unsupported media type'
+                }
             
             # Generate local filename
             filename = f"{url_hash}{extension}"
             local_path = os.path.join(self.cache_dir, filename)
             
-            # Download file
-            async with aiohttp.ClientSession() as session:
+            # Download file with SSL workaround for development
+            # Disable SSL for known problematic sites
+            ssl_disabled_domains = ['unsplash.com', 'ynet-pic1.yit.co.il', 'img.mako.co.il', 'sport5.co.il', 'cdn-cgi']
+            should_disable_ssl = any(domain in url for domain in ssl_disabled_domains)
+            connector = aiohttp.TCPConnector(ssl=False) if should_disable_ssl else None
+            async with aiohttp.ClientSession(connector=connector) as session:
                 async with session.get(url, timeout=60) as response:
                     response.raise_for_status()
                     
@@ -177,6 +186,18 @@ class MediaDownloader:
             if path.endswith(ext):
                 return 'audio', ext
         
+        # Special handling for common image hosting services
+        if any(host in parsed.netloc for host in ['unsplash.com', 'pexels.com', 'pixabay.com', 'imgur.com']):
+            return 'image', '.jpg'
+        
+        # Check query parameters for format hints
+        if parsed.query:
+            query_lower = parsed.query.lower()
+            if any(fmt in query_lower for fmt in ['format=jpg', 'format=jpeg', 'format=png', 'fm=jpg', 'fm=jpeg']):
+                return 'image', '.jpg'
+            elif any(fmt in query_lower for fmt in ['format=mp4', 'format=webm']):
+                return 'video', '.mp4'
+        
         # Try to guess from mimetype
         mime_type, _ = mimetypes.guess_type(url)
         if mime_type:
@@ -186,6 +207,10 @@ class MediaDownloader:
                 return 'video', '.mp4'
             elif mime_type.startswith('audio/'):
                 return 'audio', '.mp3'
+        
+        # Default to image for URLs with common image parameters
+        if any(param in url.lower() for param in ['w=', 'width=', 'h=', 'height=', 'size=', 'quality=']):
+            return 'image', '.jpg'
         
         return None, ''
     

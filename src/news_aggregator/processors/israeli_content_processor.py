@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 class IsraeliContentProcessor:
     """Process Israeli news content using existing style/tone infrastructure"""
     
-    def __init__(self, decision_framework: DecisionFramework):
+    def __init__(self, decision_framework: Optional[DecisionFramework] = None):
         self.decision_framework = decision_framework
         
         # Map content types to existing style/tone options

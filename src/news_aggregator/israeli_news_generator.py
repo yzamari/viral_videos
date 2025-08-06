@@ -10,7 +10,8 @@ from ..utils.session_manager import SessionManager
 from ..ai.manager import AIServiceManager
 from ..core.decision_framework import DecisionFramework, CoreDecisions
 from ..models.video_models import Platform, VideoCategory, Language
-from ..workflows.generate_viral_video import main as generate_viral_video
+from .composers.scraped_media_composer import ScrapedMediaComposer
+from .processors.media_downloader import MediaDownloader
 
 from .scrapers.israeli_scrapers import YnetScraper, RotterScraper
 from .processors.israeli_content_processor import IsraeliContentProcessor
@@ -34,27 +35,27 @@ class IsraeliNewsChannel:
         self.session_manager = session_manager or SessionManager(base_output_dir=output_dir)
         self.ai_manager = ai_manager or AIServiceManager()
         
-        # Create session context for decision framework
-        from ..utils.session_context import SessionContext
-        session_context = SessionContext(
-            session_id=self.session_manager.session_id,
-            output_dir=self.session_manager.session_dir
-        )
-        self.decision_framework = DecisionFramework(session_context)
+        # Decision framework will be initialized after session is created
+        self.decision_framework = None
         
         # Initialize scrapers
         self.ynet_scraper = YnetScraper()
         self.rotter_scraper = RotterScraper()
         
-        # Initialize processors
-        self.content_processor = IsraeliContentProcessor(self.decision_framework)
+        # Initialize alien presenter (doesn't need decision framework)
         self.alien = AlienPresenterGenerator()
         
         # Initialize theme manager
         self.theme_manager = ThemeManager()
         
-        # Bridge to existing infrastructure
-        self.bridge = ViralAIBridge(session_manager, ai_manager, output_dir)
+        # Initialize media components
+        self.media_downloader = MediaDownloader()
+        self.scraped_media_composer = None  # Will be initialized after session creation
+        
+        # Content processor and bridge will be initialized after session creation
+        self.content_processor = None
+        self.bridge = None
+        self.output_dir = output_dir
     
     async def create_daily_news_video(
         self,
@@ -65,6 +66,40 @@ class IsraeliNewsChannel:
         """Create daily Israeli news video with selected style"""
         
         logger.info("🎬 Starting Israeli News Video Generation")
+        
+        # Create session for this generation
+        session_id = self.session_manager.create_session(
+            mission="Israeli News Video Generation",
+            platform="youtube",
+            duration=60,  # Default duration
+            category="news"
+        )
+        
+        # Initialize decision framework now that we have a session
+        from ..utils.session_context import SessionContext
+        session_context = SessionContext(
+            session_id=session_id,
+            session_manager_instance=self.session_manager
+        )
+        self.decision_framework = DecisionFramework(session_context)
+        
+        # Re-initialize content processor with decision framework
+        self.content_processor = IsraeliContentProcessor(self.decision_framework)
+        
+        # Initialize bridge now that we have session manager and decision framework
+        self.bridge = ViralAIBridge(
+            self.session_manager, 
+            self.ai_manager, 
+            self.output_dir,
+            self.decision_framework
+        )
+        
+        # Initialize scraped media composer with session manager
+        self.scraped_media_composer = ScrapedMediaComposer(
+            self.session_manager,
+            self.media_downloader,
+            self.output_dir
+        )
         
         # 1. Scrape content from sources
         logger.info("📰 Scraping news from Ynet and Rotter...")
@@ -89,36 +124,64 @@ class IsraeliNewsChannel:
         # 4. Load Ynet-style theme
         theme = self._create_ynet_theme()
         
-        # 5. Generate video using existing infrastructure
-        logger.info("🎥 Generating video using ViralAI infrastructure...")
+        # 5. Generate video using SCRAPED MEDIA ONLY
+        logger.info("🎥 Generating video using SCRAPED MEDIA ONLY...")
+        logger.info("📸 NO VEO/AI generation - using actual media from news sources")
         
-        # Set up parameters for existing generate function
-        video_params = {
-            "mission": mission,
-            "category": "News",
-            "platform": "youtube",
-            "duration": self._calculate_duration(video_structure),
-            "style": style if style != "dark_humor" else "humorous",
-            "tone": "sarcastic" if style == "dark_humor" else "engaging",
-            "visual_style": "dynamic",
-            "languages": ["he", "en"],  # Hebrew primary, English secondary
-            "theme": "custom_ynet",
-            "discussions": "enhanced",  # Use AI agents for better content
-            "mode": "enhanced",
-            "voice": "he-IL-Standard-A",  # Hebrew male voice
-            "character": "alien_zorg" if include_alien else None,
-            "scene": "news_studio_bottom_right" if include_alien else None,
-            "veo_model_order": "veo3-fast,veo3,veo2",
-            "business_name": "חדשות עם זורג",  # News with Zorg
-            "show_business_info": False
-        }
+        # Convert articles to ContentItem format for scraped media composer
+        from ..models.content_models import ContentItem, MediaAsset, AssetType, NewsSource, SourceType
+        content_items = []
         
-        # Generate using existing workflow
-        output_path = await self._generate_with_structure(
-            video_structure,
-            video_params,
-            theme,
-            include_alien
+        for segment in video_structure["segments"]:
+            # Find the original article
+            article = next((a for a in all_articles if a.get("title") == segment["title"]), None)
+            if not article:
+                continue
+                
+            # Create NewsSource
+            source = NewsSource(
+                id=article.get("source", "ynet"),
+                name=article.get("source", "Ynet"),
+                source_type=SourceType.WEB,
+                url=article.get("url", "https://www.ynet.co.il")
+            )
+            
+            # Create MediaAssets from article media
+            media_assets = []
+            if article.get("image_url"):
+                media_assets.append(MediaAsset(
+                    id=f"img_{len(media_assets)}",
+                    asset_type=AssetType.IMAGE,
+                    source_url=article["image_url"],
+                    metadata={"alt": article.get("title", "")}
+                ))
+            if article.get("video_url"):
+                media_assets.append(MediaAsset(
+                    id=f"vid_{len(media_assets)}",
+                    asset_type=AssetType.VIDEO,
+                    source_url=article["video_url"],
+                    metadata={"title": article.get("title", "")}
+                ))
+            
+            # Create ContentItem
+            content_item = ContentItem(
+                id=f"article_{len(content_items)}",
+                source=source,
+                title=segment["title"],
+                content=segment.get("summary", ""),
+                categories=[segment.get("category", "general")],
+                media_assets=media_assets,
+                relevance_score=0.8
+            )
+            content_items.append(content_item)
+        
+        # Generate video using scraped media composer
+        duration = self._calculate_duration(video_structure)
+        output_path = await self.scraped_media_composer.create_video_from_scraped_media(
+            content_items=content_items,
+            duration_seconds=duration,
+            style="fast-paced" if style == "dark_humor" else "normal",
+            output_filename=f"israeli_news_{style}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
         )
         
         # 6. Apply Ynet overlays and final touches
@@ -231,67 +294,6 @@ class IsraeliNewsChannel:
         
         return duration
     
-    async def _generate_with_structure(
-        self,
-        video_structure: Dict[str, Any],
-        video_params: Dict[str, Any],
-        theme: Dict[str, Any],
-        include_alien: bool
-    ) -> str:
-        """Generate video using structured content"""
-        
-        # Create detailed script from structure
-        script_sections = []
-        
-        # Intro
-        intro = video_structure["intro"]
-        script_sections.append({
-            "type": "intro",
-            "text": intro["text"],
-            "duration": intro["duration"],
-            "alien_commentary": self.alien.generate_intro("חדשות ישראל היום") if include_alien else None
-        })
-        
-        # Process each segment
-        for i, segment in enumerate(video_structure["segments"]):
-            # Main content
-            script_sections.append({
-                "type": "news_segment",
-                "title": segment["title"],
-                "content": segment["summary"],
-                "duration": segment["duration"],
-                "style": segment["style"],
-                "tone": segment["tone"],
-                "media": segment["media"],
-                "alien_commentary": segment.get("alien_commentary") if include_alien else None
-            })
-            
-            # Transition
-            if segment.get("transition"):
-                script_sections.append({
-                    "type": "transition",
-                    "text": segment["transition"],
-                    "duration": 2
-                })
-        
-        # Outro
-        outro = video_structure["outro"]
-        script_sections.append({
-            "type": "outro",
-            "text": outro["text"],
-            "duration": outro["duration"],
-            "alien_commentary": self.alien.generate_outro() if include_alien else None
-        })
-        
-        # Store structure in session for processors to use
-        self.session_manager.session_data["video_structure"] = video_structure
-        self.session_manager.session_data["script_sections"] = script_sections
-        self.session_manager.session_data["theme"] = theme
-        
-        # Use existing generation with our parameters
-        output_path = generate_viral_video(**video_params)
-        
-        return output_path
     
     async def _apply_final_overlays(
         self,
