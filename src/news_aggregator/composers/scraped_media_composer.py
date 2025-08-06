@@ -921,7 +921,7 @@ class ScrapedMediaComposer:
         result = subprocess.run(cmd_copy, capture_output=True, text=True)
         
         if result.returncode != 0:
-            logger.info("Copy codec failed, re-encoding...")
+            logger.info(f"Copy codec failed: {result.stderr[:200]}... Re-encoding...")
             # Fall back to re-encoding
             cmd = [
                 "ffmpeg", "-y",
@@ -937,8 +937,9 @@ class ScrapedMediaComposer:
             
             # Add style-specific final touches
             if style == "fast-paced" or "viral" in style.lower() or "breaking" in style.lower():
-                # Modify the existing filter to include style effects  
-                cmd[-1] = f"scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,setpts=0.95*PTS,eq=contrast=1.05:saturation=1.1"
+                # Modify the existing filter to include style effects
+                # NOTE: Don't use setpts as it changes duration!
+                cmd[-1] = f"scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,eq=contrast=1.05:saturation=1.1"
             
             cmd.append(output_path)
             result = subprocess.run(cmd, capture_output=True, text=True)
