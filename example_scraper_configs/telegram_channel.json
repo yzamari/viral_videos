@@ -1,0 +1,17 @@
+{
+  "name": "Telegram Channel",
+  "base_url": "https://t.me/channel_name",
+  "language": "en",
+  "type": "telegram",
+  "selectors": {
+    "article_container": ".message, .post",
+    "title": ".message-text, .post-title",
+    "description": ".message-text, .post-content",
+    "url": "a[href]",
+    "image": "img, .photo",
+    "video": "video, .video"
+  },
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+  }
+}

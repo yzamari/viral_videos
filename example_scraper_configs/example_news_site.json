@@ -1,0 +1,16 @@
+{
+  "name": "Example News Site",
+  "base_url": "https://example.com",
+  "language": "en",
+  "selectors": {
+    "article_container": "article, .article-item, .news-item",
+    "title": "h1, h2, .title, .article-title",
+    "description": ".summary, .description, .excerpt",
+    "url": "a[href]",
+    "image": "img",
+    "video": "video, iframe"
+  },
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+  }
+}
