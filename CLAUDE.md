@@ -34,14 +34,38 @@
 - Platform-aware configuration is automatically applied
 - Never hardcode: FPS, dimensions, font sizes, colors, text, durations
 
-### 6. AI Provider System (NEW!)
+### 6. AI Provider System
 - Use `AIServiceManager` to access AI services
 - Never directly instantiate AI clients
 - Always use the unified interface methods
 - Handle provider-specific errors gracefully
 - Support automatic fallback to alternative providers
 
+### 7. News Aggregator System (NEW!)
+- Use `EnhancedNewsAggregator` for news video creation
+- Configure scrapers via JSON files in `scraper_configs/`
+- Support multiple sources: web, Telegram, CSV
+- Use `UniversalScraper` for configurable web scraping
+- Always use real media when available (no AI generation)
+
+### 8. Scraper Configuration
+- Place scraper configs in `scraper_configs/` directory
+- Use CSS selectors for content extraction
+- Support fallback test content for development
+- Handle multiple languages including RTL (Hebrew, Arabic)
+- Cache downloaded media for efficiency
+
 ## Development Notes
 - Never run no-cheap mode if you didnt run cheap mode first for verification
+- When adding new scrapers, create JSON config instead of hardcoding
+- Test with fallback content before using real sources
+- Use the universal scraper for new sources
+
+## News Aggregator Workflow
+1. Configure sources in `scraper_configs/`
+2. Run with `python main.py news aggregate-enhanced`
+3. Specify sources: config names, URLs, or Telegram channels
+4. System will scrape, analyze, and create video
+5. Output includes professional overlays and transitions
 
 [Rest of the existing content remains unchanged]

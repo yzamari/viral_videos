@@ -208,7 +208,7 @@ class EnhancedNewsAggregator:
         logger.info(f"✅ Selected {len(selected_content)} stories for final video")
         
         # 4. Download all media
-        await self._download_all_media(selected_content)
+        await self._download_all_media(selected_content, use_youtube_videos)
         
         # 5. Create videos for each language
         output_videos = {}
@@ -574,10 +574,17 @@ class EnhancedNewsAggregator:
         
         return with_media[:max_stories]
     
-    async def _download_all_media(self, content: List[Dict[str, Any]]):
+    async def _download_all_media(self, content: List[Dict[str, Any]], use_youtube_videos: bool = False):
         """Download all media for selected content"""
         
         logger.info("📥 Downloading media assets...")
+        
+        # Initialize YouTube enhancer if needed
+        youtube_enhancer = None
+        if use_youtube_videos:
+            from .scrapers.youtube_scraper import YouTubeNewsEnhancer
+            youtube_enhancer = YouTubeNewsEnhancer()
+            logger.info("🔍 YouTube video search enabled")
         
         for item in content:
             # Download image
@@ -603,6 +610,49 @@ class EnhancedNewsAggregator:
                         item['local_video'] = result.get('local_path')
                 except Exception as e:
                     logger.warning(f"Failed to download video: {e}")
+            
+            # Search and download YouTube videos if enabled
+            if use_youtube_videos and youtube_enhancer:
+                try:
+                    # Create better search terms from Hebrew titles
+                    title = item['title']
+                    
+                    # Extract key terms for better YouTube search
+                    search_query = title
+                    if 'חיזבאללה' in title:
+                        search_query = "Hezbollah Lebanon news"
+                    elif 'לבנון' in title:
+                        search_query = "Lebanon news"
+                    elif 'ממשלה' in title or 'שר' in title:
+                        search_query = "Israel government news"
+                    elif 'הייטק' in title:
+                        search_query = "Israel tech news"
+                    elif 'נפל' in title or 'מות' in title:
+                        search_query = "Israel accident news"
+                    elif 'צבא' in title or 'כוח' in title:
+                        search_query = "Israel military news"
+                    else:
+                        search_query = "Israel news"
+                    
+                    logger.info(f"🔍 Searching YouTube for: {search_query} (from '{title[:50]}...')")
+                    # Convert to format expected by YouTube enhancer
+                    news_items = [{'title': search_query, 'media_assets': []}]
+                    enhanced = await youtube_enhancer.enhance_news_items(news_items, True)
+                    
+                    if enhanced and enhanced[0].get('media_assets'):
+                        # Find video assets from YouTube
+                        for asset in enhanced[0]['media_assets']:
+                            if asset.get('type') == 'video' and asset.get('source') == 'youtube':
+                                item['youtube_video'] = asset['url']  # Local path to downloaded video
+                                logger.info(f"✅ Found YouTube video: {asset.get('title', 'Unknown')}")
+                                break
+                        else:
+                            logger.info(f"❌ No YouTube video asset found for: {search_query}")
+                    else:
+                        logger.info(f"❌ No YouTube video found for: {search_query}")
+                        
+                except Exception as e:
+                    logger.warning(f"Failed to get YouTube video for '{item['title'][:50]}...': {e}")
     
     async def _create_language_video(
         self,
@@ -629,6 +679,11 @@ class EnhancedNewsAggregator:
             content_item = self._dict_to_content_item(item)
             content_items.append(content_item)
         
+        # Use "news" overlay style if channel name suggests news
+        final_overlay_style = overlay_style
+        if channel_name and any(word in channel_name.lower() for word in ['news', 'doom', 'gloom', 'breaking']):
+            final_overlay_style = "news"
+        
         # Use multi-language composer
         output_path = await self.multi_language_composer.create_news_video(
             content_items=content_items,
@@ -637,7 +692,7 @@ class EnhancedNewsAggregator:
             tone=tone,
             platform=platform,
             duration_seconds=duration_seconds,
-            overlay_style=overlay_style,
+            overlay_style=final_overlay_style,
             output_filename=f"news_{language}_{platform}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4",
             visual_styles=visual_styles,
             use_youtube_videos=use_youtube_videos,
@@ -686,6 +741,15 @@ class EnhancedNewsAggregator:
                 asset_type=AssetType.VIDEO,
                 source_url=data.get('video_url', ''),
                 local_path=data['local_video']
+            ))
+        
+        # Add YouTube video if available
+        if data.get('youtube_video'):
+            media_assets.append(MediaAsset(
+                id='yt_vid_0',
+                asset_type=AssetType.VIDEO,
+                source_url='youtube',  # Indicate this is a YouTube video
+                local_path=data['youtube_video']
             ))
         
         return ContentItem(

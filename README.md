@@ -2,12 +2,30 @@
 
 🚀 **Production-ready AI video generation system with 22 specialized agents, centralized decision-making, and comprehensive social media integration.**
 
-🎯 **v3.4.0-rc1 Update**: VEO-3 Selection Fixed + Perfect Audio-Subtitle Sync!
+🎯 **v3.7.0-rc1 Update**: News Aggregator with Universal Scraping + Telegram Integration!
 
-[![Version](https://img.shields.io/badge/version-3.4.0--rc1-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.4.0-rc1)
+[![Version](https://img.shields.io/badge/version-3.7.0--rc1-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.7.0-rc1)
 [![Status](https://img.shields.io/badge/status-Production%20Ready-green.svg)](https://github.com/yourusername/viral-video-generator)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+
+## ✨ **What's New in v3.7.0-rc1**
+
+### 📰 **News Aggregator System** ✅ **PRODUCTION READY!**
+- **Universal Scraping**: Configure ANY website with simple JSON config files
+- **Telegram Integration**: Scrape news from Telegram channels with full media support
+- **Multi-Source Support**: Web pages, RSS feeds, social media, CSV files
+- **Real Media Only**: Uses actual scraped images/videos - no AI generation
+- **Multi-Language**: Hebrew (RTL), Arabic, English, and 40+ languages
+- **Professional Overlays**: Breaking news banners, tickers, live indicators
+- **Smart Content Analysis**: AI-powered relevance filtering and grouping
+
+### 🔧 **Configuration-Based Scraping** ✅ **NO MORE HARDCODING!**
+- **JSON Configs**: Add new sources without writing code
+- **CSS Selectors**: Simple selector-based content extraction
+- **Fallback Content**: Test articles for development
+- **Media Handling**: Automatic download and caching
+- See [Scraper Configuration Guide](SCRAPER_CONFIG_GUIDE.md) for details
 
 ## ✅ **TRENDING INTELLIGENCE - NOW WITH REAL DATA!**
 
@@ -37,68 +55,6 @@ See [Real Trending System Guide](docs/REAL_TRENDING_SYSTEM_GUIDE.md) for detaile
 
 ---
 
-## ✨ **What's New in v3.2.3**
-
-### 🚨 **Critical Production Fixes** ✅ **ROOT CAUSES SOLVED!**
-- **RTL Double Reversal Fixed**: Found and fixed root cause - MoviePy was reversing already-processed text
-- **Historical Figure Accuracy**: Ben-Gurion now has wild white hair, Sharett is properly bald with glasses
-- **Audio Sync Enhanced**: Added 50ms timing buffer for perfect synchronization
-- **Ghibli 2D Animation**: Now creates authentic hand-drawn anime style, not realistic
-- **Failed Generation Prevention**: Emergency fallback ensures videos always complete
-
-## ✨ **What's New in v3.2.1-rc1**
-
-### 🎯 **Visual/Dialogue Tagging System** ✅ **CRITICAL FIX!**
-- **AI-Powered Tagging**: Agents now properly separate visual descriptions from dialogue
-- **Perfect Audio Sync**: Only dialogue is spoken, visual descriptions enhance video only
-- **No Hardcoded Filters**: Intelligent tagging replaces regex patterns
-- **Format**: `[VISUAL: description] DIALOGUE: spoken text`
-- **Backward Compatible**: Handles both old and new script formats
-
-## ✨ **What's New in v3.2.0-rc1**
-
-### 🎓 **University Theme & Custom Overlays** ✅ **NEW!**
-- **Academic Theme Preset**: Professional university theme for educational content
-- **Custom Logo Overlays**: Add PNG logos to any video with automatic positioning
-- **AI University Branding**: Complete branding kit for educational series
-- **Smart Logo Placement**: Automatic top-right positioning with fade-in effects
-- **Theme-Based Overlays**: Logo management integrated into theme system
-
-### 📺 **Episode Selection for Series** ✅ **ENHANCED!**
-- **Selective Generation**: Generate specific episodes with `-e` flag
-- **Batch Control**: Choose multiple episodes (e.g., `-e 1 3 5`)
-- **Series Management**: Better control over large series generation
-- **Applied to All Scripts**: Israeli PM, News, and Educational series
-- **Parallel Support**: Episode selection works with parallel generation
-
-### 🔧 **Script Improvements** ✅ **OPTIMIZED!**
-- **Bash Compatibility**: Fixed associative array issues for older bash versions
-- **Parallel Generation**: Fixed and optimized for concurrent episode creation
-- **Error Handling**: Better error reporting and recovery mechanisms
-- **Progress Tracking**: Improved logging for multi-episode generation
-
-## ✨ **Previous Updates (v3.1.0)**
-
-### 🔌 **Universal AI Provider Interface** ✅ **GAME CHANGER!**
-- **Multi-Provider Support**: Seamlessly switch between Gemini, Vertex AI, OpenAI, and Anthropic
-- **Unified Interface**: Same code works with all providers - no changes needed
-- **Automatic Fallback**: If one provider fails, automatically switch to backup
-- **Cost Optimization**: Choose providers based on cost/quality requirements
-- **Easy Configuration**: Change providers via environment variables or config files
-- **Future-Proof**: Add new providers without changing core code
-
-### 🌐 **Enhanced Configuration System** ✅ **ZERO HARDCODING!**
-- **Complete Configuration**: ALL hardcoded values moved to configuration system
-- **Platform-Aware Settings**: Auto-adjust FPS, dimensions, quality per platform
-- **Dynamic Font Sizing**: Intelligent text scaling based on video dimensions
-- **Flexible Defaults**: Platform-specific hooks, CTAs, and branding
-- **Live Reloading**: Change configurations without code restarts
-
-### 🔧 **Critical Bug Fixes (July 2025)** ✅ **FIXED**
-- **Fixed VEO Generation**: Resolved `cheap_mode_level` forcing cheap mode even with `--no-cheap`
-- **Fixed Audio-Subtitle Sync**: Subtitles now properly exclude pause files for accurate timing
-- **Fixed Duration Issues**: Scripts now properly expand to meet requested duration
-- **Theme Overlays**: Confirmed working with VEO generation (not visible in cheap mode)
 
 ### 🎭 **Character Consistency System** ✅ **BREAKTHROUGH!**
 - **TRUE Character Persistence**: Same face across ALL episodes using Imagen + VEO pipeline
@@ -149,71 +105,23 @@ See [Real Trending System Guide](docs/REAL_TRENDING_SYSTEM_GUIDE.md) for detaile
 - **Collaborative Intelligence**: Multi-agent discussions across 7 specialized topics
 - **Mode Selection**: Simple (3 agents) → Enhanced (7 agents) → Professional (22+ agents)
 
-### 🌐 **Content Scraping Framework** 🚧 **PLANNED**
-- **Status**: Architecture designed, implementation in progress
-- **Multi-Source Scraping**: RSS, APIs, web pages, social media
-- **Real-Time Content**: Always up-to-date information
-- **Smart Extraction**: AI-powered content relevance filtering
-- **Media Collection**: Automatic image and video gathering
 
-### 🎬 **Media Integration Pipeline** 🚧 **PLANNED**
-- **Status**: Framework outlined, awaiting content scraping completion
-- **External Media Support**: Use scraped images/videos as backgrounds
-- **Smart Composition**: AI-driven media placement
-- **Rights Management**: Track media sources and attribution
-- **Quality Optimization**: Automatic media enhancement
 
-## ✨ **Features from v2.5.0-rc2**
+## 🎯 Two Main Systems
 
-### 🎬 **Multiple Video Versions**
-- **Three Output Versions**: Final (with subtitles/overlays), Audio Only, Overlays Only
-- **Maximum Flexibility**: Choose the version that best fits your needs
-- **Editing Freedom**: Clean versions for custom modifications
-- **Multi-Platform Ready**: Different versions for different platforms
-- **Language Versatility**: Easy to add custom subtitles to clean versions
+ViralAI provides two powerful video generation systems:
 
-### 🎨 **Enhanced Styling System**
-- **Improved Font Selection**: Professional fonts (Helvetica-Bold, Arial-Bold, Impact, Georgia-Bold)
-- **Sophisticated Color Palette**: No more redundant orange - uses coral red, turquoise, sky blue, mint green, purple, cyan, rose
-- **AI-Powered Typography**: Intelligent font and color selection based on content type
-- **Better Visual Hierarchy**: Enhanced text overlays with improved readability
+### 1. **Generate Command** - AI-Powered Creative Videos
+Create original videos with AI-generated visuals, scripts, and voiceovers
+```bash
+python main.py generate --mission "Your creative brief" --platform instagram
+```
 
-### 🚨 **Critical Bug Fixes**
-- **Fixed**: DiscussionResult object handling causing video generation crashes
-- **Fixed**: Type safety issues in video generation pipeline
-- **Fixed**: Return type annotations and error handling
-- **Enhanced**: System reliability and error recovery
-
-### 🎯 **Perfect Subtitle Synchronization**
-- **Auto-Calibrating Timing**: Adapts to gTTS and premium TTS automatically
-- **Word-Level Precision**: Calculates timing based on actual word count
-- **Real Audio Analysis**: Syncs to actual audio duration, not theoretical
-- **Natural Pauses**: Intelligent pause detection between sentences
-
-### 🕐 **Duration-Aware AI Agents**
-- **Hard Duration Constraints**: AI agents respect exact time limits
-- **Smart Content Scaling**: Automatically adjusts content to fit duration
-- **Word Count Limits**: Uses 2.8-3.2 words/second speaking rate constraints
-- **Script Completion**: Ensures full story within time bounds
-
-### 🎭 **Enhanced Voice System**
-- **Single Voice Preference**: Professional single-voice narration by default
-- **Multi-Speaker Detection**: Intelligent detection for dialogue and interviews
-- **Voice Boundary Protection**: Never switches voice mid-sentence
-- **Context-Aware Selection**: Contextually appropriate voice selection
-
-### 🎨 **100+ Visual Styles**
-- **Photographic**: realistic, cinematic, documentary, portrait, macro
-- **Artistic**: watercolor, oil painting, impressionist, cubist, abstract
-- **Animation**: Disney, Pixar, anime, comic book, claymation
-- **Cultural**: Japanese, Egyptian, Celtic, Persian, African
-- **Technical**: blueprint, wireframe, x-ray, holographic, glitch
-
-### 🔧 **Production-Ready Features**
-- **Robust Session Management**: Auto-recovery and error handling
-- **Instagram Integration**: Real API posting with instagrapi
-- **Multi-Language Support**: 10+ languages with RTL rendering
-- **Professional Quality**: Studio-grade audio and HD video output
+### 2. **News Command** - Real Media Aggregation
+Create news videos using scraped real media from websites and Telegram
+```bash
+python main.py news aggregate-enhanced [sources] --platform youtube
+```
 
 ## Quick Start
 
@@ -226,12 +134,15 @@ See [Real Trending System Guide](docs/REAL_TRENDING_SYSTEM_GUIDE.md) for detaile
   - Anthropic API key (optional)
   - Vertex AI credentials (optional)
 
-### 🚀 **Current Release: v3.5.0**
-- **🆕 Real Trending Data**: YouTube, TikTok, Instagram APIs integrated!
-- **🆕 Viral Intelligence**: Real-time trend analysis and optimization
+### 🚀 **Current Release: v3.7.0-rc1**
+- **🆕 News Aggregator System**: Universal scraping with Telegram integration
+- **🆕 Configuration-Based Scraping**: Add ANY website with JSON configs
+- **🆕 Telegram Channel Support**: Direct news scraping from Telegram
+- **🆕 Multi-Source Aggregation**: Web, RSS, social media, CSV support
+- **Real Trending Data**: YouTube, TikTok, Instagram APIs integrated!
+- **Viral Intelligence**: Real-time trend analysis and optimization
 - **VEO-3 Selection Fixed**: Now properly uses VEO-3 fast (50% cost reduction)
 - **Audio-Subtitle Sync**: Perfect synchronization with intelligent padding detection
-- **Episode Title Overlays**: Automatic 3-second title display
 - **Visual/Dialogue Tagging**: AI-powered separation for perfect audio sync
 - **Universal AI Provider Interface**: Switch between AI providers without code changes
 - **Zero Hardcoding**: Complete configuration system - all values configurable
@@ -267,7 +178,9 @@ export ANTHROPIC_API_KEY=your-anthropic-key  # if using Anthropic
 python main.py generate --mission "Test video" --platform instagram --duration 10
 ```
 
-### Basic Usage
+## 📖 Usage Examples
+
+### 1️⃣ **Generate Command - Creative AI Videos**
 ```bash
 # Generate a professional video with 22 AI agents (creates 3 versions)
 python main.py generate \
@@ -317,6 +230,36 @@ python main.py generate \
   --platform youtube \
   --duration 20 \
   --cheap full
+```
+
+### 2️⃣ **News Command - Real Media Aggregation**
+```bash
+# Aggregate news from multiple sources with Telegram
+python main.py news aggregate-enhanced \
+  https://www.ynet.co.il \
+  https://www.cnn.com \
+  --telegram-channels @ynet_news \
+  --telegram-channels @breaking_news \
+  --platform tiktok \
+  --duration 60 \
+  --style "breaking news"
+
+# Use configured scraper (JSON config)
+python main.py news aggregate-enhanced \
+  ynet \
+  rotter \
+  --platform youtube \
+  --duration 90 \
+  --languages he
+
+# Dark humor news edition
+python main.py news aggregate-enhanced \
+  --telegram-channels @news0404 \
+  --style "dark comedy satire" \
+  --tone "sarcastic gallows humor" \
+  --channel-name "DOOM & GLOOM" \
+  --platform tiktok \
+  --duration 30
 ```
 
 ### 🆕 **Advanced Features**
@@ -589,53 +532,54 @@ outputs/session_20250721_123456/metadata/
 └── video_versions_summary.md    # Human-readable documentation
 ```
 
-## Key Features
+## 🔥 Key Features
 
-### 🎯 **Centralized Decision Framework**
-- All decisions made upfront before generation
-- No conflicting parameters between components
-- Complete traceability of decision sources
-- Consistent results across all components
+### 🎬 **Two Video Generation Systems**
+1. **Generate**: AI-powered creative videos with VEO-2/3
+2. **News**: Real media aggregation from web/Telegram sources
 
-### 🤖 **22 AI Agents System**
-- **Professional Mode**: 22 specialized agents
-- **Enhanced Mode**: 7 core agents  
-- **Simple Mode**: Minimal AI for fast generation
-- Consensus-based collaboration
-- Platform-specific optimizations
+### 🤖 **22+ AI Agents System**
+- Professional (22 agents), Enhanced (7 agents), Simple (3 agents) modes
+- Consensus-based collaborative decision-making
+- 7 specialized discussion topics for comprehensive optimization
 
-### 🎬 **Advanced Video Generation**
-- **VEO-2**: Google's latest video generation model
-- **VEO-3**: Premium model with native audio
-- **Fallback**: FFmpeg-based generation for testing
-- Frame continuity for seamless transitions
-- Precise duration control
+### 📰 **Universal News Aggregator**
+- Configure ANY website with JSON files (no coding required)
+- Telegram channel integration with media download
+- Multi-source aggregation: web, RSS, social media, CSV
+- Professional news overlays and transitions
+- RTL language support (Hebrew, Arabic)
 
-### 🎵 **Intelligent Audio**
-- AI-powered voice selection
-- Enhanced multilingual TTS
-- Voice strategy optimization
-- Perfect audio-video synchronization
+### 🎥 **Advanced Video Generation**
+- **VEO-2/3**: Google's latest video generation models
+- **VEO-3 Fast**: 50% cost reduction ($0.25/s)
+- **Real Media Mode**: Use scraped content only
+- **Frame Continuity**: Seamless transitions
+- **100+ Visual Styles**: From realistic to artistic
+
+### 🌍 **Multi-Language Support**
+- 40+ languages with perfect TTS
+- RTL support for Hebrew, Arabic, Persian
+- Automatic translation with cultural context
+- Multiple audio/subtitle tracks per video
 
 ### 📱 **Social Media Integration**
-- Auto-posting to Instagram, TikTok, YouTube
-- AI-generated trending hashtags
+- Auto-posting to Instagram, TikTok, YouTube, Telegram
+- Real trending data from platform APIs
 - Platform-specific optimization
-- Engagement tracking
+- AI-generated viral hashtags
 
-### 🎭 **Character Consistency Solutions**
-- Voice-over approach for perfect consistency
-- Branded graphics system
-- Style reference between episodes
-- Detailed character profiles
-- See [Character Consistency Guide](docs/CHARACTER_CONSISTENCY_GUIDE.md)
-- **NEW**: [Complete Series Creation Guide](docs/SERIES_CREATION_GUIDE.md)
+### 🎭 **Character Consistency**
+- True character persistence across episodes
+- Store and reuse character references
+- Generate characters in new scenes
+- Professional news anchors pre-built
 
-### 💰 **Cost Management**
-- **Cheap Mode**: Cost-effective testing
-- **Granular Levels**: Full/Audio/Video cheap modes
-- **Fallback Systems**: Automatic cost reduction
-- **Quota Management**: Smart resource usage
+### 💰 **Cost Optimization**
+- Cheap mode for testing (text video + gTTS)
+- Granular control: audio/video/full cheap modes
+- Automatic fallback on quota exceeded
+- Smart resource management
 
 ## System Architecture
 

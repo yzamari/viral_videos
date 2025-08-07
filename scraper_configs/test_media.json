@@ -1,0 +1,36 @@
+{
+  "name": "Test Media Site",
+  "base_url": "https://example.com",
+  "language": "he",
+  "selectors": {
+    "article_container": "article",
+    "title": "h2",
+    "url": "a",
+    "description": "p",
+    "image": "img",
+    "video": "video"
+  },
+  "test_articles": [
+    {
+      "title": "ישראל מובילה בחדשנות טכנולוגית",
+      "description": "דוח חדש מציב את ישראל במקום הראשון בחדשנות",
+      "url": "https://example.com/1",
+      "image_url": "https://picsum.photos/800/600?random=1",
+      "source": "Test"
+    },
+    {
+      "title": "גילוי ארכיאולוגי מרעיש בירושלים",
+      "description": "ממצא בן 2000 שנה נחשף בחפירות",
+      "url": "https://example.com/2",
+      "image_url": "https://picsum.photos/800/600?random=2",
+      "source": "Test"
+    },
+    {
+      "title": "משבר המים מחריף: פתרונות חדשניים",
+      "description": "טכנולוגיות ישראליות מציעות מענה למשבר",
+      "url": "https://example.com/3",
+      "image_url": "https://picsum.photos/800/600?random=3",
+      "source": "Test"
+    }
+  ]
+}

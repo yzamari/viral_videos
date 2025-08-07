@@ -75,11 +75,23 @@ class ScrapedMediaComposer:
         for item in content_items:
             for asset in item.media_assets:
                 if asset.asset_type in [AssetType.VIDEO, AssetType.IMAGE]:
-                    all_media.append({
-                        "asset": asset,
-                        "item": item,
-                        "url": asset.source_url
-                    })
+                    # Check if this is a YouTube video that's already downloaded
+                    if asset.source_url == 'youtube' and asset.local_path:
+                        # YouTube video already downloaded, use directly
+                        all_media.append({
+                            "asset": asset,
+                            "item": item,
+                            "url": asset.local_path,  # Use local path instead of source_url
+                            "already_downloaded": True
+                        })
+                    else:
+                        # Regular media that needs downloading
+                        all_media.append({
+                            "asset": asset,
+                            "item": item,
+                            "url": asset.source_url,
+                            "already_downloaded": False
+                        })
         
         logger.info(f"📸 Found {len(all_media)} media assets to download")
         
@@ -134,23 +146,35 @@ class ScrapedMediaComposer:
         
         for media_info in media_list:
             try:
-                # Download using media downloader
-                result = await self.media_downloader.download_media(
-                    media_info["url"],
-                    metadata={
-                        "title": media_info["item"].title,
-                        "source": media_info["item"].source.name
-                    }
-                )
-                
-                if result and os.path.exists(result["local_path"]):
+                # Check if already downloaded (YouTube videos)
+                if media_info.get("already_downloaded", False) and os.path.exists(media_info["url"]):
+                    # YouTube video already downloaded
+                    logger.info(f"📹 Using pre-downloaded YouTube video: {media_info['url']}")
                     downloaded.append({
-                        "path": result["local_path"],
-                        "type": result["media_type"],
-                        "duration": result.get("duration"),
+                        "path": media_info["url"],
+                        "type": "video",  # YouTube videos are always videos
+                        "duration": None,  # Will be detected by FFmpeg
                         "title": media_info["item"].title,
-                        "metadata": result
+                        "metadata": {"source": "youtube", "local_path": media_info["url"]}
                     })
+                else:
+                    # Download using media downloader
+                    result = await self.media_downloader.download_media(
+                        media_info["url"],
+                        metadata={
+                            "title": media_info["item"].title,
+                            "source": media_info["item"].source.name
+                        }
+                    )
+                    
+                    if result and os.path.exists(result["local_path"]):
+                        downloaded.append({
+                            "path": result["local_path"],
+                            "type": result["media_type"],
+                            "duration": result.get("duration"),
+                            "title": media_info["item"].title,
+                            "metadata": result
+                        })
                     
             except Exception as e:
                 logger.warning(f"Failed to download {media_info['url']}: {str(e)}")
@@ -439,8 +463,10 @@ class ScrapedMediaComposer:
         
         if metadata is None:
             metadata = {}
+        
+        # Use AI-selected visual styles or defaults
         if visual_styles is None:
-            visual_styles = {}
+            visual_styles = self.visual_styles or {}
         
         # Create gradient background with modern design
         width, height = self.dimensions
@@ -448,7 +474,15 @@ class ScrapedMediaComposer:
         draw_temp = ImageDraw.Draw(img)
         
         # Create more vibrant gradient based on style
-        if "news" in style.lower() or "breaking" in style.lower():
+        if style == 'dark_humor':
+            # Dark humor/satirical: black to dark gray gradient
+            for y in range(height):
+                progress = y / height
+                r = int(10 * (1 - progress) + 5)   # Very dark red
+                g = int(10 * (1 - progress) + 5)   # Very dark green
+                b = int(15 * (1 - progress) + 10)  # Slightly more blue for depth
+                draw_temp.rectangle([(0, y), (width, y+1)], fill=(r, g, b))
+        elif "news" in style.lower() or "breaking" in style.lower():
             # News style: dark red to black gradient
             for y in range(height):
                 progress = y / height
@@ -485,17 +519,27 @@ class ScrapedMediaComposer:
         font_content = None
         font_loaded = False
         
+        # Get font sizes from AI-selected visual styles
+        title_font_size = visual_styles.get('HEADER_FONT', {}).get('size', 72)
+        content_font_size = visual_styles.get('CONTENT_FONT', {}).get('size', 42)
+        
+        # Adjust for platform if needed
+        if self.platform == "tiktok":
+            # Slightly smaller for portrait mode if too large
+            if title_font_size > 80:
+                title_font_size = int(title_font_size * 0.8)
+            if content_font_size > 50:
+                content_font_size = int(content_font_size * 0.8)
+        
+        logger.info(f"📝 Using AI-selected font sizes - Title: {title_font_size}, Content: {content_font_size}")
+        
         for font_path in font_paths:
             try:
                 if os.path.exists(font_path):
                     logger.info(f"Testing font: {font_path}")
-                    # Dynamic font sizes based on platform
-                    if self.platform == "tiktok":
-                        font_title = ImageFont.truetype(font_path, 60)
-                        font_content = ImageFont.truetype(font_path, 32)
-                    else:
-                        font_title = ImageFont.truetype(font_path, 80)
-                        font_content = ImageFont.truetype(font_path, 42)
+                    # Use AI-selected font sizes
+                    font_title = ImageFont.truetype(font_path, title_font_size)
+                    font_content = ImageFont.truetype(font_path, content_font_size)
                     # Test if font supports Hebrew
                     test_img = Image.new('RGB', (100, 100))
                     test_draw = ImageDraw.Draw(test_img)
@@ -529,27 +573,87 @@ class ScrapedMediaComposer:
             overlay_width = 1600
             overlay_x = 160
         
-        # Add overlay background for title
-        overlay = Image.new('RGBA', (overlay_width, 150), (0, 0, 0, 180))
-        img.paste(overlay, (overlay_x, 150), overlay)
-        
-        # Draw title with proper alignment
+        # Draw title with proper alignment and text wrapping
         center_x = width // 2
-        if is_rtl and RTL_SUPPORT:
-            # Hebrew doesn't need reshaping, only bidi reordering
-            if any('\u0590' <= char <= '\u05FF' for char in title):
-                # Hebrew text - PIL handles it correctly, no need for bidi
-                draw.text((center_x, title_y), title, fill=(255, 255, 255), font=font_title, anchor="ma")
+        max_width = overlay_width - 60  # Leave good margins for readability
+        
+        # Better text wrapping that doesn't break mid-word (especially for Hebrew)
+        def wrap_text_properly(text, font, max_width):
+            """Wrap text without breaking words, show complete title"""
+            lines = []
+            current_line = ""
+            
+            # For Hebrew/RTL text, we need special handling
+            is_hebrew = any('\u0590' <= c <= '\u05FF' for c in text)
+            
+            if is_hebrew:
+                # For Hebrew, try to keep logical units together
+                # Split on common Hebrew punctuation and spaces
+                parts = text.replace(':', ' : ').replace('"', ' " ').replace(',', ' , ').split(' ')
             else:
-                # Arabic text - needs reshaping and bidi
-                reshaped_title = arabic_reshaper.reshape(title)
-                bidi_title = get_display(reshaped_title)
-                draw.text((center_x, title_y), bidi_title, fill=(255, 255, 255), font=font_title, anchor="ma")
-        elif is_rtl:
-            # Fallback for RTL without libraries
-            draw.text((center_x, title_y), title[::-1], fill=(255, 255, 255), font=font_title, anchor="ma")
-        else:
-            draw.text((center_x, title_y), title, fill=(255, 255, 255), font=font_title, anchor="ma")
+                parts = text.split(' ')
+            
+            for part in parts:
+                if not part:
+                    continue
+                    
+                test_line = current_line + ' ' + part if current_line else part
+                bbox = draw.textbbox((0, 0), test_line, font=font)
+                
+                if bbox[2] - bbox[0] <= max_width:
+                    current_line = test_line
+                else:
+                    if current_line:
+                        lines.append(current_line)
+                    current_line = part
+            
+            if current_line:
+                lines.append(current_line)
+            
+            # Make sure we show the complete title - no truncation
+            return lines
+        
+        # Wrap title - show complete title even if it needs multiple lines
+        title_lines = wrap_text_properly(title, font_title, max_width)
+        line_height = int(title_font_size * 1.3)  # Dynamic line height based on font size
+        
+        # Calculate total height needed for title
+        total_title_height = len(title_lines) * line_height + 40  # Add padding
+        
+        # Create semi-transparent background that fits the entire title
+        overlay_y = title_y - 30  # Start a bit above title
+        overlay_height = max(200, total_title_height + 60)  # Ensure it covers all lines
+        
+        # Add semi-transparent background with rounded corners effect
+        overlay = Image.new('RGBA', (overlay_width, overlay_height), (0, 0, 0, 200))  # More opaque
+        img.paste(overlay, (overlay_x, overlay_y), overlay)
+        
+        # Add subtle border for better visibility
+        border_overlay = Image.new('RGBA', (overlay_width, 3), (255, 255, 255, 80))
+        img.paste(border_overlay, (overlay_x, overlay_y), border_overlay)
+        img.paste(border_overlay, (overlay_x, overlay_y + overlay_height - 3), border_overlay)
+        
+        # Calculate starting y position to center title in overlay
+        start_y = overlay_y + 40  # Start with padding from top
+        
+        for i, line in enumerate(title_lines):
+            line_y = start_y + i * line_height
+            
+            if is_rtl and RTL_SUPPORT:
+                # Hebrew doesn't need reshaping, only bidi reordering
+                if any('\u0590' <= char <= '\u05FF' for char in line):
+                    # Hebrew text - PIL handles it correctly, no need for bidi
+                    draw.text((center_x, line_y), line, fill=(255, 255, 255), font=font_title, anchor="ma")
+                else:
+                    # Arabic text - needs reshaping and bidi
+                    reshaped_line = arabic_reshaper.reshape(line)
+                    bidi_line = get_display(reshaped_line)
+                    draw.text((center_x, line_y), bidi_line, fill=(255, 255, 255), font=font_title, anchor="ma")
+            elif is_rtl:
+                # Fallback for RTL without libraries
+                draw.text((center_x, line_y), line[::-1], fill=(255, 255, 255), font=font_title, anchor="ma")
+            else:
+                draw.text((center_x, line_y), line, fill=(255, 255, 255), font=font_title, anchor="ma")
         
         # Draw content with modern styling
         if content:
@@ -801,9 +905,25 @@ class ScrapedMediaComposer:
                 except:
                     pass
             else:
-                # Show channel name
-                channel_font = ImageFont.truetype(font_paths[0], 36) if font_paths[0] and os.path.exists(font_paths[0]) else font
-                draw.text((width - 50, 50), self.channel_name, fill=(255, 255, 255, 255), font=channel_font, anchor="ra")
+                # Show channel name with semi-transparent background
+                channel_font_size = self.visual_styles.get('CHANNEL_FONT', {}).get('size', 36)
+                channel_font = ImageFont.truetype(font_paths[0], channel_font_size) if font_paths[0] and os.path.exists(font_paths[0]) else font
+                
+                # Get text bounds for channel name
+                bbox = draw.textbbox((0, 0), self.channel_name, font=channel_font)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+                
+                # Create semi-transparent background for channel name
+                channel_bg_x = width - text_width - 70
+                channel_bg_y = 30
+                channel_bg = Image.new('RGBA', (text_width + 40, text_height + 20), (0, 0, 0, 180))
+                img.paste(channel_bg, (channel_bg_x, channel_bg_y), channel_bg)
+                
+                # Draw channel name with AI-selected color
+                channel_color = self.visual_styles.get('COLOR_SCHEME', {}).get('accent', '#ff6600')
+                channel_rgb = tuple(int(channel_color.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+                draw.text((width - 50, 50), self.channel_name, fill=(*channel_rgb, 255), font=channel_font, anchor="ra")
         else:
             logo_size = (300, 70)
             logo_pos = (50, 50)

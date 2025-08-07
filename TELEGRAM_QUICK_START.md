@@ -1,65 +1,144 @@
-# Telegram Integration Quick Start
+# 📱 Telegram News Scraping - Quick Start Guide
 
-## 1. Setup (One-time)
+## 🚀 Setup (One-Time)
+
+### 1. Get Telegram API Credentials
 ```bash
-# Install Telethon
-pip install telethon
-
-# Configure credentials
-python setup_telegram.py
+python3 setup_telegram.py
 ```
 
-## 2. Basic Usage
-```bash
-# Hebrew news from Ynet + Telegram channels
-python main.py news aggregate-enhanced https://www.ynet.co.il \
-  --telegram-channels @ynet_news @channel13news \
-  --languages he \
-  --platform tiktok
+This will guide you through:
+- Getting API credentials from https://my.telegram.org
+- Saving them securely to `.env` file
+- Testing the connection
 
-# Multiple sources with English output
-python main.py news aggregate-enhanced \
-  https://www.cnn.com https://www.bbc.com \
-  --telegram-channels @breaking_news @world_news \
-  --languages en \
-  --platform youtube
+### 2. Alternative: Manual Setup
+Add to your `.env` file:
+```env
+TELEGRAM_API_ID=your_api_id
+TELEGRAM_API_HASH=your_api_hash
+TELEGRAM_PHONE=+your_phone_number  # optional
 ```
 
-## 3. Full Example with All Options
+## 📰 Usage Examples
+
+### Basic Telegram Channel Scraping
 ```bash
-python main.py news aggregate-enhanced \
-  https://www.ynet.co.il https://www.mako.co.il \
-  --telegram-channels @ynet_news @channel13news @kann_news \
-  --languages he en \
+# Single channel
+python3 main.py news aggregate-enhanced \
+  --telegram-channels @ynet_news \
   --platform tiktok \
-  --style "breaking news style with urgency" \
-  --tone "professional yet engaging" \
-  --overlay-style modern \
-  --max-stories 10 \
-  --hours-back 12 \
-  --duration 90 \
-  --enable-ai \
-  --discussion-log
+  --duration 60
+
+# Multiple channels
+python3 main.py news aggregate-enhanced \
+  --telegram-channels @ynet_news \
+  --telegram-channels @channel13news \
+  --telegram-channels @kann_news \
+  --style "breaking news" \
+  --duration 60
 ```
 
-## 4. Platform Options
-- `youtube` - 1920x1080 landscape
-- `tiktok` - 1080x1920 portrait  
-- `instagram` - 1080x1080 square
-- `twitter` - 1920x1080 landscape
+### Mix Telegram with Web Sources
+```bash
+python3 main.py news aggregate-enhanced \
+  https://www.ynet.co.il \
+  https://rotter.net/forum/scoops1/ \
+  --telegram-channels @breaking_news \
+  --telegram-channels @news0404 \
+  --style "dark humor satire" \
+  --platform tiktok \
+  --duration 60
+```
 
-## 5. Test Mode
-Without credentials, the system uses test data automatically.
+### Dark Humor News Edition
+```bash
+python3 main.py news aggregate-enhanced \
+  --telegram-channels @srugim_news \
+  --telegram-channels @news0404 \
+  --style "dark comedy news satire" \
+  --tone "sarcastic dark humor" \
+  --channel-name "DOOM & GLOOM NEWS" \
+  --platform tiktok \
+  --duration 30 \
+  --max-stories 10
+```
 
-## 6. Popular Hebrew Telegram Channels
-- @ynet_news - Ynet breaking news
-- @channel13news - Channel 13 news
-- @kann_news - Kan news updates
-- @glz_news - Galei Tzahal
-- @haaretz - Haaretz news
+## 📺 Popular Israeli News Channels
 
-## 7. Troubleshooting
-- No credentials? System uses test data
-- Authentication issues? Re-run setup_telegram.py
-- Rate limits? Wait 15 minutes
-- No media? Check outputs/telegram_media/
+| Channel | Description |
+|---------|-------------|
+| @ynet_news | Ynet News |
+| @channel13news | Channel 13 News |
+| @kann_news | Kann News |
+| @N12News | Channel 12 News |
+| @glz_news | Galei Tzahal (Army Radio) |
+| @srugim_news | Srugim News |
+| @news0404 | 0404 News |
+| @Heb_News | Hebrew News |
+| @NewsIL | Israel News |
+
+## ⚙️ Options
+
+- `--telegram-channels` / `-tc`: Specify Telegram channels (can use multiple times)
+- `--hours-back`: How far back to scrape (default: 24)
+- `--max-stories`: Maximum stories to include
+- `--use-youtube-videos`: Add YouTube video backgrounds
+- `--no-ai-discussion`: Skip AI discussions for faster processing
+
+## 🔧 Troubleshooting
+
+### "Telegram API not available"
+```bash
+# Install telethon
+pip3 install telethon
+
+# Setup credentials
+python3 setup_telegram.py
+```
+
+### "Session file error"
+```bash
+# Remove old session files
+rm *.session
+rm news_scraper.session
+```
+
+### "Cannot connect to Telegram"
+1. Check your API credentials in `.env`
+2. Ensure your phone number has access to the channels
+3. Try re-authenticating: `python3 setup_telegram.py`
+
+## 📝 Notes
+
+- First run will require phone number authentication
+- Session is saved for future runs (no need to re-authenticate)
+- Private channels require membership
+- Media (images/videos) from Telegram are automatically downloaded
+- Supports Hebrew, Arabic, Russian, and English content detection
+
+## 🎬 Complete Example
+
+Create a dark humor news video from Israeli Telegram channels:
+
+```bash
+# Setup (once)
+python3 setup_telegram.py
+
+# Create video
+python3 main.py news aggregate-enhanced \
+  --telegram-channels @ynet_news \
+  --telegram-channels @channel13news \
+  --telegram-channels @news0404 \
+  --platform tiktok \
+  --style "dark comedy news satire like The Onion" \
+  --tone "deadpan sarcastic with gallows humor" \
+  --channel-name "DOOM & GLOOM NEWS" \
+  --duration 60 \
+  --max-stories 15 \
+  --languages he \
+  --no-ai-discussion
+
+# Output: outputs/session_*/news_he_tiktok_*.mp4
+```
+EOF < /dev/null

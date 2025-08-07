@@ -15,6 +15,13 @@ from datetime import datetime
 import ssl
 import certifi
 
+try:
+    from .playwright_scraper import PlaywrightScraper
+    PLAYWRIGHT_AVAILABLE = True
+except ImportError:
+    PlaywrightScraper = None
+    PLAYWRIGHT_AVAILABLE = False
+
 
 class ScraperConfig:
     """Configuration for a specific website"""
@@ -117,15 +124,46 @@ class UniversalNewsScraper:
                             print(f"  🔍 Debug: Found {len(containers)} article containers with selector '{config.selectors.get('article_container', '')}'")
                             if len(containers) > 0:
                                 print(f"  🔍 First container HTML: {str(containers[0])[:200]}...")
+                            
+                            # If no articles found, try Playwright as fallback
+                            print(f"  🎭 No articles extracted, trying Playwright for {config.name}...")
+                            articles = await self._try_playwright_scraping(config, max_items)
                     else:
                         print(f"  ❌ Failed to fetch {config.name}: Status {response.status}")
                         if response.status == 403:
-                            print(f"  💡 Try updating headers in {config.name.lower()}.json config file")
+                            print(f"  🎭 Trying Playwright for {config.name}...")
+                            articles = await self._try_playwright_scraping(config, max_items)
                         
             except Exception as e:
                 print(f"  ❌ Error scraping {config.name}: {e}")
+                if "403" in str(e) or "blocked" in str(e).lower():
+                    print(f"  🎭 Trying Playwright for {config.name}...")
+                    articles = await self._try_playwright_scraping(config, max_items)
         
         return articles
+    
+    async def _try_playwright_scraping(self, config: ScraperConfig, max_items: int) -> List[Dict]:
+        """Try scraping with Playwright when regular scraping fails"""
+        
+        if not PLAYWRIGHT_AVAILABLE:
+            print("  ⚠️ Playwright not available, skipping advanced scraping")
+            return []
+        
+        try:
+            playwright_config = {
+                'name': config.name,
+                'base_url': config.base_url,
+                'selectors': config.selectors
+            }
+            
+            async with PlaywrightScraper() as scraper:
+                articles = await scraper.scrape_website(playwright_config, max_items)
+                print(f"  ✅ Playwright found {len(articles)} articles from {config.name}")
+                return articles
+                
+        except Exception as e:
+            print(f"  ❌ Playwright scraping also failed for {config.name}: {e}")
+            return []
     
     def _extract_articles(self, soup: BeautifulSoup, config: ScraperConfig, 
                          max_items: int) -> List[Dict]:

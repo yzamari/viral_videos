@@ -3,10 +3,10 @@
   "base_url": "https://www.ynet.co.il",
   "language": "he",
   "selectors": {
-    "article_container": "article, .article, [data-tb-region], .element-article",
-    "title": "h1, h2, h3, .title, .slotTitle, .element-title",
-    "url": "a[href]",
-    "description": ".summary, .subtitle, .slotSubTitle, .element-preview",
+    "article_container": "a[href*='/news/article'], a[href*='/sport/article'], a[href*='/digital/article']",
+    "title": "",
+    "url": "",
+    "description": "",
     "image": "img",
     "video": "video, iframe"
   },
