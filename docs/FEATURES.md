@@ -1,11 +1,18 @@
 # ViralAI Features Documentation
 
-**Last Updated**: July 28, 2025  
-**System Version**: v3.2.1-rc1  
+**Last Updated**: August 7, 2025  
+**System Version**: v3.7.0-rc1  
 **Analysis Status**: Comprehensive codebase review completed
 
 ## Overview
 This document provides a comprehensive list of all features in the ViralAI system, their **actual** implementation status based on codebase analysis, and associated testing requirements. This represents the ground truth of what is currently implemented vs. what is planned.
+
+## 🚀 New in v3.7.0-rc1
+- **News Aggregator System**: Universal web scraping with Telegram integration
+- **Commercial Video Creation**: Professional TikTok commercials for businesses
+- **Real Media Support**: Use actual scraped content instead of AI generation
+- **Multi-Source Aggregation**: Combine web, Telegram, CSV sources
+- **Professional Overlays**: Breaking news banners, tickers, live indicators
 
 ## Feature Status Legend
 - ✅ **Fully Implemented & Verified**: Feature is complete, production-ready, and verified through code analysis
@@ -918,9 +925,32 @@ tests/CI/
 
 ---
 
+## 🛍️ Commercial & Business Features (NEW!)
+
+### Business Video Generation ✅
+- **TikTok Commercial Creation**: Professional commercials optimized for TikTok
+- **Product Showcase Videos**: Dynamic product demonstrations
+- **Brand Storytelling**: Narrative-driven commercial content
+- **Customer Testimonials**: Authentic social proof videos
+- **Limited-Time Offers**: Urgency-driven promotional content
+- **Educational Marketing**: How-to videos showcasing product value
+- **Behind-the-Scenes Content**: Brand humanization videos
+- **Implementation**: Full pipeline with professional themes and business optimization
+- **Documentation**: [TIKTOK_COMMERCIAL_GUIDE.md](../TIKTOK_COMMERCIAL_GUIDE.md)
+
+### News Aggregator System ✅
+- **Universal Web Scraping**: Configure ANY website with JSON configs
+- **Telegram Integration**: Direct channel scraping with media download
+- **Multi-Source Aggregation**: Combine web, Telegram, CSV sources
+- **Real Media Usage**: Use actual scraped images/videos (no AI generation)
+- **Professional Overlays**: Breaking news banners, tickers, live indicators
+- **Multi-Language Support**: Hebrew (RTL), Arabic, English, 40+ languages
+- **Implementation**: `src/news_aggregator/` with universal scraper
+- **Configuration**: `scraper_configs/` JSON-based configuration
+
 ## Implementation Summary (Based on Code Analysis)
 
-### ✅ Fully Implemented & Production-Ready (58 features)
+### ✅ Fully Implemented & Production-Ready (70+ features)
 
 **Core Systems (100% Complete)**:
 - Video Generation System (7/7 features)

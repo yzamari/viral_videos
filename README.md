@@ -178,6 +178,33 @@ export ANTHROPIC_API_KEY=your-anthropic-key  # if using Anthropic
 python main.py generate --mission "Test video" --platform instagram --duration 10
 ```
 
+## 🛍️ Business & Commercial Features
+
+ViralAI excels at creating professional commercial content for businesses:
+
+### TikTok Commercials
+Create viral-worthy commercials optimized for TikTok's algorithm:
+- Product showcases with dynamic visuals
+- Brand storytelling that connects emotionally
+- Customer testimonials for social proof
+- Limited-time offers with urgency
+- Educational content demonstrating value
+- Behind-the-scenes brand humanization
+
+See [TIKTOK_COMMERCIAL_GUIDE.md](TIKTOK_COMMERCIAL_GUIDE.md) for complete business video creation guide.
+
+### Quick Commercial Example
+```bash
+# Professional product launch commercial
+python main.py generate \
+  --mission "Launch our eco-friendly water bottle: BPA-free, keeps drinks cold 24hrs, sustainable materials" \
+  --platform tiktok \
+  --duration 30 \
+  --mode professional \
+  --category business \
+  --target-audience "eco-conscious millennials"
+```
+
 ## 📖 Usage Examples
 
 ### 1️⃣ **Generate Command - Creative AI Videos**

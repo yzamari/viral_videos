@@ -584,6 +584,127 @@ Format your response as JSON."""
         except Exception as e:
             logger.error(f"Style selection failed: {e}")
     
+    def _get_language_examples(self, language: str) -> str:
+        """Get language-specific examples for rephrasing"""
+        
+        language_lower = language.lower()
+        
+        # Language-specific satirical examples
+        examples = {
+            'he': """Examples for Hebrew (עברית ONLY):
+- "שוב: אותה הבעיה" (Again: same problem)
+- "הלם: דבר צפוי קרה" (Shock: predictable thing happened)  
+- "פתרון: יוצר בעיה חדשה" (Solution: creates new problem)""",
+            
+            'hebrew': """Examples for Hebrew (עברית ONLY):
+- "שוב: אותה הבעיה" (Again: same problem)
+- "הלם: דבר צפוי קרה" (Shock: predictable thing happened)
+- "פתרון: יוצר בעיה חדשה" (Solution: creates new problem)""",
+            
+            'ar': """Examples for Arabic (العربية ONLY):
+- "صدمة: الأمور كما توقعنا" (Shock: things as expected)
+- "عاجل: المشكلة لا تزال مشكلة" (Breaking: problem still a problem)
+- "الحل: جعل الأمور أسوأ" (Solution: made things worse)""",
+            
+            'arabic': """Examples for Arabic (العربية ONLY):
+- "صدمة: الأمور كما توقعنا" (Shock: things as expected)
+- "عاجل: المشكلة لا تزال مشكلة" (Breaking: problem still a problem)
+- "الحل: جعل الأمور أسوأ" (Solution: made things worse)""",
+            
+            'ru': """Examples for Russian (Русский ONLY):
+- "Шок: всё как всегда" (Shock: everything as usual)
+- "Срочно: проблема остаётся проблемой" (Urgent: problem remains problem)
+- "Решение: стало ещё хуже" (Solution: made it worse)""",
+            
+            'russian': """Examples for Russian (Русский ONLY):
+- "Шок: всё как всегда" (Shock: everything as usual)
+- "Срочно: проблема остаётся проблемой" (Urgent: problem remains problem)
+- "Решение: стало ещё хуже" (Solution: made it worse)""",
+            
+            'es': """Examples for Spanish (Español ONLY):
+- "Impactante: Todo Sigue Igual" (Shocking: Everything Same)
+- "Urgente: Problema Sigue Siendo Problema" (Urgent: Problem Still Problem)
+- "Solución: Empeora Todo" (Solution: Makes Everything Worse)""",
+            
+            'spanish': """Examples for Spanish (Español ONLY):
+- "Impactante: Todo Sigue Igual" (Shocking: Everything Same)
+- "Urgente: Problema Sigue Siendo Problema" (Urgent: Problem Still Problem)
+- "Solución: Empeora Todo" (Solution: Makes Everything Worse)""",
+            
+            'fr': """Examples for French (Français ONLY):
+- "Choc: Rien Ne Change" (Shock: Nothing Changes)
+- "Urgent: Le Problème Reste" (Urgent: Problem Remains)
+- "Solution: Pire Qu'Avant" (Solution: Worse Than Before)""",
+            
+            'french': """Examples for French (Français ONLY):
+- "Choc: Rien Ne Change" (Shock: Nothing Changes)
+- "Urgent: Le Problème Reste" (Urgent: Problem Remains)
+- "Solution: Pire Qu'Avant" (Solution: Worse Than Before)""",
+            
+            'de': """Examples for German (Deutsch ONLY):
+- "Schock: Alles Wie Immer" (Shock: Everything As Always)
+- "Eilmeldung: Problem Bleibt Problem" (Breaking: Problem Stays Problem)
+- "Lösung: Macht Alles Schlimmer" (Solution: Makes Everything Worse)""",
+            
+            'german': """Examples for German (Deutsch ONLY):
+- "Schock: Alles Wie Immer" (Shock: Everything As Always)
+- "Eilmeldung: Problem Bleibt Problem" (Breaking: Problem Stays Problem)
+- "Lösung: Macht Alles Schlimmer" (Solution: Makes Everything Worse)""",
+            
+            'zh': """Examples for Chinese (中文 ONLY):
+- "震惊：一切照旧" (Shock: Everything as usual)
+- "突发：问题还是问题" (Breaking: Problem still problem)
+- "解决方案：更糟了" (Solution: Made worse)""",
+            
+            'chinese': """Examples for Chinese (中文 ONLY):
+- "震惊：一切照旧" (Shock: Everything as usual)
+- "突发：问题还是问题" (Breaking: Problem still problem)
+- "解决方案：更糟了" (Solution: Made worse)""",
+            
+            'ja': """Examples for Japanese (日本語 ONLY):
+- "衝撃：何も変わらず" (Shock: Nothing changed)
+- "速報：問題は問題のまま" (Breaking: Problem remains problem)
+- "解決策：さらに悪化" (Solution: Made worse)""",
+            
+            'japanese': """Examples for Japanese (日本語 ONLY):
+- "衝撃：何も変わらず" (Shock: Nothing changed)
+- "速報：問題は問題のまま" (Breaking: Problem remains problem)
+- "解決策：さらに悪化" (Solution: Made worse)""",
+            
+            'ko': """Examples for Korean (한국어 ONLY):
+- "충격: 모든 것이 그대로" (Shock: Everything same)
+- "속보: 문제는 여전히 문제" (Breaking: Problem still problem)
+- "해결책: 더 나빠짐" (Solution: Made worse)""",
+            
+            'korean': """Examples for Korean (한국어 ONLY):
+- "충격: 모든 것이 그대로" (Shock: Everything same)
+- "속보: 문제는 여전히 문제" (Breaking: Problem still problem)
+- "해결책: 더 나빠짐" (Solution: Made worse)""",
+            
+            'fa': """Examples for Persian/Farsi (فارسی ONLY):
+- "شوک: همه چیز مثل همیشه" (Shock: everything as always)
+- "فوری: مشکل همچنان مشکل است" (Urgent: problem still problem)
+- "راه حل: بدتر شد" (Solution: made worse)""",
+            
+            'persian': """Examples for Persian/Farsi (فارسی ONLY):
+- "شوک: همه چیز مثل همیشه" (Shock: everything as always)
+- "فوری: مشکل همچنان مشکل است" (Urgent: problem still problem)
+- "راه حل: بدتر شد" (Solution: made worse)""",
+            
+            'farsi': """Examples for Persian/Farsi (فارسی ONLY):
+- "شوک: همه چیز مثل همیشه" (Shock: everything as always)
+- "فوری: مشکل همچنان مشکل است" (Urgent: problem still problem)
+- "راه حل: بدتر شد" (Solution: made worse)"""
+        }
+        
+        # Default to English if language not found
+        default_examples = """Examples for English (English ONLY):
+- "Gov Shocked: Things Cost Money"
+- "Breaking: Problem Still Problem"
+- "Expert: 'We Tried Nothing'"""
+        
+        return examples.get(language_lower, default_examples)
+    
     async def rephrase_content_with_tone(
         self,
         content_items: List[Dict[str, Any]],
@@ -638,31 +759,41 @@ ORIGINAL NEWS:
 Title: {original_title}
 Content: {original_content[:500] if original_content else ''}
 
-YOUR TASK: Transform this into {style} with {tone} tone in {language}.
+YOUR TASK: Transform this into {style} with {tone} tone.
 
-YOUR TASK: Completely transform this news into {tone} with {style}.
+CRITICAL LANGUAGE RULE:
+- Output language: {language}
+- You MUST output ONLY in {language}
+- DO NOT mix any other language into the output
+- DO NOT use English words unless the target language is English
+- DO NOT transliterate - use the proper script for the language
+- Examples of language codes:
+  * 'he' or 'hebrew' = Hebrew (עברית)
+  * 'ar' or 'arabic' = Arabic (العربية)
+  * 'ru' or 'russian' = Russian (Русский)
+  * 'es' or 'spanish' = Spanish (Español)
+  * 'fr' or 'french' = French (Français)
+  * 'de' or 'german' = German (Deutsch)
+  * 'zh' or 'chinese' = Chinese (中文)
+  * 'ja' or 'japanese' = Japanese (日本語)
+  * 'ko' or 'korean' = Korean (한국어)
+  * 'fa' or 'persian' = Persian/Farsi (فارسی)
 
-IMPORTANT - BE ACTUALLY FUNNY/SATIRICAL:
+TONE AND STYLE:
 - If tone includes 'funny', 'humor', 'satire', 'sarcastic' - BE EXTREMELY SATIRICAL
 - Mock the absurdity of the situation
 - Use exaggeration and irony
 - Point out the ridiculous aspects
 - Be witty and clever, not just factual
-- Think The Onion, The Daily Show, SNL Weekend Update
+- Adapt humor to the cultural context of the target language
 
 OUTPUT RULES:
 - Title: MAX 40 chars - MUST be funny/satirical if tone requires
 - Content: 200-300 chars - Full satirical paragraph
 - ACTUALLY BE {tone} - don't just state facts!
-- Examples of good satirical titles:
-  * "Gov Shocked: Things Cost Money"
-  * "Breaking: Problem Still Problem"
-  * "Expert: 'We Tried Nothing'"
+- Use natural expressions and idioms from the target language
 
-For Hebrew (VERY SHORT!):
-- "שוב: [דבר צפוי]" (Again: [predictable])
-- "הלם: [דבר ברור]" (Shock: [obvious])
-- "פתרון: [עושה יותר גרוע]" (Solution: [makes worse])
+{self._get_language_examples(language)}
 
 IMPORTANT RULES:
 1. Keep ALL facts, names, dates accurate - only change the presentation
