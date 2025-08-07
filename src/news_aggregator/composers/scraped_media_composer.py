@@ -102,11 +102,23 @@ class ScrapedMediaComposer:
             logger.warning("No media could be downloaded, creating text-only video")
             # Create text-only segments for ALL content items
             for i, item in enumerate(content_items):
+                # Include rephrasing information in text segments
+                text_metadata = {
+                    "content": item.content, 
+                    "index": i + 1, 
+                    "total": len(content_items),
+                    "original_title": getattr(item, 'metadata', {}).get('original_title', ''),
+                    "original_content": getattr(item, 'metadata', {}).get('original_content', ''),
+                    "rephrased": getattr(item, 'metadata', {}).get('rephrased', False)
+                }
                 downloaded_files.append({
                     "path": None,
-                    "type": "text",
+                    "type": "text", 
                     "title": item.title,
-                    "metadata": {"content": item.content, "index": i + 1, "total": len(content_items)}
+                    "original_title": getattr(item, 'metadata', {}).get('original_title', ''),
+                    "original_content": getattr(item, 'metadata', {}).get('original_content', ''),
+                    "rephrased": getattr(item, 'metadata', {}).get('rephrased', False),
+                    "metadata": text_metadata
                 })
         
         logger.info(f"✅ Downloaded {len(downloaded_files)} media files")
@@ -199,21 +211,9 @@ class ScrapedMediaComposer:
             logger.error("No downloaded files to process!")
             return []
         
-        # Dynamic pacing based on content and platform
-        # Each story gets appropriate time based on its complexity
-        if self.platform == "tiktok":
-            # TikTok: Very quick cuts, multiple media per story
-            min_time_per_clip = 5.0  # Base time, but we'll use multiple shots
-            shots_per_story = 3  # Multiple quick shots per story
-        else:
-            min_time_per_clip = 8.0  # Standard pacing
-            shots_per_story = 2  # Fewer cuts for other platforms
-        
-        ideal_time_per_clip = total_duration / num_clips
-        time_per_clip = max(min_time_per_clip, ideal_time_per_clip)
-        
-        # If we need more time, extend total duration
-        actual_duration = time_per_clip * num_clips
+        # RESPECT USER'S REQUESTED DURATION - calculate time per clip exactly
+        time_per_clip = total_duration / num_clips if num_clips > 0 else total_duration
+        actual_duration = total_duration  # Always respect user's exact duration
         
         logger.info(f"📊 Creating {num_clips} clips, {time_per_clip:.1f}s each (total: {actual_duration:.1f}s)")
         
@@ -222,13 +222,20 @@ class ScrapedMediaComposer:
             logger.info(f"🎬 Processing clip {i+1}/{num_clips}: {media['type']} - {media.get('title', 'No title')[:50]}")
             
             if media["type"] == "text":
-                # Create text video segment
+                # Create text video segment with rephrasing info
+                segment_metadata = media.get("metadata", {})
+                # Pass through rephrasing information
+                segment_metadata.update({
+                    "original_title": media.get("original_title", ""),
+                    "original_content": media.get("original_content", ""),  
+                    "rephrased": media.get("rephrased", False)
+                })
                 clip_path = await self._create_text_segment(
                     media["title"],
                     media.get("metadata", {}).get("content", ""),
                     time_per_clip,
                     style,
-                    media.get("metadata", {})
+                    segment_metadata
                 )
                 
                 # Verify the clip was created
@@ -519,17 +526,19 @@ class ScrapedMediaComposer:
         font_content = None
         font_loaded = False
         
-        # Get font sizes from AI-selected visual styles
-        title_font_size = visual_styles.get('HEADER_FONT', {}).get('size', 72)
-        content_font_size = visual_styles.get('CONTENT_FONT', {}).get('size', 42)
+        # Get font sizes from AI-selected visual styles - but ensure they're reasonable
+        title_font_size = visual_styles.get('HEADER_FONT', {}).get('size', 48)
+        content_font_size = visual_styles.get('CONTENT_FONT', {}).get('size', 32)
         
-        # Adjust for platform if needed
+        # Platform-specific adjustments - MASSIVE FONTS FOR READABILITY
         if self.platform == "tiktok":
-            # Slightly smaller for portrait mode if too large
-            if title_font_size > 80:
-                title_font_size = int(title_font_size * 0.8)
-            if content_font_size > 50:
-                content_font_size = int(content_font_size * 0.8)
+            # Portrait mode - HUGE FONTS
+            title_font_size = 100  # Big bold title
+            content_font_size = 60  # Large readable content
+        else:
+            # Landscape mode - LARGE FONTS
+            title_font_size = 110
+            content_font_size = 65
         
         logger.info(f"📝 Using AI-selected font sizes - Title: {title_font_size}, Content: {content_font_size}")
         
@@ -559,19 +568,19 @@ class ScrapedMediaComposer:
         # Detect if text is RTL (Hebrew/Arabic)
         is_rtl = any('\u0590' <= char <= '\u05FF' or '\u0600' <= char <= '\u06FF' for char in title)
         
-        # Adjust layout for different platforms
+        # USE FULL SCREEN for text display
         if self.platform == "tiktok":
-            # Portrait layout - position text in viewable area
-            title_y = 600  # Move title lower to middle area
-            content_y_start = 750  # Content below title
-            overlay_width = int(width * 0.95)  # Wider for better text display
+            # Portrait layout - USE ENTIRE SCREEN
+            title_y = int(height * 0.22)  # Move title down (was 0.15)
+            content_y_start = title_y + 100  # Content closer to title
+            overlay_width = int(width * 0.95)  # Use almost full width
             overlay_x = (width - overlay_width) // 2
         else:
-            # Landscape layout
-            title_y = 225
-            content_y_start = 400
-            overlay_width = 1600
-            overlay_x = 160
+            # Landscape layout - USE MORE SCREEN
+            title_y = int(height * 0.30)  # Move title down (was 0.25)
+            content_y_start = title_y + 90
+            overlay_width = int(width * 0.90)  # Use 90% width
+            overlay_x = (width - overlay_width) // 2
         
         # Draw title with proper alignment and text wrapping
         center_x = width // 2
@@ -613,12 +622,33 @@ class ScrapedMediaComposer:
             # Make sure we show the complete title - no truncation
             return lines
         
+        # Check if we have both original and rephrased versions for dual display
+        has_original = metadata and (metadata.get('original_title') or 'original_title' in item for item in [metadata])
+        if has_original:
+            original_title = metadata.get('original_title', title)
+            original_content = metadata.get('original_content', content)
+            is_rephrased = metadata.get('rephrased', False)
+            
+            if is_rephrased and original_title != title:
+                logger.info(f"📝 Dual text display: '{title[:30]}...' + original: '{original_title[:20]}...'")
+        else:
+            original_title = None
+            is_rephrased = False
+        
         # Wrap title - show complete title even if it needs multiple lines
         title_lines = wrap_text_properly(title, font_title, max_width)
         line_height = int(title_font_size * 1.3)  # Dynamic line height based on font size
         
-        # Calculate total height needed for title
-        total_title_height = len(title_lines) * line_height + 40  # Add padding
+        # Calculate space needed for dual display if applicable
+        original_space = 0
+        if original_title and is_rephrased and original_title != title:
+            # Add space for original title in smaller font
+            original_font_size = int(title_font_size * 0.7)  # 70% of main font size
+            original_lines = wrap_text_properly(f"Original: {original_title}", font_content, max_width)
+            original_space = len(original_lines) * int(original_font_size * 1.2) + 20
+        
+        # Calculate total height needed for title (including original if needed)
+        total_title_height = len(title_lines) * line_height + original_space + 60  # Add padding
         
         # Create semi-transparent background that fits the entire title
         overlay_y = title_y - 30  # Start a bit above title
@@ -633,8 +663,8 @@ class ScrapedMediaComposer:
         img.paste(border_overlay, (overlay_x, overlay_y), border_overlay)
         img.paste(border_overlay, (overlay_x, overlay_y + overlay_height - 3), border_overlay)
         
-        # Calculate starting y position to center title in overlay
-        start_y = overlay_y + 40  # Start with padding from top
+        # Calculate starting y position - no overlay needed
+        start_y = title_y  # Start directly at title position
         
         for i, line in enumerate(title_lines):
             line_y = start_y + i * line_height
@@ -655,51 +685,29 @@ class ScrapedMediaComposer:
             else:
                 draw.text((center_x, line_y), line, fill=(255, 255, 255), font=font_title, anchor="ma")
         
-        # Draw content with modern styling
-        if content:
-            # Add semi-transparent overlay for content area
-            if self.platform == "tiktok":
-                content_overlay_width = int(width * 0.9)  # Wider overlay
-                content_overlay_height = 1000  # Taller overlay for more text
-                content_overlay_x = (width - content_overlay_width) // 2
-                content_overlay_y = 380  # Start higher to fit more content
-            else:
-                content_overlay_width = 1400
-                content_overlay_height = 600
-                content_overlay_x = 260
-                content_overlay_y = 350
+        # Add original title below main title if we have dual display
+        if original_title and is_rephrased and original_title != title:
+            original_font_size = int(title_font_size * 0.7)
+            try:
+                original_font = ImageFont.truetype(font_paths[0] if font_paths else '', original_font_size) if font_loaded else ImageFont.load_default()
+            except:
+                original_font = font_content
             
-            content_overlay = Image.new('RGBA', (content_overlay_width, content_overlay_height), (0, 0, 0, 120))
-            img.paste(content_overlay, (content_overlay_x, content_overlay_y), content_overlay)
+            # Just show the original title without "Original:" prefix
+            original_text = original_title
+            original_lines = wrap_text_properly(original_text, original_font, max_width)
+            # Move original text up from bottom - to 70% of screen height
+            original_start_y = int(height * 0.70)  # Move up (was 0.8)
             
-            # Better text wrapping for different languages
-            if is_rtl:
-                # RTL languages need special handling - wider for more content
-                lines = content.split('\n') if '\n' in content else textwrap.wrap(content, width=50)
-            else:
-                lines = textwrap.wrap(content, width=70)
-            
-            y_offset = content_y_start
-            line_spacing = 45 if self.platform == "tiktok" else 55
-            # Increase max lines to show more content
-            max_lines = 16 if self.platform == "tiktok" else 14
-            
-            for line in lines[:max_lines]:
-                if is_rtl and RTL_SUPPORT:
-                    # Hebrew doesn't need reshaping, only bidi reordering
-                    if any('\u0590' <= char <= '\u05FF' for char in line):
-                        # Hebrew text - PIL handles it correctly, no need for bidi
-                        draw.text((center_x, y_offset), line, fill=(240, 240, 240), font=font_content, anchor="ma")
-                    else:
-                        # Arabic text - needs reshaping and bidi
-                        reshaped_line = arabic_reshaper.reshape(line)
-                        bidi_line = get_display(reshaped_line)
-                        draw.text((center_x, y_offset), bidi_line, fill=(240, 240, 240), font=font_content, anchor="ma")
-                elif is_rtl:
-                    draw.text((center_x, y_offset), line[::-1], fill=(240, 240, 240), font=font_content, anchor="ma")
-                else:
-                    draw.text((center_x, y_offset), line, fill=(240, 240, 240), font=font_content, anchor="ma")
-                y_offset += line_spacing
+            for i, orig_line in enumerate(original_lines):
+                orig_y = original_start_y + i * int(original_font_size * 1.2)
+                # Draw original in dimmer color to distinguish from main title
+                # Draw original with shadow
+                draw.text((center_x + 2, orig_y + 2), orig_line, fill=(0, 0, 0, 200), font=original_font, anchor="ma")
+                draw.text((center_x, orig_y), orig_line, fill=(180, 180, 180), font=original_font, anchor="ma")
+        
+        # SIMPLIFIED DISPLAY - TITLE ONLY, NO LONG CONTENT
+        # Removed content display to reduce text clutter in video
         
         # Add modern overlay elements
         # Top bar

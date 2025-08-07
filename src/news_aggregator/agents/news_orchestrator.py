@@ -58,6 +58,12 @@ class NewsOrchestrator:
             'role': 'Style and Tone Advisor',
             'personality': 'Creative director ensuring content matches desired style',
             'focus': ['style consistency', 'tone appropriateness', 'brand alignment']
+        },
+        {
+            'name': 'ContentRewriter',
+            'role': 'Content Rewriting Specialist',
+            'personality': 'Creative writer who adapts content tone while preserving facts',
+            'focus': ['humor adaptation', 'satirical rewriting', 'tone transformation']
         }
     ]
     
@@ -108,9 +114,13 @@ class NewsOrchestrator:
             selection_results, style, tone
         )
         
-        # Compile results
+        # Compile results - SMART SELECTION: Cap at 15 stories max for performance
+        # This prevents timeout issues when max_stories is high (like 50)
+        optimal_story_count = min(max_stories, 15) if max_stories > 10 else max_stories
+        logger.info(f"🎯 AI agents selected {optimal_story_count} stories from {len(content)} available (max requested: {max_stories})")
+        
         result = {
-            'selected_indices': final_ranking['indices'][:max_stories],
+            'selected_indices': final_ranking['indices'][:optimal_story_count],
             'insights': final_ranking['insights'],
             'reasoning': final_ranking['reasoning'],
             'discussion_summary': self._summarize_discussion()
@@ -573,41 +583,207 @@ Format your response as JSON."""
             
         except Exception as e:
             logger.error(f"Style selection failed: {e}")
-            # Return sensible defaults with platform-specific elements
-            platform_defaults = {
-                "tiktok": {
-                    "HOOKS": ["🔴 BREAKING", "⚡ URGENT", "🚨 JUST IN", "💥 SHOCKING"],
-                    "HOOK_COLOR": "#ff0000",
-                    "TRANSITIONS": ["swipe", "zoom", "split-screen", "fade"]
-                },
-                "instagram": {
-                    "HOOKS": ["BREAKING NEWS", "NOW", "LATEST", "DEVELOPING"],
-                    "HOOK_COLOR": "#e60023",
-                    "TRANSITIONS": ["fade", "slide", "zoom"]
-                },
-                "youtube": {
-                    "HOOKS": ["BREAKING:", "LIVE UPDATE:", "NEWS ALERT:", "EXCLUSIVE:"],
-                    "HOOK_COLOR": "#cc0000",
-                    "TRANSITIONS": ["cut", "fade", "wipe"]
-                },
-                "twitter": {
-                    "HOOKS": ["BREAKING", "UPDATE", "NOW"],
-                    "HOOK_COLOR": "#1da1f2",
-                    "TRANSITIONS": ["cut", "fade"]
-                }
-            }
-            
-            platform_data = platform_defaults.get(platform, platform_defaults["youtube"])
-            
-            return {
-                'HEADER_FONT': {'name': 'Impact' if platform == 'tiktok' else 'Arial Unicode', 'size': 72 if platform == 'youtube' else 60},
-                'CONTENT_FONT': {'name': 'Arial Unicode', 'size': 42 if platform == 'youtube' else 32},
-                'COLOR_SCHEME': {'primary': '#1a1a1a', 'accent': '#ff6600'},
-                'OVERLAY_STYLE': 'modern' if platform in ['tiktok', 'instagram'] else 'minimal',
-                'ANIMATION_STYLE': 'subtle' if tone == 'professional' else 'dynamic',
-                'HOOK_FONT': {'name': 'Impact', 'size': 72},
-                **platform_data
-            }
+    
+    async def rephrase_content_with_tone(
+        self,
+        content_items: List[Dict[str, Any]],
+        style: str,
+        tone: str,
+        language: str = "en"
+    ) -> List[Dict[str, Any]]:
+        """Rephrase news content with the specified tone while preserving facts"""
+        
+        logger.info(f"🎭 Rephrasing content with tone: {tone}, style: {style}")
+        
+        # Check if we need rephrasing based on tone/style
+        tone_lower = tone.lower()
+        style_lower = style.lower()
+        
+        # Always rephrase if tone/style indicates transformation is needed
+        # Don't assume specific keywords - let AI interpret the user's intent
+        needs_rephrasing = (
+            tone_lower != 'neutral' and 
+            tone_lower != 'informative' and
+            tone_lower != 'professional' and
+            style_lower != 'standard' and
+            style_lower != 'professional'
+        )
+        
+        if not needs_rephrasing:
+            logger.info("📝 No tone rephrasing needed - returning original content")
+            # Just add original_text field for dual display
+            for item in content_items:
+                item['original_title'] = item['title']
+                item['original_content'] = item.get('content', '')
+            return content_items
+        
+        logger.info(f"🎭 Rephrasing requested for tone: {tone}, style: {style}")
+        
+        # Create AI agent discussion for rephrasing
+        logger.info("🤖 AI Agents discussing rephrasing approach based on user's tone/style...")
+        
+        rephrased_items = []
+        
+        for i, item in enumerate(content_items):
+            try:
+                original_title = item['title']
+                original_content = item.get('content', '')
+                
+                # Create dynamic rephrasing prompt based on user's tone/style
+                prompt = f"""You are a team of creative news writers adapting content to match this specific tone and style:
+TONE: {tone}
+STYLE: {style}
+
+ORIGINAL NEWS:
+Title: {original_title}
+Content: {original_content[:500] if original_content else ''}
+
+YOUR TASK: Transform this into {style} with {tone} tone in {language}.
+
+YOUR TASK: Completely transform this news into {tone} with {style}.
+
+IMPORTANT - BE ACTUALLY FUNNY/SATIRICAL:
+- If tone includes 'funny', 'humor', 'satire', 'sarcastic' - BE EXTREMELY SATIRICAL
+- Mock the absurdity of the situation
+- Use exaggeration and irony
+- Point out the ridiculous aspects
+- Be witty and clever, not just factual
+- Think The Onion, The Daily Show, SNL Weekend Update
+
+OUTPUT RULES:
+- Title: MAX 40 chars - MUST be funny/satirical if tone requires
+- Content: 200-300 chars - Full satirical paragraph
+- ACTUALLY BE {tone} - don't just state facts!
+- Examples of good satirical titles:
+  * "Gov Shocked: Things Cost Money"
+  * "Breaking: Problem Still Problem"
+  * "Expert: 'We Tried Nothing'"
+
+For Hebrew (VERY SHORT!):
+- "שוב: [דבר צפוי]" (Again: [predictable])
+- "הלם: [דבר ברור]" (Shock: [obvious])
+- "פתרון: [עושה יותר גרוע]" (Solution: [makes worse])
+
+IMPORTANT RULES:
+1. Keep ALL facts, names, dates accurate - only change the presentation
+2. Be clever and funny, not offensive or hurtful
+3. Target the absurdity of situations, not victims
+4. Make it sound like real news but with obvious satirical twist
+5. The title should immediately signal this is satire through its framing
+
+PROVIDE YOUR RESPONSE IN THIS FORMAT:
+REPHRASED_TITLE: [MAX 40 chars - MUST be funny/satirical]
+REPHRASED_CONTENT: [MAX 60 chars - Short satirical punch line only]
+
+REMEMBER: The rephrased title MUST be significantly different from the original while keeping facts accurate!"""
+                
+                # Generate rephrased content with higher temperature for creativity
+                try:
+                    response = await self.ai_manager.generate_content_async(
+                        prompt=prompt,
+                        max_tokens=1000,
+                        temperature=0.9  # Higher temperature for more creative output
+                    )
+                    
+                    # Parse response more robustly
+                    rephrased_title = None
+                    rephrased_content = None
+                    
+                    if response:
+                        # Log the response for debugging
+                        logger.debug(f"AI Response: {response[:500]}...")
+                        
+                        # Try multiple parsing approaches
+                        lines = response.split('\n')
+                        
+                        # Look for REPHRASED_TITLE
+                        for j, line in enumerate(lines):
+                            if 'REPHRASED_TITLE' in line.upper():
+                                # Get the content after the colon
+                                if ':' in line:
+                                    candidate = line.split(':', 1)[-1].strip()
+                                    # Also check next line if current is empty
+                                    if not candidate and j + 1 < len(lines):
+                                        candidate = lines[j + 1].strip()
+                                    if candidate and candidate != original_title:
+                                        rephrased_title = candidate
+                                        logger.info(f"🎭 Found rephrased title: {rephrased_title[:50]}...")
+                                        break
+                        
+                        # Look for REPHRASED_CONTENT
+                        for j, line in enumerate(lines):
+                            if 'REPHRASED_CONTENT' in line.upper():
+                                if ':' in line:
+                                    candidate = line.split(':', 1)[-1].strip()
+                                    if not candidate and j + 1 < len(lines):
+                                        candidate = lines[j + 1].strip()
+                                    if candidate:
+                                        rephrased_content = candidate
+                                        break
+                    
+                    # Validate we got actual rephrasing
+                    # STRICTLY limit title length for video display
+                    if rephrased_title and rephrased_title != original_title:
+                        # Hard limit: 45 chars max for readability on video
+                        if len(rephrased_title) > 45:
+                            rephrased_title = rephrased_title[:42] + "..."
+                            logger.info(f"Truncated long title to: {rephrased_title}")
+                    
+                    if not rephrased_title or rephrased_title == original_title or len(rephrased_title) < 10:
+                        logger.warning(f"AI didn't generate proper title, creating satirical version manually")
+                        # Create SHORT manual satirical versions
+                        if language == 'he':
+                            if 'ממשלה' in original_title or 'נתניהו' in original_title:
+                                rephrased_title = "שוב: הממשלה בהלם מהמובן מאליו"
+                            elif 'משבר' in original_title or 'בעיה' in original_title:
+                                rephrased_title = "משבר חדש (כמו אתמול)"
+                            elif 'חדש' in original_title or 'לראשונה' in original_title:
+                                rephrased_title = "חדש: אותו דבר בדיוק"
+                            elif 'משפחות' in original_title or 'חטופים' in original_title:
+                                rephrased_title = "דרישה: עשו משהו סוף סוף"
+                            else:
+                                rephrased_title = "בינתיים: הכל כרגיל"
+                        else:
+                            rephrased_title = "Breaking: Nothing New"
+                    else:
+                        # We got a good rephrased title
+                        logger.info(f"✅ AI successfully rephrased: '{original_title[:30]}...' -> '{rephrased_title[:30]}...'")
+                    
+                    if not rephrased_content:
+                        rephrased_content = original_content
+                        
+                except Exception as e:
+                    logger.error(f"AI generation error: {e}")
+                    # Better fallback
+                    if language == 'he':
+                        rephrased_title = f"הסיפור שלא יאמן: {original_title[:40]}..."
+                    else:
+                        rephrased_title = f"You Won't Believe: {original_title[:40]}..."
+                    rephrased_content = original_content
+                
+                # Create rephrased item with both versions
+                rephrased_item = item.copy()
+                rephrased_item['title'] = rephrased_title
+                rephrased_item['content'] = rephrased_content
+                rephrased_item['original_title'] = original_title
+                rephrased_item['original_content'] = original_content
+                rephrased_item['rephrased'] = True
+                
+                logger.info(f"🎭 Rephrased story {i+1}: '{original_title[:40]}...' -> '{rephrased_title[:40]}...'")
+                
+                rephrased_items.append(rephrased_item)
+                
+            except Exception as e:
+                logger.warning(f"Failed to rephrase item {i+1}: {e}")
+                # Keep original with dual display fields
+                item_copy = item.copy()
+                item_copy['original_title'] = item['title']
+                item_copy['original_content'] = item.get('content', '')
+                item_copy['rephrased'] = False
+                rephrased_items.append(item_copy)
+        
+        logger.info(f"✅ Rephrased {len([i for i in rephrased_items if i.get('rephrased', False)])} out of {len(content_items)} items")
+        return rephrased_items
     
     def _parse_style_response(self, response: str) -> Dict[str, Any]:
         """Parse style response from text"""
