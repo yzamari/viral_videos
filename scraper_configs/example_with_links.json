@@ -1,0 +1,100 @@
+{
+  "name": "Example News Site with Link Following",
+  "base_url": "https://example-news.com",
+  "language": "en",
+  "description": "Example configuration showing link-following feature",
+  "selectors": {
+    "article_container": "article, .news-item, .story",
+    "title": "h1, h2, .headline",
+    "url": "a[href]",
+    "description": "p.summary, .excerpt, p:first-of-type",
+    "image": "img[src]",
+    "video": "video, iframe[src*='youtube'], iframe[src*='vimeo']",
+    "author": ".author, .byline",
+    "date": "time, .published-date",
+    "tags": ".tag, .category"
+  },
+  "media_extraction": {
+    "image_selector": "img[src], picture source[srcset]",
+    "video_selector": "video source[src], iframe[src*='video']",
+    "min_image_width": 200,
+    "exclude_patterns": [
+      "logo",
+      "icon",
+      "avatar",
+      "banner"
+    ]
+  },
+  "follow_embedded_links": true,
+  "max_link_depth": 1,
+  "max_links_to_follow": 5,
+  "link_follow_config": {
+    "enabled": true,
+    "follow_external": true,
+    "follow_internal": true,
+    "exclude_domains": [
+      "facebook.com",
+      "twitter.com",
+      "instagram.com",
+      "linkedin.com"
+    ],
+    "priority_domains": [
+      "imgur.com",
+      "flickr.com",
+      "youtube.com",
+      "vimeo.com"
+    ],
+    "comment": "This feature follows links in article content to find additional media"
+  },
+  "category_mapping": {
+    "politics": [
+      "election",
+      "government",
+      "minister",
+      "parliament"
+    ],
+    "technology": [
+      "AI",
+      "software",
+      "hardware",
+      "startup",
+      "tech"
+    ],
+    "sports": [
+      "football",
+      "basketball",
+      "soccer",
+      "tennis",
+      "olympic"
+    ],
+    "entertainment": [
+      "movie",
+      "music",
+      "celebrity",
+      "concert",
+      "festival"
+    ]
+  },
+  "patterns": {
+    "category_patterns": {
+      "/politics/": "politics",
+      "/tech/": "technology",
+      "/sports/": "sports",
+      "/entertainment/": "entertainment"
+    }
+  },
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (compatible; NewsBot/1.0)",
+    "Accept": "text/html,application/xhtml+xml",
+    "Accept-Language": "en-US,en;q=0.9"
+  },
+  "encoding": "utf-8",
+  "fallback_content": [
+    {
+      "title": "Test Article with Embedded Links",
+      "description": "This article contains links to other pages with media. When link following is enabled, the scraper will visit those pages and extract their media.",
+      "url": "https://example.com/test-article",
+      "note": "This is fallback content for testing when the actual site is unavailable"
+    }
+  ]
+}

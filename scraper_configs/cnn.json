@@ -1,0 +1,55 @@
+{
+  "name": "CNN",
+  "base_url": "https://www.cnn.com",
+  "language": "en",
+  "description": "CNN News - Breaking News, Latest News and Videos",
+  "selectors": {
+    "article_container": "a[href*='/2025/'], a[href*='/2024/']",
+    "title": "span",
+    "url": "",
+    "description": "",
+    "image": "img",
+    "video": "video"
+  },
+  "media_extraction": {
+    "image_selector": "img[src], picture source[srcset]",
+    "video_selector": "video source[src], iframe[src*='cnn']"
+  },
+  "follow_embedded_links": true,
+  "max_link_depth": 1,
+  "max_links_to_follow": 3,
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9"
+  },
+  "fallback_content": [
+    {
+      "title": "Breaking: Major Economic Development Announced",
+      "description": "Federal Reserve signals potential changes to interest rate policy amid economic uncertainty. Markets react to the announcement with significant movements.",
+      "url": "https://cnn.com/2025/01/07/economy",
+      "images": [
+        "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&q=80"
+      ],
+      "category": "economy"
+    },
+    {
+      "title": "Technology Giant Unveils Revolutionary Product",
+      "description": "Major tech company announces breakthrough innovation that could transform the industry. Experts predict widespread adoption within two years.",
+      "url": "https://cnn.com/2025/01/07/tech",
+      "images": [
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80"
+      ],
+      "category": "technology"
+    },
+    {
+      "title": "International Summit Reaches Critical Agreement",
+      "description": "World leaders conclude historic summit with unanimous agreement on key global issues. The accord is expected to shape international policy for years to come.",
+      "url": "https://cnn.com/2025/01/07/world",
+      "images": [
+        "https://images.unsplash.com/photo-1521791055366-0d553872125f?w=1200&q=80"
+      ],
+      "category": "world"
+    }
+  ]
+}

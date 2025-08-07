@@ -1,0 +1,78 @@
+{
+  "name": "Demo News with Real Media",
+  "base_url": "https://demo.example.com",
+  "language": "en",
+  "description": "Demo configuration with real accessible media",
+  "selectors": {
+    "article_container": "article",
+    "title": "h2",
+    "url": "a[href]",
+    "description": "p",
+    "image": "img",
+    "video": "video"
+  },
+  "follow_embedded_links": true,
+  "max_link_depth": 1,
+  "max_links_to_follow": 3,
+  "fallback_content": [
+    {
+      "title": "Breaking: Major Tech Breakthrough in AI Research",
+      "description": "Scientists announce groundbreaking advancement in artificial intelligence that could revolutionize computing. The new system demonstrates unprecedented capabilities in understanding and generating human language.",
+      "url": "https://demo.example.com/tech-breakthrough",
+      "images": [
+        "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80",
+        "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&q=80"
+      ],
+      "videos": [
+        "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4"
+      ],
+      "category": "technology",
+      "embedded_links": [
+        "https://www.nature.com/articles/ai-breakthrough"
+      ]
+    },
+    {
+      "title": "Global Climate Summit Reaches Historic Agreement",
+      "description": "World leaders unite in unprecedented commitment to combat climate change. The agreement includes concrete targets for emissions reduction and renewable energy adoption by 2030.",
+      "url": "https://demo.example.com/climate-summit",
+      "images": [
+        "https://images.unsplash.com/photo-1569163139394-de4798aa62b6?w=1200&q=80",
+        "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=1200&q=80"
+      ],
+      "category": "environment"
+    },
+    {
+      "title": "Olympic Champion Breaks World Record",
+      "description": "In a stunning display of athleticism, the defending champion shattered the previous world record by over 2 seconds, leaving spectators in awe.",
+      "url": "https://demo.example.com/olympic-record",
+      "images": [
+        "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1200&q=80",
+        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1200&q=80"
+      ],
+      "videos": [
+        "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4"
+      ],
+      "category": "sports"
+    },
+    {
+      "title": "Historic Art Discovery: Lost Masterpiece Found",
+      "description": "Art historians confirm the authentication of a previously unknown masterpiece, discovered in a private collection after being missing for over 300 years.",
+      "url": "https://demo.example.com/art-discovery",
+      "images": [
+        "https://images.unsplash.com/photo-1578662996442-48f60103fc31?w=1200&q=80",
+        "https://images.unsplash.com/photo-1549289524-06cf8837ace5?w=1200&q=80"
+      ],
+      "category": "culture"
+    },
+    {
+      "title": "Medical Breakthrough: New Treatment Shows Promise",
+      "description": "Researchers announce successful trials of revolutionary treatment that could help millions of patients worldwide. Early results show 90% effectiveness rate.",
+      "url": "https://demo.example.com/medical-breakthrough",
+      "images": [
+        "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1200&q=80",
+        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&q=80"
+      ],
+      "category": "health"
+    }
+  ]
+}

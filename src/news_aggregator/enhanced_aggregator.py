@@ -201,6 +201,11 @@ class EnhancedNewsAggregator:
                     style, tone, platform, languages[0]
                 )
                 logger.info(f"🎨 AI selected visual styles: {visual_styles}")
+                
+                # 3.5. AI Content Rephrasing (NEW!)
+                selected_content = await self.orchestrator.rephrase_content_with_tone(
+                    selected_content, style, tone, languages[0]
+                )
         else:
             # Simple selection based on relevance
             selected_content = self._simple_select_content(unique_content, max_stories)
@@ -356,16 +361,32 @@ class EnhancedNewsAggregator:
             logger.info(f"✅ Found config for {source_name}, scraping {config.base_url}")
             # Use universal scraper directly instead of _scrape_url to avoid double processing
             articles = await self.universal_scraper.scrape_website(source_name.lower(), max_items=20)
-            # Convert to dict format
-            return [{
-                'title': article.get('title', ''),
-                'content': article.get('description', ''),
-                'url': article.get('url', config.base_url),
-                'source': config.name,
-                'images': article.get('images', []),
-                'videos': article.get('videos', []),
-                'category': article.get('category', 'news')
-            } for article in articles]
+            # Convert to dict format with proper media fields
+            result = []
+            for article in articles:
+                item = {
+                    'title': article.get('title', ''),
+                    'content': article.get('description', ''),
+                    'url': article.get('url', config.base_url),
+                    'source': config.name,
+                    'category': article.get('category', 'news')
+                }
+                
+                # Handle images - prioritize article_images, then images array
+                images = article.get('article_images', []) or article.get('images', [])
+                if images and len(images) > 0:
+                    item['image_url'] = images[0]
+                    item['article_images'] = images
+                
+                # Handle videos - prioritize article_videos, then videos array  
+                videos = article.get('article_videos', []) or article.get('videos', [])
+                if videos and len(videos) > 0:
+                    item['video_url'] = videos[0]
+                    item['article_videos'] = videos
+                
+                result.append(item)
+            
+            return result
         else:
             logger.warning(f"❌ Unknown source: {source_name}")
             logger.info(f"💡 Add a {source_name.lower()}.json config file to scraper_configs/ directory")
@@ -587,27 +608,49 @@ class EnhancedNewsAggregator:
             logger.info("🔍 YouTube video search enabled")
         
         for item in content:
-            # Download image
-            if item.get('image_url'):
+            # Prioritize article images (from full article page) over preview images
+            image_to_download = None
+            
+            # Check for article images (fetched from article page)
+            if item.get('primary_image'):
+                image_to_download = item['primary_image']
+                logger.info(f"📸 Using primary image from article: {item['title'][:50]}...")
+            elif item.get('article_images') and len(item['article_images']) > 0:
+                image_to_download = item['article_images'][0]
+                logger.info(f"📸 Using article image from article page: {item['title'][:50]}...")
+            elif item.get('image_url'):
+                image_to_download = item['image_url']
+            
+            # Download the best available image
+            if image_to_download:
                 try:
                     result = await self.media_downloader.download_media(
-                        item['image_url'],
+                        image_to_download,
                         metadata={'title': item['title'], 'source': item['source']}
                     )
                     if result and result.get('local_path'):
                         item['local_image'] = result.get('local_path')
+                        logger.info(f"✅ Downloaded image for: {item['title'][:50]}...")
                 except Exception as e:
                     logger.warning(f"Failed to download image: {e}")
             
-            # Download video
-            if item.get('video_url'):
+            # Download video (prioritize article videos)
+            video_to_download = None
+            if item.get('article_videos') and len(item['article_videos']) > 0:
+                video_to_download = item['article_videos'][0]
+                logger.info(f"🎥 Using video from article page: {item['title'][:50]}...")
+            elif item.get('video_url'):
+                video_to_download = item['video_url']
+            
+            if video_to_download:
                 try:
                     result = await self.media_downloader.download_media(
-                        item['video_url'],
+                        video_to_download,
                         metadata={'title': item['title'], 'source': item['source']}
                     )
                     if result and result.get('local_path'):
                         item['local_video'] = result.get('local_path')
+                        logger.info(f"✅ Downloaded video for: {item['title'][:50]}...")
                 except Exception as e:
                     logger.warning(f"Failed to download video: {e}")
             
@@ -762,7 +805,10 @@ class EnhancedNewsAggregator:
             relevance_score=data.get('priority', 0.5),
             metadata={
                 **data.get('ai_insights', {}),
-                'language': data.get('language', 'en')
+                'language': data.get('language', 'en'),
+                'original_title': data.get('original_title', ''),
+                'original_content': data.get('original_content', ''),
+                'rephrased': data.get('rephrased', False)
             }
         )
     

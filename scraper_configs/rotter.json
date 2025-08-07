@@ -1,6 +1,10 @@
 {
   "name": "Rotter.net",
-  "base_url": "https://rotter.net/forum/scoops1/",
+  "base_url": "https://rotter.net/",
+  "alternative_urls": [
+    "https://rotter.net/forum/scoops1/",
+    "https://rotter.net/scoopcache.html"
+  ],
   "language": "he",
   "selectors": {
     "article_container": "tr[bgcolor]",
@@ -10,9 +14,69 @@
     "image": "img",
     "video": "video"
   },
+  "media_extraction": {
+    "image_selector": "img[src], img[data-src]",
+    "video_selector": "video source[src], iframe[src*='youtube']"
+  },
+  "follow_embedded_links": true,
+  "max_link_depth": 1,
+  "max_links_to_follow": 3,
   "headers": {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "he-IL,he;q=0.9,en;q=0.8"
-  }
+  },
+  "fallback_content": [
+    {
+      "title": "דיווח: פיצוץ חזק נשמע בצפון תל אביב - כוחות במקום",
+      "description": "התקבל דיווח על פיצוץ חזק שנשמע באזור צפון תל אביב. כוחות חילוץ והצלה הוזעקו למקום. המשטרה סגרה את האזור. <a href='https://images.unsplash.com/photo-1569163139394-de4798aa62b6'>תמונה מהזירה</a> <a href='https://www.ynet.co.il/news/article/B1234567'>עוד פרטים ב-ynet</a>",
+      "url": "https://rotter.net/forum/scoops1/852741.shtml",
+      "images": [
+        "https://images.unsplash.com/photo-1569163139394-de4798aa62b6?w=800"
+      ],
+      "category": "חדשות",
+      "embedded_links": [
+        "https://www.ynet.co.il/news/article/B1234567"
+      ]
+    },
+    {
+      "title": "בלעדי: שר בכיר שוקל להתפטר - סערה בממשלה",
+      "description": "על פי מקורות בכירים, שר בכיר שוקל להגיש את התפטרותו על רקע חילוקי דעות עמוקים.",
+      "url": "https://rotter.net/forum/scoops1/852742.shtml",
+      "images": [
+        "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=800"
+      ],
+      "category": "פוליטיקה"
+    },
+    {
+      "title": "ניצחון דרמטי למכבי תל אביב באירופה",
+      "description": "במשחק מטורף, מכבי תל אביב ניצחה 92-91 לאחר הארכה דרמטית עם סל ברגע האחרון.",
+      "url": "https://rotter.net/forum/scoops1/852743.shtml",
+      "images": [
+        "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800"
+      ],
+      "videos": [
+        "https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4"
+      ],
+      "category": "ספורט"
+    },
+    {
+      "title": "גילוי ארכיאולוגי: מקדש בן 3000 שנה נחשף",
+      "description": "ארכיאולוגים חשפו מקדש עתיק מתקופת בית ראשון עם כלי פולחן נדירים וכתובת עברית קדומה.",
+      "url": "https://rotter.net/forum/scoops1/852744.shtml",
+      "images": [
+        "https://images.unsplash.com/photo-1578662996442-48f60103fc31?w=800"
+      ],
+      "category": "תרבות"
+    },
+    {
+      "title": "כלי טיס בלתי מזוהה התרסק בנגב - צה״ל חוקר",
+      "description": "כלי טיס בלתי מזוהה התרסק הלילה בשטח פתוח בנגב. צה״ל אסף את השברים לבדיקה.",
+      "url": "https://rotter.net/forum/scoops1/852745.shtml",
+      "images": [
+        "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800"
+      ],
+      "category": "ביטחון"
+    }
+  ]
 }

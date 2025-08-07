@@ -37,6 +37,9 @@ class ScraperConfig:
         self.category_mapping = config_dict.get('category_mapping', {})
         self.media_extraction = config_dict.get('media_extraction', {})
         self.fallback_content = config_dict.get('fallback_content', [])
+        self.follow_embedded_links = config_dict.get('follow_embedded_links', True)  # Enable by default
+        self.max_link_depth = config_dict.get('max_link_depth', 1)  # How deep to follow links
+        self.max_links_to_follow = config_dict.get('max_links_to_follow', 5)  # Max links per article
 
 
 class UniversalNewsScraper:
@@ -70,7 +73,7 @@ class UniversalNewsScraper:
         self.configs[site_id] = ScraperConfig(config)
         print(f"✅ Added configuration for {config['name']}")
     
-    async def scrape_website(self, site_id: str, max_items: int = 20) -> List[Dict]:
+    async def scrape_website(self, site_id: str, max_items: int = 20, fetch_article_media: bool = True) -> List[Dict]:
         """Scrape any configured website"""
         
         if site_id not in self.configs:
@@ -88,10 +91,13 @@ class UniversalNewsScraper:
                 articles.append({
                     'title': item.get('title', ''),
                     'description': item.get('description', ''),
-                    'url': config.base_url,
-                    'images': [],
-                    'videos': [],
-                    'category': 'news'
+                    'url': item.get('url', config.base_url),
+                    'images': item.get('images', []),
+                    'videos': item.get('videos', []),
+                    'category': item.get('category', 'news'),
+                    'article_images': item.get('images', []),  # Add images as article_images too
+                    'article_videos': item.get('videos', []),  # Add videos as article_videos too
+                    'embedded_links': item.get('embedded_links', [])
                 })
             print(f"  ✅ Found {len(articles)} fallback articles from {config.name}")
             return articles
@@ -116,6 +122,11 @@ class UniversalNewsScraper:
                         
                         # Extract articles using configured selectors
                         articles = self._extract_articles(soup, config, max_items)
+                        
+                        # Fetch media from article pages if requested
+                        if fetch_article_media and len(articles) > 0:
+                            print(f"  📸 Fetching media from article pages...")
+                            articles = await self._enhance_articles_with_media(articles, config, session)
                         
                         print(f"  ✅ Found {len(articles)} articles from {config.name}")
                         if len(articles) == 0:
@@ -207,6 +218,7 @@ class UniversalNewsScraper:
                 if not url.startswith('http'):
                     url = config.base_url.rstrip('/') + '/' + url.lstrip('/')
                 article['url'] = url
+                article['article_url'] = url  # Store for later media extraction
             
             # Extract description
             desc_selector = config.selectors.get('description', 'p')
@@ -215,7 +227,7 @@ class UniversalNewsScraper:
                 if desc_elem:
                     article['description'] = desc_elem.get_text(strip=True)
             
-            # Extract media
+            # Extract media from preview (may be enhanced later from full article)
             article['media_items'] = self._extract_media(element, config)
             
             # Extract category
@@ -310,6 +322,251 @@ class UniversalNewsScraper:
     def _validate_article(self, article: Dict) -> bool:
         """Validate that article has minimum required fields"""
         return bool(article.get('title') and len(article.get('title', '')) > 10)
+    
+    async def _extract_and_follow_links(self, soup: BeautifulSoup, config: ScraperConfig, session: aiohttp.ClientSession, depth: int = 1, max_depth: int = 2) -> List[Dict]:
+        """Extract and follow links within article content to find additional media"""
+        
+        if depth > max_depth:
+            return []
+        
+        media_from_links = []
+        processed_urls = set()  # Avoid processing same URL twice
+        
+        try:
+            # Find links in article content
+            # Look for links in common article content areas
+            content_selectors = [
+                'article a[href]',
+                '.article-content a[href]',
+                '.entry-content a[href]',
+                '.content a[href]',
+                'main a[href]',
+                'p a[href]'  # Links within paragraphs
+            ]
+            
+            links = []
+            for selector in content_selectors:
+                links.extend(soup.select(selector))
+            
+            # Filter links to external sites (likely to have media)
+            external_links = []
+            for link in links[:10]:  # Limit to first 10 links to avoid too many requests
+                href = link.get('href', '')
+                
+                # Skip if already processed
+                if href in processed_urls:
+                    continue
+                    
+                # Filter relevant links (skip social media sharing, navigation, etc.)
+                if any(skip in href.lower() for skip in ['facebook', 'twitter', 'whatsapp', 'telegram', 'mailto:', 'javascript:', '#', 'share', 'print']):
+                    continue
+                
+                # Check if it's a full URL
+                if href.startswith('http'):
+                    # Check if it's external (different domain)
+                    if config.base_url not in href:
+                        external_links.append(href)
+                        processed_urls.add(href)
+                elif href.startswith('/'):
+                    # Internal link - might still have media
+                    full_url = config.base_url.rstrip('/') + href
+                    external_links.append(full_url)
+                    processed_urls.add(full_url)
+            
+            # Follow each link and extract media
+            max_links = config.max_links_to_follow if hasattr(config, 'max_links_to_follow') else 5
+            for url in external_links[:max_links]:  # Limit to configured max links
+                try:
+                    print(f"      🔍 Following link: {url[:50]}...")
+                    
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.5',
+                        'Accept-Encoding': 'gzip, deflate',
+                        'Connection': 'keep-alive',
+                        'Upgrade-Insecure-Requests': '1'
+                    }
+                    
+                    async with session.get(url, headers=headers, timeout=5, allow_redirects=True) as response:
+                        if response.status == 200:
+                            html = await response.text()
+                            link_soup = BeautifulSoup(html, 'html.parser')
+                            
+                            # Extract images from linked page
+                            img_selectors = [
+                                'img[src*="upload"]',
+                                'img[src*="media"]',
+                                'img[src*="image"]',
+                                'article img',
+                                'main img',
+                                '.content img',
+                                'figure img',
+                                'picture img'
+                            ]
+                            
+                            found_images = set()
+                            for selector in img_selectors:
+                                for img in link_soup.select(selector):
+                                    src = img.get('src') or img.get('data-src') or img.get('data-lazy-src')
+                                    if src:
+                                        # Make URL absolute
+                                        if not src.startswith('http'):
+                                            # Get base URL of the linked page
+                                            from urllib.parse import urlparse, urljoin
+                                            base = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
+                                            src = urljoin(base, src)
+                                        
+                                        # Filter out small images (likely icons)
+                                        width = img.get('width')
+                                        if width:
+                                            width_str = str(width).replace('px', '').strip()
+                                            if width_str and width_str.isdigit() and int(width_str) < 100:
+                                                continue
+                                        
+                                        if src not in found_images:
+                                            found_images.add(src)
+                                            media_from_links.append({
+                                                'type': 'image',
+                                                'url': src,
+                                                'source': url,
+                                                'alt': img.get('alt', '')
+                                            })
+                            
+                            # Extract videos from linked page
+                            video_selectors = [
+                                'video source[src]',
+                                'video[src]',
+                                'iframe[src*="youtube"]',
+                                'iframe[src*="vimeo"]',
+                                'iframe[src*="dailymotion"]'
+                            ]
+                            
+                            for selector in video_selectors:
+                                for video in link_soup.select(selector):
+                                    src = video.get('src')
+                                    if src:
+                                        if not src.startswith('http'):
+                                            from urllib.parse import urlparse, urljoin
+                                            base = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
+                                            src = urljoin(base, src)
+                                        
+                                        media_from_links.append({
+                                            'type': 'video',
+                                            'url': src,
+                                            'source': url
+                                        })
+                            
+                            if found_images or media_from_links:
+                                print(f"        ✅ Found {len(found_images)} images from {urlparse(url).netloc}")
+                            
+                except Exception as e:
+                    print(f"        ⚠️ Could not fetch {url[:30]}...: {str(e)[:50]}")
+                    continue
+            
+        except Exception as e:
+            print(f"      ⚠️ Error extracting links: {e}")
+        
+        return media_from_links
+    
+    async def _enhance_articles_with_media(self, articles: List[Dict], config: ScraperConfig, session: aiohttp.ClientSession) -> List[Dict]:
+        """Fetch media from individual article pages and follow embedded links"""
+        enhanced_articles = []
+        
+        for article in articles[:5]:  # Limit to first 5 to avoid too many requests
+            try:
+                if article.get('article_url'):
+                    # Fetch the article page
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        **config.headers
+                    }
+                    
+                    async with session.get(article['article_url'], headers=headers, timeout=5) as response:
+                        if response.status == 200:
+                            html = await response.text()
+                            soup = BeautifulSoup(html, 'html.parser')
+                            
+                            # Extract links from article content for additional media (if enabled)
+                            embedded_links = []
+                            if config.follow_embedded_links:
+                                embedded_links = await self._extract_and_follow_links(
+                                    soup, config, session, 
+                                    depth=1, 
+                                    max_depth=config.max_link_depth
+                                )
+                            
+                            # Extract images from article page
+                            images = []
+                            
+                            # Common selectors for article images
+                            img_selectors = [
+                                'article img',
+                                '.article-content img',
+                                '.entry-content img',
+                                'main img',
+                                'img[src*="upload"]',
+                                'img[src*="media"]',
+                                'img[src*="image"]'
+                            ]
+                            
+                            for selector in img_selectors:
+                                for img in soup.select(selector)[:3]:  # Max 3 images per article
+                                    src = img.get('src') or img.get('data-src')
+                                    if src:
+                                        if not src.startswith('http'):
+                                            src = config.base_url.rstrip('/') + '/' + src.lstrip('/')
+                                        if src not in images and 'icon' not in src.lower() and 'logo' not in src.lower():
+                                            images.append(src)
+                            
+                            # Extract videos from article page
+                            videos = []
+                            video_selectors = [
+                                'video source',
+                                'iframe[src*="youtube"]',
+                                'iframe[src*="vimeo"]',
+                                '.video-container iframe'
+                            ]
+                            
+                            for selector in video_selectors:
+                                for video in soup.select(selector)[:2]:  # Max 2 videos per article
+                                    src = video.get('src')
+                                    if src and src not in videos:
+                                        videos.append(src)
+                            
+                            # Update article with found media
+                            if images:
+                                article['article_images'] = images
+                                article['primary_image'] = images[0]
+                                print(f"    📷 Found {len(images)} images for: {article['title'][:50]}...")
+                            
+                            if videos:
+                                article['article_videos'] = videos
+                                print(f"    🎥 Found {len(videos)} videos for: {article['title'][:50]}...")
+                            
+                            # Add media from embedded links
+                            if embedded_links:
+                                for link_media in embedded_links:
+                                    if link_media['type'] == 'image' and link_media['url'] not in images:
+                                        images.append(link_media['url'])
+                                    elif link_media['type'] == 'video' and link_media['url'] not in videos:
+                                        videos.append(link_media['url'])
+                                
+                                if embedded_links:
+                                    print(f"    🔗 Found {len(embedded_links)} media items from embedded links")
+                                    # Update article with additional media
+                                    article['article_images'] = images
+                                    article['article_videos'] = videos
+            
+            except Exception as e:
+                print(f"    ⚠️ Could not fetch media from article: {e}")
+            
+            enhanced_articles.append(article)
+        
+        # Add remaining articles without enhancement
+        enhanced_articles.extend(articles[5:])
+        
+        return enhanced_articles
     
     async def scrape(self, source, hours_back: int = 24) -> List:
         """Scrape method to match the expected interface"""
