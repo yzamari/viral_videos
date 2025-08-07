@@ -1,0 +1,25 @@
+{
+  "name": "Reuters",
+  "base_url": "https://www.reuters.com",
+  "language": "en",
+  "description": "Reuters - Business & Financial News",
+  "selectors": {
+    "article_container": "article, div[class*='StoryCard'], li[class*='story']",
+    "title": "h3, h2, a[data-testid='Heading']",
+    "url": "a[href^='/']",
+    "description": "p, div[class*='description']",
+    "image": "img",
+    "video": "video"
+  },
+  "media_extraction": {
+    "image_selector": "img[src], img[data-src]",
+    "video_selector": "video source[src]"
+  },
+  "follow_embedded_links": true,
+  "max_link_depth": 1,
+  "max_links_to_follow": 3,
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Accept": "text/html,application/xhtml+xml"
+  }
+}

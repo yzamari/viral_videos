@@ -84,6 +84,21 @@ class UniversalNewsScraper:
         
         articles = []
         
+        # Check if we should force Playwright for this site
+        force_playwright = getattr(config, 'force_playwright', False)
+        
+        # Sites known to require JavaScript rendering
+        js_required_sites = ['timesofisrael', 'rotter', 'ynet', 'mako', 'cnn', 'bbc']
+        if any(site in config.name.lower() for site in js_required_sites):
+            force_playwright = True
+            print(f"  🎭 {config.name} requires JavaScript rendering, using Playwright")
+        
+        # Try Playwright first if forced or known to need it
+        if force_playwright and PLAYWRIGHT_AVAILABLE:
+            articles = await self._try_playwright_scraping(config, max_items)
+            if articles:
+                return articles
+        
         # Check if this is a fallback content config (for testing/demo)
         if hasattr(config, 'fallback_content') and config.fallback_content:
             print(f"  💡 Using fallback content for {config.name}")

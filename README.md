@@ -2,30 +2,42 @@
 
 🚀 **Production-ready AI video generation system with 22 specialized agents, centralized decision-making, and comprehensive social media integration.**
 
-🎯 **v3.7.0-rc1 Update**: News Aggregator with Universal Scraping + Telegram Integration!
+🎯 **v3.10.0-rc1 Update**: CSV Import/Export + Playwright Browser Automation + Link-Following!
 
-[![Version](https://img.shields.io/badge/version-3.7.0--rc1-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.7.0-rc1)
+[![Version](https://img.shields.io/badge/version-3.10.0--rc1-blue.svg)](https://github.com/yourusername/viral-video-generator/releases/tag/v3.10.0-rc1)
 [![Status](https://img.shields.io/badge/status-Production%20Ready-green.svg)](https://github.com/yourusername/viral-video-generator)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 
-## ✨ **What's New in v3.7.0-rc1**
+## ✨ **What's New in v3.10.0-rc1**
 
-### 📰 **News Aggregator System** ✅ **PRODUCTION READY!**
-- **Universal Scraping**: Configure ANY website with simple JSON config files
-- **Telegram Integration**: Scrape news from Telegram channels with full media support
-- **Multi-Source Support**: Web pages, RSS feeds, social media, CSV files
-- **Real Media Only**: Uses actual scraped images/videos - no AI generation
-- **Multi-Language**: Hebrew (RTL), Arabic, English, and 40+ languages
-- **Professional Overlays**: Breaking news banners, tickers, live indicators
-- **Smart Content Analysis**: AI-powered relevance filtering and grouping
+### 📊 **CSV Import/Export System** ✅ **BATCH PROCESSING READY!**
+- **CSV Import**: Load articles from CSV with media links
+- **Automatic Export**: Every session generates scraped_articles.csv
+- **Media Links**: Comma-separated URLs for images and videos
+- **Batch Processing**: Handle 100+ articles in single run
+- **Reusable Data**: Build article database over time
 
-### 🔧 **Configuration-Based Scraping** ✅ **NO MORE HARDCODING!**
-- **JSON Configs**: Add new sources without writing code
-- **CSS Selectors**: Simple selector-based content extraction
-- **Fallback Content**: Test articles for development
-- **Media Handling**: Automatic download and caching
-- See [Scraper Configuration Guide](SCRAPER_CONFIG_GUIDE.md) for details
+### 🎭 **Playwright Browser Automation** ✅ **JAVASCRIPT SITES SUPPORTED!**
+- **Full JS Rendering**: Handles dynamic content loading
+- **Auto-Detection**: Automatically uses Playwright for JS-heavy sites
+- **Stealth Mode**: Bypasses basic bot detection
+- **Tested Sites**: Rotter.net, Times of Israel, CNN, BBC, Ynet
+- **Headless Operation**: Runs without GUI for server deployment
+
+### 🔗 **Link-Following for Media** ✅ **DEEP MEDIA EXTRACTION!**
+- **Follow Embedded Links**: Extract media from linked articles
+- **Configurable Depth**: Control how deep to follow links
+- **Smart Filtering**: Avoids social media and ads
+- **Media Discovery**: Finds hidden images/videos in articles
+- **Performance**: Parallel processing with rate limiting
+
+### 📰 **Enhanced News Aggregator** ✅ **PRODUCTION READY!**
+- **15+ Pre-configured Sites**: Major news sources ready to use
+- **Universal Scraping**: Configure ANY website with JSON
+- **Multi-Language**: Hebrew (RTL), Arabic, English, 40+ languages
+- **Professional Overlays**: Breaking news banners, tickers
+- **AI Content Selection**: 22-agent system for best stories
 
 ## ✅ **TRENDING INTELLIGENCE - NOW WITH REAL DATA!**
 

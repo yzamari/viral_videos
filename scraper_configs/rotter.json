@@ -7,10 +7,10 @@
   ],
   "language": "he",
   "selectors": {
-    "article_container": "tr[bgcolor]",
-    "title": "a b, b a",
-    "url": "a[href*='om=']",
-    "description": "",
+    "article_container": "tr, div.scoop, table tr",
+    "title": "b, strong, a[href*='scoops']",
+    "url": "a[href]",
+    "description": "td, div.content",
     "image": "img",
     "video": "video"
   },

@@ -1,0 +1,25 @@
+{
+  "name": "The Guardian",
+  "base_url": "https://www.theguardian.com",
+  "language": "en",
+  "description": "The Guardian - News, opinion, sport and culture",
+  "selectors": {
+    "article_container": "div[data-link-name='article'], section.dcr-12n0pbp, div.fc-item",
+    "title": "h3, h2, span.js-headline-text",
+    "url": "a[href*='theguardian.com']",
+    "description": "div.fc-item__standfirst, p",
+    "image": "img, picture img",
+    "video": "video, iframe"
+  },
+  "media_extraction": {
+    "image_selector": "img[src], picture source[srcset]",
+    "video_selector": "video source[src], iframe[src*='youtube']"
+  },
+  "follow_embedded_links": true,
+  "max_link_depth": 1,
+  "max_links_to_follow": 3,
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    "Accept": "text/html,application/xhtml+xml"
+  }
+}

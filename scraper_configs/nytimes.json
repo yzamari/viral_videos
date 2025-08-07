@@ -1,0 +1,25 @@
+{
+  "name": "New York Times",
+  "base_url": "https://www.nytimes.com",
+  "language": "en",
+  "description": "The New York Times - Breaking News, World News & Multimedia",
+  "selectors": {
+    "article_container": "article, section[class*='story'], div[class*='css-']",
+    "title": "h3, h2, h1",
+    "url": "a[href*='nytimes.com']",
+    "description": "p[class*='summary'], p",
+    "image": "img",
+    "video": "video"
+  },
+  "media_extraction": {
+    "image_selector": "img[src], picture img",
+    "video_selector": "video source[src]"
+  },
+  "follow_embedded_links": true,
+  "max_link_depth": 1,
+  "max_links_to_follow": 3,
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    "Accept": "text/html,application/xhtml+xml"
+  }
+}

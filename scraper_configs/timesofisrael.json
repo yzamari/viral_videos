@@ -1,0 +1,35 @@
+{
+  "name": "Times of Israel",
+  "base_url": "https://www.timesofisrael.com",
+  "language": "en",
+  "description": "The Times of Israel - News from Israel, the Middle East and the Jewish World",
+  "selectors": {
+    "article_container": "article[class*='item'], div[class*='headline'], a[href*='/news/']",
+    "title": "h2, h3, .headline",
+    "url": "a[href]",
+    "description": "p.excerpt, p",
+    "image": "img[src], img[data-lazy-src]",
+    "video": "video, iframe"
+  },
+  "media_extraction": {
+    "image_selector": "img[src], img[data-lazy-src], picture source[srcset]",
+    "video_selector": "video source[src], iframe[src*='youtube']",
+    "min_image_width": 200
+  },
+  "follow_embedded_links": true,
+  "max_link_depth": 1,
+  "max_links_to_follow": 3,
+  "force_playwright": true,
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9,he;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "DNT": "1",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1"
+  },
+  "wait_for_selector": "article",
+  "scroll_to_load": true,
+  "encoding": "utf-8"
+}

@@ -242,6 +242,9 @@ class EnhancedNewsAggregator:
         # 6. Save session report
         self._save_session_report(selected_content, output_videos, style, tone)
         
+        # 7. Export to CSV
+        self._export_to_csv(selected_content)
+        
         return output_videos
     
     async def _initialize_components(self, session_id: str):
@@ -862,6 +865,60 @@ class EnhancedNewsAggregator:
             json.dump(report, f, indent=2, ensure_ascii=False)
         
         logger.info(f"📊 Session report saved: {report_path}")
+    
+    def _export_to_csv(self, content: List[Dict[str, Any]]):
+        """Export scraped articles to CSV format"""
+        import csv
+        
+        session_dir = self.session_manager.session_data.get('session_dir', 'outputs')
+        csv_path = os.path.join(session_dir, 'scraped_articles.csv')
+        
+        # Prepare CSV data
+        csv_data = []
+        for item in content:
+            # Collect all media URLs (images and videos)
+            media_urls = []
+            
+            # Add images
+            if item.get('article_images'):
+                media_urls.extend(item['article_images'])
+            elif item.get('image_url'):
+                media_urls.append(item['image_url'])
+                
+            # Add videos  
+            if item.get('article_videos'):
+                media_urls.extend(item['article_videos'])
+            elif item.get('video_url'):
+                media_urls.append(item['video_url'])
+            
+            # Join media URLs with commas
+            media_links = ','.join(media_urls) if media_urls else ''
+            
+            csv_data.append({
+                'title': item.get('title', ''),
+                'content': item.get('content', ''),
+                'source': item.get('source', ''),
+                'url': item.get('url', ''),
+                'category': item.get('category', ''),
+                'media_links': media_links,
+                'priority': item.get('priority', 0.5),
+                'ai_reasoning': item.get('ai_reasoning', '')
+            })
+        
+        # Write CSV
+        try:
+            with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
+                fieldnames = ['title', 'content', 'source', 'url', 'category', 'media_links', 'priority', 'ai_reasoning']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                
+                writer.writeheader()
+                writer.writerows(csv_data)
+            
+            logger.info(f"📊 Articles exported to CSV: {csv_path}")
+            logger.info(f"📄 Exported {len(csv_data)} articles with media links")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to export CSV: {e}")
 
 
 # CLI integration function

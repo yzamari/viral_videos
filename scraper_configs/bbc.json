@@ -1,0 +1,25 @@
+{
+  "name": "BBC News",
+  "base_url": "https://www.bbc.com/news",
+  "language": "en",
+  "description": "BBC News - Breaking news, features and analysis",
+  "selectors": {
+    "article_container": "div[data-testid='card'], article, div.gs-c-promo",
+    "title": "h3, h2",
+    "url": "a[href^='/news']",
+    "description": "p",
+    "image": "img",
+    "video": "video"
+  },
+  "media_extraction": {
+    "image_selector": "img[src], picture source[srcset]",
+    "video_selector": "video source[src]"
+  },
+  "follow_embedded_links": true,
+  "max_link_depth": 1,
+  "max_links_to_follow": 3,
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Accept": "text/html,application/xhtml+xml"
+  }
+}
