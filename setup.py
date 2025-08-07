@@ -11,7 +11,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="viral-video-generator",
-    version="2.5.0-rc1",
+    version="3.9.0-rc1",
     author="Viral AI Team",
     description="AI-powered system for generating viral social media videos",
     long_description=long_description,
