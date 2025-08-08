@@ -50,6 +50,7 @@ class AgentRole(Enum):
     VIRAL_SPECIALIST = "viral_specialist"
     COPYWRITER = "copywriter"
     THUMBNAIL_DESIGNER = "thumbnail_designer"
+    NEUROSCIENTIST = "neuroscientist"  # Brain engagement and dopamine optimization expert
 
 @dataclass
 class AgentMessage:
@@ -319,6 +320,13 @@ class MultiAgentDiscussionSystem:
                 "personality": "Click-focused, visual-impact, first-impression specialist",
                 "expertise": ["thumbnail design", "click-through rates", "visual impact", "preview optimization"],
                 "decision_style": "Click-optimized with visual impact priority"
+            },
+            AgentRole.NEUROSCIENTIST: {
+                "name": "NeuroBoost",
+                "personality": "Scientific, brain-focused, dopamine and engagement optimization expert",
+                "expertise": ["neuroscience", "dopamine triggers", "cognitive psychology", "behavioral science", 
+                             "attention mechanisms", "memory encoding", "emotional regulation"],
+                "decision_style": "Neuroscience-based with measurable brain engagement focus"
             }
         }
 

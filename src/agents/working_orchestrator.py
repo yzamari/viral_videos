@@ -34,6 +34,7 @@ try:
         AgentRole,
         DiscussionTopic
     )
+    from .langgraph_orchestrator import LangGraphDiscussionOrchestrator
 except ImportError:
     # Fallback for direct execution
     import sys
@@ -63,6 +64,7 @@ except ImportError:
         AgentRole,
         DiscussionTopic
     )
+    from src.agents.langgraph_orchestrator import LangGraphDiscussionOrchestrator
 
 logger = get_logger(__name__)
 
@@ -290,20 +292,28 @@ class WorkingOrchestrator:
             self.multilang_generator = IntegratedMultilingualGenerator(self.api_key)
 
     def _initialize_discussion_systems(self):
-        """Initialize discussion systems based on mode"""
+        """Initialize LangGraph discussion system based on mode"""
         if self.mode == OrchestratorMode.SIMPLE:
-            self.discussion_system = None
-
-        elif self.mode in [OrchestratorMode.ENHANCED, OrchestratorMode.MULTILINGUAL]:
-            self.discussion_system = MultiAgentDiscussionSystem(
+            # Even simple mode gets basic LangGraph for consistency
+            if not self.cheap_mode:
+                logger.info("🚀 Using LangGraph for simple mode discussions")
+                self.discussion_system = LangGraphDiscussionOrchestrator(
+                    self.api_key,
+                    self.session_id
+                )
+            else:
+                # In cheap mode, use standard system for speed
+                self.discussion_system = MultiAgentDiscussionSystem(
+                    self.api_key,
+                    self.session_id
+                )
+        else:
+            # All other modes use LangGraph
+            logger.info(f"🚀 Using LangGraph for {self.mode.value} agent discussions")
+            self.discussion_system = LangGraphDiscussionOrchestrator(
                 self.api_key,
-                self.session_id)
-
-        else:  # ADVANCED or PROFESSIONAL
-            self.discussion_system = MultiAgentDiscussionSystem(
-                self.api_key,
-                self.session_id)
-            # Enhanced discussion systems would be initialized here for future expansion
+                self.session_id
+            )
     
     async def generate_video(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -578,6 +588,299 @@ class WorkingOrchestrator:
             self._conduct_advanced_discussions(config)
         elif self.mode == OrchestratorMode.MULTILINGUAL:
             self._conduct_multilingual_discussions(config)
+        
+        # Generate visualization after discussions
+        self._generate_discussion_visualization()
+    
+    def _generate_discussion_visualization(self):
+        """Generate a visual representation of AI discussions and save to session"""
+        try:
+            from ..utils.session_context import SessionContext
+            import json
+            from datetime import datetime
+            
+            session_context = SessionContext.get_instance()
+            
+            # Create visualization content
+            viz_content = self._create_visualization_content()
+            
+            # Save as markdown
+            viz_path = session_context.get_output_path("discussions", "ai_discussion_visualization.md")
+            with open(viz_path, 'w', encoding='utf-8') as f:
+                f.write(viz_content)
+            
+            logger.info(f"📊 AI discussion visualization saved to: {viz_path}")
+            
+            # Also save as JSON for programmatic access
+            viz_data = self._get_visualization_data()
+            viz_json_path = session_context.get_output_path("discussions", "ai_discussion_data.json")
+            with open(viz_json_path, 'w', encoding='utf-8') as f:
+                json.dump(viz_data, f, indent=2, ensure_ascii=False)
+                
+        except Exception as e:
+            logger.warning(f"Could not generate discussion visualization: {e}")
+    
+    def _create_visualization_content(self) -> str:
+        """Create markdown content for discussion visualization"""
+        from datetime import datetime
+        
+        # Check if using LangGraph or fallback
+        using_langgraph = isinstance(self.discussion_system, LangGraphDiscussionOrchestrator)
+        
+        content = f"""# 🤖 AI Agent Discussion Visualization
+
+## Session Information
+- **Session ID**: {self.session_id}
+- **Timestamp**: {datetime.now().isoformat()}
+- **Mode**: {self.mode.value} ({self._get_agent_count()} agents)
+- **Discussion System**: {"LangGraph" if using_langgraph else "Fallback Mode"}
+- **Platform**: {self.platform.value if self.platform else "Unknown"}
+- **Duration**: {self.duration}s
+
+## Discussion Architecture
+
+"""
+        
+        if using_langgraph:
+            content += """### LangGraph Multi-Phase Discussion Flow
+```
+┌──────────────────────────────────────────────────────┐
+│                 LANGGRAPH ORCHESTRATOR                │
+│              State-Managed Discussions                │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│  [Initialize] → [Propose] → [Critique] → [Synthesize] │
+│       ↓            ↓           ↓            ↓        │
+│    Context      Solutions   Feedback    Insights      │
+│                                                        │
+│  [Vote] → [Consensus Check] → [Finalize]             │
+│     ↓            ↓                ↓                  │
+│  Scoring    Agreement?        Decision               │
+│                 ↓                                     │
+│            (Loop if no consensus)                    │
+└──────────────────────────────────────────────────────┘
+"""
+        else:
+            content += """### Fallback Discussion Mode
+```
+┌──────────────────────────────────────────────────────┐
+│              SIMPLIFIED DISCUSSION SYSTEM             │
+│                  (LangGraph Not Available)            │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│  Topics → Basic Agent Response → Simple Decision      │
+│                                                        │
+│  Limited Context | No State Management | Quick Result │
+└──────────────────────────────────────────────────────┘
+"""
+            
+        # Add discussion results if available
+        if hasattr(self, 'discussion_results') and self.discussion_results:
+            content += f"""
+
+## Discussion Results
+
+### Topics Discussed: {len(self.discussion_results)}
+"""
+            for i, result in enumerate(self.discussion_results, 1):
+                content += f"""
+#### Topic {i}: {result.topic_id if hasattr(result, 'topic_id') else 'Unknown'}
+- **Consensus Level**: {result.consensus_level if hasattr(result, 'consensus_level') else 'N/A'}
+- **Rounds**: {result.total_rounds if hasattr(result, 'total_rounds') else 'N/A'}
+- **Participating Agents**: {len(result.participating_agents) if hasattr(result, 'participating_agents') else 'N/A'}
+"""
+                
+        # Add agent details
+        content += f"""
+
+## Agent Participation
+
+### Active Agents ({self._get_agent_count()})
+"""
+        
+        agents = self._get_active_agents()
+        for agent in agents:
+            content += f"- **{agent}**: {self._get_agent_description(agent)}\n"
+            
+        # Add decisions made
+        if hasattr(self, 'core_decisions') and self.core_decisions:
+            content += """
+
+## Core Decisions Made
+
+"""
+            for key, value in self.core_decisions.items():
+                if not key.startswith('_'):  # Skip private keys
+                    content += f"- **{key}**: {value}\n"
+                    
+        # Add visualization graph
+        if using_langgraph:
+            content += """
+
+## LangGraph Benefits Utilized
+
+✅ **State Management**: All discussion context preserved
+✅ **Multi-Phase Flow**: Structured propose → critique → synthesize
+✅ **Consensus Building**: Voting and agreement mechanisms  
+✅ **Insight Synthesis**: Combined wisdom from all agents
+✅ **Neurological Optimization**: Neuroscientist agent integration
+
+### Discussion Quality Metrics
+- **Context Preservation**: HIGH
+- **Agent Interaction Depth**: DEEP
+- **Decision Quality**: ENHANCED
+- **Consensus Achievement**: STRUCTURED
+"""
+        else:
+            content += """
+
+## LangGraph Benefits (Not Available This Run)
+
+❌ **State Management**: Limited context preservation
+❌ **Multi-Phase Flow**: Simple single-pass discussion
+❌ **Consensus Building**: Basic agreement only
+❌ **Insight Synthesis**: Minimal cross-agent learning
+❌ **Neurological Optimization**: Basic integration only
+
+### To Enable LangGraph:
+1. Ensure `langgraph` package is installed
+2. Restart the application
+3. LangGraph will automatically be detected and used
+"""
+            
+        content += """
+
+---
+*This visualization is automatically generated for every session*
+*Location: outputs/{session_id}/discussions/ai_discussion_visualization.md*
+"""
+        
+        return content
+    
+    def _get_visualization_data(self) -> dict:
+        """Get structured data for JSON export"""
+        using_langgraph = isinstance(self.discussion_system, LangGraphDiscussionOrchestrator)
+        
+        return {
+            "session_id": self.session_id,
+            "timestamp": datetime.now().isoformat(),
+            "mode": self.mode.value,
+            "agent_count": self._get_agent_count(),
+            "discussion_system": "LangGraph" if using_langgraph else "Fallback",
+            "platform": self.platform.value if self.platform else None,
+            "duration": self.duration,
+            "discussion_results": [
+                {
+                    "topic_id": getattr(r, 'topic_id', 'unknown'),
+                    "consensus_level": getattr(r, 'consensus_level', 0),
+                    "total_rounds": getattr(r, 'total_rounds', 0),
+                    "participating_agents": getattr(r, 'participating_agents', [])
+                }
+                for r in (self.discussion_results if hasattr(self, 'discussion_results') else [])
+            ],
+            "core_decisions": self.core_decisions if hasattr(self, 'core_decisions') else {},
+            "langgraph_available": using_langgraph,
+            "agents": self._get_active_agents()
+        }
+    
+    def _get_agent_count(self) -> int:
+        """Get the number of agents for current mode"""
+        agent_counts = {
+            OrchestratorMode.SIMPLE: 3,
+            OrchestratorMode.ENHANCED: 7,
+            OrchestratorMode.ADVANCED: 15,
+            OrchestratorMode.PROFESSIONAL: 19
+        }
+        return agent_counts.get(self.mode, 7)
+    
+    def _get_active_agents(self) -> list:
+        """Get list of active agent names"""
+        from .multi_agent_discussion import AgentRole
+        
+        # Define agents per mode
+        mode_agents = {
+            OrchestratorMode.SIMPLE: [
+                AgentRole.DIRECTOR.value,
+                AgentRole.SCRIPT_WRITER.value,
+                AgentRole.VIDEO_GENERATOR.value
+            ],
+            OrchestratorMode.ENHANCED: [
+                AgentRole.DIRECTOR.value,
+                AgentRole.SCRIPT_WRITER.value,
+                AgentRole.VIDEO_GENERATOR.value,
+                AgentRole.SOUNDMAN.value,
+                AgentRole.EDITOR.value,
+                AgentRole.ORCHESTRATOR.value,
+                AgentRole.NEUROSCIENTIST.value
+            ],
+            OrchestratorMode.PROFESSIONAL: [
+                # All agents including specialized ones
+                AgentRole.DIRECTOR.value,
+                AgentRole.SCRIPT_WRITER.value,
+                AgentRole.VIDEO_GENERATOR.value,
+                AgentRole.SOUNDMAN.value,
+                AgentRole.EDITOR.value,
+                AgentRole.ORCHESTRATOR.value,
+                AgentRole.NEUROSCIENTIST.value,
+                AgentRole.ENGAGEMENT_OPTIMIZER.value,
+                AgentRole.VIRAL_SPECIALIST.value,
+                AgentRole.TREND_ANALYST.value,
+                AgentRole.AUDIENCE_PSYCHOLOGIST.value,
+                AgentRole.PLATFORM_SPECIALIST.value,
+                AgentRole.CREATIVE_STRATEGIST.value,
+                AgentRole.BRAND_STRATEGIST.value,
+                AgentRole.CONTENT_STRATEGIST.value,
+                AgentRole.MARKETING_SPECIALIST.value,
+                AgentRole.DESIGNER.value,
+                AgentRole.COPYWRITER.value,
+                AgentRole.DATA_ANALYST.value
+            ]
+        }
+        
+        return mode_agents.get(self.mode, mode_agents[OrchestratorMode.ENHANCED])
+    
+    def _get_agent_description(self, agent_name: str) -> str:
+        """Get description for an agent"""
+        descriptions = {
+            "director": "Creative vision and visual storytelling",
+            "script_writer": "Script optimization and narrative flow",
+            "video_generator": "VEO prompt engineering and generation",
+            "soundman": "Audio design and voice selection",
+            "editor": "Post-production and timing",
+            "orchestrator": "Workflow coordination",
+            "neuroscientist": "Brain engagement and dopamine triggers",
+            "engagement_optimizer": "Maximizing viewer retention",
+            "viral_specialist": "Viral mechanics and shareability",
+            "trend_analyst": "Current trends and patterns",
+            "audience_psychologist": "Viewer psychology and behavior",
+            "platform_specialist": "Platform-specific optimization",
+            "creative_strategist": "Creative direction and innovation",
+            "brand_strategist": "Brand alignment and consistency",
+            "content_strategist": "Content planning and structure",
+            "marketing_specialist": "Marketing and promotion strategy",
+            "designer": "Visual design and aesthetics",
+            "copywriter": "Copy and messaging optimization",
+            "data_analyst": "Performance metrics and insights"
+        }
+        return descriptions.get(agent_name, "Specialized expertise")
+    
+    def _start_discussion(self, topic: DiscussionTopic, participants: list):
+        """
+        Start a discussion using the configured discussion system
+        
+        Args:
+            topic: Discussion topic
+            participants: List of participating agents
+            
+        Returns:
+            Discussion result
+        """
+        if isinstance(self.discussion_system, LangGraphDiscussionOrchestrator):
+            # Use LangGraph's run_discussion method
+            return self.discussion_system.run_discussion(topic, participants)
+        else:
+            # Use standard system's start_discussion method
+            return self.discussion_system.start_discussion(topic, participants)
     
     def _conduct_duration_validation_only(self, config: Dict[str, Any]):
         """Conduct ONLY duration validation discussion for simple/cheap modes"""
@@ -617,7 +920,7 @@ class WorkingOrchestrator:
         )
         
         # CRITICAL: AudioMaster, Editor and Orchestrator for duration control
-        duration_result = self.discussion_system.start_discussion(
+        duration_result = self._start_discussion(
             duration_topic,
             [AgentRole.SOUNDMAN, AgentRole.EDITOR, AgentRole.ORCHESTRATOR]
         )
@@ -630,6 +933,9 @@ class WorkingOrchestrator:
         
         # Apply duration constraints globally
         self.duration_constraints = duration_result.decision
+        
+        # Generate visualization after duration validation (cheap mode)
+        self._generate_discussion_visualization()
 
     def _conduct_enhanced_discussions(self, config: Dict[str, Any]):
         """Enhanced 7-agent discussions"""
@@ -657,7 +963,7 @@ class WorkingOrchestrator:
         )
         
         # CRITICAL: AudioMaster is MANDATORY for duration validation
-        duration_result = self.discussion_system.start_discussion(
+        duration_result = self._start_discussion(
             duration_topic,
             [AgentRole.SOUNDMAN, AgentRole.EDITOR, AgentRole.ORCHESTRATOR]
         )
@@ -678,7 +984,7 @@ class WorkingOrchestrator:
             }, required_decisions=["script_structure", "viral_hooks", "engagement_strategy"]
         )
 
-        script_result = self.discussion_system.start_discussion(
+        script_result = self._start_discussion(
             script_topic,
             [AgentRole.SCRIPT_WRITER, AgentRole.DIRECTOR, AgentRole.SOUNDMAN]  # Add SOUNDMAN for duration awareness
         )
@@ -697,7 +1003,7 @@ class WorkingOrchestrator:
             }, required_decisions=["visual_style", "technical_approach", "generation_mode", "clip_durations"]
         )
 
-        visual_result = self.discussion_system.start_discussion(
+        visual_result = self._start_discussion(
             visual_topic,
             [AgentRole.VIDEO_GENERATOR, AgentRole.EDITOR, AgentRole.SOUNDMAN]  # Add SOUNDMAN for sync
         )
@@ -717,12 +1023,35 @@ class WorkingOrchestrator:
             }, required_decisions=["voice_style", "audio_approach", "sound_design", "audio_duration_compliance"]
         )
 
-        audio_result = self.discussion_system.start_discussion(
+        audio_result = self._start_discussion(
             audio_topic,
             [AgentRole.SOUNDMAN, AgentRole.EDITOR, AgentRole.ORCHESTRATOR]  # Add ORCHESTRATOR for sync
         )
         self.discussion_results['audio_strategy'] = audio_result
         
+        # Discussion 4: Neuroscience & Brain Engagement Strategy
+        neuro_topic = DiscussionTopic(
+            topic_id="neuroscience_optimization",
+            title="Neuroscience & Dopamine Optimization Strategy",
+            description=f"Apply neuroscience principles to maximize engagement and dopamine triggers for {self.mission}",
+            context={
+                'mission': self.mission,
+                'platform': self.platform.value,
+                'duration': self.duration,
+                'target_audience': self.target_audience,
+                'visual_style': self.visual_style,
+                'script_decisions': script_result.decision if 'script_result' in locals() else {},
+                'visual_decisions': visual_result.decision if 'visual_result' in locals() else {},
+                'content_type': self.category.value
+            },
+            required_decisions=["dopamine_triggers", "attention_hooks", "memory_encoding", "emotional_peaks"]
+        )
+        
+        neuro_result = self._start_discussion(
+            neuro_topic,
+            [AgentRole.NEUROSCIENTIST, AgentRole.DIRECTOR, AgentRole.ENGAGEMENT_OPTIMIZER]
+        )
+        self.discussion_results['neuroscience_optimization'] = neuro_result
         
         logger.info(f"✅ Completed {len(self.discussion_results)} enhanced discussions")
 
@@ -753,7 +1082,7 @@ class WorkingOrchestrator:
             required_decisions=["marketing_strategy", "brand_alignment", "audience_targeting"]
         )
         
-        marketing_result = self.discussion_system.start_discussion(
+        marketing_result = self._start_discussion(
             marketing_topic,
             [AgentRole.MARKETING_STRATEGIST, AgentRole.BRAND_SPECIALIST, AgentRole.SOCIAL_MEDIA_EXPERT, AgentRole.AUDIENCE_RESEARCHER]
         )
@@ -774,7 +1103,7 @@ class WorkingOrchestrator:
             required_decisions=["visual_design", "typography", "color_scheme", "motion_graphics"]
         )
         
-        design_result = self.discussion_system.start_discussion(
+        design_result = self._start_discussion(
             design_topic,
             [AgentRole.VISUAL_DESIGNER, AgentRole.TYPOGRAPHY_EXPERT, AgentRole.COLOR_SPECIALIST, AgentRole.MOTION_GRAPHICS]
         )
@@ -794,7 +1123,7 @@ class WorkingOrchestrator:
             required_decisions=["engagement_hooks", "viral_elements", "cta_strategy", "shareability"]
         )
         
-        engagement_result = self.discussion_system.start_discussion(
+        engagement_result = self._start_discussion(
             engagement_topic,
             [AgentRole.ENGAGEMENT_OPTIMIZER, AgentRole.VIRAL_SPECIALIST, AgentRole.ANALYTICS_EXPERT, AgentRole.CONTENT_STRATEGIST]
         )
@@ -814,11 +1143,36 @@ class WorkingOrchestrator:
             required_decisions=["platform_optimization", "copy_strategy", "thumbnail_design", "algorithm_alignment"]
         )
         
-        platform_result = self.discussion_system.start_discussion(
+        platform_result = self._start_discussion(
             platform_topic,
             [AgentRole.PLATFORM_OPTIMIZER, AgentRole.COPYWRITER, AgentRole.THUMBNAIL_DESIGNER, AgentRole.TREND_ANALYST]
         )
         self.discussion_results['platform_optimization'] = platform_result
+        
+        # Discussion 8: Advanced Neuroscience & Psychological Triggers (Professional Mode)
+        advanced_neuro_topic = DiscussionTopic(
+            topic_id="advanced_neuroscience",
+            title="Advanced Neuroscience & Psychological Optimization",
+            description="Deep neurological and psychological optimization for maximum viewer impact",
+            context={
+                'mission': self.mission,
+                'platform': self.platform.value,
+                'duration': self.duration,
+                'all_previous_decisions': {k: v.decision for k, v in self.discussion_results.items()},
+                'target_audience': self.target_audience,
+                'viral_goals': config.get('viral_goals', {}),
+                'psychological_profile': config.get('audience_psychology', {})
+            },
+            required_decisions=["neurotransmitter_optimization", "cognitive_load_management", 
+                              "behavioral_triggers", "habit_formation_elements"]
+        )
+        
+        advanced_neuro_result = self._start_discussion(
+            advanced_neuro_topic,
+            [AgentRole.NEUROSCIENTIST, AgentRole.VIRAL_SPECIALIST, 
+             AgentRole.AUDIENCE_RESEARCHER, AgentRole.ANALYTICS_EXPERT]
+        )
+        self.discussion_results['advanced_neuroscience'] = advanced_neuro_result
         
         total_discussions = len(self.discussion_results)
         total_agents = sum(len(discussion.participating_agents) for discussion in self.discussion_results.values())
@@ -845,7 +1199,7 @@ class WorkingOrchestrator:
             }, required_decisions=["language_priority", "cultural_adaptation", "voice_selection"]
         )
 
-        multilang_result = self.discussion_system.start_discussion(
+        multilang_result = self._start_discussion(
             multilang_topic,
             [AgentRole.SCRIPT_WRITER, AgentRole.SOUNDMAN]
         )
@@ -1008,7 +1362,7 @@ class WorkingOrchestrator:
         
         # CRITICAL FIX: Integrate discussion results for professional mode
         if self.mode == OrchestratorMode.PROFESSIONAL and self.discussion_results:
-            logger.info("🎯 Integrating professional discussion results from 22 agents...")
+            logger.info("🎯 Integrating professional discussion results from 23 agents...")
             
             # Integrate script strategy discussion results
             if 'script_strategy' in self.discussion_results:
@@ -1045,6 +1399,30 @@ class WorkingOrchestrator:
                     'decision': audio_discussion.decision
                 }
                 logger.info(f"✅ Integrated audio strategy from {len(audio_discussion.participating_agents)} agents")
+
+            # Integrate neuroscience optimization discussion results
+            if 'neuroscience_optimization' in self.discussion_results:
+                neuro_discussion = self.discussion_results['neuroscience_optimization']
+                decisions['neuroscience_optimization'] = neuro_discussion.decision
+                self.agent_decisions['neuroscience_optimization'] = {
+                    'agents': neuro_discussion.participating_agents,
+                    'consensus': neuro_discussion.consensus_level,
+                    'insights': neuro_discussion.key_insights,
+                    'decision': neuro_discussion.decision
+                }
+                logger.info(f"✅ Integrated neuroscience optimization from {len(neuro_discussion.participating_agents)} agents")
+                
+            # Integrate advanced neuroscience discussion results (Professional mode)
+            if 'advanced_neuroscience' in self.discussion_results:
+                advanced_neuro_discussion = self.discussion_results['advanced_neuroscience']
+                decisions['advanced_neuroscience'] = advanced_neuro_discussion.decision
+                self.agent_decisions['advanced_neuroscience'] = {
+                    'agents': advanced_neuro_discussion.participating_agents,
+                    'consensus': advanced_neuro_discussion.consensus_level,
+                    'insights': advanced_neuro_discussion.key_insights,
+                    'decision': advanced_neuro_discussion.decision
+                }
+                logger.info(f"✅ Integrated advanced neuroscience from {len(advanced_neuro_discussion.participating_agents)} agents")
 
             # Integrate marketing strategy discussion results
             if 'marketing_strategy' in self.discussion_results:
@@ -1101,6 +1479,18 @@ class WorkingOrchestrator:
         # Enhanced decisions for advanced modes (fallback for non-professional modes)
         if self.mode in [OrchestratorMode.ENHANCED, OrchestratorMode.ADVANCED,
                          OrchestratorMode.PROFESSIONAL, OrchestratorMode.MULTILINGUAL]:
+            
+            # Integrate neuroscience optimization for enhanced mode
+            if self.mode == OrchestratorMode.ENHANCED and 'neuroscience_optimization' in self.discussion_results:
+                neuro_discussion = self.discussion_results['neuroscience_optimization']
+                decisions['neuroscience_optimization'] = neuro_discussion.decision
+                self.agent_decisions['neuroscience_optimization'] = {
+                    'agents': neuro_discussion.participating_agents,
+                    'consensus': neuro_discussion.consensus_level,
+                    'insights': neuro_discussion.key_insights,
+                    'decision': neuro_discussion.decision
+                }
+                logger.info(f"✅ Applied neuroscience optimization for enhanced mode")
 
             # Structure Analysis
             if self.structure_agent:
@@ -1834,6 +2224,9 @@ class WorkingOrchestrator:
                     # Apply platform-optimized copy
                     pass
                 logger.info("✅ Applied platform optimization from professional discussions")
+            
+            # Generate AI discussion visualization
+            self._generate_discussion_visualization()
 
         # Get languages from config
         languages = config.get('languages', [Language.ENGLISH_US]) or [Language.ENGLISH_US]

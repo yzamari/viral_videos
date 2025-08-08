@@ -394,6 +394,23 @@ class VertexAIVeo3Client(BaseVeoClient):
             headers = self._get_auth_headers()
 
             # Build request payload for VEO-3 Fast using the example format
+            # Convert aspect ratio based on model type
+            if self.is_veo3_fast:
+                # VEO3-Fast doesn't support portrait, force landscape
+                if aspect_ratio == "9:16":
+                    logger.warning("⚠️ VEO3-Fast doesn't support portrait (9:16), using landscape (16:9) instead")
+                    veo3_aspect_ratio = "16:9"
+                else:
+                    veo3_aspect_ratio = aspect_ratio  # e.g., "16:9" or "1:1"
+            else:
+                # Regular VEO3 uses descriptive format
+                if aspect_ratio == "9:16":
+                    veo3_aspect_ratio = "9:16 portrait"
+                elif aspect_ratio == "16:9":
+                    veo3_aspect_ratio = "16:9 landscape"
+                else:
+                    veo3_aspect_ratio = aspect_ratio  # Pass as-is if already in correct format
+            
             payload = {
                 "instances": [
                     {
@@ -401,7 +418,7 @@ class VertexAIVeo3Client(BaseVeoClient):
                     }
                 ],
                 "parameters": {
-                    "aspectRatio": aspect_ratio,
+                    "aspectRatio": veo3_aspect_ratio,
                     "sampleCount": 1,
                     "durationSeconds": str(int(duration)),
                     "personGeneration": "allow_all",
