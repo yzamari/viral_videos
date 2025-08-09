@@ -9,6 +9,15 @@ import {
   Avatar,
   Chip,
   Divider,
+  Stepper,
+  Step,
+  StepLabel,
+  StepContent,
+  Paper,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -18,6 +27,15 @@ import {
   Group,
   Chat,
   TrendingUp,
+  Psychology,
+  VideoLibrary,
+  MusicNote,
+  Subtitles,
+  Movie,
+  Download,
+  Settings,
+  AutoAwesome,
+  Palette,
 } from '@mui/icons-material';
 import { GenerationProgress, AgentStatus } from '../types';
 
@@ -27,6 +45,78 @@ interface ProgressMonitorProps {
 }
 
 const ProgressMonitor: React.FC<ProgressMonitorProps> = ({ progress, isGenerating }) => {
+  // Define the processing steps
+  const processingSteps = [
+    {
+      id: 'initialization',
+      label: 'Initialization',
+      description: 'Setting up AI agents and analyzing requirements',
+      icon: <Settings />,
+      phases: ['initializing', 'setup']
+    },
+    {
+      id: 'discussion',
+      label: 'AI Discussion',
+      description: '22 AI agents discussing and planning the video',
+      icon: <Psychology />,
+      phases: ['discussion', 'planning', 'analysis']
+    },
+    {
+      id: 'script',
+      label: 'Script Generation',
+      description: 'Creating the video script and narrative',
+      icon: <AutoAwesome />,
+      phases: ['scripting', 'writing', 'narrative']
+    },
+    {
+      id: 'video',
+      label: 'Video Generation',
+      description: 'AI generating video clips and visual content',
+      icon: <VideoLibrary />,
+      phases: ['video_generation', 'visual_creation', 'rendering']
+    },
+    {
+      id: 'audio',
+      label: 'Audio Production',
+      description: 'Creating voiceover and background music',
+      icon: <MusicNote />,
+      phases: ['audio_generation', 'voice_synthesis', 'music']
+    },
+    {
+      id: 'subtitles',
+      label: 'Subtitles & Effects',
+      description: 'Adding subtitles and visual effects',
+      icon: <Subtitles />,
+      phases: ['subtitles', 'effects', 'overlays']
+    },
+    {
+      id: 'compilation',
+      label: 'Final Compilation',
+      description: 'Combining all elements into final video',
+      icon: <Movie />,
+      phases: ['compilation', 'final_render', 'processing']
+    },
+    {
+      id: 'completion',
+      label: 'Ready for Download',
+      description: 'Video generation completed successfully',
+      icon: <Download />,
+      phases: ['completed', 'finished', 'ready']
+    }
+  ];
+
+  const getCurrentStepIndex = () => {
+    if (!progress?.currentPhase) return 0;
+    
+    const currentPhase = progress.currentPhase.toLowerCase();
+    for (let i = 0; i < processingSteps.length; i++) {
+      if (processingSteps[i].phases.some(phase => currentPhase.includes(phase))) {
+        return i;
+      }
+    }
+    return Math.min(Math.floor(progress.progress / 12.5), processingSteps.length - 1);
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'active':
@@ -135,6 +225,130 @@ const ProgressMonitor: React.FC<ProgressMonitorProps> = ({ progress, isGeneratin
           <Typography variant="caption" className="text-gray-500 mt-1 block">
             {progress.message}
           </Typography>
+        </Box>
+
+        {/* Detailed Processing Steps */}
+        <Box className="mb-6">
+          <Typography variant="h6" className="font-semibold mb-4" sx={{ fontWeight: 700 }}>
+            Processing Steps
+          </Typography>
+          <Paper elevation={0} sx={{ p: 3, border: '1px solid', borderColor: 'divider' }}>
+            <List sx={{ py: 0 }}>
+              {processingSteps.map((step, index) => {
+                const currentStepIndex = getCurrentStepIndex();
+                const isCompleted = index < currentStepIndex;
+                const isActive = index === currentStepIndex;
+                const isPending = index > currentStepIndex;
+                
+                return (
+                  <ListItem
+                    key={step.id}
+                    sx={{
+                      py: 2,
+                      px: 1,
+                      borderRadius: 2,
+                      mb: 1,
+                      backgroundColor: isActive 
+                        ? 'primary.main' 
+                        : isCompleted 
+                          ? 'success.light' 
+                          : 'transparent',
+                      color: isActive || isCompleted ? 'white' : 'inherit',
+                      opacity: isPending ? 0.6 : 1,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: isActive 
+                          ? 'primary.dark' 
+                          : isCompleted 
+                            ? 'success.main' 
+                            : 'action.hover',
+                      }
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 48 }}>
+                      {isCompleted ? (
+                        <CheckCircle sx={{ color: 'white', fontSize: 24 }} />
+                      ) : isActive ? (
+                        <Box sx={{ color: 'white', display: 'flex', alignItems: 'center' }}>
+                          {React.cloneElement(step.icon, { sx: { fontSize: 24, animation: 'pulse 2s infinite' } })}
+                        </Box>
+                      ) : (
+                        React.cloneElement(step.icon, { sx: { color: 'text.secondary', fontSize: 24 } })
+                      )}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Typography 
+                          variant="subtitle1" 
+                          sx={{ 
+                            fontWeight: isActive ? 700 : 600,
+                            color: isActive || isCompleted ? 'white' : 'text.primary'
+                          }}
+                        >
+                          {step.label}
+                          {isActive && (
+                            <Chip 
+                              label="IN PROGRESS" 
+                              size="small" 
+                              sx={{ 
+                                ml: 2, 
+                                backgroundColor: 'rgba(255,255,255,0.2)',
+                                color: 'white',
+                                fontWeight: 600
+                              }} 
+                            />
+                          )}
+                          {isCompleted && (
+                            <Chip 
+                              label="COMPLETED" 
+                              size="small" 
+                              sx={{ 
+                                ml: 2, 
+                                backgroundColor: 'rgba(255,255,255,0.2)',
+                                color: 'white',
+                                fontWeight: 600
+                              }} 
+                            />
+                          )}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            color: isActive || isCompleted ? 'rgba(255,255,255,0.8)' : 'text.secondary',
+                            mt: 0.5
+                          }}
+                        >
+                          {step.description}
+                        </Typography>
+                      }
+                    />
+                    {isActive && (
+                      <Box sx={{ ml: 2, minWidth: 60 }}>
+                        <Typography variant="caption" sx={{ color: 'white', fontWeight: 600 }}>
+                          {progress.progress}%
+                        </Typography>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={progress.progress} 
+                          sx={{ 
+                            width: 60,
+                            height: 4,
+                            mt: 0.5,
+                            backgroundColor: 'rgba(255,255,255,0.3)',
+                            '& .MuiLinearProgress-bar': {
+                              backgroundColor: 'white'
+                            }
+                          }} 
+                        />
+                      </Box>
+                    )}
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Paper>
         </Box>
 
         {/* Stats Grid */}

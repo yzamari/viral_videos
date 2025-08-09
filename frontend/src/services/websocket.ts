@@ -1,8 +1,7 @@
-import { io, Socket } from 'socket.io-client';
 import type { WebSocketMessage, GenerationSession, AgentDiscussion, VideoClip, AudioSegment, Script, Overlay, Subtitle, GenerationProgress } from '../types';
 
 export class WebSocketService {
-  private socket: Socket | null = null;
+  private socket: WebSocket | null = null;
   private sessionId: string | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
@@ -20,51 +19,50 @@ export class WebSocketService {
   private onConnectionChangeCallback?: (connected: boolean) => void;
   private onErrorCallback?: (error: string) => void;
 
-  constructor(private wsUrl = 'ws://localhost:8000') {}
+  constructor(private wsUrl = 'ws://localhost:8770/ws') {}
 
   connect(sessionId?: string): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         this.sessionId = sessionId || null;
         
-        this.socket = io(this.wsUrl, {
-          transports: ['websocket'],
-          upgrade: false,
-          query: sessionId ? { sessionId } : {},
-        });
+        this.socket = new WebSocket(this.wsUrl);
 
-        this.socket.on('connect', () => {
+        this.socket.onopen = () => {
           console.log('✅ WebSocket connected');
           this.reconnectAttempts = 0;
           this.onConnectionChangeCallback?.(true);
           
           if (this.sessionId) {
-            this.socket?.emit('join_session', this.sessionId);
+            this.sendMessage({
+              type: 'join_session',
+              sessionId: this.sessionId
+            });
           }
           
           resolve();
-        });
+        };
 
-        this.socket.on('disconnect', (reason) => {
-          console.log('❌ WebSocket disconnected:', reason);
+        this.socket.onclose = (event) => {
+          console.log('❌ WebSocket disconnected:', event.reason);
           this.onConnectionChangeCallback?.(false);
           
-          if (reason === 'io server disconnect') {
-            // Server disconnected, try to reconnect
+          // Try to reconnect unless it was a clean close
+          if (!event.wasClean) {
             this.handleReconnect();
           }
-        });
+        };
 
-        this.socket.on('connect_error', (error) => {
+        this.socket.onerror = (error) => {
           console.error('❌ WebSocket connection error:', error);
           this.onConnectionChangeCallback?.(false);
-          this.onErrorCallback?.(`Connection failed: ${error.message}`);
-          this.handleReconnect();
+          this.onErrorCallback?.('Connection failed');
           reject(error);
-        });
+        };
 
-        // Register message handlers
-        this.setupMessageHandlers();
+        this.socket.onmessage = (event) => {
+          this.handleMessage(event.data);
+        };
 
       } catch (error) {
         console.error('❌ Failed to initialize WebSocket:', error);
@@ -73,73 +71,82 @@ export class WebSocketService {
     });
   }
 
-  private setupMessageHandlers(): void {
-    if (!this.socket) return;
+  private handleMessage(data: string): void {
+    try {
+      const message = JSON.parse(data);
+      
+      switch (message.type) {
+        case 'progress_update':
+          console.log('📊 Progress update:', message.data);
+          this.onProgressUpdateCallback?.(message.data);
+          break;
+          
+        case 'discussion_update':
+          console.log('💬 Discussion update:', message.data);
+          this.onAgentDiscussionCallback?.(message.data);
+          break;
+          
+        case 'clip_update':
+          console.log('🎬 Video clip update:', message.data);
+          this.onVideoClipUpdateCallback?.(message.data);
+          break;
+          
+        case 'audio_update':
+          console.log('🎵 Audio update:', message.data);
+          this.onAudioUpdateCallback?.(message.data);
+          break;
+          
+        case 'script_update':
+          console.log('📝 Script update:', message.data);
+          this.onScriptUpdateCallback?.(message.data);
+          break;
+          
+        case 'overlay_update':
+          console.log('🎨 Overlay update:', message.data);
+          this.onOverlayUpdateCallback?.(message.data);
+          break;
+          
+        case 'subtitle_update':
+          console.log('📖 Subtitle update:', message.data);
+          this.onSubtitleUpdateCallback?.(message.data);
+          break;
+          
+        case 'generation_complete':
+          console.log('✅ Generation complete:', message.data);
+          this.onGenerationCompleteCallback?.(message.data);
+          break;
+          
+        case 'error':
+          console.error('❌ WebSocket error:', message.data);
+          this.onErrorCallback?.(message.data);
+          break;
+          
+        case 'session_joined':
+          console.log('🔗 Joined session:', message.sessionId);
+          this.sessionId = message.sessionId;
+          break;
+          
+        case 'session_not_found':
+          console.warn('⚠️ Session not found:', message.sessionId);
+          this.onErrorCallback?.(`Session ${message.sessionId} not found`);
+          break;
+          
+        case 'pong':
+          // Handle pong response (for connection health)
+          break;
+          
+        default:
+          console.log('📨 Unknown message type:', message.type);
+      }
+    } catch (error) {
+      console.error('❌ Failed to parse WebSocket message:', error);
+    }
+  }
 
-    // Progress updates
-    this.socket.on('progress_update', (data: GenerationProgress) => {
-      console.log('📊 Progress update:', data);
-      this.onProgressUpdateCallback?.(data);
-    });
-
-    // Agent discussions
-    this.socket.on('discussion_update', (data: AgentDiscussion) => {
-      console.log('💬 Discussion update:', data);
-      this.onAgentDiscussionCallback?.(data);
-    });
-
-    // Video clip updates
-    this.socket.on('clip_update', (data: VideoClip) => {
-      console.log('🎬 Video clip update:', data);
-      this.onVideoClipUpdateCallback?.(data);
-    });
-
-    // Audio updates
-    this.socket.on('audio_update', (data: AudioSegment) => {
-      console.log('🎵 Audio update:', data);
-      this.onAudioUpdateCallback?.(data);
-    });
-
-    // Script updates
-    this.socket.on('script_update', (data: Script) => {
-      console.log('📝 Script update:', data);
-      this.onScriptUpdateCallback?.(data);
-    });
-
-    // Overlay updates
-    this.socket.on('overlay_update', (data: Overlay[]) => {
-      console.log('🎨 Overlay update:', data);
-      this.onOverlayUpdateCallback?.(data);
-    });
-
-    // Subtitle updates
-    this.socket.on('subtitle_update', (data: Subtitle[]) => {
-      console.log('📖 Subtitle update:', data);
-      this.onSubtitleUpdateCallback?.(data);
-    });
-
-    // Generation completion
-    this.socket.on('generation_complete', (data: GenerationSession) => {
-      console.log('✅ Generation complete:', data);
-      this.onGenerationCompleteCallback?.(data);
-    });
-
-    // Error handling
-    this.socket.on('error', (error: string) => {
-      console.error('❌ WebSocket error:', error);
-      this.onErrorCallback?.(error);
-    });
-
-    // Session events
-    this.socket.on('session_joined', (sessionId: string) => {
-      console.log('🔗 Joined session:', sessionId);
-      this.sessionId = sessionId;
-    });
-
-    this.socket.on('session_not_found', (sessionId: string) => {
-      console.warn('⚠️ Session not found:', sessionId);
-      this.onErrorCallback?.(`Session ${sessionId} not found`);
-    });
+  private sendMessage(message: any): void {
+    if (this.socket?.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify(message));
+    }
   }
 
   private handleReconnect(): void {
@@ -155,15 +162,15 @@ export class WebSocketService {
     console.log(`🔄 Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms...`);
     
     setTimeout(() => {
-      if (this.socket?.connected) return;
+      if (this.socket?.readyState === WebSocket.OPEN) return;
       
-      this.socket?.connect();
+      this.connect(this.sessionId || undefined);
     }, delay);
   }
 
   disconnect(): void {
     if (this.socket) {
-      this.socket.disconnect();
+      this.socket.close();
       this.socket = null;
     }
     this.sessionId = null;
@@ -173,51 +180,89 @@ export class WebSocketService {
   // Join a specific session
   joinSession(sessionId: string): void {
     this.sessionId = sessionId;
-    this.socket?.emit('join_session', sessionId);
+    this.sendMessage({
+      type: 'join_session',
+      sessionId: sessionId
+    });
   }
 
   // Leave current session
   leaveSession(): void {
     if (this.sessionId) {
-      this.socket?.emit('leave_session', this.sessionId);
+      this.sendMessage({
+        type: 'leave_session',
+        sessionId: this.sessionId
+      });
       this.sessionId = null;
     }
   }
 
   // Send messages to server
   startGeneration(config: any): void {
-    this.socket?.emit('start_generation', config);
+    this.sendMessage({
+      type: 'start_generation',
+      data: config
+    });
   }
 
   stopGeneration(): void {
-    this.socket?.emit('stop_generation');
+    this.sendMessage({
+      type: 'stop_generation'
+    });
   }
 
   updateScript(script: Script): void {
-    this.socket?.emit('update_script', script);
+    this.sendMessage({
+      type: 'update_script',
+      data: script
+    });
   }
 
   updateOverlays(overlays: Overlay[]): void {
-    this.socket?.emit('update_overlays', overlays);
+    this.sendMessage({
+      type: 'update_overlays',
+      data: overlays
+    });
   }
 
   updateSubtitles(subtitles: Subtitle[]): void {
-    this.socket?.emit('update_subtitles', subtitles);
+    this.sendMessage({
+      type: 'update_subtitles',
+      data: subtitles
+    });
   }
 
   requestSessionStatus(): void {
-    this.socket?.emit('get_session_status');
+    this.sendMessage({
+      type: 'get_session_status'
+    });
   }
 
   // Ping/Pong for connection health
   ping(): Promise<number> {
     return new Promise((resolve) => {
       const startTime = Date.now();
-      this.socket?.emit('ping', startTime);
-      this.socket?.once('pong', (timestamp: number) => {
-        const latency = Date.now() - timestamp;
-        resolve(latency);
+      this.sendMessage({
+        type: 'ping',
+        timestamp: startTime
       });
+      
+      // Set up one-time listener for pong response
+      const originalHandler = this.socket?.onmessage;
+      this.socket!.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          if (message.type === 'pong') {
+            const latency = Date.now() - message.timestamp;
+            resolve(latency);
+            // Restore original handler
+            this.socket!.onmessage = originalHandler;
+          }
+        } catch (error) {
+          // Restore original handler on error
+          this.socket!.onmessage = originalHandler;
+        }
+      };
     });
   }
 
@@ -264,7 +309,7 @@ export class WebSocketService {
 
   // Getters
   get isConnected(): boolean {
-    return this.socket?.connected || false;
+    return this.socket?.readyState === WebSocket.OPEN;
   }
 
   get currentSessionId(): string | null {
@@ -273,7 +318,19 @@ export class WebSocketService {
 
   get connectionState(): string {
     if (!this.socket) return 'disconnected';
-    return this.socket.connected ? 'connected' : 'disconnected';
+    
+    switch (this.socket.readyState) {
+      case WebSocket.CONNECTING:
+        return 'connecting';
+      case WebSocket.OPEN:
+        return 'connected';
+      case WebSocket.CLOSING:
+        return 'closing';
+      case WebSocket.CLOSED:
+        return 'disconnected';
+      default:
+        return 'unknown';
+    }
   }
 }
 
