@@ -89,7 +89,7 @@ const NewsGenerator: React.FC<NewsGeneratorProps> = ({ onGenerate, isGenerating 
     ],
     aggregateMode: 'trending',
     outputLanguage: 'en',
-    videoDuration: 60,
+    videoDuration: 15,  // Default to 15 seconds for news videos
     autoGenerate: false,
     includeAnalysis: true,
     voiceoverLanguage: 'en',
@@ -254,7 +254,7 @@ const NewsGenerator: React.FC<NewsGeneratorProps> = ({ onGenerate, isGenerating 
                 <Stack spacing={2}>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#111827' }}>Add Custom Source</Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={3}>
+                    <Grid size={{ xs: 12, sm: 3 }}>
                       <FormControl fullWidth size="small">
                         <InputLabel sx={{ fontWeight: 500 }}>Type</InputLabel>
                         <Select
@@ -268,7 +268,7 @@ const NewsGenerator: React.FC<NewsGeneratorProps> = ({ onGenerate, isGenerating 
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid item xs={12} sm={7}>
+                    <Grid size={{ xs: 12, sm: 7 }}>
                       <TextField
                         fullWidth
                         size="small"
@@ -282,7 +282,7 @@ const NewsGenerator: React.FC<NewsGeneratorProps> = ({ onGenerate, isGenerating 
                         }
                       />
                     </Grid>
-                    <Grid item xs={12} sm={2}>
+                    <Grid size={{ xs: 12, sm: 2 }}>
                       <Button
                         fullWidth
                         variant="contained"
@@ -327,14 +327,7 @@ const NewsGenerator: React.FC<NewsGeneratorProps> = ({ onGenerate, isGenerating 
                       </ListItemIcon>
                       <ListItemText
                         primary={source.name}
-                        secondary={
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Typography variant="caption">{source.value || 'No URL set'}</Typography>
-                            {source.language && (
-                              <Chip label={source.language} size="small" />
-                            )}
-                          </Stack>
-                        }
+                        secondary={`${source.value || 'No URL set'}${source.language ? ` • ${source.language}` : ''}`}
                       />
                     </ListItem>
                   ))}
@@ -345,7 +338,7 @@ const NewsGenerator: React.FC<NewsGeneratorProps> = ({ onGenerate, isGenerating 
 
           {activeTab === 1 && (
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Stack spacing={3}>
                   {/* Aggregation Mode */}
                   <FormControl fullWidth>
@@ -404,7 +397,7 @@ const NewsGenerator: React.FC<NewsGeneratorProps> = ({ onGenerate, isGenerating 
                 </Stack>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Stack spacing={3}>
                   {/* Video Duration */}
                   <TextField
@@ -463,7 +456,7 @@ const NewsGenerator: React.FC<NewsGeneratorProps> = ({ onGenerate, isGenerating 
           {activeTab === 2 && (
             <Grid container spacing={2}>
               {['Breaking News', 'Daily Digest', 'Tech Roundup', 'Viral Trends'].map((template) => (
-                <Grid item xs={12} sm={6} md={4} key={template}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={template}>
                   <Card variant="outlined">
                     <CardContent>
                       <Typography variant="h6" gutterBottom>

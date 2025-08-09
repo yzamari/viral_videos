@@ -16,7 +16,7 @@ export interface ApiConfig {
 export class ApiService {
   private client: AxiosInstance;
 
-  constructor(config: ApiConfig = { baseURL: 'http://localhost:8000', timeout: 30000 }) {
+  constructor(config: ApiConfig = { baseURL: 'http://localhost:8770', timeout: 30000 }) {
     this.client = axios.create({
       baseURL: config.baseURL,
       timeout: config.timeout,

@@ -28,6 +28,13 @@ google-api-python-client>=2.111.0  # YouTube Data API v3
 isodate==0.6.1  # For parsing YouTube duration
 yt-dlp>=2023.12.30  # YouTube video downloading
 
+# Real-Time Trending APIs
+TikTokApi==6.2.0  # TikTok trending data
+tweepy==4.14.0  # Twitter/X API v2
+praw==7.7.1  # Reddit API
+linkedin-api==2.1.1  # LinkedIn API
+aiohttp==3.9.1  # Async HTTP for parallel API calls
+
 # Video Generation & Processing
 moviepy==1.0.3
 pillow==10.1.0
@@ -86,5 +93,22 @@ json5>=0.9.0  # Enhanced JSON parsing for AI responses
 plotly==5.17.0  # Interactive charts and graphs
 websockets>=13.0,<15.1.0  # Real-time communication
 asyncio-mqtt==0.13.0  # Async messaging for real-time updates
+
+# Advertising Platform APIs
+google-ads==22.1.0  # Google Ads API
+facebook-business==18.0.0  # Meta (Facebook/Instagram) Ads API
+stripe==7.8.0  # Payment processing for ad spend
+# tiktok-business-api==0.1.0  # TikTok Ads (placeholder - use requests for now)
+# linkedin-marketing-python==0.1.0  # LinkedIn Ads (placeholder)
+
+# Authentication & Security
+PyJWT>=2.8.0  # JWT token handling
+bcrypt>=4.0.0  # Password hashing
+python-jose[cryptography]>=3.3.0  # JWT with RSA support
+
+# Database
+SQLAlchemy>=2.0.0  # ORM
+alembic>=1.12.0  # Database migrations
+psycopg2-binary>=2.9.9  # PostgreSQL driver
 
 # Note: Built-in Python modules (os, sys, time, math, random, datetime, logging, uuid, tempfile, subprocess, re, collections) don't need to be installed

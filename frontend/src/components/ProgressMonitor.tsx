@@ -70,10 +70,10 @@ const ProgressMonitor: React.FC<ProgressMonitorProps> = ({ progress, isGeneratin
     },
     {
       id: 'video',
-      label: 'Video Generation',
-      description: 'AI generating video clips and visual content',
+      label: 'Media Collection',
+      description: 'Gathering real media from news sources',
       icon: <VideoLibrary />,
-      phases: ['video_generation', 'visual_creation', 'rendering']
+      phases: ['video_generation', 'visual_creation', 'rendering', 'media_collection', 'media_download']
     },
     {
       id: 'audio',
@@ -353,7 +353,7 @@ const ProgressMonitor: React.FC<ProgressMonitorProps> = ({ progress, isGeneratin
 
         {/* Stats Grid */}
         <Grid container spacing={3} className="mb-6">
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Box className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
               <Group className="text-blue-600 mb-2" fontSize="large" />
               <Typography variant="h4" className="font-bold text-blue-700">
@@ -368,7 +368,7 @@ const ProgressMonitor: React.FC<ProgressMonitorProps> = ({ progress, isGeneratin
             </Box>
           </Grid>
 
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Box className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
               <Chat className="text-green-600 mb-2" fontSize="large" />
               <Typography variant="h4" className="font-bold text-green-700">
@@ -383,7 +383,7 @@ const ProgressMonitor: React.FC<ProgressMonitorProps> = ({ progress, isGeneratin
             </Box>
           </Grid>
 
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Box className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
               <TrendingUp className="text-purple-600 mb-2" fontSize="large" />
               <Typography variant="h4" className="font-bold text-purple-700">
@@ -408,7 +408,7 @@ const ProgressMonitor: React.FC<ProgressMonitorProps> = ({ progress, isGeneratin
             </Typography>
             <Grid container spacing={2}>
               {progress.agents.map((agent: AgentStatus) => (
-                <Grid item xs={12} sm={6} md={4} key={agent.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={agent.id}>
                   <Box className="flex items-center p-3 border rounded-lg hover:shadow-md transition-shadow">
                     <Avatar className="mr-3" sx={{ bgcolor: agent.status === 'completed' ? '#10b981' : agent.status === 'active' ? '#3b82f6' : '#9ca3af' }}>
                       {agent.emoji}

@@ -2,24 +2,105 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Material You (M3) Design System Variables */
 :root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Typography */
+  font-family: 'Google Sans', 'Roboto', 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #f8fafc;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  /* M3 Color System - Light Mode */
+  --md-sys-color-primary: #6750A4;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #EADDFF;
+  --md-sys-color-on-primary-container: #21005D;
+  
+  --md-sys-color-secondary: #19777A;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #7BE0E5;
+  --md-sys-color-on-secondary-container: #051F20;
+  
+  --md-sys-color-tertiary: #7D5260;
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #FFD9E2;
+  --md-sys-color-on-tertiary-container: #31111D;
+  
+  --md-sys-color-error: #B3261E;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #F9DEDC;
+  --md-sys-color-on-error-container: #410E0B;
+  
+  --md-sys-color-background: #FDF7FF;
+  --md-sys-color-on-background: #1C1B1F;
+  --md-sys-color-surface: #FDF7FF;
+  --md-sys-color-on-surface: #1C1B1F;
+  --md-sys-color-surface-variant: #E7E0EC;
+  --md-sys-color-on-surface-variant: #49454F;
+  
+  --md-sys-color-outline: #79747E;
+  --md-sys-color-outline-variant: #CAC4D0;
+  
+  /* Elevation overlays */
+  --md-sys-color-surface-1: #F7F2FA;
+  --md-sys-color-surface-2: #F1ECF4;
+  --md-sys-color-surface-3: #ECE6EE;
+  --md-sys-color-surface-4: #E9E3EB;
+  --md-sys-color-surface-5: #E6E0E9;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  background: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+}
+
+/* Modern Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .custom-scrollbar {
@@ -55,9 +136,60 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-@media (prefers-color-scheme: light) {
+/* Dark mode variables with better contrast */
+@media (prefers-color-scheme: dark) {
   :root {
-    color: #213547;
-    background-color: #f8fafc;
+    /* Dark mode colors - high contrast */
+    --md-sys-color-primary: #60a5fa;
+    --md-sys-color-on-primary: #000000; /* Black text on blue */
+    --md-sys-color-primary-container: #1e3a8a;
+    --md-sys-color-on-primary-container: #ffffff; /* White text */
+    
+    --md-sys-color-secondary: #a5b4fc;
+    --md-sys-color-on-secondary: #000000;
+    --md-sys-color-secondary-container: #334155;
+    --md-sys-color-on-secondary-container: #ffffff;
+    
+    --md-sys-color-background: #0f172a;
+    --md-sys-color-on-background: #ffffff; /* Pure white text */
+    --md-sys-color-surface: #1e293b;
+    --md-sys-color-on-surface: #ffffff; /* Pure white text */
+    --md-sys-color-surface-variant: #334155;
+    --md-sys-color-on-surface-variant: #e2e8f0; /* Light gray */
+    
+    --md-sys-color-outline: #94a3b8;
+    --md-sys-color-outline-variant: #64748b;
+    
+    /* Dark elevation overlays */
+    --md-sys-color-surface-1: #1e293b;
+    --md-sys-color-surface-2: #273548;
+    --md-sys-color-surface-3: #334155;
+    --md-sys-color-surface-4: #3f4d63;
+    --md-sys-color-surface-5: #475569;
+  }
+  
+  /* Force high contrast text in dark mode */
+  body {
+    color: #ffffff !important;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: #ffffff !important;
+  }
+  
+  p, span, div {
+    color: #ffffff;
+  }
+  
+  .MuiTypography-root {
+    color: inherit;
+  }
+  
+  .MuiButton-root {
+    color: #ffffff;
+  }
+  
+  .MuiIconButton-root {
+    color: #e2e8f0;
   }
 }
