@@ -21,4 +21,4 @@ echo "Press Ctrl+C to stop the server"
 echo "======================================="
 
 # Start the backend server
-python3 backend_server.py
+python3 src/api/main.py

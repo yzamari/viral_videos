@@ -6,7 +6,6 @@ Complete REST API with WebSocket support
 from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from typing import Dict, List, Any, Optional
@@ -17,6 +16,7 @@ import uuid
 import jwt
 import bcrypt
 from pathlib import Path
+import logging
 
 # Core video generation dependencies
 try:
@@ -26,12 +26,11 @@ except ImportError:
     print("Warning: AI manager not available")
     ai_manager = None
 
-# Video generation imports
-import asyncio
-from typing import Optional
-import time
-import logging
-
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
@@ -96,37 +95,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
-class CampaignCreate(BaseModel):
-    name: str
-    objective: str
-    platforms: List[str]
-    budget: float
-    target_audience: Optional[Dict[str, Any]] = None
-    schedule: Optional[Dict[str, Any]] = None
-
-class CampaignUpdate(BaseModel):
-    name: Optional[str] = None
-    budget: Optional[float] = None
-    status: Optional[str] = None
-    target_audience: Optional[Dict[str, Any]] = None
-
-class WorkflowCreate(BaseModel):
-    name: str
-    description: str
-    triggers: List[Dict[str, Any]]
-    actions: List[Dict[str, Any]]
-    variables: Optional[Dict[str, Any]] = {}
-
-class AnalyticsQuery(BaseModel):
-    metric_types: Optional[List[str]] = None
-    dimensions: Optional[Dict[str, str]] = None
-    time_range: Optional[Dict[str, str]] = None
-    granularity: Optional[str] = "daily"
-
-class TrendingQuery(BaseModel):
-    platform: Optional[str] = None
-    keyword: Optional[str] = None
-    limit: int = 20
+# Removed advertising platform models - keeping only video generation models
 
 # Video generation models
 class VideoGenerationConfig(BaseModel):
@@ -199,8 +168,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 async def root():
     """Root endpoint"""
     return {
-        "name": "ViralAI Advertising Platform",
-        "version": "3.0.0",
+        "name": "ViralAI Video Generation Platform",
+        "version": "3.11.0-rc1",
         "status": "online"
     }
 
@@ -254,382 +223,7 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         "organization": current_user.get("organization")
     }
 
-# Campaign endpoints
-@app.post("/api/campaigns")
-async def create_campaign(
-    campaign_data: CampaignCreate,
-    current_user: dict = Depends(get_current_user)
-):
-    """Create a new campaign"""
-    try:
-        # Parse objective and platforms
-        objective = CampaignObjective[campaign_data.objective.upper()]
-        platforms = [Platform[p.upper()] for p in campaign_data.platforms]
-        
-        # Create target audience if provided
-        target_audience = None
-        if campaign_data.target_audience:
-            target_audience = TargetAudience(**campaign_data.target_audience)
-        
-        # Create campaign
-        campaign = campaign_manager.create_campaign(
-            name=campaign_data.name,
-            objective=objective,
-            platforms=platforms,
-            budget=campaign_data.budget,
-            target_audience=target_audience
-        )
-        
-        # Broadcast update via WebSocket
-        await manager.broadcast(json.dumps({
-            "event": "campaign_created",
-            "data": {
-                "campaign_id": campaign.campaign_id,
-                "name": campaign.name,
-                "status": campaign.status.value
-            }
-        }))
-        
-        return {
-            "campaign_id": campaign.campaign_id,
-            "name": campaign.name,
-            "status": campaign.status.value,
-            "created_at": campaign.created_at.isoformat()
-        }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.get("/api/campaigns")
-async def list_campaigns(
-    current_user: dict = Depends(get_current_user),
-    limit: int = 100,
-    offset: int = 0
-):
-    """List all campaigns"""
-    campaigns = list(campaign_manager.campaigns.values())[offset:offset+limit]
-    
-    return {
-        "campaigns": [
-            {
-                "campaign_id": c.campaign_id,
-                "name": c.name,
-                "objective": c.objective.value,
-                "status": c.status.value,
-                "platforms": [p.value for p in c.platforms],
-                "budget": sum(b.amount for b in c.budget_allocations),
-                "created_at": c.created_at.isoformat()
-            }
-            for c in campaigns
-        ],
-        "total": len(campaign_manager.campaigns),
-        "limit": limit,
-        "offset": offset
-    }
-
-@app.get("/api/campaigns/{campaign_id}")
-async def get_campaign(
-    campaign_id: str,
-    current_user: dict = Depends(get_current_user)
-):
-    """Get campaign details"""
-    campaign = campaign_manager.campaigns.get(campaign_id)
-    if not campaign:
-        raise HTTPException(status_code=404, detail="Campaign not found")
-    
-    # Get performance metrics
-    metrics = campaign_manager.performance_tracker.get_metrics(campaign_id)
-    
-    return {
-        "campaign": {
-            "campaign_id": campaign.campaign_id,
-            "name": campaign.name,
-            "objective": campaign.objective.value,
-            "status": campaign.status.value,
-            "platforms": [p.value for p in campaign.platforms],
-            "budget_allocations": [
-                {
-                    "platform": b.platform.value,
-                    "amount": b.amount,
-                    "daily_limit": b.daily_limit
-                }
-                for b in campaign.budget_allocations
-            ],
-            "target_audience": campaign.target_audience.__dict__ if campaign.target_audience else {},
-            "created_at": campaign.created_at.isoformat()
-        },
-        "metrics": metrics
-    }
-
-@app.put("/api/campaigns/{campaign_id}")
-async def update_campaign(
-    campaign_id: str,
-    updates: CampaignUpdate,
-    current_user: dict = Depends(get_current_user)
-):
-    """Update campaign"""
-    campaign = campaign_manager.campaigns.get(campaign_id)
-    if not campaign:
-        raise HTTPException(status_code=404, detail="Campaign not found")
-    
-    # Apply updates
-    if updates.name:
-        campaign.name = updates.name
-    if updates.budget:
-        # Redistribute budget
-        total_platforms = len(campaign.platforms)
-        for allocation in campaign.budget_allocations:
-            allocation.amount = updates.budget / total_platforms
-    if updates.status:
-        campaign.status = updates.status
-    
-    campaign.updated_at = datetime.now()
-    
-    return {"message": "Campaign updated", "campaign_id": campaign_id}
-
-@app.post("/api/campaigns/{campaign_id}/launch")
-async def launch_campaign(
-    campaign_id: str,
-    current_user: dict = Depends(get_current_user)
-):
-    """Launch a campaign"""
-    try:
-        result = await campaign_manager.launch_campaign(campaign_id)
-        
-        # Broadcast update
-        await manager.broadcast(json.dumps({
-            "event": "campaign_launched",
-            "data": {"campaign_id": campaign_id}
-        }))
-        
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.post("/api/campaigns/{campaign_id}/pause")
-async def pause_campaign(
-    campaign_id: str,
-    current_user: dict = Depends(get_current_user)
-):
-    """Pause a campaign"""
-    try:
-        campaign = campaign_manager.pause_campaign(campaign_id)
-        return {"message": "Campaign paused", "status": campaign.status.value}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.post("/api/campaigns/{campaign_id}/optimize")
-async def optimize_campaign(
-    campaign_id: str,
-    current_user: dict = Depends(get_current_user)
-):
-    """Optimize a campaign"""
-    try:
-        optimizations = campaign_manager.optimize_campaign(campaign_id)
-        return optimizations
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-# Analytics endpoints
-@app.post("/api/analytics/query")
-async def query_analytics(
-    query: AnalyticsQuery,
-    current_user: dict = Depends(get_current_user)
-):
-    """Query analytics data"""
-    # Parse time range
-    time_range = None
-    if query.time_range:
-        start = datetime.fromisoformat(query.time_range["start"])
-        end = datetime.fromisoformat(query.time_range["end"])
-        time_range = (start, end)
-    
-    # Parse metric types
-    metric_types = None
-    if query.metric_types:
-        metric_types = [MetricType[m.upper()] for m in query.metric_types]
-    
-    # Get metrics
-    df = analytics_dashboard.get_metrics(
-        metric_types=metric_types,
-        dimensions=query.dimensions,
-        time_range=time_range
-    )
-    
-    # Convert to JSON-serializable format
-    if not df.empty:
-        data = df.to_dict(orient='records')
-    else:
-        data = []
-    
-    return {"data": data, "count": len(data)}
-
-@app.get("/api/analytics/report/{campaign_id}")
-async def get_campaign_report(
-    campaign_id: str,
-    current_user: dict = Depends(get_current_user)
-):
-    """Get campaign performance report"""
-    report = campaign_manager.get_campaign_report(campaign_id)
-    return report
-
-@app.get("/api/analytics/dashboard")
-async def get_dashboard_data(current_user: dict = Depends(get_current_user)):
-    """Get dashboard overview data"""
-    # Get summary metrics for all campaigns
-    total_campaigns = len(campaign_manager.campaigns)
-    active_campaigns = sum(
-        1 for c in campaign_manager.campaigns.values()
-        if c.status.value == "active"
-    )
-    
-    # Calculate total spend and revenue
-    total_spend = 0
-    total_revenue = 0
-    
-    for campaign_id in campaign_manager.campaigns:
-        metrics = campaign_manager.performance_tracker.get_metrics(campaign_id)
-        total_spend += metrics.get("spend", 0)
-        total_revenue += metrics.get("revenue", 0)
-    
-    return {
-        "overview": {
-            "total_campaigns": total_campaigns,
-            "active_campaigns": active_campaigns,
-            "total_spend": total_spend,
-            "total_revenue": total_revenue,
-            "overall_roas": total_revenue / total_spend if total_spend > 0 else 0
-        },
-        "recent_campaigns": [
-            {
-                "campaign_id": c.campaign_id,
-                "name": c.name,
-                "status": c.status.value,
-                "created_at": c.created_at.isoformat()
-            }
-            for c in sorted(
-                campaign_manager.campaigns.values(),
-                key=lambda x: x.created_at,
-                reverse=True
-            )[:5]
-        ]
-    }
-
-# Trending endpoints
-@app.post("/api/trending/analyze")
-async def analyze_trending(
-    query: TrendingQuery,
-    current_user: dict = Depends(get_current_user)
-):
-    """Get trending data analysis"""
-    trending_data = trending_analyzer.get_all_trending_data(
-        platform=query.platform,
-        keyword=query.keyword,
-        limit=query.limit
-    )
-    
-    return trending_data
-
-@app.get("/api/trending/viral")
-async def get_viral_opportunities(current_user: dict = Depends(get_current_user)):
-    """Get current viral opportunities"""
-    # Get trending data from all platforms
-    trending = trending_analyzer.get_all_trending_data(limit=10)
-    
-    # Calculate viral scores
-    opportunities = []
-    for platform, data in trending.get("platforms", {}).items():
-        if "error" not in data:
-            # Calculate viral score (simplified)
-            viral_score = 0.5  # Base score
-            
-            if "trending_hashtags" in data:
-                top_score = max(
-                    (h.get("trend_score", 0) for h in data["trending_hashtags"][:3]),
-                    default=0
-                )
-                viral_score += top_score * 0.5
-            
-            opportunities.append({
-                "platform": platform,
-                "viral_score": min(viral_score, 1.0),
-                "top_trends": data.get("trending_hashtags", [])[:3]
-            })
-    
-    # Sort by viral score
-    opportunities.sort(key=lambda x: x["viral_score"], reverse=True)
-    
-    return {"opportunities": opportunities}
-
-# Workflow endpoints
-@app.post("/api/workflows")
-async def create_workflow(
-    workflow_data: WorkflowCreate,
-    current_user: dict = Depends(get_current_user)
-):
-    """Create a new workflow"""
-    template = WorkflowTemplate(
-        name=workflow_data.name,
-        description=workflow_data.description,
-        triggers=workflow_data.triggers,
-        actions=workflow_data.actions,
-        variables=workflow_data.variables
-    )
-    
-    workflow_id = workflow_engine.create_workflow(template)
-    
-    return {
-        "workflow_id": workflow_id,
-        "name": workflow_data.name,
-        "status": "created"
-    }
-
-@app.get("/api/workflows")
-async def list_workflows(current_user: dict = Depends(get_current_user)):
-    """List all workflows"""
-    workflows = [
-        {
-            "workflow_id": w.template_id,
-            "name": w.name,
-            "description": w.description,
-            "triggers": len(w.triggers),
-            "actions": len(w.actions),
-            "created_at": w.created_at.isoformat()
-        }
-        for w in workflow_engine.workflows.values()
-    ]
-    
-    return {"workflows": workflows}
-
-@app.post("/api/workflows/{workflow_id}/execute")
-async def execute_workflow(
-    workflow_id: str,
-    variables: Optional[Dict[str, Any]] = None,
-    current_user: dict = Depends(get_current_user)
-):
-    """Execute a workflow manually"""
-    try:
-        execution = await workflow_engine.execute_workflow(
-            workflow_id,
-            trigger_data={"trigger": "manual", "user": current_user["username"]},
-            variables=variables
-        )
-        
-        return {
-            "execution_id": execution.execution_id,
-            "status": execution.status.value,
-            "started_at": execution.started_at.isoformat()
-        }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.get("/api/workflows/executions/{execution_id}")
-async def get_workflow_execution(
-    execution_id: str,
-    current_user: dict = Depends(get_current_user)
-):
-    """Get workflow execution status"""
-    status = workflow_engine.get_workflow_status(execution_id)
-    return status
+# Video Generation Endpoints - Core functionality only
 
 # Video Generation Endpoints
 @app.post("/sessions")
@@ -662,6 +256,9 @@ async def create_session(config: VideoGenerationConfig):
 @app.post("/sessions/{session_id}/generate")
 async def start_generation(session_id: str, config: VideoGenerationConfig):
     """Start video generation for a session"""
+    logger.info(f"Starting generation for session {session_id}")
+    logger.info(f"Config: {config}")
+    
     if session_id not in sessions_db:
         raise HTTPException(status_code=404, detail="Session not found")
     
@@ -670,7 +267,12 @@ async def start_generation(session_id: str, config: VideoGenerationConfig):
     sessions_db[session_id]["updated_at"] = datetime.now().isoformat()
     
     # Start background generation task with real main.py CLI
-    asyncio.create_task(run_real_video_generation(session_id, config))
+    try:
+        task = asyncio.create_task(run_real_video_generation(session_id, config))
+        logger.info(f"Background task created for session {session_id}")
+    except Exception as e:
+        logger.error(f"Failed to create background task: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
     
     return {"message": "Generation started", "session_id": session_id}
 
@@ -700,15 +302,41 @@ async def run_real_video_generation(session_id: str, config: VideoGenerationConf
     from pathlib import Path
     
     try:
-        # Build command arguments
-        cmd = [
-            "python", "main.py",
-            "--mission", config.mission,
-            "--duration", str(config.duration),
-            "--platform", config.platform or "youtube",
-            "--discussions", config.discussion_mode,
-            "--session-id", session_id
-        ]
+        # Check if we need to activate virtual environment
+        project_root = Path(__file__).parent.parent.parent
+        venv_path = project_root / ".venv"  # Changed to .venv
+        
+        # Build command with venv activation if needed
+        if venv_path.exists() and not os.environ.get('VIRTUAL_ENV'):
+            # Virtual environment exists but not activated
+            logger.info(f"Activating virtual environment at {venv_path}")
+            
+            # Use the venv's python directly
+            python_executable = venv_path / "bin" / "python3"
+            if not python_executable.exists():
+                # Windows path
+                python_executable = venv_path / "Scripts" / "python.exe"
+            
+            cmd = [
+                str(python_executable), "main.py", "generate",
+                "--mission", config.mission,
+                "--duration", str(config.duration),
+                "--platform", config.platform or "youtube",
+                "--discussions", config.discussion_mode,
+                "--session-id", session_id,
+                "--cheap"  # Use cheap mode for faster testing
+            ]
+        else:
+            # Either venv is already active or doesn't exist
+            cmd = [
+                "python3", "main.py", "generate",
+                "--mission", config.mission,
+                "--duration", str(config.duration),
+                "--platform", config.platform or "youtube",
+                "--discussions", config.discussion_mode,
+                "--session-id", session_id,
+                "--cheap"  # Use cheap mode for faster testing
+            ]
         
         # Add optional arguments
         if config.category:
@@ -726,11 +354,22 @@ async def run_real_video_generation(session_id: str, config: VideoGenerationConf
         if config.visual_style:
             cmd.extend(["--visual-style", config.visual_style])
         if config.language:
-            cmd.extend(["--language", config.language])
+            # Use --languages (plural) and map language codes
+            lang_code = config.language
+            if lang_code == "english":
+                lang_code = "en-US"
+            elif lang_code == "hebrew":
+                lang_code = "he"
+            elif lang_code == "farsi":
+                lang_code = "fa"
+            cmd.extend(["--languages", lang_code])
         if config.voice_preference:
-            cmd.extend(["--voice", config.voice_preference])
+            # Voice preference might not be a valid option, skip for now
+            pass
             
         logger.info(f"Starting real video generation: {' '.join(cmd)}")
+        logger.info(f"Working directory: {Path(__file__).parent.parent.parent}")
+        logger.info(f"Python executable: {cmd[0]}")
         
         # Update initial progress
         generation_progress[session_id].update({
@@ -747,12 +386,17 @@ async def run_real_video_generation(session_id: str, config: VideoGenerationConf
         }))
         
         # Run the actual generation command
-        process = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            cwd=Path(__file__).parent.parent.parent  # Go to project root
-        )
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=Path(__file__).parent.parent.parent  # Go to project root
+            )
+            logger.info(f"Process started with PID: {process.pid}")
+        except Exception as e:
+            logger.error(f"Failed to start process: {e}")
+            raise
         
         # Monitor the process and update progress
         while process.returncode is None:
@@ -867,7 +511,7 @@ async def run_real_video_generation(session_id: str, config: VideoGenerationConf
             "message": f"Generation failed: {str(e)}"
         })
 
-# AI endpoints
+# AI endpoints for video generation
 @app.post("/api/ai/generate-creative")
 async def generate_creative(
     prompt: Dict[str, Any],
@@ -875,24 +519,22 @@ async def generate_creative(
 ):
     """Generate creative content with AI"""
     try:
-        # Get trending context
-        trending = trending_analyzer.get_all_trending_data(limit=5)
-        
-        # Build AI prompt
+        if not ai_manager:
+            raise HTTPException(status_code=503, detail="AI service not available")
+            
+        # Build AI prompt for video content
         ai_prompt = f"""
-        Generate creative content for advertising:
+        Generate creative video content:
         Brief: {json.dumps(prompt)}
-        Current Trends: {json.dumps(trending['unified_insights'])}
         
-        Provide creative concept, copy, and visual suggestions.
+        Provide creative concept, script, and visual suggestions for video.
         """
         
         response = ai_manager.generate_text(ai_prompt)
         
         return {
             "creative_id": str(uuid.uuid4()),
-            "content": response,
-            "trending_context": trending['unified_insights']
+            "content": response
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -943,10 +585,9 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
         "services": {
-            "campaign_manager": "online",
-            "analytics": "online",
-            "trending": "online",
-            "workflows": "online"
+            "ai_manager": "online" if ai_manager else "offline",
+            "video_generation": "online",
+            "websocket": "online"
         }
     }
 
@@ -961,8 +602,7 @@ async def shutdown_event():
     """Cleanup on shutdown"""
     print("👋 ViralAI Video Generation API stopped")
 
-# Serve static files in production
-# app.mount("/", StaticFiles(directory="frontend/build", html=True), name="static")
+# Static files can be served in production if needed
 
 if __name__ == "__main__":
     import uvicorn

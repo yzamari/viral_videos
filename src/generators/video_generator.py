@@ -57,6 +57,16 @@ except ImportError:
     RTL_SUPPORT = False
     print("⚠️ RTL support not available. Install with: pip install arabic-reshaper python-bidi")
 
+# LangGraph quality analyzer support
+try:
+    from ..agents.langgraph_video_quality_analyzer import AdaptiveVideoGenerator
+    QUALITY_ANALYZER_AVAILABLE = True
+    logger.info("✅ LangGraph quality analyzer available for adaptive generation")
+except ImportError as e:
+    QUALITY_ANALYZER_AVAILABLE = False
+    logger.warning(f"⚠️ LangGraph quality analyzer not available: {e}")
+    AdaptiveVideoGenerator = None
+
 logger = get_logger(__name__)
 
 
@@ -538,6 +548,16 @@ The last frame of this scene connects to the next.
         self.voice_director = VoiceDirectorAgent(api_key)
         self.positioning_agent = OverlayPositioningAgent(api_key)
         self.style_agent = VisualStyleAgent(api_key)
+        
+        # Initialize adaptive quality analyzer if available
+        self.adaptive_generator = None
+        if QUALITY_ANALYZER_AVAILABLE:
+            try:
+                self.adaptive_generator = AdaptiveVideoGenerator(api_key=api_key)
+                logger.info("✅ Adaptive video generator initialized with quality analysis")
+            except Exception as e:
+                logger.warning(f"⚠️ Could not initialize adaptive generator: {e}")
+                self.adaptive_generator = None
         self.script_processor = EnhancedScriptProcessor(api_key)
         self.overlay_enhancer = OverlayEnhancer()
         self.png_overlay_handler = PNGOverlayHandler()
@@ -1636,6 +1656,51 @@ The last frame of this scene connects to the next.
                 if clip_path:
                     clips.append(clip_path)
                     
+                    # Perform quality analysis if adaptive generator is available
+                    if self.adaptive_generator and i < num_clips - 1:  # Don't analyze last clip
+                        try:
+                            logger.info(f"🔍 Analyzing quality of clip {i+1}")
+                            
+                            # Get audio path (assuming it exists in same dir with .mp3 extension)
+                            audio_path = clip_path.replace('.mp4', '.mp3') if clip_path.endswith('.mp4') else None
+                            if not audio_path or not os.path.exists(audio_path):
+                                audio_path = None  # Will skip audio analysis
+                            
+                            # Get script segment for this clip
+                            script_segment = script_segments[i] if i < len(script_segments) else enhanced_prompt
+                            
+                            # Analyze clip quality
+                            quality_report = self.adaptive_generator.analyze_and_adapt(
+                                clip_number=i+1,
+                                video_path=clip_path,
+                                audio_path=audio_path,
+                                script_segment=script_segment,
+                                mission=config.mission
+                            )
+                            
+                            # Apply improvements to next clip if needed
+                            if quality_report and 'improvements' in quality_report:
+                                improvements = quality_report['improvements']
+                                if improvements and i+1 < len(enhanced_prompts):
+                                    # Apply improvements to next prompt
+                                    next_prompt = enhanced_prompts[i+1]
+                                    if improvements.get('prompt_adjustments'):
+                                        enhanced_prompts[i+1] = self._apply_prompt_improvements(
+                                            next_prompt, 
+                                            improvements['prompt_adjustments']
+                                        )
+                                        logger.info(f"🎯 Applied quality improvements to clip {i+2} prompt")
+                                    
+                                    # Log quality grade
+                                    if 'overall_grade' in quality_report:
+                                        grade = quality_report['overall_grade']
+                                        logger.info(f"📊 Clip {i+1} quality grade: {grade}")
+                                        if grade in ['F', 'D', 'D+', 'C-']:
+                                            logger.warning(f"⚠️ Low quality detected, applying corrections")
+                        except Exception as e:
+                            logger.warning(f"⚠️ Quality analysis failed for clip {i+1}: {e}")
+                            # Continue without quality analysis
+                    
                     # Track with session manager
                     from ..utils.session_manager import session_manager
                     session_manager.track_file(clip_path, "video_clip", "VEO2" if veo_client else "FallbackGenerator")
@@ -1647,7 +1712,45 @@ The last frame of this scene connects to the next.
                 # Continue with other clips
         
         logger.info(f"🎬 Generated {len(clips)} video clips")
+        
+        # Generate final quality report if adaptive generator is available
+        if self.adaptive_generator and clips:
+            try:
+                logger.info("📊 Generating final quality report")
+                quality_summary = self.adaptive_generator.generate_quality_summary(clips)
+                if quality_summary:
+                    # Save quality report to session
+                    report_path = session_context.get_output_path("reports", "quality_analysis.json")
+                    os.makedirs(os.path.dirname(report_path), exist_ok=True)
+                    with open(report_path, 'w', encoding='utf-8') as f:
+                        json.dump(quality_summary, f, indent=2, ensure_ascii=False)
+                    logger.info(f"💾 Quality report saved to {report_path}")
+            except Exception as e:
+                logger.warning(f"⚠️ Could not generate quality summary: {e}")
+        
         return clips
+    
+    def _apply_prompt_improvements(self, prompt: str, adjustments: Dict[str, Any]) -> str:
+        """Apply quality-based improvements to a prompt"""
+        improved_prompt = prompt
+        
+        if adjustments.get('enhance_clarity'):
+            # Add clarity keywords
+            improved_prompt = f"Clear, well-defined, sharp focus. {improved_prompt}"
+        
+        if adjustments.get('improve_lighting'):
+            # Add lighting improvements
+            improved_prompt = f"Well-lit, balanced exposure, professional lighting. {improved_prompt}"
+        
+        if adjustments.get('stabilize_motion'):
+            # Add stability keywords
+            improved_prompt = f"Smooth camera movement, stable shots, no shaking. {improved_prompt}"
+        
+        if adjustments.get('custom_instructions'):
+            # Add custom instructions from analysis
+            improved_prompt = f"{adjustments['custom_instructions']} {improved_prompt}"
+        
+        return improved_prompt
     
     def _calculate_expected_clip_count(self, duration: float) -> int:
         """Calculate expected video clip count based on duration"""

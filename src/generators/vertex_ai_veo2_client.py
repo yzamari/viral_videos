@@ -35,7 +35,11 @@ logger = get_logger(__name__)
 
 class VertexAIVeo2Client(BaseVeoClient):
     """
-    Vertex AI VEO-2 client for Google Cloud Tier 1 customers
+    [DEPRECATED] Vertex AI VEO-2 client - Use VEO-3 instead
+    
+    WARNING: VEO-2 is deprecated. Please use VEO-3 for all new video generation.
+    This client is maintained only for backward compatibility.
+    
     Uses the official Vertex AI REST API for video generation
     """
 

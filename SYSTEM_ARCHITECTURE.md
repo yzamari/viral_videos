@@ -46,7 +46,41 @@ The system includes a comprehensive theme management system:
 - Educational content optimization
 - Professional lower thirds and captions
 
-### 3. **Multi-Agent Discussion System** 🤖
+### 3. **LangGraph-Based Multi-Agent Discussion System** 🤖
+
+**NEW: Enhanced with LangGraph for State Management**
+- State graphs for maintaining conversation context
+- Dynamic agent routing based on discussion phase
+- Checkpointing for resumable workflows
+- Parallel agent execution capabilities
+
+**Agent System Components:**
+- `LangGraphAgentSystem` - Main orchestrator with state management
+- Specialized agents with distinct personalities:
+  - Creative Director (Alexandra Vision)
+  - Script Writer (Marcus Narrative) 
+  - Character Designer (Sofia Identity)
+  - Visual Director (Kai Aesthetic)
+  - Consensus Builder (Harmony Synthesis)
+
+### 4. **Character Consistency System** 🎭
+
+**NEW: State-of-the-Art Character Generation**
+- **Gemini 2.5 Flash Image (nano-banana)** integration
+  - Character-consistent image generation ($0.039/image)
+  - Identity preservation across transformations
+  - Multi-image blending for scenes
+- **Enhanced Veo 3** with reference images
+  - Up to 3 character reference images per video
+  - Native audio integration
+  - 8-second clips with consistent characters
+- **Character Management**
+  - Complete profile system (appearance, personality, voice)
+  - Reference image generation and caching
+  - Consistency validation and scoring
+  - Import/export character libraries
+
+### 5. **Multi-Agent Discussion System (Legacy)** 🤖
 
 22 specialized AI agents collaborate to create optimal content:
 

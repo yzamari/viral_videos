@@ -34,6 +34,11 @@ class GeminiTextService(TextGenerationService):
             if request.max_tokens:
                 generation_config["max_output_tokens"] = request.max_tokens
             
+            # Add JSON mode if requested (Gemini v1beta feature)
+            if hasattr(request, 'response_format') and request.response_format == 'json':
+                generation_config["response_mime_type"] = "application/json"
+                logger.debug("Enabled JSON mode for Gemini response")
+            
             # Add system prompt if provided
             full_prompt = request.prompt
             if request.system_prompt:

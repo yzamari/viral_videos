@@ -138,19 +138,30 @@ class EnhancedScriptProcessor:
 
             # CRITICAL: Enforce duration constraints BEFORE processing
             if target_duration:
-                # Calculate maximum words based on target duration
-                # Average speaking rate: 150 words per minute (2.5 words per second)
-                words_per_second = 2.5
-                max_words = int(target_duration * words_per_second * 0.85)  # 85% to account for pauses
+                # Calculate word targets based on target duration
+                # Standard speaking rate: 150-160 words per minute
+                # For TTS, we use 2.8 words per second to include natural pauses
+                words_per_second = 2.8
+                
+                # Calculate both minimum and maximum acceptable word counts
+                min_words = int(target_duration * words_per_second * 0.9)  # 90% of target
+                target_words = int(target_duration * words_per_second)     # Ideal target
+                max_words = int(target_duration * words_per_second * 1.2)  # 120% of target (allow some flexibility)
                 
                 script_words = script_content.split()
                 current_word_count = len(script_words)
                 
-                if current_word_count > max_words:
-                    logger.warning(f"⚠️  Script has {current_word_count} words but max is {max_words} for {target_duration}s")
+                logger.info(f"📊 Word count analysis for {target_duration}s duration:")
+                logger.info(f"   Current: {current_word_count} words")
+                logger.info(f"   Target: {target_words} words (ideal)")
+                logger.info(f"   Range: {min_words}-{max_words} words (acceptable)")
+                
+                # Only truncate if significantly over the maximum
+                if current_word_count > max_words * 1.5:  # Only if 50% over max
+                    logger.warning(f"⚠️  Script has {current_word_count} words, significantly over max {max_words}")
                     logger.warning(f"📄 Truncating script to fit duration constraint")
                     
-                    # Truncate to sentences that fit within word limit
+                    # Truncate to sentences that fit within max word limit
                     sentences = self._split_into_sentences(script_content, language_value)
                     truncated_sentences = []
                     word_count = 0
@@ -160,11 +171,22 @@ class EnhancedScriptProcessor:
                         if word_count + sentence_words <= max_words:
                             truncated_sentences.append(sentence)
                             word_count += sentence_words
+                        elif word_count >= min_words:
+                            # We have enough words, can stop here
+                            break
                         else:
+                            # Still need more words, include this sentence even if over max
+                            truncated_sentences.append(sentence)
+                            word_count += sentence_words
                             break
                     
                     script_content = ' '.join(truncated_sentences)
                     logger.info(f"✂️  Truncated script to {word_count} words ({len(truncated_sentences)} sentences)")
+                    
+                    # Verify we didn't truncate too much
+                    if word_count < min_words:
+                        logger.error(f"❌ Truncation too aggressive: {word_count} words < {min_words} minimum")
+                        logger.warning(f"⚠️  Script may be too short for {target_duration}s duration")
             
             # Enhanced prompt for duration-aware script processing
             # Determine segmentation strategy

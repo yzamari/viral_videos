@@ -75,7 +75,7 @@ trap cleanup EXIT INT TERM
 
 # Start backend server
 echo -e "${BLUE}🔧 Starting backend server on http://localhost:8000${NC}"
-python3 backend_server.py &
+python3 src/api/main.py &
 BACKEND_PID=$!
 
 # Wait a moment for backend to start

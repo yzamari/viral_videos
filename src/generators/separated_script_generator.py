@@ -147,7 +147,8 @@ Make each visual description rich and cinematic for compelling image generation.
             request = TextGenerationRequest(
                 prompt=prompt,
                 max_tokens=2000,  # Larger response for detailed visuals
-                temperature=0.8   # More creative for visual descriptions
+                temperature=0.8,   # More creative for visual descriptions
+                response_format='json'  # Use Gemini's JSON mode for structured output
             )
             
             response = await text_service.generate(request)
@@ -313,7 +314,8 @@ Focus on creating engaging, speakable content that tells the story effectively.
             request = TextGenerationRequest(
                 prompt=prompt,
                 max_tokens=1500,  # Focused on dialogue content
-                temperature=0.7   # Balanced creativity for dialogue
+                temperature=0.7,   # Balanced creativity for dialogue
+                response_format='json'  # Use Gemini's JSON mode for structured output
             )
             
             response = await text_service.generate(request)

@@ -182,6 +182,48 @@ class CopyrightViolation(ContentError):
             context={'content_type': content_type, 'source': source}
         )
 
+# OOP Architecture Exceptions (New)
+
+class RepositoryError(VVGException):
+    """Exception raised for data access errors in repositories"""
+    
+    def __init__(self, operation: str, entity: str, reason: str):
+        super().__init__(
+            f"Repository {operation} failed for {entity}: {reason}",
+            context={'operation': operation, 'entity': entity, 'reason': reason}
+        )
+
+
+class VideoGenerationError(VVGException):
+    """Exception raised for video generation service errors"""
+    
+    def __init__(self, stage: str, reason: str, session_id: Optional[str] = None):
+        super().__init__(
+            f"Video generation failed at {stage}: {reason}",
+            context={'stage': stage, 'reason': reason, 'session_id': session_id}
+        )
+
+
+class CampaignError(VVGException):
+    """Exception raised for campaign management errors"""
+    
+    def __init__(self, operation: str, reason: str, campaign_id: Optional[str] = None):
+        super().__init__(
+            f"Campaign {operation} failed: {reason}",
+            context={'operation': operation, 'reason': reason, 'campaign_id': campaign_id}
+        )
+
+
+class ValidationError(VVGException):
+    """Exception raised for domain entity validation errors"""
+    
+    def __init__(self, entity_type: str, field: str, reason: str):
+        super().__init__(
+            f"Validation failed for {entity_type}.{field}: {reason}",
+            context={'entity_type': entity_type, 'field': field, 'reason': reason}
+        )
+
+
 # Retry and Recovery
 
 class RetryableError(VVGException):
