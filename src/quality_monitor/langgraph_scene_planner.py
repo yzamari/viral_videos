@@ -3,24 +3,27 @@ LangGraph Scene Planner - Intelligent scene planning and decision system
 Decides on scene composition, transitions, and news-specific requirements
 """
 
-import os
 import json
 import operator
-from typing import Dict, List, Optional, Any, TypedDict, Annotated, Tuple
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Optional, Any, TypedDict, Annotated
+from dataclasses import dataclass
 from enum import Enum
-import logging
 import re
 
 try:
     from langgraph.graph import StateGraph, END
-    from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
+    from langchain_core.messages import (
+    BaseMessage, HumanMessage, AIMessage, SystemMessage
+)
     from langchain_google_genai import ChatGoogleGenerativeAI
     import google.generativeai as genai
     LANGGRAPH_AVAILABLE = True
 except ImportError:
     LANGGRAPH_AVAILABLE = False
-    raise ImportError("LangGraph required. Install with: pip install langgraph langchain-google-genai")
+    raise ImportError(
+        "LangGraph required. Install with: "
+        "pip install langgraph langchain-google-genai"
+    )
 
 from ..utils.logging_config import get_logger
 
@@ -76,7 +79,7 @@ class SceneDefinition:
     importance: float  # 0-1, for prioritization
     can_skip: bool  # If time constrained
     news_elements: Optional[Dict] = None  # News-specific elements
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to JSON-serializable dictionary"""
         return {
@@ -110,7 +113,7 @@ class ScenePlan:
     multi_segment: bool
     pacing: str  # slow, medium, fast, dynamic
     use_multiple_scenes: bool = False  # Add this property if missing
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to JSON-serializable dictionary"""
         return {
@@ -148,11 +151,11 @@ class LangGraphScenePlanner:
     Intelligent scene planning using LangGraph
     Decides on scene composition based on content analysis
     """
-    
+
     def __init__(self, api_key: str):
         """Initialize scene planner"""
         self.api_key = api_key
-        
+
         # Configure Gemini
         genai.configure(api_key=api_key)
         self.model = ChatGoogleGenerativeAI(
@@ -161,17 +164,17 @@ class LangGraphScenePlanner:
             temperature=0.7,  # More creative for scene planning
             convert_system_message_to_human=True
         )
-        
+
         # Build workflow
         self.workflow = self._build_workflow()
-        
+
         logger.info("✅ LangGraph Scene Planner initialized")
-    
+
     def _build_workflow(self) -> StateGraph:
         """Build scene planning workflow"""
-        
+
         workflow = StateGraph(ScenePlannerState)
-        
+
         # Add nodes
         workflow.add_node("analyze_content", self._analyze_content)
         workflow.add_node("identify_scenes", self._identify_scene_breaks)
@@ -180,11 +183,11 @@ class LangGraphScenePlanner:
         workflow.add_node("optimize_scenes", self._optimize_scene_timing)
         workflow.add_node("add_visual_details", self._add_visual_details)
         workflow.add_node("finalize_plan", self._finalize_scene_plan)
-        
+
         # Define flow
         workflow.set_entry_point("analyze_content")
         workflow.add_edge("analyze_content", "identify_scenes")
-        
+
         # Conditional routing based on content type
         workflow.add_conditional_edges(
             "identify_scenes",
@@ -194,22 +197,22 @@ class LangGraphScenePlanner:
                 "standard": "plan_standard_scenes"
             }
         )
-        
+
         workflow.add_edge("plan_news_scenes", "optimize_scenes")
         workflow.add_edge("plan_standard_scenes", "optimize_scenes")
         workflow.add_edge("optimize_scenes", "add_visual_details")
         workflow.add_edge("add_visual_details", "finalize_plan")
         workflow.add_edge("finalize_plan", END)
-        
+
         return workflow.compile()
-    
+
     def _analyze_content(self, state: ScenePlannerState) -> ScenePlannerState:
         """Analyze content to understand structure and requirements"""
         logger.info("📝 Analyzing content for scene planning")
-        
+
         script = state.get("script", "")
         config = state.get("config", {})
-        
+
         analysis_prompt = f"""
 Analyze this script for video scene planning:
 
@@ -242,22 +245,22 @@ Format response as JSON with:
 - key_moments: []
 - visual_requirements: []
 """
-        
+
         try:
             response = self.model.invoke([HumanMessage(content=analysis_prompt)])
             analysis = self._parse_json_response(response.content)
-            
+
             state["scene_analysis"] = analysis
             state["content_type"] = analysis.get("content_type", "general")
-            
+
             # Add analysis message
             state["messages"] = [
                 SystemMessage(content="Scene planning analysis complete"),
                 AIMessage(content=f"Content type: {analysis.get('content_type')}, Needs {analysis.get('scene_count_recommendation', 1)} scenes")
             ]
-            
+
             logger.info(f"✅ Content analyzed: {analysis.get('content_type')}, {analysis.get('scene_count_recommendation')} scenes recommended")
-            
+
         except Exception as e:
             logger.error(f"❌ Content analysis failed: {e}")
             state["scene_analysis"] = {
@@ -265,17 +268,17 @@ Format response as JSON with:
                 "scene_count_recommendation": 3,
                 "needs_multiple_scenes": True
             }
-        
+
         return state
-    
+
     def _identify_scene_breaks(self, state: ScenePlannerState) -> ScenePlannerState:
         """Identify natural scene break points"""
         logger.info("🎬 Identifying scene breaks")
-        
+
         script = state.get("script", "")
         analysis = state.get("scene_analysis", {})
         duration = state.get("duration_target", 30)
-        
+
         identification_prompt = f"""
 Identify optimal scene breaks in this script:
 
@@ -313,14 +316,14 @@ Format as JSON with:
 - total_scenes: number
 - requires_breaking_news_treatment: boolean
 """
-        
+
         try:
             response = self.model.invoke([HumanMessage(content=identification_prompt)])
             scene_breaks = self._parse_json_response(response.content)
-            
+
             # Store identified scenes
             state["proposed_scenes"] = []
-            
+
             for i, scene_data in enumerate(scene_breaks.get("scenes", [])):
                 scene = SceneDefinition(
                     scene_id=f"scene_{i+1}",
@@ -338,28 +341,28 @@ Format as JSON with:
                     can_skip=False
                 )
                 state["proposed_scenes"].append(scene)
-            
+
             logger.info(f"✅ Identified {len(state['proposed_scenes'])} scenes")
-            
+
         except Exception as e:
             logger.error(f"❌ Scene identification failed: {e}")
             # Create default scenes
             self._create_default_scenes(state)
-        
+
         return state
-    
+
     def _plan_news_scenes(self, state: ScenePlannerState) -> ScenePlannerState:
         """Plan scenes specifically for news content"""
         logger.info("📺 Planning news-specific scenes")
-        
+
         scenes = state.get("proposed_scenes", [])
         analysis = state.get("scene_analysis", {})
-        
+
         news_prompt = f"""
 Enhance these scenes for NEWS BROADCAST format:
 
 CURRENT SCENES:
-{json.dumps([asdict(s) for s in scenes], indent=2)}
+{json.dumps([s.to_dict() for s in scenes], indent=2)}
 
 IS BREAKING: {analysis.get('is_breaking', False)}
 
@@ -383,19 +386,19 @@ For each scene provide:
 
 Format as JSON with enhanced_scenes: []
 """
-        
+
         try:
             response = self.model.invoke([HumanMessage(content=news_prompt)])
             news_enhancements = self._parse_json_response(response.content)
-            
+
             # Enhance scenes with news elements
             for i, scene in enumerate(scenes):
                 if i < len(news_enhancements.get("enhanced_scenes", [])):
                     enhancement = news_enhancements["enhanced_scenes"][i]
-                    
+
                     # Add news elements
                     scene.news_elements = enhancement.get("news_elements", {})
-                    
+
                     # Add lower third overlay if specified
                     if "lower_third" in enhancement.get("news_elements", {}):
                         scene.overlays.append({
@@ -405,7 +408,7 @@ Format as JSON with enhanced_scenes: []
                             "position": "bottom",
                             "style": "news"
                         })
-                    
+
                     # Add ticker if specified
                     if "ticker" in enhancement.get("news_elements", {}):
                         scene.overlays.append({
@@ -414,32 +417,32 @@ Format as JSON with enhanced_scenes: []
                             "position": "bottom",
                             "style": "scrolling"
                         })
-                    
+
                     # Update visual style for news
                     scene.visual_style = VisualStyle.NEWS_BROADCAST
                     scene.camera_movement = enhancement.get("camera_style", "news_static")
-            
+
             state["proposed_scenes"] = scenes
             logger.info(f"✅ Enhanced {len(scenes)} scenes with news elements")
-            
+
         except Exception as e:
             logger.error(f"❌ News scene planning failed: {e}")
-        
+
         return state
-    
+
     def _plan_standard_scenes(self, state: ScenePlannerState) -> ScenePlannerState:
         """Plan scenes for non-news content"""
         logger.info("🎬 Planning standard scenes")
-        
+
         scenes = state.get("proposed_scenes", [])
         config = state.get("config", {})
         platform = config.get("platform", "general")
-        
+
         standard_prompt = f"""
 Optimize these scenes for {platform} platform:
 
 SCENES:
-{json.dumps([asdict(s) for s in scenes], indent=2)}
+{json.dumps([s.to_dict() for s in scenes], indent=2)}
 
 Enhance for maximum engagement:
 1. Add dynamic visual suggestions
@@ -456,19 +459,19 @@ For each scene provide:
 
 Format as JSON with enhanced_scenes: []
 """
-        
+
         try:
             response = self.model.invoke([HumanMessage(content=standard_prompt)])
             enhancements = self._parse_json_response(response.content)
-            
+
             # Apply enhancements
             for i, scene in enumerate(scenes):
                 if i < len(enhancements.get("enhanced_scenes", [])):
                     enhancement = enhancements["enhanced_scenes"][i]
-                    
+
                     scene.camera_movement = enhancement.get("optimal_camera", "pan")
                     scene.transition_in = enhancement.get("transition_style", "fade")
-                    
+
                     # Add engagement overlays
                     for element in enhancement.get("engagement_elements", []):
                         scene.overlays.append({
@@ -476,64 +479,64 @@ Format as JSON with enhanced_scenes: []
                             "content": element,
                             "style": "animated"
                         })
-            
+
             state["proposed_scenes"] = scenes
             logger.info(f"✅ Enhanced {len(scenes)} standard scenes")
-            
+
         except Exception as e:
             logger.error(f"❌ Standard scene planning failed: {e}")
-        
+
         return state
-    
+
     def _optimize_scene_timing(self, state: ScenePlannerState) -> ScenePlannerState:
         """Optimize scene timing and pacing"""
         logger.info("⏱️ Optimizing scene timing")
-        
+
         scenes = state.get("proposed_scenes", [])
         target_duration = state.get("duration_target", 30)
-        
+
         # Calculate current total
         current_total = sum(s.duration for s in scenes)
-        
+
         if current_total != target_duration:
             # Adjust proportionally
             scale_factor = target_duration / current_total
-            
+
             for scene in scenes:
                 scene.duration = round(scene.duration * scale_factor, 1)
-                
+
                 # Ensure minimum scene duration
                 if scene.duration < 2.0 and not scene.can_skip:
                     scene.duration = 2.0
-        
+
         # Recalculate total
         new_total = sum(s.duration for s in scenes)
-        
+
         # If still off, adjust the main content scene
         if new_total != target_duration:
             diff = target_duration - new_total
             main_scenes = [s for s in scenes if s.scene_type == SceneType.MAIN_CONTENT]
             if main_scenes:
                 main_scenes[0].duration += diff
-        
+
         state["proposed_scenes"] = scenes
         logger.info(f"✅ Optimized timing: {len(scenes)} scenes, {sum(s.duration for s in scenes)}s total")
-        
+
         return state
-    
+
     def _add_visual_details(self, state: ScenePlannerState) -> ScenePlannerState:
         """Add detailed visual prompts for each scene"""
         logger.info("🎨 Adding visual details")
-        
+
         scenes = state.get("proposed_scenes", [])
         config = state.get("config", {})
-        
+
         for scene in scenes:
             # Generate visual prompts based on scene type and content
             if scene.scene_type == SceneType.INTRO:
                 scene.visual_prompts = [
                     f"Professional opening shot, {scene.visual_style.value} style",
-                    f"Establishing shot with title overlay",
+                    "Establishing shot with title overlay",
                     f"Smooth {scene.camera_movement} camera movement"
                 ]
             elif scene.scene_type == SceneType.BREAKING_NEWS:
@@ -559,7 +562,7 @@ Format as JSON with enhanced_scenes: []
                     f"{scene.visual_style.value} visual style",
                     f"Scene showing: {scene.content[:50]}..."
                 ]
-            
+
             # Add platform-specific optimizations
             if "tiktok" in config.get("platform", "").lower():
                 scene.visual_prompts.append("Vertical format optimized for mobile")
@@ -567,19 +570,19 @@ Format as JSON with enhanced_scenes: []
             elif "youtube" in config.get("platform", "").lower():
                 scene.visual_prompts.append("High quality cinematic visuals")
                 scene.visual_prompts.append("Professional production value")
-        
+
         state["proposed_scenes"] = scenes
         logger.info(f"✅ Added visual details to {len(scenes)} scenes")
-        
+
         return state
-    
+
     def _finalize_scene_plan(self, state: ScenePlannerState) -> ScenePlannerState:
         """Finalize and validate scene plan"""
         logger.info("✅ Finalizing scene plan")
-        
+
         scenes = state.get("proposed_scenes", [])
         analysis = state.get("scene_analysis", {})
-        
+
         # Create scene plan
         scene_plan = ScenePlan(
             total_scenes=len(scenes),
@@ -595,9 +598,9 @@ Format as JSON with enhanced_scenes: []
             multi_segment=len(scenes) > 3,
             pacing=analysis.get("pacing", "medium")
         )
-        
+
         state["scene_plan"] = scene_plan
-        
+
         # Log scene plan summary
         logger.info(f"""
 📋 SCENE PLAN SUMMARY:
@@ -607,21 +610,21 @@ Format as JSON with enhanced_scenes: []
 - Multi-Segment: {scene_plan.multi_segment}
 - Pacing: {scene_plan.pacing}
 """)
-        
+
         for i, scene in enumerate(scenes):
             logger.info(f"  Scene {i+1}: {scene.scene_type.value} ({scene.duration}s)")
-        
+
         return state
-    
+
     def _route_by_content_type(self, state: ScenePlannerState) -> str:
         """Route based on content type"""
         analysis = state.get("scene_analysis", {})
-        
+
         if analysis.get("is_news") or analysis.get("content_type") == "news":
             return "news"
         else:
             return "standard"
-    
+
     def _purpose_to_scene_type(self, purpose: str) -> SceneType:
         """Convert purpose string to SceneType"""
         purpose_map = {
@@ -635,18 +638,18 @@ Format as JSON with enhanced_scenes: []
             "outro": SceneType.OUTRO,
             "breaking": SceneType.BREAKING_NEWS
         }
-        
+
         purpose_lower = purpose.lower()
         for key, scene_type in purpose_map.items():
             if key in purpose_lower:
                 return scene_type
-        
+
         return SceneType.MAIN_CONTENT
-    
+
     def _create_default_scenes(self, state: ScenePlannerState):
         """Create default scene structure"""
         duration = state.get("duration_target", 30)
-        
+
         # Simple 3-scene structure
         scenes = [
             SceneDefinition(
@@ -695,13 +698,13 @@ Format as JSON with enhanced_scenes: []
                 can_skip=False
             )
         ]
-        
+
         state["proposed_scenes"] = scenes
-    
+
     def _extract_visual_elements(self, content: str) -> List[str]:
         """Extract visual elements from content"""
         prompts = []
-        
+
         # Look for visual cues in content
         if "people" in content.lower() or "person" in content.lower():
             prompts.append("People in professional setting")
@@ -711,36 +714,35 @@ Format as JSON with enhanced_scenes: []
             prompts.append("Urban cityscape")
         if "technology" in content.lower() or "computer" in content.lower():
             prompts.append("Modern technology and devices")
-        
+
         # Default if no specific elements found
         if not prompts:
             prompts.append(f"Visual representation of: {content[:50]}")
-        
+
         return prompts
-    
+
     def _parse_json_response(self, response: str) -> Dict:
         """Parse JSON from model response"""
         try:
             # Try to extract JSON
-            import re
             json_match = re.search(r'\{.*\}', response, re.DOTALL)
             if json_match:
                 return json.loads(json_match.group())
-        except:
+        except Exception:
             pass
-        
+
         # Return default
         return {}
-    
+
     # Public API
     def plan_scenes(self, script: str, config: Dict) -> ScenePlan:
         """
         Plan scenes for video generation
-        
+
         Args:
             script: Video script
             config: Generation configuration
-            
+
         Returns:
             Complete scene plan
         """
@@ -751,45 +753,45 @@ Format as JSON with enhanced_scenes: []
             "platform": config.get("platform", "general"),
             "messages": []
         }
-        
+
         # Run workflow
         final_state = self.workflow.invoke(initial_state)
-        
+
         return final_state.get("scene_plan")
-    
+
     def should_use_multiple_scenes(self, script: str, duration: float) -> bool:
         """
         Quick check if content needs multiple scenes
-        
+
         Args:
             script: Video script
             duration: Target duration
-            
+
         Returns:
             True if multiple scenes recommended
         """
         # Quick heuristics
         word_count = len(script.split())
-        
+
         # Check for scene indicators
         has_multiple_parts = any(
-            indicator in script.lower() 
+            indicator in script.lower()
             for indicator in ["first", "second", "next", "then", "finally", "but", "however"]
         )
-        
+
         # Duration check
         needs_multiple = duration > 15  # More than 15 seconds usually needs scenes
-        
+
         # Content complexity
         is_complex = word_count > 100
-        
+
         return has_multiple_parts or needs_multiple or is_complex
-    
+
     def get_scene_summary(self, scene_plan: ScenePlan) -> str:
         """Get human-readable scene summary"""
         if not scene_plan:
             return "No scene plan available"
-        
+
         summary = f"""
 🎬 SCENE PLAN
 =============
@@ -800,7 +802,7 @@ Pacing: {scene_plan.pacing}
 
 Scene Breakdown:
 """
-        
+
         for i, scene in enumerate(scene_plan.scenes):
             summary += f"""
 Scene {i+1}: {scene.scene_type.value.upper()}
@@ -810,6 +812,6 @@ Scene {i+1}: {scene.scene_type.value.upper()}
 - Content: {scene.content[:50]}...
 """
             if scene.news_elements:
-                summary += f"- News Elements: Lower third, ticker\n"
-        
+                summary += "- News Elements: Lower third, ticker\n"
+
         return summary

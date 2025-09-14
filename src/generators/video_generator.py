@@ -914,7 +914,11 @@ The last frame of this scene connects to the next.
                         'style': style_decision.get('primary_style', 'dynamic')
                     }
                 )
-                logger.info(f"📋 Scene plan: {scene_plan.total_scenes} scenes, multiple: {scene_plan.use_multiple_scenes}")
+                # Safely log scene plan information
+                if scene_plan:
+                    total_scenes = getattr(scene_plan, 'total_scenes', 'N/A')
+                    use_multiple = getattr(scene_plan, 'use_multiple_scenes', False)
+                    logger.info(f"📋 Scene plan: {total_scenes} scenes, multiple: {use_multiple}")
                 # Store scene plan for video generation
                 self._current_scene_plan = scene_plan
             
@@ -925,9 +929,12 @@ The last frame of this scene connects to the next.
             if self.use_langgraph and self.quality_monitor and clips:
                 try:
                     logger.info("🔍 LangGraph: Checking video clip quality")
+                    # Convert scene_plan to dict if it exists to avoid JSON serialization issues
+                    scene_plan = getattr(self, '_current_scene_plan', None)
+                    scene_plan_dict = scene_plan.to_dict() if scene_plan and hasattr(scene_plan, 'to_dict') else scene_plan
                     video_quality = self.quality_monitor.check_step_quality(
                         GenerationStep.VIDEO_CLIPS,
-                        {'clips': clips, 'scene_plan': getattr(self, '_current_scene_plan', None)}
+                        {'clips': clips, 'scene_plan': scene_plan_dict}
                     )
                     if not video_quality.passed:
                         logger.warning(f"⚠️ Video quality check failed: {video_quality.issues}")

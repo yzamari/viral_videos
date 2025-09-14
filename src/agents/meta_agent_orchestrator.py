@@ -4,14 +4,13 @@ Manages the lifecycle of dynamic agents and orchestrates their creation
 """
 
 import logging
-import asyncio
-from typing import Dict, List, Optional, Any, Set
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 import json
 
-from src.utils.ai_service_manager import AIServiceManager
+from src.ai.manager import AIServiceManager
 from src.config.ai_model_config import DEFAULT_AI_MODEL
 from src.agents.dynamic_agent_factory import DynamicAgentFactory, AgentType, DynamicAgent
 from src.agents.agent_discovery_system import AgentDiscoverySystem
@@ -470,7 +469,7 @@ class MetaAgentOrchestrator:
             report += f"  - {agent_type}: {count}\n"
         
         if self.agent_requests:
-            report += f"\nPending Requests:\n"
+            report += "\nPending Requests:\n"
             for req in self.agent_requests[:5]:  # Show first 5
                 report += f"  - {req.specialization} ({req.need_level.value})\n"
         

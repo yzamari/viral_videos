@@ -5,11 +5,9 @@ Uses LangGraph for improved state management and agent coordination
 
 import os
 import json
-import uuid
 from datetime import datetime
 from typing import Dict, List, Optional, Any, TypedDict, Annotated, Sequence
-from dataclasses import dataclass, asdict
-from enum import Enum
+from dataclasses import dataclass
 import operator
 
 # Import logger first
@@ -37,9 +35,8 @@ except ImportError as e:
     LANGGRAPH_AVAILABLE = False
 
 from .multi_agent_discussion import (
-    AgentRole, 
-    AgentMessage, 
-    DiscussionTopic, 
+    AgentRole,
+    DiscussionTopic,
     DiscussionResult
 )
 from .gemini_helper import GeminiModelHelper, ensure_api_key
@@ -757,7 +754,7 @@ Include specific neurological optimizations identified.
                 # Try to get from session_id
                 if self.session_id:
                     from ..utils.session_context import create_session_context
-                    session_context = create_session_context(self.session_id, "outputs")
+                    session_context = create_session_context(self.session_id)
                 else:
                     logger.warning("No session context available to save LangGraph discussion")
                     return

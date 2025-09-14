@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from enum import Enum
 import json
 
-from src.utils.ai_service_manager import AIServiceManager
+from src.ai.manager import AIServiceManager
 from src.config.ai_model_config import DEFAULT_AI_MODEL
 
 logger = logging.getLogger(__name__)

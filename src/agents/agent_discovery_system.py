@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import json
 
-from src.utils.ai_service_manager import AIServiceManager
+from src.ai.manager import AIServiceManager
 from src.config.ai_model_config import DEFAULT_AI_MODEL
 from src.agents.dynamic_agent_factory import (
     DynamicAgentFactory, 
