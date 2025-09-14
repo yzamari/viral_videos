@@ -117,7 +117,6 @@ class VideoGenerator:
         logger.info("🤖 Starting comprehensive AI agent discussions")
         
         try:
-            import json
             from datetime import datetime
             
             # Ensure voice_config is properly formatted
@@ -933,7 +932,7 @@ The last frame of this scene connects to the next.
                     scene_plan = getattr(self, '_current_scene_plan', None)
                     scene_plan_dict = scene_plan.to_dict() if scene_plan and hasattr(scene_plan, 'to_dict') else scene_plan
                     video_quality = self.quality_monitor.check_step_quality(
-                        GenerationStep.VIDEO_CLIPS,
+                        GenerationStep.VIDEO_GENERATION,
                         {'clips': clips, 'scene_plan': scene_plan_dict}
                     )
                     if not video_quality.passed:
@@ -955,7 +954,7 @@ The last frame of this scene connects to the next.
                 try:
                     logger.info("🔍 LangGraph: Checking audio quality")
                     audio_quality = self.quality_monitor.check_step_quality(
-                        GenerationStep.AUDIO,
+                        GenerationStep.AUDIO_GENERATION,
                         {'audio_files': audio_files, 'script': script_result.get('optimized_script', '')}
                     )
                     if not audio_quality.passed:
@@ -1424,7 +1423,6 @@ The last frame of this scene connects to the next.
         
         # Create comprehensive session data
         try:
-            import json
             session_data = {
                 "session_id": session_context.session_id,
                 "mission": config.mission,
@@ -2920,7 +2918,6 @@ The last frame of this scene connects to the next.
                     report_path = session_context.get_output_path("reports", "quality_report.json")
                     os.makedirs(os.path.dirname(report_path), exist_ok=True)
                     
-                    import json
                     # Custom JSON encoder to handle ScenePlan and other non-serializable objects
                     def custom_encoder(obj):
                         if hasattr(obj, 'to_dict'):

@@ -401,17 +401,36 @@ class RealtimeSyncManager:
         
         try:
             clips = [AudioFileClip(f) for f in audio_files if os.path.exists(f)]
+            if not clips:
+                logger.warning("⚠️ No valid audio files found for combination")
+                return audio_files[0] if audio_files else ""
+            
             combined = CompositeAudioClip(clips)
             
             output_path = audio_files[0].replace('.mp3', '_combined.mp3')
             combined.write_audiofile(output_path, logger=None)
             
+            # Clean up resources
             for clip in clips:
-                clip.close()
-            combined.close()
+                try:
+                    clip.close()
+                except Exception:
+                    pass
+            try:
+                combined.close()
+            except Exception:
+                pass
             
             return output_path
             
+        except AttributeError as e:
+            if "'CompositeAudioClip' object has no attribute 'fps'" in str(e):
+                logger.warning("⚠️ MoviePy fps issue on audio clip, using fallback")
+                # Return first file as fallback
+                return audio_files[0]
+            else:
+                logger.error(f"❌ Audio combination attribute error: {e}")
+                return audio_files[0]
         except Exception as e:
             logger.error(f"❌ Audio combination failed: {e}")
             return audio_files[0]
