@@ -57,6 +57,7 @@ Thumbs.db
 # Project specific - Generated content
 output/
 outputs/
+outputs_*/
 temp/
 sessions/
 generated/
