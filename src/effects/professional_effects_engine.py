@@ -11,7 +11,7 @@ from typing import List, Dict, Any, Optional, Tuple, Protocol
 from dataclasses import dataclass
 from enum import Enum
 import logging
-from moviepy.editor import VideoFileClip, ImageClip, CompositeVideoClip, concatenate_videoclips
+from moviepy.editor import VideoFileClip, VideoClip, ImageClip, CompositeVideoClip, concatenate_videoclips
 from moviepy.video.fx import all as vfx
 
 from ..utils.logging_config import get_logger
@@ -171,7 +171,7 @@ class SlideTransition(BaseTransition):
                 
                 return result.astype('uint8')
             
-            transition = VideoFileClip(make_frame, duration=duration)
+            transition = VideoClip(make_frame, duration=duration)
             
             # Combine clips with transition
             part1 = clip1.subclip(0, clip1.duration - duration)
@@ -215,7 +215,7 @@ class ZoomTransition(BaseTransition):
                 
                 return frame
             
-            transition = VideoFileClip(make_frame, duration=duration)
+            transition = VideoClip(make_frame, duration=duration)
             
             part1 = clip1.subclip(0, clip1.duration - duration)
             part2 = clip2.subclip(duration, clip2.duration)
@@ -312,7 +312,7 @@ class KenBurnsEffect(BaseVideoEffect):
                 
                 return frame
             
-            return VideoFileClip(make_frame, duration=duration)
+            return VideoClip(make_frame, duration=duration)
             
         except Exception as e:
             logger.error(f"❌ Ken Burns effect failed: {e}")
@@ -412,12 +412,13 @@ class ColorGradingService:
         # Increase contrast
         lut = np.clip(lut * 1.2 - 25, 0, 255).astype(np.uint8)
         
-        # Slight orange tint in highlights
-        lut_3d = np.stack([lut, lut, lut])
-        lut_3d[0] = np.clip(lut_3d[0] * 1.05, 0, 255)  # Red
-        lut_3d[2] = np.clip(lut_3d[2] * 0.95, 0, 255)  # Blue
+        # Create proper 3-channel LUT for OpenCV
+        lut_3d = np.zeros((256, 1, 3), dtype=np.uint8)
+        lut_3d[:, 0, 0] = np.clip(lut * 1.05, 0, 255)  # Red
+        lut_3d[:, 0, 1] = lut  # Green
+        lut_3d[:, 0, 2] = np.clip(lut * 0.95, 0, 255)  # Blue
         
-        return lut_3d.T
+        return lut_3d
     
     def _create_vintage_lut(self) -> np.ndarray:
         """Create vintage color LUT"""
@@ -426,13 +427,13 @@ class ColorGradingService:
         # Reduce contrast, add fade
         lut = np.clip(lut * 0.85 + 20, 0, 255).astype(np.uint8)
         
-        # Sepia tone
-        lut_3d = np.stack([lut, lut, lut])
-        lut_3d[0] = np.clip(lut_3d[0] * 1.1, 0, 255)  # Red
-        lut_3d[1] = np.clip(lut_3d[1] * 0.9, 0, 255)  # Green
-        lut_3d[2] = np.clip(lut_3d[2] * 0.7, 0, 255)  # Blue
+        # Create proper 3-channel LUT for OpenCV
+        lut_3d = np.zeros((256, 1, 3), dtype=np.uint8)
+        lut_3d[:, 0, 0] = np.clip(lut * 1.1, 0, 255)  # Red
+        lut_3d[:, 0, 1] = np.clip(lut * 0.9, 0, 255)  # Green
+        lut_3d[:, 0, 2] = np.clip(lut * 0.7, 0, 255)  # Blue
         
-        return lut_3d.T
+        return lut_3d
     
     def _create_vibrant_lut(self) -> np.ndarray:
         """Create vibrant color LUT"""
@@ -441,7 +442,11 @@ class ColorGradingService:
         # Increase saturation
         lut = np.clip(lut * 1.3 - 38, 0, 255).astype(np.uint8)
         
-        return np.stack([lut, lut, lut]).T
+        # Create proper 3-channel LUT for OpenCV
+        lut_3d = np.zeros((256, 1, 3), dtype=np.uint8)
+        lut_3d[:, 0, :] = lut.reshape(-1, 1)
+        
+        return lut_3d
     
     def _create_noir_lut(self) -> np.ndarray:
         """Create noir/black & white LUT"""
@@ -450,28 +455,35 @@ class ColorGradingService:
         # High contrast B&W
         lut = np.clip(lut * 1.5 - 64, 0, 255).astype(np.uint8)
         
-        # Convert to grayscale
-        return np.stack([lut, lut, lut]).T
+        # Create proper 3-channel LUT for OpenCV
+        lut_3d = np.zeros((256, 1, 3), dtype=np.uint8)
+        lut_3d[:, 0, :] = lut.reshape(-1, 1)
+        
+        return lut_3d
     
     def _create_warm_lut(self) -> np.ndarray:
         """Create warm color LUT"""
         lut = np.arange(256, dtype=np.uint8)
         
-        lut_3d = np.stack([lut, lut, lut])
-        lut_3d[0] = np.clip(lut_3d[0] * 1.1, 0, 255)  # More red
-        lut_3d[2] = np.clip(lut_3d[2] * 0.85, 0, 255)  # Less blue
+        # Create proper 3-channel LUT for OpenCV
+        lut_3d = np.zeros((256, 1, 3), dtype=np.uint8)
+        lut_3d[:, 0, 0] = np.clip(lut * 1.1, 0, 255)  # More red
+        lut_3d[:, 0, 1] = lut  # Green
+        lut_3d[:, 0, 2] = np.clip(lut * 0.85, 0, 255)  # Less blue
         
-        return lut_3d.T
+        return lut_3d
     
     def _create_cool_lut(self) -> np.ndarray:
         """Create cool color LUT"""
         lut = np.arange(256, dtype=np.uint8)
         
-        lut_3d = np.stack([lut, lut, lut])
-        lut_3d[0] = np.clip(lut_3d[0] * 0.85, 0, 255)  # Less red
-        lut_3d[2] = np.clip(lut_3d[2] * 1.1, 0, 255)  # More blue
+        # Create proper 3-channel LUT for OpenCV
+        lut_3d = np.zeros((256, 1, 3), dtype=np.uint8)
+        lut_3d[:, 0, 0] = np.clip(lut * 0.85, 0, 255)  # Less red
+        lut_3d[:, 0, 1] = lut  # Green
+        lut_3d[:, 0, 2] = np.clip(lut * 1.1, 0, 255)  # More blue
         
-        return lut_3d.T
+        return lut_3d
 
 
 # Text Animation Service
@@ -500,7 +512,7 @@ class TextAnimationService:
                 
                 return img
             
-            return VideoFileClip(make_frame, duration=duration)
+            return VideoClip(make_frame, duration=duration)
             
         except Exception as e:
             logger.error(f"❌ Typewriter effect failed: {e}")
