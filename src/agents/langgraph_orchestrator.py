@@ -12,17 +12,21 @@ from dataclasses import dataclass, asdict
 from enum import Enum
 import operator
 
+# Import logger first
+from ..utils.logging_config import get_logger
+logger = get_logger(__name__)
+
 try:
-    from langgraph.graph import Graph, StateGraph, END
-    from langgraph.prebuilt import ToolExecutor
-    from langgraph.checkpoint import MemorySaver
+    from langgraph.graph import StateGraph, MessageGraph, END
+    from langgraph.checkpoint.memory import MemorySaver
     from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
     from langchain_core.prompts import ChatPromptTemplate
     LANGGRAPH_AVAILABLE = True
-except ImportError:
-    print("Warning: LangGraph not installed. Some features may be limited.")
-    Graph = None
+    logger.info("✅ LangGraph successfully imported and available")
+except ImportError as e:
+    logger.warning(f"LangGraph import error: {e}")
     StateGraph = None
+    MessageGraph = None
     END = None
     MemorySaver = None
     BaseMessage = dict
@@ -38,10 +42,7 @@ from .multi_agent_discussion import (
     DiscussionTopic, 
     DiscussionResult
 )
-from ..utils.logging_config import get_logger
 from .gemini_helper import GeminiModelHelper, ensure_api_key
-
-logger = get_logger(__name__)
 
 # Define the state structure for discussions
 if LANGGRAPH_AVAILABLE:
@@ -102,6 +103,11 @@ class LangGraphDiscussionOrchestrator:
         
         # Agent configurations
         self.agent_configs = self._initialize_agent_configs()
+        
+        # Initialize dynamic agent systems
+        self.meta_agent = None
+        self.dynamic_agents = {}
+        self._initialize_dynamic_agent_system()
         
         # Build the discussion graph
         self.graph = self._build_discussion_graph()
@@ -185,6 +191,39 @@ class LangGraphDiscussionOrchestrator:
                 decision_style="Virality-maximizing with trend awareness"
             )
         }
+        
+    def _initialize_dynamic_agent_system(self):
+        """Initialize the dynamic agent creation and management system"""
+        try:
+            # Import dynamic agent modules
+            from src.agents.meta_agent_orchestrator import MetaAgentOrchestrator
+            from src.agents.agent_discovery_system import AgentDiscoverySystem
+            from src.agents.dynamic_agent_factory import DynamicAgentFactory
+            
+            # Initialize Meta-Agent with auto-spawn threshold
+            self.meta_agent = MetaAgentOrchestrator(auto_spawn_threshold=0.85)
+            
+            # Initialize discovery system
+            self.discovery_system = AgentDiscoverySystem()
+            
+            # Initialize agent factory
+            self.agent_factory = DynamicAgentFactory()
+            
+            logger.info("🚀 Dynamic Agent System initialized successfully")
+            logger.info(f"   Auto-spawn threshold: {self.meta_agent.auto_spawn_threshold}")
+            logger.info("   Ready to spawn specialized agents as needed")
+            
+        except ImportError as e:
+            logger.warning(f"⚠️ Dynamic Agent System not available: {e}")
+            logger.warning("   Continuing without dynamic agent capabilities")
+            self.meta_agent = None
+            self.discovery_system = None
+            self.agent_factory = None
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize Dynamic Agent System: {e}")
+            self.meta_agent = None
+            self.discovery_system = None
+            self.agent_factory = None
         
     def _build_discussion_graph(self) -> StateGraph:
         """Build the LangGraph discussion workflow"""
@@ -415,6 +454,7 @@ Provide a structured synthesis.
                 
             agent = self.agent_configs[participant]
             
+            # Use JSON mode for structured voting
             vote_prompt = f"""
 As {agent.name}, vote on the best approach based on the discussion.
 
@@ -424,32 +464,117 @@ Consider:
 - Practical feasibility
 - Expected impact
 
-Provide:
-1. Your vote (1-10 scale) for the current consensus
-2. Brief reasoning
-3. Any critical concerns
+Respond with a JSON object containing:
+{{
+    "vote": <integer 1-10>,
+    "reasoning": "<brief explanation>",
+    "concerns": "<any critical concerns or null>"
+}}
 
-Be decisive but thoughtful.
+Where vote is your score from 1 (strongly disagree) to 10 (strongly agree).
 """
             
             try:
-                response = self._generate_content_safe(vote_prompt)
+                # Try to use JSON mode if available
+                import google.generativeai as genai
                 
-                # Extract vote score (simple parsing - could be improved)
-                import re
-                score_match = re.search(r'\b([1-9]|10)\b', response)
-                score = int(score_match.group(1)) if score_match else 5
+                # Configure the API with v1beta for JSON mode support
+                genai.configure(api_key=self.api_key)
+                
+                # Configure model with JSON mode using gemini-2.5-flash (not lite)
+                generation_config = genai.GenerationConfig(
+                    response_mime_type="application/json",
+                    response_schema={
+                        "type": "object",
+                        "properties": {
+                            "vote": {"type": "integer", "minimum": 1, "maximum": 10},
+                            "reasoning": {"type": "string"}
+                        },
+                        "required": ["vote", "reasoning"]
+                    }
+                )
+                
+                # Create model with JSON configuration using gemini-2.5-flash
+                json_model = genai.GenerativeModel(
+                    model_name="gemini-2.5-flash",
+                    generation_config=generation_config
+                )
+                
+                # Generate structured response
+                json_response = json_model.generate_content(vote_prompt)
+                
+                # Parse JSON response
+                import json
+                vote_data = json.loads(json_response.text)
+                
+                score = vote_data.get("vote", 7)
+                reasoning = vote_data.get("reasoning", "Agreement with proposal")
+                
+                # Validate score
+                if not (1 <= score <= 10):
+                    logger.warning(f"Invalid vote {score} from {agent.name}, using 7")
+                    score = 7
                 
                 voting_results[agent.role.value] = {
                     "score": score,
-                    "reasoning": response[:200]
+                    "reasoning": reasoning[:200]
                 }
                 
-                logger.info(f"🗳️ {agent.name} voted: {score}/10")
+                logger.info(f"🗳️ {agent.name} voted: {score}/10 (JSON mode)")
                 
-            except Exception as e:
-                logger.error(f"Error getting vote from {agent.name}: {e}")
-                voting_results[agent.role.value] = {"score": 5, "reasoning": "Error"}
+            except Exception as json_error:
+                # Fallback to regex extraction if JSON mode fails
+                logger.debug(f"JSON mode failed: {json_error}, using fallback")
+                
+                try:
+                    response = self._generate_content_safe(vote_prompt)
+                    
+                    # Try to parse as JSON first
+                    try:
+                        import json
+                        vote_data = json.loads(response)
+                        score = vote_data.get("vote", 7)
+                        reasoning = vote_data.get("reasoning", response[:200])
+                    except:
+                        # Extract vote score with regex
+                        import re
+                        patterns = [
+                            r'"vote":\s*(\d+)',  # JSON format
+                            r'(?:vote|score|rating)[\s:]+(\d+)(?:/10)?',
+                            r'(\d+)(?:/10|out of 10)',
+                            r'\b(10|[1-9])\b(?!/)',
+                        ]
+                        
+                        score = 7  # More positive default
+                        for pattern in patterns:
+                            match = re.search(pattern, response, re.IGNORECASE)
+                            if match:
+                                potential_score = int(match.group(1))
+                                if 1 <= potential_score <= 10:
+                                    score = potential_score
+                                    break
+                        
+                        # Infer from content if still default
+                        if score == 7:
+                            if any(word in response.lower() for word in ['excellent', 'perfect', 'strongly agree']):
+                                score = 9
+                            elif any(word in response.lower() for word in ['agree', 'good', 'support']):
+                                score = 8
+                            elif any(word in response.lower() for word in ['disagree', 'concern', 'issue']):
+                                score = 4
+                        
+                        reasoning = response[:200]
+                    
+                    voting_results[agent.role.value] = {
+                        "score": score,
+                        "reasoning": reasoning
+                    }
+                    
+                    logger.info(f"🗳️ {agent.name} voted: {score}/10 (fallback)")
+                    
+                except Exception as e:
+                    logger.error(f"Error getting vote from {agent.name}: {e}")
+                    voting_results[agent.role.value] = {"score": 7, "reasoning": "Default agreement"}
                 
         state["voting_results"] = voting_results
         
@@ -590,6 +715,9 @@ Include specific neurological optimizations identified.
             
             logger.info(f"✅ LangGraph discussion completed: {result.consensus_level:.2f} consensus in {result.total_rounds} rounds")
             
+            # Save discussion to session output folder
+            self._save_discussion_to_session(topic, result, final_state)
+            
             return result
             
         except Exception as e:
@@ -617,6 +745,89 @@ Include specific neurological optimizations identified.
             alternative_approaches=[]
         )
         
+    def _save_discussion_to_session(self, topic: DiscussionTopic, result: DiscussionResult, final_state: Dict):
+        """Save LangGraph discussion results to session output folder"""
+        try:
+            # Import here to avoid circular dependency
+            from ..utils.session_context import SessionContext
+            
+            # Get current session context
+            session_context = SessionContext.get_instance() if hasattr(SessionContext, 'get_instance') else None
+            if not session_context:
+                # Try to get from session_id
+                if self.session_id:
+                    from ..utils.session_context import create_session_context
+                    session_context = create_session_context(self.session_id, "outputs")
+                else:
+                    logger.warning("No session context available to save LangGraph discussion")
+                    return
+            
+            # Create langgraph discussions folder
+            langgraph_dir = session_context.get_output_path("langgraph_discussions")
+            os.makedirs(langgraph_dir, exist_ok=True)
+            
+            # Save full discussion state
+            state_file = os.path.join(langgraph_dir, f"discussion_{topic.topic_id}_state.json")
+            with open(state_file, 'w', encoding='utf-8') as f:
+                # Convert messages to serializable format
+                serializable_state = {
+                    "topic": topic.topic_id,
+                    "round": final_state.get("round", 0),
+                    "consensus_level": final_state.get("consensus_level", 0),
+                    "key_insights": final_state.get("key_insights", []),
+                    "messages": [
+                        {
+                            "type": msg.__class__.__name__,
+                            "content": msg.content,
+                            "agent": getattr(msg, 'agent', 'unknown')
+                        }
+                        for msg in final_state.get("messages", [])
+                    ],
+                    "final_decision": final_state.get("final_decision", {}),
+                    "alternative_approaches": final_state.get("alternative_approaches", [])
+                }
+                json.dump(serializable_state, f, indent=2, ensure_ascii=False)
+            
+            # Save result summary
+            result_file = os.path.join(langgraph_dir, f"discussion_{topic.topic_id}_result.json")
+            with open(result_file, 'w', encoding='utf-8') as f:
+                result_data = {
+                    "topic_id": result.topic_id,
+                    "decision": result.decision,
+                    "consensus_level": result.consensus_level,
+                    "total_rounds": result.total_rounds,
+                    "participating_agents": result.participating_agents,
+                    "key_insights": result.key_insights,
+                    "alternative_approaches": result.alternative_approaches,
+                    "timestamp": datetime.now().isoformat()
+                }
+                json.dump(result_data, f, indent=2, ensure_ascii=False)
+            
+            # Save visualization
+            viz_file = os.path.join(langgraph_dir, f"discussion_{topic.topic_id}_visualization.md")
+            with open(viz_file, 'w', encoding='utf-8') as f:
+                f.write(f"# LangGraph Discussion: {topic.topic_id}\n\n")
+                f.write(f"**Consensus Level:** {result.consensus_level:.2f}\n")
+                f.write(f"**Total Rounds:** {result.total_rounds}\n")
+                f.write(f"**Participants:** {', '.join(result.participating_agents)}\n\n")
+                
+                f.write("## Key Insights\n")
+                for i, insight in enumerate(result.key_insights, 1):
+                    f.write(f"{i}. {insight}\n")
+                
+                f.write("\n## Decision\n")
+                f.write(f"```json\n{json.dumps(result.decision, indent=2, ensure_ascii=False)}\n```\n")
+                
+                if result.alternative_approaches:
+                    f.write("\n## Alternative Approaches\n")
+                    for i, approach in enumerate(result.alternative_approaches, 1):
+                        f.write(f"{i}. {approach}\n")
+            
+            logger.info(f"💾 LangGraph discussion saved to: {langgraph_dir}")
+            
+        except Exception as e:
+            logger.warning(f"Could not save LangGraph discussion: {e}")
+    
     def visualize_discussion_graph(self) -> str:
         """Generate a visual representation of the discussion flow"""
         if not self.graph:

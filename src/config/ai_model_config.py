@@ -4,8 +4,8 @@ Centralized configuration for AI model names used across the system
 """
 
 # Default AI model for all agents and components
-# Using gemini-2.5-flash-lite for super fast performance
-DEFAULT_AI_MODEL = "gemini-2.5-flash-lite"
+# Using gemini-2.5-flash for fast performance with JSON mode support
+DEFAULT_AI_MODEL = "gemini-2.5-flash"
 
 # Legacy models (kept for reference)
 LEGACY_MODELS = {

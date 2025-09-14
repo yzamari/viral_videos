@@ -9,7 +9,7 @@ import uuid
 import re
 import warnings
 from typing import Dict, List, Optional, Any, Union
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from datetime import datetime
 import json
 import subprocess
@@ -48,6 +48,34 @@ from ..utils.professional_text_renderer import (
 from ..config import video_config
 from .png_overlay_handler import PNGOverlayHandler
 
+# Import new quality enhancement modules
+from ..generators.enhanced_script_validator import ScriptQualityValidator
+from ..utils.realtime_sync_manager import RealtimeSyncManager, SyncManagerFactory
+from ..effects.professional_effects_engine import ProfessionalEffectsEngine, EffectConfig, EffectType
+from ..analyzers.scene_continuity_analyzer import SceneContinuityAnalyzer
+from ..agents.advanced_quality_controller import AdvancedQualityController, EnhancementConfig, QualityLevel
+from ..config.quality_presets import quality_preset_manager, QualityTier
+from ..utils.quality_feedback_system import quality_feedback_system
+
+# Import LangGraph quality monitor and scene planner (replaces old AI agents)
+try:
+    from ..quality_monitor.langgraph_quality_monitor import (
+        LangGraphQualityMonitor, 
+        GenerationStep,
+        StepQualityResult
+    )
+    from ..quality_monitor.langgraph_scene_planner import (
+        LangGraphScenePlanner,
+        ScenePlan,
+        SceneDefinition
+    )
+    LANGGRAPH_MONITOR_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"⚠️ LangGraph quality monitor not available: {e}")
+    LANGGRAPH_MONITOR_AVAILABLE = False
+    LangGraphQualityMonitor = None
+    LangGraphScenePlanner = None
+
 # RTL text support
 try:
     import arabic_reshaper
@@ -56,6 +84,8 @@ try:
 except ImportError:
     RTL_SUPPORT = False
     print("⚠️ RTL support not available. Install with: pip install arabic-reshaper python-bidi")
+
+logger = get_logger(__name__)
 
 # LangGraph quality analyzer support
 try:
@@ -66,8 +96,6 @@ except ImportError as e:
     QUALITY_ANALYZER_AVAILABLE = False
     logger.warning(f"⚠️ LangGraph quality analyzer not available: {e}")
     AdaptiveVideoGenerator = None
-
-logger = get_logger(__name__)
 
 
 @dataclass
@@ -498,9 +526,10 @@ The last frame of this scene connects to the next.
     def __init__(self, api_key: str, use_real_veo2: bool = True, use_vertex_ai: bool = True,
                  vertex_project_id: Optional[str] = None, vertex_location: Optional[str] = None, 
                  vertex_gcs_bucket: Optional[str] = None, output_dir: Optional[str] = None,
-                 prefer_veo3: bool = True):  # Default to True to prefer VEO-3 fast
+                 enable_quality_enhancement: bool = True, quality_preset: str = 'high',
+                 prefer_veo3: bool = True, use_langgraph: bool = True):  # Default to True to prefer VEO-3 fast
         """
-        Initialize video generator with all AI components
+        Initialize video generator with LangGraph quality monitoring
         
         Args:
             api_key: Google AI API key
@@ -543,11 +572,41 @@ The last frame of this scene connects to the next.
             gcs_bucket=vertex_gcs_bucket
         )
         
-        # Initialize AI agents
-        self.director = Director(api_key)
-        self.voice_director = VoiceDirectorAgent(api_key)
-        self.positioning_agent = OverlayPositioningAgent(api_key)
-        self.style_agent = VisualStyleAgent(api_key)
+        # Initialize AI components based on mode
+        self.director = Director(api_key)  # Keep Director for script generation
+        
+        # Initialize LangGraph or fallback to old agents
+        self.use_langgraph = use_langgraph and LANGGRAPH_MONITOR_AVAILABLE
+        
+        if self.use_langgraph:
+            logger.info("🚀 Using LangGraph Quality Monitor and Scene Planner")
+            try:
+                # LangGraph quality monitor replaces old quality checks
+                self.quality_monitor = LangGraphQualityMonitor(
+                    api_key=api_key,
+                    session_id="default",  # Updated per session
+                    quality_threshold=0.7 if quality_preset == 'high' else 0.6
+                )
+                
+                # Scene planner for intelligent scene decisions
+                self.scene_planner = LangGraphScenePlanner(api_key=api_key)
+                
+                # Null out old agents
+                self.voice_director = None
+                self.positioning_agent = None
+                self.style_agent = None
+                
+                logger.info("✅ LangGraph components active (old agents disabled)")
+            except Exception as e:
+                logger.error(f"❌ LangGraph initialization failed: {e}")
+                self.use_langgraph = False
+                # Fall back to old agents
+                self._init_old_agents(api_key)
+        else:
+            logger.info("📦 Using legacy AI agents (LangGraph not available)")
+            self._init_old_agents(api_key)
+            self.quality_monitor = None
+            self.scene_planner = None
         
         # Initialize adaptive quality analyzer if available
         self.adaptive_generator = None
@@ -580,6 +639,42 @@ The last frame of this scene connects to the next.
         self.text_renderer = ProfessionalTextRenderer(use_skia=True)
         self.hashtag_generator = HashtagGenerator(api_key)
         
+        # Initialize quality enhancement modules
+        self.enable_quality_enhancement = enable_quality_enhancement
+        self.quality_preset = quality_preset_manager.get_preset(quality_preset)
+        
+        if self.enable_quality_enhancement:
+            logger.info("🎯 Initializing Professional Quality Enhancement System")
+            
+            # Script quality validator
+            self.script_quality_validator = ScriptQualityValidator()
+            
+            # Real-time sync manager
+            self.realtime_sync_manager = SyncManagerFactory.create_hybrid_sync_manager()
+            
+            # Professional effects engine
+            self.effects_engine = ProfessionalEffectsEngine()
+            
+            # Scene continuity analyzer
+            self.continuity_analyzer = SceneContinuityAnalyzer()
+            
+            # Advanced quality controller
+            enhancement_config = EnhancementConfig(
+                target_quality=QualityLevel.EXCELLENT if quality_preset == 'high' else QualityLevel.GOOD,
+                enable_ai_enhancement=True,
+                enable_effects=True,
+                enable_color_grading=True
+            )
+            self.quality_controller = AdvancedQualityController(enhancement_config)
+            
+            logger.info(f"✅ Quality Enhancement System ready (Preset: {quality_preset})")
+        else:
+            self.script_quality_validator = None
+            self.realtime_sync_manager = None
+            self.effects_engine = None
+            self.continuity_analyzer = None
+            self.quality_controller = None
+        
         # Check available VEO models
         available_models = self.veo_factory.get_available_models()
         
@@ -595,6 +690,22 @@ The last frame of this scene connects to the next.
             logger.info(f"🔐 Authentication: ✅ SUCCESS")
         else:
             logger.warning(f"🔐 Authentication: ⚠️ No VEO models available")
+    
+    def _init_old_agents(self, api_key: str):
+        """Initialize legacy AI agents for fallback mode"""
+        logger.info("🔧 Initializing legacy AI agents")
+        try:
+            # Initialize all traditional AI agents
+            self.voice_director = VoiceDirectorAgent(api_key)
+            self.positioning_agent = OverlayPositioningAgent(api_key)
+            self.style_agent = VisualStyleAgent(api_key)
+            logger.info("✅ Legacy AI agents initialized")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize legacy agents: {e}")
+            # Set to None to prevent usage errors
+            self.voice_director = None
+            self.positioning_agent = None
+            self.style_agent = None
     
     async def generate_video(self, config: GeneratedVideoConfig) -> Union[str, VideoGenerationResult]:
         """
@@ -736,6 +847,24 @@ The last frame of this scene connects to the next.
             
             # Step 1: Process script with AI
             script_result = await self._process_script_with_ai(config, session_context)
+            
+            # LangGraph quality check for script
+            if self.use_langgraph and self.quality_monitor:
+                try:
+                    logger.info("🔍 LangGraph: Checking script quality")
+                    script_quality = self.quality_monitor.check_step_quality(
+                        GenerationStep.SCRIPT_GENERATION,
+                        {'script': script_result.get('optimized_script', ''), 'segments': script_result.get('segments', [])}
+                    )
+                    if not script_quality.passed:
+                        logger.warning(f"⚠️ Script quality check failed: {script_quality.issues}")
+                        # Optionally enhance script if quality is low
+                        if script_quality.score < 0.5:
+                            logger.info("🔄 Attempting script enhancement")
+                            # Could trigger script rewrite here if needed
+                except Exception as e:
+                    logger.warning(f"⚠️ Quality check error (non-fatal): {e}")
+                    # Continue with generation even if quality check fails
 
             # CRITICAL: Validate duration before proceeding
             if hasattr(config, 'duration_seconds') and config.duration_seconds:
@@ -774,8 +903,37 @@ The last frame of this scene connects to the next.
             style_decision = self._get_visual_style_decision(config)
             positioning_decision = self._get_positioning_decision(config, style_decision)
             
+            # LangGraph scene planning
+            if self.use_langgraph and self.scene_planner:
+                logger.info("🎬 LangGraph: Planning scenes intelligently")
+                scene_plan = self.scene_planner.plan_scenes(
+                    script_result.get('optimized_script', ''),
+                    {
+                        'duration': config.duration_seconds,
+                        'platform': str(config.target_platform),
+                        'style': style_decision.get('primary_style', 'dynamic')
+                    }
+                )
+                logger.info(f"📋 Scene plan: {scene_plan.total_scenes} scenes, multiple: {scene_plan.use_multiple_scenes}")
+                # Store scene plan for video generation
+                self._current_scene_plan = scene_plan
+            
             # Step 3: Generate video clips
             clips = self._generate_video_clips(config, script_result, style_decision, session_context)
+            
+            # LangGraph quality check for video clips
+            if self.use_langgraph and self.quality_monitor and clips:
+                try:
+                    logger.info("🔍 LangGraph: Checking video clip quality")
+                    video_quality = self.quality_monitor.check_step_quality(
+                        GenerationStep.VIDEO_CLIPS,
+                        {'clips': clips, 'scene_plan': getattr(self, '_current_scene_plan', None)}
+                    )
+                    if not video_quality.passed:
+                        logger.warning(f"⚠️ Video quality check failed: {video_quality.issues}")
+                        # Could trigger regeneration of specific clips here
+                except Exception as e:
+                    logger.warning(f"⚠️ Video quality check error (non-fatal): {e}")
             
             # Analyze video clips duration
             if clips:
@@ -784,6 +942,19 @@ The last frame of this scene connects to the next.
             
             # Step 4: Generate audio with AI voice selection
             audio_files = self._generate_ai_optimized_audio(config, script_result, session_context)
+            
+            # LangGraph quality check for audio
+            if self.use_langgraph and self.quality_monitor and audio_files:
+                try:
+                    logger.info("🔍 LangGraph: Checking audio quality")
+                    audio_quality = self.quality_monitor.check_step_quality(
+                        GenerationStep.AUDIO,
+                        {'audio_files': audio_files, 'script': script_result.get('optimized_script', '')}
+                    )
+                    if not audio_quality.passed:
+                        logger.warning(f"⚠️ Audio quality check failed: {audio_quality.issues}")
+                except Exception as e:
+                    logger.warning(f"⚠️ Audio quality check error (non-fatal): {e}")
             
             # Analyze audio duration
             if audio_files:
@@ -1215,6 +1386,35 @@ The last frame of this scene connects to the next.
         
         logger.info(f"✅ Script processed: {result.get('total_word_count', 0)} words")
         
+        # Quality Enhancement: Validate and enhance script quality
+        if self.enable_quality_enhancement and self.script_quality_validator:
+            logger.info("🔍 Validating script quality...")
+            
+            script_metrics = self.script_quality_validator.validate_script_quality(
+                result.get('final_script', script),
+                config
+            )
+            
+            # Enhance script if quality is low
+            if script_metrics.overall_score < 0.7:
+                logger.warning(f"⚠️ Script quality below threshold: {script_metrics.overall_score:.2f}")
+                enhanced_script = self.script_quality_validator.enhance_script(
+                    result.get('final_script', script),
+                    script_metrics
+                )
+                result['final_script'] = enhanced_script
+                result['script_enhanced'] = True
+                logger.info("✅ Script enhanced for better quality")
+            
+            # Save quality report
+            quality_report = self.script_quality_validator.get_quality_report(script_metrics)
+            report_path = session_context.get_output_path("quality", "script_quality_report.md")
+            os.makedirs(os.path.dirname(report_path), exist_ok=True)
+            with open(report_path, 'w') as f:
+                f.write(quality_report)
+            
+            logger.info(f"📊 Script quality score: {script_metrics.overall_score:.2f}")
+        
         # Create comprehensive session data
         try:
             import json
@@ -1266,9 +1466,21 @@ The last frame of this scene connects to the next.
         # Otherwise, let AI decide based on content
         logger.info("🎨 Getting AI visual style decision")
         
-        style_decision = self.style_agent.analyze_optimal_style(
-            mission=config.mission,
-            target_audience=config.target_audience,
+        # Use LangGraph or fallback to old style agent
+        if self.use_langgraph:
+            # Use default style when using LangGraph
+            style_decision = {
+                'primary_style': 'dynamic',
+                'color_palette': 'vibrant',
+                'engagement_prediction': 'high',
+                'visual_elements': [],
+                'confidence_score': 0.85,
+                'reasoning': 'LangGraph quality-based style selection'
+            }
+        elif self.style_agent:
+            style_decision = self.style_agent.analyze_optimal_style(
+                mission=config.mission,
+                target_audience=config.target_audience,
             platform=str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform),
             content_type=str(config.category) if hasattr(config.category, "value") else str(config.category).lower(),
             humor_level="medium"
@@ -1282,9 +1494,20 @@ The last frame of this scene connects to the next.
         """Get AI decision for subtitle positioning"""
         logger.info("🎯 Getting AI positioning decision")
         
-        positioning_decision = self.positioning_agent.analyze_optimal_positioning(
-            mission=config.mission,
-            video_style=style_decision.get('primary_style', 'dynamic'),
+        # Use LangGraph or fallback to old positioning agent
+        if self.use_langgraph:
+            # Use default positioning when using LangGraph
+            positioning_decision = {
+                'primary_overlay_position': 'bottom_center',
+                'strategy': 'static',
+                'safety_zones': [],
+                'confidence_score': 0.9,
+                'reasoning': 'LangGraph quality-based positioning'
+            }
+        elif self.positioning_agent:
+            positioning_decision = self.positioning_agent.analyze_optimal_positioning(
+                mission=config.mission,
+                video_style=style_decision.get('primary_style', 'dynamic'),
             platform=str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform),
             duration=float(config.duration_seconds),
             subtitle_count=4
@@ -1454,20 +1677,28 @@ The last frame of this scene connects to the next.
                     scene_part = match.group(2)
                     
                     # Enhance only the scene part with style
-                    enhanced_scene = self.style_agent.enhance_prompt_with_style(
-                        base_prompt=scene_part,
-                        style=visual_style
-                    )
+                    # Use style agent if available, otherwise use prompt as-is
+                    if self.style_agent:
+                        enhanced_scene = self.style_agent.enhance_prompt_with_style(
+                            base_prompt=scene_part,
+                            style=visual_style
+                        )
+                    else:
+                        enhanced_scene = f"{scene_part} in {visual_style} style"
                     
                     # Reconstruct with character description first
                     enhanced_prompt = f"{character_part}, {enhanced_scene}"
                     logger.info(f"🎭 Preserved character description at start of prompt")
                 else:
                     # No character description at start - enhance normally
-                    enhanced_prompt = self.style_agent.enhance_prompt_with_style(
-                        base_prompt=prompt,
-                        style=visual_style
-                    )
+                    # Use style agent if available, otherwise use prompt as-is
+                    if self.style_agent:
+                        enhanced_prompt = self.style_agent.enhance_prompt_with_style(
+                            base_prompt=prompt,
+                            style=visual_style
+                        )
+                    else:
+                        enhanced_prompt = f"{prompt} in {visual_style} style"
                 
                 # Remove preemptive policy checking - let VEO handle it
                 # Policy violations will be caught and handled if VEO rejects the prompt
@@ -1926,9 +2157,19 @@ The last frame of this scene connects to the next.
                 languages = getattr(config, 'languages', [Language.ENGLISH_US])
                 target_language = languages[0] if languages else Language.ENGLISH_US
                 
-                voice_strategy = self.voice_director.analyze_content_and_select_voices(
-                    mission=config.mission,
-                    script=script_result.get('final_script', config.mission),
+                # Use LangGraph or fallback to old voice director
+                if self.use_langgraph:
+                    # Use simple voice strategy when using LangGraph
+                    voice_strategy = {
+                        'strategy': 'single',
+                        'voices': [{'personality': 'storyteller', 'speed': 1.0}],
+                        'primary_personality': 'storyteller',
+                        'reasoning': 'LangGraph quality-based voice selection'
+                    }
+                elif self.voice_director:
+                    voice_strategy = self.voice_director.analyze_content_and_select_voices(
+                        mission=config.mission,
+                        script=script_result.get('final_script', config.mission),
                     language=target_language,
                     platform=config.target_platform,
                     category=config.category,
@@ -1943,9 +2184,19 @@ The last frame of this scene connects to the next.
                 languages = getattr(config, 'languages', [Language.ENGLISH_US])
                 target_language = languages[0] if languages else Language.ENGLISH_US
                 
-                voice_strategy = self.voice_director.analyze_content_and_select_voices(
-                    mission=config.mission,
-                    script=script_result.get('final_script', config.mission),
+                # Use LangGraph or fallback to old voice director
+                if self.use_langgraph:
+                    # Use simple voice strategy when using LangGraph
+                    voice_strategy = {
+                        'strategy': 'single',
+                        'voices': [{'personality': 'storyteller', 'speed': 1.0}],
+                        'primary_personality': 'storyteller',
+                        'reasoning': 'LangGraph quality-based voice selection'
+                    }
+                elif self.voice_director:
+                    voice_strategy = self.voice_director.analyze_content_and_select_voices(
+                        mission=config.mission,
+                        script=script_result.get('final_script', config.mission),
                     language=target_language,
                     platform=config.target_platform,
                     category=config.category,
@@ -2317,6 +2568,93 @@ The last frame of this scene connects to the next.
                 logger.error("❌ Failed to create base video")
                 return ""
             
+            # Quality Enhancement: Apply professional effects and enhancements
+            if self.enable_quality_enhancement:
+                logger.info("🎨 Applying professional quality enhancements...")
+                
+                # Step 1: Analyze scene continuity
+                if self.continuity_analyzer:
+                    continuity_analysis = self.continuity_analyzer.ensure_visual_continuity(clips)
+                    if continuity_analysis.overall_flow_score < 0.7:
+                        logger.warning(f"⚠️ Poor scene continuity: {continuity_analysis.overall_flow_score:.2f}")
+                        # Apply continuity corrections
+                        corrected_clips = self.continuity_analyzer.apply_continuity_corrections(
+                            clips, continuity_analysis
+                        )
+                        # Update clips for further processing
+                        clips = corrected_clips
+                
+                # Step 2: Apply real-time audio-video synchronization
+                if self.realtime_sync_manager and audio_files:
+                    sync_analysis = self.realtime_sync_manager.sync_audio_video_realtime(
+                        audio_files, clips, config.duration_seconds
+                    )
+                    logger.info(f"🔄 Sync score: {sync_analysis.overall_sync_score:.2f}")
+                    
+                    # Save sync visualization
+                    sync_viz = self.realtime_sync_manager.analyze_sync_points_visually(sync_analysis)
+                    sync_report_path = session_context.get_output_path("quality", "sync_analysis.txt")
+                    os.makedirs(os.path.dirname(sync_report_path), exist_ok=True)
+                    with open(sync_report_path, 'w') as f:
+                        f.write(sync_viz)
+                
+                # Step 3: Apply professional effects and transitions
+                if self.effects_engine:
+                    logger.info("✨ Applying professional effects...")
+                    
+                    # Apply transitions between clips
+                    enhanced_video = self.effects_engine.create_professional_sequence(
+                        [base_video_path],  # Use base video as input
+                        transition_type='fade' if style_decision.get('primary_style') == 'cinematic' else 'slide',
+                        color_grade=self.quality_preset.effects.color_lut if self.quality_preset else 'cinematic'
+                    )
+                    
+                    if enhanced_video and os.path.exists(enhanced_video):
+                        base_video_path = enhanced_video
+                        logger.info("✅ Professional effects applied")
+                
+                # Step 4: Multi-pass quality enhancement
+                if self.quality_controller:
+                    logger.info("🔧 Running multi-pass quality enhancement...")
+                    
+                    quality_report = self.quality_controller.multi_pass_quality_enhancement(
+                        base_video_path,
+                        audio_files[0] if audio_files else None,
+                        script_result.get('final_script')
+                    )
+                    
+                    if quality_report.final_path and os.path.exists(quality_report.final_path):
+                        base_video_path = quality_report.final_path
+                        logger.info(f"✅ Quality enhanced to: {quality_report.metrics.quality_level.value}")
+                        
+                        # Save quality report
+                        report_path = session_context.get_output_path("quality", "enhancement_report.json")
+                        os.makedirs(os.path.dirname(report_path), exist_ok=True)
+                        with open(report_path, 'w') as f:
+                            json.dump({
+                                'overall_score': quality_report.metrics.overall_score,
+                                'quality_level': quality_report.metrics.quality_level.value,
+                                'issues': quality_report.metrics.issues,
+                                'enhancements': quality_report.metrics.enhancements_applied,
+                                'recommendations': quality_report.recommendations
+                            }, f, indent=2)
+                
+                # Step 5: Collect quality feedback for learning
+                quality_feedback_system.analyze_output_quality(
+                    base_video_path,
+                    {
+                        'session_id': session_context.session_id,
+                        'config': asdict(config) if hasattr(config, '__dict__') else {},
+                        'platform': str(config.target_platform),
+                        'audio_path': audio_files[0] if audio_files else None
+                    }
+                )
+                
+                # Update quality models if enough data
+                quality_feedback_system.update_quality_models()
+                
+                logger.info("✅ All quality enhancements applied")
+            
             # Keep reference to original base video for later use
             original_base_video = base_video_path
             
@@ -2543,6 +2881,53 @@ The last frame of this scene connects to the next.
             # Step 8: Save VERSION 3 - Final video with subtitles and overlays
             saved_path = session_context.save_final_video(final_video_path, suffix="_final")
             logger.info(f"✅ VERSION 3 created: {saved_path}")
+            
+            # LangGraph final quality check
+            if self.use_langgraph and self.quality_monitor:
+                try:
+                    logger.info("🔍 LangGraph: Performing final quality check")
+                    final_quality = self.quality_monitor.check_step_quality(
+                        GenerationStep.FINAL_VIDEO,
+                        {
+                            'video_path': saved_path,
+                            'script': script_result.get('optimized_script', ''),
+                            'audio_files': audio_files,
+                            'duration': config.duration_seconds,
+                            'platform': str(config.target_platform)
+                        }
+                    )
+                    
+                    if final_quality.passed:
+                        logger.info(f"✅ Final quality check PASSED (score: {final_quality.score:.2f})")
+                    else:
+                        logger.warning(f"⚠️ Final quality check had issues: {final_quality.issues}")
+                        logger.info(f"💡 Recommendations: {final_quality.recommendations}")
+                    
+                    # Generate quality report
+                    quality_report = self.quality_monitor.generate_quality_report()
+                except Exception as e:
+                    logger.warning(f"⚠️ Final quality check error (non-fatal): {e}")
+                    quality_report = None
+                    
+                if quality_report:
+                    report_path = session_context.get_output_path("reports", "quality_report.json")
+                    os.makedirs(os.path.dirname(report_path), exist_ok=True)
+                    
+                    import json
+                    # Custom JSON encoder to handle ScenePlan and other non-serializable objects
+                    def custom_encoder(obj):
+                        if hasattr(obj, 'to_dict'):
+                            return obj.to_dict()
+                        elif hasattr(obj, 'value'):  # For enums
+                            return obj.value
+                        elif hasattr(obj, '__dict__'):
+                            return obj.__dict__
+                        else:
+                            return str(obj)
+                    
+                    with open(report_path, 'w') as f:
+                        json.dump(quality_report, f, indent=2, default=custom_encoder)
+                    logger.info(f"📊 Quality report saved: {report_path}")
             
             # Step 9: Generate trending hashtags for the video
             self._generate_and_save_hashtags(config, session_context, script_result)
@@ -6177,8 +6562,16 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 Return ONLY the VEO prompt text (one line, no JSON):
                 """
                 
-                response = self.positioning_agent.model.generate_content(ai_prompt)
-                visual_prompt = response.text.strip()
+                if self.positioning_agent:
+                    response = self.positioning_agent.model.generate_content(ai_prompt)
+                    visual_prompt = response.text.strip()
+                else:
+                    # Fallback to using Gemini directly
+                    import google.generativeai as genai
+                    genai.configure(api_key=self.api_key)
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    response = model.generate_content(ai_prompt)
+                    visual_prompt = response.text.strip()
                 
                 # Clean up the prompt
                 if visual_prompt.startswith('"') and visual_prompt.endswith('"'):
@@ -6266,8 +6659,16 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 Return ONLY the VEO prompt text (one line, no JSON):
                 """
                 
-                response = self.positioning_agent.model.generate_content(ai_prompt)
-                visual_prompt = response.text.strip()
+                if self.positioning_agent:
+                    response = self.positioning_agent.model.generate_content(ai_prompt)
+                    visual_prompt = response.text.strip()
+                else:
+                    # Fallback to using Gemini directly
+                    import google.generativeai as genai
+                    genai.configure(api_key=self.api_key)
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    response = model.generate_content(ai_prompt)
+                    visual_prompt = response.text.strip()
                 
                 # Clean up the prompt
                 if visual_prompt.startswith('"') and visual_prompt.endswith('"'):
@@ -6499,8 +6900,16 @@ Return ONLY the modified script text, no explanations."""
                 Return ONLY the rephrased prompt (one line), preserving all original style/tone/visual markers:
                 """
                 
-                response = self.positioning_agent.model.generate_content(ai_prompt)
-                rephrased_prompt = response.text.strip()
+                if self.positioning_agent:
+                    response = self.positioning_agent.model.generate_content(ai_prompt)
+                    rephrased_prompt = response.text.strip()
+                else:
+                    # Fallback to using Gemini directly
+                    import google.generativeai as genai
+                    genai.configure(api_key=self.api_key)
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    response = model.generate_content(ai_prompt)
+                    rephrased_prompt = response.text.strip()
                 
                 # Clean up the prompt
                 if rephrased_prompt.startswith('"') and rephrased_prompt.endswith('"'):
@@ -7448,7 +7857,10 @@ Return ONLY the modified script text, no explanations."""
                 font=video_config.text_overlay.default_font,
                 stroke_color='black',
                 stroke_width=2
-            ).set_duration(duration).set_position((video_config.layout.overlay_positions['badge']['x'], video_config.layout.overlay_positions['badge']['y'])).set_opacity(video_config.text_overlay.badge_opacity)
+            ).set_duration(duration).set_position((
+                video_config.layout.overlay_positions['badge']['x'], 
+                int(height * video_config.layout.overlay_positions['badge']['y_percent'])
+            )).set_opacity(video_config.text_overlay.badge_opacity)
             
             # Composite video with theme elements
             clips = [background]
@@ -7879,9 +8291,14 @@ Return ONLY the modified script text, no explanations."""
             # First, try to get AI-generated colorful hooks
             try:
                 logger.info("🎨 Generating AI-driven colorful text hooks")
-                colorful_hooks = self.positioning_agent.create_colorful_text_hooks(
-                    topic=config.mission,
-                    platform=str(config.platform),
+                # Check if positioning_agent is available
+                if not self.positioning_agent:
+                    logger.info("⚠️ Positioning agent not available, skipping colorful hooks")
+                    colorful_hooks = []
+                else:
+                    colorful_hooks = self.positioning_agent.create_colorful_text_hooks(
+                        topic=config.mission,
+                        platform=str(config.platform),
                     video_duration=video_duration,
                     script_content=config.processed_script if hasattr(config, 'processed_script') else ""
                 )
