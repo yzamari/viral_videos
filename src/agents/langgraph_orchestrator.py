@@ -746,10 +746,10 @@ Include specific neurological optimizations identified.
         """Save LangGraph discussion results to session output folder"""
         try:
             # Import here to avoid circular dependency
-            from ..utils.session_context import SessionContext
+            from ..utils.session_context import get_current_session_context
             
             # Get current session context
-            session_context = SessionContext.get_instance() if hasattr(SessionContext, 'get_instance') else None
+            session_context = get_current_session_context()
             if not session_context:
                 # Try to get from session_id
                 if self.session_id:

@@ -595,11 +595,14 @@ class WorkingOrchestrator:
     def _generate_discussion_visualization(self):
         """Generate a visual representation of AI discussions and save to session"""
         try:
-            from ..utils.session_context import SessionContext
+            from ..utils.session_context import get_current_session_context
             import json
             from datetime import datetime
             
-            session_context = SessionContext.get_instance()
+            session_context = get_current_session_context()
+            if not session_context:
+                logger.warning("No active session context for discussion visualization")
+                return
             
             # Create visualization content
             viz_content = self._create_visualization_content()
