@@ -21,17 +21,29 @@ class SeparatedScriptGenerator:
     
     def __init__(self, api_key: str):
         self.api_key = api_key
-        # Initialize AI service manager
-        from ..ai.config import AIConfiguration, AIProvider
-        config = AIConfiguration()
-        config.api_keys[AIProvider.GEMINI] = api_key
-        config.default_providers[AIServiceType.TEXT_GENERATION] = AIProvider.GEMINI
-        self.ai_manager = AIServiceManager(config)
         
-        # Initialize content analyzer
-        self.content_analyzer = AIContentAnalyzer(api_key)
-        
-        logger.info("✅ Separated Script Generator initialized")
+        try:
+            # Initialize AI service manager with timeout protection
+            from ..ai.config import AIConfiguration, AIProvider
+            config = AIConfiguration()
+            config.api_keys[AIProvider.GEMINI] = api_key
+            config.default_providers[AIServiceType.TEXT_GENERATION] = AIProvider.GEMINI
+            
+            logger.info("🔄 Initializing AI service manager...")
+            self.ai_manager = AIServiceManager(config)
+            
+            # Initialize content analyzer with timeout protection
+            logger.info("🔄 Initializing content analyzer...")
+            self.content_analyzer = AIContentAnalyzer(api_key)
+            
+            logger.info("✅ Separated Script Generator initialized")
+            
+        except Exception as e:
+            logger.error(f"❌ Script generator initialization failed: {e}")
+            # Create minimal fallback
+            self.ai_manager = None
+            self.content_analyzer = None
+            logger.warning("⚠️ Using fallback mode - some features may be limited")
     
     async def generate_separated_script(
         self,
@@ -189,8 +201,9 @@ Make each visual description rich and cinematic for compelling image generation.
                     visual_data = visual_data[:num_segments]
                     logger.info(f"🔧 Truncated to {num_segments} segments")
                 elif len(visual_data) < num_segments:
-                    # Pad with fallback segments
-                    while len(visual_data) < num_segments:
+                    # Pad with fallback segments (with safety limit)
+                    safety_limit = 0
+                    while len(visual_data) < num_segments and safety_limit < 10:
                         visual_data.append({
                             "segment_id": len(visual_data) + 1,
                             "visual_description": f"Scene {len(visual_data) + 1} continuing {mission}",
@@ -198,6 +211,7 @@ Make each visual description rich and cinematic for compelling image generation.
                             "lighting": "Natural lighting",
                             "character_action": "Relevant character activity"
                         })
+                        safety_limit += 1
                     logger.info(f"🔧 Padded to {num_segments} segments")
             
             return visual_data
@@ -364,8 +378,9 @@ Focus on creating engaging, speakable content that tells the story effectively.
                     dialogue_data = dialogue_data[:num_segments]
                     logger.info(f"🔧 Truncated to {num_segments} segments")
                 elif len(dialogue_data) < num_segments:
-                    # Pad with fallback segments
-                    while len(dialogue_data) < num_segments:
+                    # Pad with fallback segments (with safety limit)
+                    safety_limit = 0
+                    while len(dialogue_data) < num_segments and safety_limit < 10:
                         dialogue_data.append({
                             "segment_id": len(dialogue_data) + 1,
                             "dialogue": f"Continuing our discussion about {mission}",
@@ -373,6 +388,7 @@ Focus on creating engaging, speakable content that tells the story effectively.
                             "pacing": "normal",
                             "emphasis": ""
                         })
+                        safety_limit += 1
                     logger.info(f"🔧 Padded to {num_segments} segments")
             
             return dialogue_data
