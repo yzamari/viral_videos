@@ -103,6 +103,7 @@ async def main():
         'cheap_mode': False,  # Full quality mode - no cheap mode
         'cheap_mode_level': None,  # Not applicable when cheap_mode is False
         'skip_ethical_optimization': True,  # Skip slow ethical analysis for faster testing
+        'skip_credibility_analysis': True,  # Skip slow credibility fact-checking for faster testing
         'max_discussion_rounds': 2,  # Limit LangGraph discussions for speed
         'frame_continuity': None,  # Let AI decide
         'continuous': None,  # Let AI decide

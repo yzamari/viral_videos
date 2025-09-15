@@ -456,13 +456,26 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                         logger.error(f"Cleaned JSON: {cleaned_json[:500]}...")
                         raise json_error
                 
-                # Perform credibility analysis
-                logger.info("🔍 Performing content credibility analysis...")
-                credibility_score = self.credibility_system.evaluate_content_credibility(
-                    content=mission_statement,
-                    topic=mission_statement,
-                    platform=platform.value if platform else "general"
-                )
+                # Perform credibility analysis (skippable for performance)
+                if config.get('skip_credibility_analysis', False):
+                    logger.info("⚡ Skipping credibility analysis for faster testing")
+                    from ..frameworks.content_credibility_system import CredibilityScore
+                    credibility_score = CredibilityScore(
+                        overall_score=7.0,
+                        factual_accuracy=7.0,
+                        source_quality=7.0,
+                        bias_level=5.0,
+                        reasoning="Credibility analysis skipped for performance",
+                        recommendations=["Manual review recommended"],
+                        risk_factors=[]
+                    )
+                else:
+                    logger.info("🔍 Performing content credibility analysis...")
+                    credibility_score = self.credibility_system.evaluate_content_credibility(
+                        content=mission_statement,
+                        topic=mission_statement,
+                        platform=platform.value if platform else "general"
+                    )
                 
                 # Perform audience intelligence analysis
                 logger.info("🧠 Performing audience intelligence analysis...")
@@ -566,13 +579,26 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                 target_audience=target_audience
             )
             
-            # Also perform credibility analysis for informational content
-            logger.info("🔍 Performing content credibility analysis for informational content...")
-            credibility_score = self.credibility_system.evaluate_content_credibility(
-                content=topic,
-                topic=topic,
-                platform=platform.value if platform else "general"
-            )
+            # Also perform credibility analysis for informational content (skippable for performance)
+            if config.get('skip_credibility_analysis', False):
+                logger.info("⚡ Skipping credibility analysis for faster testing")
+                from ..frameworks.content_credibility_system import CredibilityScore
+                credibility_score = CredibilityScore(
+                    overall_score=7.0,
+                    factual_accuracy=7.0,
+                    source_quality=7.0,
+                    bias_level=5.0,
+                    reasoning="Credibility analysis skipped for performance",
+                    recommendations=["Manual review recommended"],
+                    risk_factors=[]
+                )
+            else:
+                logger.info("🔍 Performing content credibility analysis for informational content...")
+                credibility_score = self.credibility_system.evaluate_content_credibility(
+                    content=topic,
+                    topic=topic,
+                    platform=platform.value if platform else "general"
+                )
             
             content_quality_analysis = {
                 "credibility_assessment": self.credibility_system.get_credibility_assessment(credibility_score),
