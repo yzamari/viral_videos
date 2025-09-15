@@ -99,8 +99,8 @@ class MissionPlanningAgent:
         # Initialize audience intelligence system
         self.audience_intelligence = AudienceIntelligenceSystem(api_key)
         
-        # Initialize ethical optimization system
-        self.ethical_optimization = EthicalOptimizationSystem(api_key)
+        # Initialize ethical optimization system with timeout
+        self.ethical_optimization = EthicalOptimizationSystem(api_key, timeout=30)
         
         # Mission types and their descriptions for AI classification
         self.mission_types_descriptions = {

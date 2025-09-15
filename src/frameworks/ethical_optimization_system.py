@@ -6,16 +6,22 @@ educational value tracking, and positive engagement architecture
 
 import json
 import re
+import time
 from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from ..config.ai_model_config import DEFAULT_AI_MODEL
 
 try:
     import google.generativeai as genai
+    from google.generativeai.types import HarmCategory, HarmBlockThreshold, GenerationConfig
 except ImportError:
     genai = None
+    HarmCategory = None
+    HarmBlockThreshold = None
+    GenerationConfig = None
 
 from ..utils.logging_config import get_logger
 
@@ -105,12 +111,48 @@ class EthicalOptimization:
 class EthicalOptimizationSystem:
     """Ethical content optimization and positive impact maximization system"""
     
-    def __init__(self, api_key: str):
-        """Initialize with Google AI API key"""
+    def __init__(self, api_key: str, timeout: int = 30):
+        """Initialize with Google AI API key
+        
+        Args:
+            api_key: Google AI API key
+            timeout: Maximum seconds to wait for each API call (default: 30)
+        """
         self.api_key = api_key
+        self.timeout = timeout  # Timeout in seconds for each API call
+        self.executor = ThreadPoolExecutor(max_workers=3)  # For parallel API calls
+        
         if genai:
             genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
+            
+            # Configure safety settings to prevent blocking controversial content
+            safety_settings = None
+            if HarmCategory and HarmBlockThreshold:
+                safety_settings = {
+                    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                }
+            
+            # Configure generation settings
+            generation_config = None
+            if GenerationConfig:
+                generation_config = GenerationConfig(
+                    temperature=0.7,
+                    max_output_tokens=2048,
+                    candidate_count=1
+                )
+            
+            try:
+                self.model = genai.GenerativeModel(
+                    DEFAULT_AI_MODEL,
+                    safety_settings=safety_settings,
+                    generation_config=generation_config
+                )
+            except:
+                # Fallback if safety settings aren't supported
+                self.model = genai.GenerativeModel(DEFAULT_AI_MODEL)
         else:
             self.model = None
         
@@ -153,6 +195,35 @@ class EthicalOptimizationSystem:
         
         logger.info("🎯 Ethical Optimization System initialized")
     
+    def __del__(self):
+        """Cleanup executor on deletion"""
+        if hasattr(self, 'executor'):
+            self.executor.shutdown(wait=False)
+    
+    def _generate_content_with_timeout(self, prompt: str) -> Optional[str]:
+        """Generate content with timeout protection
+        
+        Args:
+            prompt: The prompt to send to the AI model
+            
+        Returns:
+            Generated text or None if timeout/error
+        """
+        if not self.model:
+            return None
+            
+        try:
+            # Use ThreadPoolExecutor to enforce timeout
+            future = self.executor.submit(self.model.generate_content, prompt)
+            response = future.result(timeout=self.timeout)
+            return response.text
+        except FuturesTimeoutError:
+            logger.warning(f"⏱️ API call timed out after {self.timeout} seconds")
+            return None
+        except Exception as e:
+            logger.warning(f"⚠️ API call failed: {e}")
+            return None
+    
     def optimize_for_ethics(self, content: str, topic: str, platform: str, 
                            mission_type: str = "inform") -> EthicalOptimization:
         """
@@ -170,14 +241,47 @@ class EthicalOptimizationSystem:
         try:
             logger.info(f"🎯 Performing ethical optimization for: {topic[:50]}...")
             
-            # Step 1: Transparency assessment
-            transparency_assessment = self._assess_transparency(content, topic, platform, mission_type)
+            # Run all three analyses in parallel to avoid sequential waiting
+            # This reduces total time from 3x timeout to 1x timeout
+            from concurrent.futures import as_completed
             
-            # Step 2: Educational value metrics
-            educational_metrics = self._evaluate_educational_value(content, topic, mission_type)
+            futures = {
+                self.executor.submit(self._assess_transparency, content, topic, platform, mission_type): "transparency",
+                self.executor.submit(self._evaluate_educational_value, content, topic, mission_type): "educational",
+                self.executor.submit(self._analyze_positive_engagement, content, topic, platform, mission_type): "engagement"
+            }
             
-            # Step 3: Positive engagement analysis
-            engagement_profile = self._analyze_positive_engagement(content, topic, platform, mission_type)
+            transparency_assessment = None
+            educational_metrics = None
+            engagement_profile = None
+            
+            # Wait for all analyses with timeout
+            try:
+                for future in as_completed(futures, timeout=self.timeout * 1.5):
+                    analysis_type = futures[future]
+                    try:
+                        result = future.result()
+                        if analysis_type == "transparency":
+                            transparency_assessment = result
+                        elif analysis_type == "educational":
+                            educational_metrics = result
+                        elif analysis_type == "engagement":
+                            engagement_profile = result
+                    except Exception as e:
+                        logger.warning(f"⚠️ {analysis_type} analysis failed: {e}")
+            except FuturesTimeoutError:
+                logger.warning(f"⏱️ Ethical analyses timed out after {self.timeout * 1.5} seconds, using fallbacks")
+                # Cancel any remaining futures
+                for future in futures:
+                    future.cancel()
+            
+            # Use fallbacks for any failed analyses
+            if not transparency_assessment:
+                transparency_assessment = self._create_fallback_transparency(topic)
+            if not educational_metrics:
+                educational_metrics = self._create_fallback_educational_metrics(topic)
+            if not engagement_profile:
+                engagement_profile = self._create_fallback_engagement_profile(topic)
             
             # Step 4: Overall ethical compliance
             ethical_compliance = self._calculate_ethical_compliance(
@@ -287,10 +391,12 @@ class EthicalOptimizationSystem:
             }}
             """
             
-            response = self.model.generate_content(transparency_prompt)
+            response_text = self._generate_content_with_timeout(transparency_prompt)
+            if not response_text:
+                return None
             
             # Parse response
-            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
             if json_match:
                 result = json.loads(json_match.group())
                 
@@ -412,10 +518,12 @@ class EthicalOptimizationSystem:
             }}
             """
             
-            response = self.model.generate_content(educational_prompt)
+            response_text = self._generate_content_with_timeout(educational_prompt)
+            if not response_text:
+                return None
             
             # Parse response
-            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
             if json_match:
                 result = json.loads(json_match.group())
                 
@@ -543,10 +651,12 @@ class EthicalOptimizationSystem:
             }}
             """
             
-            response = self.model.generate_content(engagement_prompt)
+            response_text = self._generate_content_with_timeout(engagement_prompt)
+            if not response_text:
+                return None
             
             # Parse response
-            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
             if json_match:
                 result = json.loads(json_match.group())
                 

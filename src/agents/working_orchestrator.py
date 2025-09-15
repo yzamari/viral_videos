@@ -221,7 +221,7 @@ class WorkingOrchestrator:
         logger.info(f"   Mission: {mission}")
         logger.info(f"   Platform: {platform.value}")
         logger.info(f"   Duration: {duration}s")
-        logger.info(f"   Mode: {mode.value}")
+        logger.info(f"   Mode: {mode}")
         logger.info(f"   Style: {style}")
         logger.info(f"   Tone: {tone}")
         logger.info(f"   Target Audience: {target_audience}")
@@ -245,12 +245,12 @@ class WorkingOrchestrator:
         self.trending_insights = {}
         # Session ID already set above, don't overwrite it
         
-        logger.info(f"🎬 Enhanced Working Orchestrator initialized ({mode.value})")
+        logger.info(f"🎬 Enhanced Working Orchestrator initialized ({mode})")
         logger.info(f"   Mission: {mission}")
         logger.info(f"   Platform: {platform.value}")
         logger.info(f"   Duration: {duration}s")
         logger.info(f"   Session: {self.session_id}")
-        logger.info(f"   Mode: {mode.value}")
+        logger.info(f"   Mode: {mode}")
         logger.info(f"   Agents: {self._count_agents_used()}")
 
     def _initialize_agents_by_mode(self):
@@ -309,7 +309,7 @@ class WorkingOrchestrator:
                 )
         else:
             # All other modes use LangGraph
-            logger.info(f"🚀 Using LangGraph for {self.mode.value} agent discussions")
+            logger.info(f"🚀 Using LangGraph for {self.mode} agent discussions")
             self.discussion_system = LangGraphDiscussionOrchestrator(
                 self.api_key,
                 self.session_id
@@ -324,7 +324,7 @@ class WorkingOrchestrator:
 
         Returns:
             Generation result with success status and metadata """
-        logger.info(f"🎬 Starting {self.mode.value} AI agent video generation")
+        logger.info(f"🎬 Starting {self.mode} AI agent video generation")
         
         # Store config for access in extraction methods
         self._current_config = config
@@ -436,9 +436,9 @@ class WorkingOrchestrator:
                     video_path = await self._generate_enhanced_video(script_data, decisions, config)
                 
                 if video_path:
-                    logger.info(f"✅ {self.mode.value} video generation completed: {video_path}")
+                    logger.info(f"✅ {self.mode} video generation completed: {video_path}")
                 else:
-                    logger.error(f"❌ {self.mode.value} video generation returned None")
+                    logger.error(f"❌ {self.mode} video generation returned None")
                     return {
                         'success': False,
                         'error': 'Video generation returned None',
@@ -461,8 +461,8 @@ class WorkingOrchestrator:
                 'discussion_results': self.discussion_results,
                 'agents_used': self._count_agents_used(),
                 'discussions_conducted': len(self.discussion_results),
-                'optimization_level': f'{self.mode.value}_ai_enhanced',
-                'mode': self.mode.value,
+                'optimization_level': f'{self.mode}_ai_enhanced',
+                'mode': self.mode,
                 'frame_continuity_decision': frame_continuity_decision,
                 'professional_mode_details': {
                     'total_agents': self._count_agents_used(),
@@ -474,14 +474,14 @@ class WorkingOrchestrator:
             }
             
         except Exception as e:
-            logger.error(f"❌ {self.mode.value} video generation failed: {e}")
+            logger.error(f"❌ {self.mode} video generation failed: {e}")
             return {
                 'success': False,
                 'error': str(e),
                 'session_id': self.session_id,
                 'agent_decisions': self.agent_decisions,
                 'discussion_results': self.discussion_results,
-                'mode': self.mode.value,
+                'mode': self.mode,
                 'professional_mode_details': {
                     'total_agents': self._count_agents_used(),
                     'base_agents': 22 if self.mode == OrchestratorMode.PROFESSIONAL else 0,
@@ -635,7 +635,7 @@ class WorkingOrchestrator:
 ## Session Information
 - **Session ID**: {self.session_id}
 - **Timestamp**: {datetime.now().isoformat()}
-- **Mode**: {self.mode.value} ({self._get_agent_count()} agents)
+- **Mode**: {self.mode} ({self._get_agent_count()} agents)
 - **Discussion System**: {"LangGraph" if using_langgraph else "Fallback Mode"}
 - **Platform**: {self.platform.value if self.platform else "Unknown"}
 - **Duration**: {self.duration}s
@@ -767,7 +767,7 @@ class WorkingOrchestrator:
         return {
             "session_id": self.session_id,
             "timestamp": datetime.now().isoformat(),
-            "mode": self.mode.value,
+            "mode": self.mode,
             "agent_count": self._get_agent_count(),
             "discussion_system": "LangGraph" if using_langgraph else "Fallback",
             "platform": self.platform.value if self.platform else None,
@@ -915,7 +915,7 @@ class WorkingOrchestrator:
                 'max_words': int(self.duration * 2.8),
                 'platform': self.platform.value,
                 'num_segments': max(1, self.duration // 8),  # Approximate segments
-                'mode': self.mode.value,
+                'mode': self.mode,
                 'cheap_mode': self.cheap_mode
             },
             required_decisions=["duration_compliance", "word_count_limit", "segment_timing"],
@@ -2682,7 +2682,7 @@ class WorkingOrchestrator:
             'progress': 100,  # Orchestrator completes when called
             'session_id': self.session_id,
             'current_phase': 'completed',
-            'mode': self.mode.value,
+            'mode': self.mode,
             'results': self.agent_decisions,
             'discussions_completed': len(self.discussion_results),
             'agents_used': self._count_agents_used()

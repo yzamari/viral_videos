@@ -90,6 +90,11 @@ class CoreDecisions:
     num_clips: int
     clip_durations: List[float]
     
+    # Optimization scores from AI analysis
+    cost_efficiency_score: float = 0.0
+    content_quality_score: float = 0.0
+    optimization_score: float = 0.0  # Also called optimal_balance_score
+    
     # Theme and style reference (optional)
     theme_id: Optional[str] = None
     style_reference_id: Optional[str] = None
@@ -240,14 +245,14 @@ class DecisionFramework:
             sound_effects_enabled=sound_effects_enabled,
             num_clips=num_clips,
             clip_durations=clip_durations,
+            cost_efficiency_score=clip_structure.get('cost_efficiency_score', 0.0),
+            content_quality_score=clip_structure.get('content_quality_score', 0.0),
+            optimization_score=clip_structure.get('optimal_balance_score', 0.0),
             theme_id=theme_id,
             style_reference_id=style_reference_id,
             character_id=character_id,
             character_scene=character_scene,
             character_image_path=character_image_path,
-            cost_efficiency_score=clip_structure.get('cost_efficiency_score', 0.0),
-            content_quality_score=clip_structure.get('content_quality_score', 0.0),
-            optimal_balance_score=clip_structure.get('optimal_balance_score', 0.0),
             session_id=self.session_context.session_id
         )
         
