@@ -44,11 +44,26 @@ CRITICAL DURATION CONSTRAINT: The video MUST be exactly {duration} seconds.
 
 """
             
-            prompt = f"""{duration_constraint}Create a script for a short viral video about '{topic}'.
-The video should be in a '{style}' style with a '{sentiment}' sentiment.
-The script should be inspired by the a trending YouTube video titled '{video_title}'.
-The script should have 3 scenes.
-Provide the output in JSON format with a "title" and a list of "scenes", where each scene has a "scene" number and a "description"."""
+            prompt = f"""{duration_constraint}You are writing the actual movie script content for '{topic}'.
+Write the EXACT words that will be spoken by the narrator or characters IN the movie itself.
+DO NOT write descriptions ABOUT making a video - write the actual dialogue/narration FOR the movie.
+The style should be '{style}' with a '{sentiment}' sentiment.
+Draw inspiration from trending content like '{video_title}'.
+Create 3 scenes with ACTUAL SPOKEN CONTENT that viewers will hear.
+
+CRITICAL: Write as if you ARE the narrator speaking directly to the audience, not describing what a video should contain.
+
+Examples of what TO write:
+- "June 13, 2025 - Iranian drones cross into Israeli airspace..."  
+- "This is the moment everything changed..."
+- "Israel's defense systems activated immediately..."
+
+Examples of what NOT to write:
+- "A three-minute film depicts June 2025 Israel-Iran events..."
+- "The video shows Iranian drones crossing..."
+- "This scene features the defense systems..."
+
+Provide the output in JSON format with a "title" and a list of "scenes", where each scene has a "scene" number and a "description" containing the ACTUAL SPOKEN WORDS."""
             try:
                 response = self.gemini_model.generate_content(prompt)
 

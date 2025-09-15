@@ -252,15 +252,17 @@ Create EXACTLY {num_segments} dialogue/narration segments for: "{mission}"
 - Sentences per segment: {sentences_per_segment} sentences
 
 🎤 AUDIO-ONLY CONTENT REQUIREMENTS:
-1. Generate ONLY what a narrator/character SPEAKS OUT LOUD
+1. Generate ONLY what a narrator/character SPEAKS OUT LOUD - the EXACT words viewers will hear
 2. ABSOLUTELY NO visual descriptions, camera work, or stage directions
 3. DO NOT mention what we "see" - only what we "hear"
 4. NO phrases like "we see", "the camera shows", "visual", "scene", "shot"
-5. Pure spoken dialogue, narration, or voiceover ONLY
-6. Each segment: EXACTLY {sentences_per_segment} complete sentences
-7. MUST reach total word count of {total_words} words across all segments
-8. Focus on compelling storytelling through SPOKEN WORD ONLY
-9. CRITICAL: Generate EXACTLY {num_segments} segments with enough content for {duration} seconds!
+5. NO meta-descriptions like "A film depicts..." or "This video shows..."
+6. Pure spoken dialogue, narration, or voiceover ONLY
+7. Each segment: EXACTLY {sentences_per_segment} complete sentences
+8. MUST reach total word count of {total_words} words across all segments
+9. Focus on compelling storytelling through SPOKEN WORD ONLY
+10. CRITICAL: Generate EXACTLY {num_segments} segments with enough content for {duration} seconds!
+11. Write as if YOU ARE the narrator speaking directly to the audience IN the movie
 
 📚 EDUCATIONAL COHERENCE REQUIREMENTS:
 - Focus on teaching ONE SINGLE CONCEPT throughout
@@ -276,11 +278,17 @@ Create EXACTLY {num_segments} dialogue/narration segments for: "{mission}"
 - "We see Dragon floating in space"
 - "The scene shows a rocket"
 - "Visual of math equations"
+- "A three-minute film depicts June 2025 Israel-Iran events"
+- "The video shows Iranian drones crossing"
+- "This scene features the defense systems"
 
 ✅ GOOD EXAMPLES (DO THIS):
 - "Welcome to our space adventure!"
 - "Dragon explains the math concept"  
 - "Here's how ratios work"
+- "June 13, 2025 - Iranian drones cross into Israeli airspace"
+- "This is the moment everything changed"
+- "Israel's defense systems activated immediately"
 
 DIALOGUE REQUIREMENTS:
 - Natural speech patterns and rhythm

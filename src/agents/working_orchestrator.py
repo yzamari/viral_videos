@@ -973,7 +973,7 @@ class WorkingOrchestrator:
         self.discussion_results['duration_validation'] = duration_result
 
         # Discussion 1: Script Strategy & Viral Optimization
-        script_topic = DiscussionTopic( topic_id="script_strategy", title="Script Strategy & Viral Optimization", description=f"Create the most engaging script for mission: {self.mission}",
+        script_topic = DiscussionTopic( topic_id="script_strategy", title="Script Strategy & Viral Optimization", description=f"Write actual movie dialogue and narration content FOR the story described in this mission: {self.mission}. DO NOT create descriptions ABOUT making a video. Create the actual spoken content that will be heard in the movie itself. Write as if you are the narrator or characters speaking IN the movie, not ABOUT the movie.",
             context={
                 'mission': self.mission,
                 'platform': self.platform.value,

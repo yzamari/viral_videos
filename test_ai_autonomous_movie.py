@@ -3,6 +3,7 @@
 Generate Israel-Iran June 2025 Movie with FULL AI Decision Making
 Uses DecisionFramework and LangGraph for ALL parameter decisions
 No hardcoded values - everything decided by AI agents
+FULL QUALITY MODE - Production-level video generation
 """
 
 import os
@@ -28,7 +29,7 @@ async def main():
     
     print("\n" + "="*80)
     print("🎬 ISRAEL-IRAN JUNE 2025: OPERATION RED WEDDING")
-    print("🤖 100% AI-DIRECTED MOVIE - NO HARDCODED VALUES")
+    print("🤖 100% AI-DIRECTED MOVIE - FULL QUALITY MODE")
     print("="*80)
     print("📅 Historical Context: The Twelve-Day War (June 13-24, 2025)")
     print("🧠 Using DecisionFramework + LangGraph for ALL decisions")
@@ -99,8 +100,8 @@ async def main():
         'hook': None,
         'call_to_action': None,
         'mode': "enhanced",  # Use LangGraph enhanced mode
-        'cheap_mode': True,  # Start with test mode
-        'cheap_mode_level': "full",
+        'cheap_mode': False,  # Full quality mode - no cheap mode
+        'cheap_mode_level': None,  # Not applicable when cheap_mode is False
         'frame_continuity': None,  # Let AI decide
         'continuous': None,  # Let AI decide
         'voice_strategy': None,
@@ -225,7 +226,7 @@ async def main():
             
             print("\n💡 Next Steps:")
             print("   1. Review generated content in output directory")
-            print("   2. For production quality, set cheap_mode=False")
+            print("   2. Full production quality mode enabled")
             print("   3. Upload to selected platform")
             print("   4. Monitor engagement metrics")
             
@@ -240,7 +241,7 @@ async def main():
         print("\n💡 Troubleshooting:")
         print("   1. Check API key and quota")
         print("   2. Review logs in outputs/session_*/logs/")
-        print("   3. Try with cheap_mode=True first")
+        print("   3. Consider enabling cheap_mode=True for faster testing")
         raise
 
 

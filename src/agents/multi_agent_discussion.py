@@ -719,6 +719,13 @@ PREVIOUS DISCUSSION:
 - Every second of the video must advance the mission objective
 - Do NOT create generic content - create mission-accomplishing content
 
+🎬 ACTUAL CONTENT GENERATION - NOT META-CONTENT:
+- Generate the EXACT words that will be spoken IN the movie
+- Write as if you ARE the narrator or character speaking
+- DO NOT write descriptions ABOUT making a video
+- DO NOT use phrases like "A film shows..." or "The video depicts..."
+- Write the actual dialogue/narration that viewers will HEAR
+
 📝 SUBTITLE & SCRIPT REQUIREMENTS:
 - Each script segment MUST be 1-2 sentences MAXIMUM
 - Each sentence should be ~10-15 words for 2-line subtitle display
@@ -776,6 +783,13 @@ PREVIOUS DISCUSSION:
 - Consider the platform ({platform}) and duration ({duration}s) requirements
 - Provide specific, actionable advice for THIS topic only
 - Do NOT discuss generic topics or unrelated scenarios
+
+🎬 ACTUAL CONTENT GENERATION - NOT META-CONTENT:
+- When suggesting script content, write the EXACT words that will be spoken
+- Write as if you ARE the narrator or character speaking to the audience
+- DO NOT write descriptions ABOUT making a video (avoid "The video shows...")
+- DO NOT use phrases like "A film depicts..." or "This scene features..."
+- Generate the actual dialogue/narration that viewers will HEAR in the movie
 
 📝 SUBTITLE & SCRIPT REQUIREMENTS:
 - Each script segment MUST be 1-2 sentences MAXIMUM
