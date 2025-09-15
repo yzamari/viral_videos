@@ -604,7 +604,7 @@ Respond in JSON format:
 
 class MediaTypeAgent:
     """
-    AI Agent specialized in deciding between VEO2 video clips vs static images
+    AI Agent specialized in deciding between VEO3 video clips vs static images
     """
 
     def __init__(self, api_key: str):
@@ -718,18 +718,18 @@ Respond in JSON format:
         """Create fallback media plan when AI analysis fails"""
 
         clip_decisions = []
-        veo2_count = 0
+        veo3_count = 0
         image_count = 0
 
         for clip in clip_plan['clips']:
-            # Default: use VEO2 for most clips, images for very short ones
+            # Default: use VEO3 for most clips, images for very short ones
             if clip['duration'] < 3 and clip['purpose'] in [
                     'transition', 'text']:
                 media_type = 'static_image'
                 image_count += 1
             else:
-                media_type = 'veo2_video'
-                veo2_count += 1
+                media_type = 'veo3_video'
+                veo3_count += 1
 
             clip_decisions.append({
                 "clip_id": clip['clip_id'],

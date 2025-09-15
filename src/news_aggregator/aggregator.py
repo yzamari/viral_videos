@@ -591,7 +591,7 @@ class NewsAggregator:
             "discussions": "enhanced",
             "mode": "enhanced",
             "voice": self._get_voice_for_language(language),
-            "veo_model_order": "veo3-fast,veo3,veo2",
+            "veo_model_order": "veo3-fast,veo3",  # VEO2 deprecated
             "business_name": f"{video_structure['metadata']['edition_type'].title()} News",
             "show_business_info": True
         }

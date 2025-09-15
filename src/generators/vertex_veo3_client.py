@@ -187,20 +187,8 @@ class VertexAIVeo3Client(BaseVeoClient):
         else:
             text_prompt = prompt
         if not self.is_available:
-            logger.warning("⚠️ FALLBACK WARNING: VEO-3 not available, falling back to VEO-2")
-            print("⚠️ FALLBACK WARNING: VEO-3 service unavailable - falling back to VEO-2")
-            # Import VEO-2 client as fallback
-            try:
-                from .vertex_ai_veo2_client import VertexAIVeo2Client
-                veo2_client = VertexAIVeo2Client(
-                    self.project_id,
-                    self.location,
-                    self.gcs_bucket,
-                    self.output_dir)
-                return veo2_client.generate_video(text_prompt, duration, clip_id, image_path, aspect_ratio)
-            except Exception as e:
-                logger.error(f"❌ VEO-2 fallback failed: {e}")
-                return self._create_fallback_clip(text_prompt, duration, clip_id)
+            logger.error("❌ VEO-3 not available and VEO-2 is deprecated")
+            return self._create_fallback_clip(text_prompt, duration, clip_id)
 
         # Cost optimization: Disable audio for VEO-3 (expensive)
         if enable_audio:
@@ -467,7 +455,7 @@ class VertexAIVeo3Client(BaseVeoClient):
                     logger.error("❌ No operation name in VEO-3 response")
                     return None
             elif response.status_code == 429:
-                logger.warning("⚠️ VEO-3 quota exceeded - falling back to VEO-2")
+                logger.error("❌ VEO-3 quota exceeded - no fallback available (VEO-2 deprecated)")
                 return None
             else:
                 logger.error(f"❌ VEO-3 request failed: {response.status_code}")
@@ -739,50 +727,41 @@ class VertexAIVeo3Client(BaseVeoClient):
         """Create fallback clip when VEO-3 generation fails"""
         logger.info("🎨 Creating VEO-3 fallback clip...")
 
-        # Use VEO-2 as fallback
+        # VEO-2 deprecated - create basic fallback only
+        logger.info("🎨 Creating fallback clip (VEO-2 deprecated)")
+        
+        # Create basic fallback
+        fallback_path = os.path.join(self.clips_dir, f"veo3_fallback_{clip_id}.mp4")
+
+        # Create a simple colored video as last resort
         try:
-            from .vertex_ai_veo2_client import VertexAIVeo2Client
-            veo2_client = VertexAIVeo2Client(
-                self.project_id,
-                self.location,
-                self.gcs_bucket,
-                self.output_dir)
-            return veo2_client.generate_video(prompt, duration, clip_id, image_path=None, aspect_ratio=aspect_ratio)
+            import cv2
+            import numpy as np
+
+            # Create video writer
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            fps = 30
+            width, height = 1920, 1080
+            frames = int(duration * fps)
+
+            out = cv2.VideoWriter(fallback_path, fourcc, fps, (width, height))
+
+            # Generate frames with gradient colors
+            for i in range(frames):
+                # Create gradient frame
+                frame = np.zeros((height, width, 3), dtype=np.uint8)
+                color_shift = int(255 * (i / frames))
+                frame[:, :] = [color_shift % 255, (color_shift + 85) % 255, (color_shift + 170) % 255]
+
+                out.write(frame)
+
+            out.release()
+            logger.info(f"✅ VEO-3 fallback clip created: {fallback_path}")
+            return fallback_path
+
         except Exception as e:
-            logger.error(f"❌ VEO-2 fallback failed: {e}")
-
-            # Create basic fallback
-            fallback_path = os.path.join(self.clips_dir, f"veo3_fallback_{clip_id}.mp4")
-
-            # Create a simple colored video as last resort
-            try:
-                import cv2
-                import numpy as np
-
-                # Create video writer
-                fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-                fps = 30
-                width, height = 1920, 1080
-                frames = int(duration * fps)
-
-                out = cv2.VideoWriter(fallback_path, fourcc, fps, (width, height))
-
-                # Generate frames with gradient colors
-                for i in range(frames):
-                    # Create gradient frame
-                    frame = np.zeros((height, width, 3), dtype=np.uint8)
-                    color_shift = int(255 * (i / frames))
-                    frame[:, :] = [color_shift % 255, (color_shift + 85) % 255, (color_shift + 170) % 255]
-
-                    out.write(frame)
-
-                out.release()
-                logger.info(f"✅ VEO-3 fallback clip created: {fallback_path}")
-                return fallback_path
-
-            except Exception as e:
-                logger.error(f"❌ Failed to create VEO-3 fallback clip: {e}")
-                return None
+            logger.error(f"❌ Failed to create VEO-3 fallback clip: {e}")
+            return None
 
 
     def get_capabilities(self) -> Dict[str, bool]:

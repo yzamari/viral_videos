@@ -169,7 +169,7 @@ class DefaultTextConfig:
     badge_texts: Dict[str, str] = field(default_factory=lambda: {
         'cheap': "💰 CHEAP",
         'premium': "✨ PREMIUM",
-        'veo2': "🎬 VEO-2",
+        # VEO2 deprecated and removed
         'veo3': "🎬 VEO-3",
         'ai': "🤖 AI",
         'news': "📰 NEWS",

@@ -36,7 +36,7 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
          reference_style: Optional[str] = None, character: Optional[str] = None,
          scene: Optional[str] = None, voice: Optional[str] = None, 
          multiple_voices: bool = False, languages: List[str] = None, 
-         veo_model_order: str = 'veo3-fast,veo3,veo2',
+         veo_model_order: str = 'veo3-fast,veo3',  # VEO2 deprecated
          business_name: Optional[str] = None, business_address: Optional[str] = None,
          business_phone: Optional[str] = None, business_website: Optional[str] = None,
          business_facebook: Optional[str] = None, business_instagram: Optional[str] = None,
@@ -85,7 +85,7 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
 
     try:
         # Update VEO model preference order if provided
-        if veo_model_order and veo_model_order != 'veo3-fast,veo3,veo2':
+        if veo_model_order and veo_model_order != 'veo3-fast,veo3':
             try:
                 # Import settings using absolute path
                 import importlib.util
