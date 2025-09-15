@@ -172,6 +172,7 @@ class SlideTransition(BaseTransition):
                 return result.astype('uint8')
             
             transition = VideoClip(make_frame, duration=duration)
+            transition.fps = 24  # Set standard fps for transitions
             
             # Combine clips with transition
             part1 = clip1.subclip(0, clip1.duration - duration)
@@ -216,6 +217,7 @@ class ZoomTransition(BaseTransition):
                 return frame
             
             transition = VideoClip(make_frame, duration=duration)
+            transition.fps = 24  # Set standard fps for transitions
             
             part1 = clip1.subclip(0, clip1.duration - duration)
             part2 = clip2.subclip(duration, clip2.duration)
@@ -282,11 +284,24 @@ class KenBurnsEffect(BaseVideoEffect):
     def apply(self, clip: VideoFileClip) -> VideoFileClip:
         """Apply Ken Burns effect"""
         try:
+            # Prevent recursion issues by checking clip properties
+            if not hasattr(clip, 'duration') or not hasattr(clip, 'size'):
+                logger.warning("⚠️ Invalid clip for Ken Burns effect, returning original")
+                return clip
+                
             duration = clip.duration
             w, h = clip.size
             
+            # Limit duration to prevent memory issues
+            if duration > 30:  # Limit to 30 seconds max
+                duration = 30
+                clip = clip.subclip(0, 30)
+            
             def make_frame(t):
                 """Create Ken Burns frame"""
+                # Prevent recursion by clamping time
+                t = max(0, min(t, duration - 0.01))
+                
                 # Calculate zoom level
                 progress = t / duration
                 zoom = 1.0 + (self.zoom_factor - 1.0) * progress
@@ -312,7 +327,9 @@ class KenBurnsEffect(BaseVideoEffect):
                 
                 return frame
             
-            return VideoClip(make_frame, duration=duration)
+            clip = VideoClip(make_frame, duration=duration)
+            clip.fps = 24  # Set standard fps for effects
+            return clip
             
         except Exception as e:
             logger.error(f"❌ Ken Burns effect failed: {e}")
@@ -512,7 +529,9 @@ class TextAnimationService:
                 
                 return img
             
-            return VideoClip(make_frame, duration=duration)
+            clip = VideoClip(make_frame, duration=duration)
+            clip.fps = 24  # Set standard fps for effects
+            return clip
             
         except Exception as e:
             logger.error(f"❌ Typewriter effect failed: {e}")
@@ -640,19 +659,43 @@ class ProfessionalEffectsEngine:
                                    color_grade: str = 'cinematic') -> str:
         """Create professional video sequence with transitions and effects"""
         try:
+            if not clips:
+                logger.warning("⚠️ No clips provided for professional sequence")
+                return ""
+                
             processed_clips = []
             
             for i, clip_path in enumerate(clips):
-                clip = VideoFileClip(clip_path)
-                
-                # Apply color grading
-                clip = self.color_grading.apply_lut(clip, color_grade)
-                
-                # Apply Ken Burns to some clips for variety
-                if i % 3 == 0:
-                    clip = self.video_effects['ken_burns'].apply(clip)
-                
-                processed_clips.append(clip)
+                try:
+                    clip = VideoFileClip(clip_path)
+                    
+                    # Apply color grading with recursion protection
+                    try:
+                        clip = self.color_grading.apply_lut(clip, color_grade)
+                    except RecursionError:
+                        logger.warning(f"⚠️ Recursion detected in color grading for clip {i}, skipping")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Color grading failed for clip {i}: {e}")
+                    
+                    # Apply Ken Burns to some clips for variety with recursion protection
+                    if i % 3 == 0:
+                        try:
+                            clip = self.video_effects['ken_burns'].apply(clip)
+                        except RecursionError:
+                            logger.warning(f"⚠️ Recursion detected in Ken Burns for clip {i}, skipping")
+                        except Exception as e:
+                            logger.warning(f"⚠️ Ken Burns effect failed for clip {i}: {e}")
+                    
+                    processed_clips.append(clip)
+                    
+                except Exception as e:
+                    logger.error(f"❌ Failed to process clip {i}: {e}")
+                    # Continue with next clip
+            
+            # Check if we have processed clips
+            if not processed_clips:
+                logger.warning("⚠️ No clips successfully processed for professional sequence")
+                return clips[0] if clips else ""
             
             # Apply transitions
             final_clips = []
@@ -666,8 +709,12 @@ class ProfessionalEffectsEngine:
             
             final_clips.append(processed_clips[-1])
             
-            # Concatenate all clips
-            final = concatenate_videoclips(final_clips)
+            # Concatenate all clips with recursion protection
+            try:
+                final = concatenate_videoclips(final_clips)
+            except RecursionError:
+                logger.warning("⚠️ Recursion detected in concatenation, using first clip")
+                return clips[0]
             
             output_path = f"professional_sequence_{len(clips)}_clips.mp4"
             final.write_videofile(output_path, codec='libx264', audio_codec='aac')

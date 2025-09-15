@@ -41,6 +41,10 @@ class HashtagGenerator:
         logger.info(f"📱 Platform: {platform}, Category: {category}")
         
         try:
+            # Initialize fallback values
+            real_trends_text = "No real trends available"
+            trending_hashtags_text = ""
+            
             # Get REAL trending hashtags from platform APIs
             real_trending_hashtags = self.trending_analyzer.get_trending_hashtags_unified(
                 platform=platform,
@@ -146,11 +150,11 @@ class HashtagGenerator:
                     return self._generate_fallback_hashtags(mission, platform, category, num_hashtags)
             else:
                 logger.warning("⚠️ No valid JSON found in hashtag response")
-                return self._generate_fallback_hashtags(topic, platform, category, num_hashtags)
+                return self._generate_fallback_hashtags(mission, platform, category, num_hashtags)
                 
         except Exception as e:
             logger.error(f"❌ Hashtag generation failed: {e}")
-            return self._generate_fallback_hashtags(topic, platform, category, num_hashtags)
+            return self._generate_fallback_hashtags(mission, platform, category, num_hashtags)
 
     def _validate_hashtag_data(self, data: Dict[str, Any], expected_count: int) -> Dict[str, Any]:
         """Validate and enhance hashtag data"""

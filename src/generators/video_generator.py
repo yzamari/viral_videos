@@ -2533,6 +2533,10 @@ The last frame of this scene connects to the next.
         try:
             logger.info("🎬 Composing final video with multiple output versions")
             
+            # Initialize variables for cleanup
+            temp_video_path = video_with_subtitles = video_with_overlays = None
+            oriented_video_path = final_video_path = video_audio_only = video_overlays_only = None
+            
             # CRITICAL FIX: Handle case where no video clips are available
             if not clips:
                 logger.warning("⚠️ No video clips available, creating fallback video")

@@ -53,6 +53,7 @@ class GenerationStep(Enum):
     EFFECTS_APPLICATION = "effects_application"
     QUALITY_ENHANCEMENT = "quality_enhancement"
     FINAL_COMPOSITION = "final_composition"
+    FINAL_VIDEO = "final_video"
 
 
 @dataclass
