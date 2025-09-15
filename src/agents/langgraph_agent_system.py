@@ -152,29 +152,61 @@ class BaseAgent(AgentInterface):
         
         # Build agent-specific system prompt
         system_prompt = f"""
-        You are {self.name}, a {self.role} with the following traits: {', '.join(self.personality_traits)}.
-        Your communication style is: {self.communication_style}
-        You focus on: {', '.join(self.focus_areas)}
+        You are {self.name}, a professional {self.role}.
         
-        Current mission: {state['mission']}
-        Current discussion phase: {state['discussion_phase']}
+        MISSION: {state['mission']}
         
-        Conversation history:
-        {history}
+        STRICT COMMUNICATION RULES:
+        - NO casual greetings: "Alright team", "Hey everyone", "Let's", etc.
+        - NO meta-commentary: "Here's what I think", "As your [role]", etc.
+        - NO process talk: "We should discuss", "Let's think about", etc.
+        - ONLY technical analysis and specific decisions
+        - ONLY actionable recommendations with clear reasoning
+        - Start directly with your professional analysis
+        - Maximum 3 sentences per response
+        - Focus on deliverable outcomes, not discussion process
+        
+        Context: {state['discussion_phase']}
+        Previous decisions: {history[-200:] if history else 'None'}
         
         {specific_prompt}
         
-        Provide your expert input based on your role and personality.
-        Be constructive, specific, and collaborative.
+        Respond with ONLY your professional expertise and specific recommendations.
         """
         
         messages = [
             SystemMessage(content=system_prompt),
-            HumanMessage(content=f"What is your input on: {state['current_topic']}?")
+            HumanMessage(content=f"Provide your professional analysis and specific recommendations for: {state['current_topic']}. Be direct and actionable.")
         ]
         
         response = await self.llm.ainvoke(messages)
-        return response.content
+        
+        # Professional filter - remove casual language
+        professional_response = self._make_professional(response.content)
+        return professional_response
+    
+    def _make_professional(self, response: str) -> str:
+        """Remove casual language and make response professional"""
+        casual_phrases = [
+            "Alright team,", "Hey everyone,", "Let's", "Here's what I think",
+            "As your", "I believe we should", "We need to", "Let me tell you",
+            "Guys,", "Folks,", "Listen up,", "So basically,", "Basically,",
+            "To be honest,", "If you ask me,", "In my opinion,"
+        ]
+        
+        professional_response = response
+        for phrase in casual_phrases:
+            professional_response = professional_response.replace(phrase, "")
+        
+        # Remove multiple spaces and clean up
+        import re
+        professional_response = re.sub(r'\s+', ' ', professional_response).strip()
+        
+        # Ensure it starts professionally
+        if professional_response and not professional_response[0].isupper():
+            professional_response = professional_response.capitalize()
+            
+        return professional_response
     
     async def process(self, state: AgentState) -> AgentState:
         """Default processing implementation"""
@@ -203,7 +235,7 @@ class CreativeDirectorAgent(BaseAgent):
             name="Alexandra Vision",
             role="Creative Director",
             personality_traits=["visionary", "decisive", "strategic", "inspiring"],
-            communication_style="Direct, inspiring, and big-picture focused",
+            communication_style="Precise, strategic, results-focused",
             focus_areas=["overall vision", "brand alignment", "creative excellence", "team coordination"]
         )
     
@@ -351,7 +383,7 @@ class ScriptWriterAgent(BaseAgent):
             name="Marcus Narrative",
             role="Script Writer",
             personality_traits=["storyteller", "empathetic", "detail-oriented", "creative"],
-            communication_style="Descriptive, engaging, and narrative-focused",
+            communication_style="Concise, analytical, output-focused",
             focus_areas=["story structure", "dialogue", "character arcs", "emotional beats"]
         )
     
@@ -401,7 +433,7 @@ class VisualDirectorAgent(BaseAgent):
             name="Kai Aesthetic",
             role="Visual Director",
             personality_traits=["artistic", "technical", "innovative", "detail-oriented"],
-            communication_style="Visual metaphors with technical precision",
+            communication_style="Technical, precise, specification-focused",
             focus_areas=["cinematography", "color grading", "visual effects", "scene composition"]
         )
     
@@ -453,7 +485,7 @@ class ConsensusBuilderAgent(BaseAgent):
             name="Harmony Synthesis",
             role="Consensus Builder",
             personality_traits=["diplomatic", "analytical", "patient", "integrative"],
-            communication_style="Balanced, inclusive, and solution-focused",
+            communication_style="Direct, decisive, conclusion-focused",
             focus_areas=["conflict resolution", "integration", "decision making", "team alignment"]
         )
     

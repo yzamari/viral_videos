@@ -1136,12 +1136,21 @@ The last frame of this scene connects to the next.
                     except Exception as fallback_error:
                         logger.error(f"❌ Failed to save fallback discussion: {fallback_error}")
             
-            logger.info(f"✅ Video generation completed in {generation_time:.1f}s")
-            logger.info(f"📁 Output: {final_video_path}")
-            
-            # Log session summary
-            summary = session_context.get_session_summary()
-            logger.info(f"📊 Session Summary: {summary['file_counts']}")
+            # Generate comprehensive storyboard visualization
+            try:
+                from .storyboard_visualizer import StoryboardVisualizer
+                
+                storyboard_viz = StoryboardVisualizer(session_context.session_dir)
+                
+                # Prepare clip data for storyboard
+                clip_data = []
+                for i, clip_path in enumerate(clips):
+                    clip_info = {
+                        'sequence': i + 1,
+                        'duration': 8.0,  # Standard clip duration
+                        'start_time': i * 8.0,
+                        'end_time': (i + 1) * 8.0,
+                        'file_path': clip_path,\n                        'description': f\"Scene {i + 1}: Israel-Iran conflict sequence\",\n                        'visual_style': config.visual_style_string,\n                        'key_elements': ['Dynamic action', 'Emotional impact', 'Strategic narrative']\n                    }\n                    clip_data.append(clip_info)\n                \n                # Generate complete storyboard package\n                storyboard_files = storyboard_viz.create_complete_storyboard_package(\n                    video_clips=clip_data,\n                    script_data=script_result,\n                    decisions={\n                        'platform': config.platform.value,\n                        'duration_seconds': config.duration_seconds,\n                        'style': config.style_string,\n                        'tone': config.tone_string,\n                        'target_audience': config.target_audience,\n                        'language': config.language.value,\n                        'mission': config.mission,\n                        'num_clips': len(clips),\n                        'clip_durations': [8.0] * len(clips),\n                        'frame_continuity': getattr(config, 'frame_continuity', False),\n                        'visual_style': config.visual_style_string\n                    }\n                )\n                \n                logger.info(f\"\ud83c\udfac Storyboard package created: {len(storyboard_files)} files\")\n                logger.info(f\"\ud83d\udcfa Interactive storyboard: {storyboard_files['html_storyboard']}\")\n                \n            except Exception as e:\n                logger.warning(f\"\u26a0\ufe0f Failed to generate storyboard: {e}\")\n                # Continue without failing video generation\n            \n            logger.info(f\"✅ Video generation completed in {generation_time:.1f}s\")\n            logger.info(f\"📁 Output: {final_video_path}\")\n            \n            # Log session summary\n            summary = session_context.get_session_summary()\n            logger.info(f\"📊 Session Summary: {summary['file_counts']}\")"
             
             # Return VideoGenerationResult for compatibility
             result = VideoGenerationResult(
