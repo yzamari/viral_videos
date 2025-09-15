@@ -105,6 +105,7 @@ async def main():
         'skip_ethical_optimization': True,  # Skip slow ethical analysis for faster testing
         'skip_credibility_analysis': True,  # Skip slow credibility fact-checking for faster testing
         'max_discussion_rounds': 2,  # Limit LangGraph discussions for speed
+        'enable_quality_enhancement': False,  # Skip 60+ minute quality enhancement for faster testing
         'frame_continuity': None,  # Let AI decide
         'continuous': None,  # Let AI decide
         'voice_strategy': None,

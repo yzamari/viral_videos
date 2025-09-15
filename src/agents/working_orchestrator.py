@@ -2071,12 +2071,13 @@ class WorkingOrchestrator:
             
             video_generator = VideoGenerator(
                 api_key=self.api_key,
-                use_real_veo2=not self.cheap_mode,  # Use VEO2 when cheap_mode is False
+                use_real_veo2=False,  # VEO2 permanently disabled
                 use_vertex_ai=True,
                 vertex_project_id=os.getenv('VERTEX_AI_PROJECT_ID') or os.getenv('VERTEX_PROJECT_ID'),
                 vertex_location=os.getenv('VERTEX_AI_LOCATION') or os.getenv('VERTEX_LOCATION', 'us-central1'),
                 vertex_gcs_bucket=os.getenv('VERTEX_AI_GCS_BUCKET') or os.getenv('VERTEX_GCS_BUCKET'),
-                prefer_veo3=prefer_veo3_fast  # Use VEO3-FAST when configured
+                prefer_veo3=prefer_veo3_fast,  # Use VEO3-FAST when configured
+                enable_quality_enhancement=config.get('enable_quality_enhancement', True)  # Allow disabling for testing
             )
 
             # Create enhanced video config
@@ -2451,8 +2452,9 @@ class WorkingOrchestrator:
             # Generate the video with configured settings
             video_generator = VideoGenerator(
                 api_key=self.api_key,
-                use_real_veo2=use_real_veo2,
-                use_vertex_ai=False   # Always disable Vertex AI in cheap modes
+                use_real_veo2=False,  # VEO2 permanently disabled
+                use_vertex_ai=False,   # Always disable Vertex AI in cheap modes
+                enable_quality_enhancement=config.get('enable_quality_enhancement', False)  # Default off for cheap mode
             )
             
             # Pass core decisions to video generator for theme support
