@@ -202,7 +202,7 @@ class MultiAgentDiscussionSystem:
                 "name": "PixelForge",
                 "personality": ("Technical expert, focused on AI video generation "
                                 "capabilities and limitations"),
-                "expertise": ["AI video generation", "VEO-2 capabilities", "technical constraints",
+                "expertise": ["AI video generation", "VEO-3 capabilities", "technical constraints",
                               "quality optimization"],
                 "decision_style": "Technical feasibility with quality focus"
             },

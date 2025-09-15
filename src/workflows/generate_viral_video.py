@@ -2,7 +2,7 @@
 """
 Viral Video Generation Workflow
 Advanced AI-powered video generation with multi-agent discussions and
-        VEO2/3 support
+        VEO3 support
 """
 
 import os

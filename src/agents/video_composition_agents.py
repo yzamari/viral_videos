@@ -748,7 +748,7 @@ Respond in JSON format:
         return {
             'media_strategy': 'Fallback mixed media approach',
             'resource_allocation': {
-                "veo2_clips": veo2_count,
+                "veo3_clips": veo3_count,
                 "static_images": image_count,
                 "image_sequences": 0
             },
@@ -783,6 +783,6 @@ def get_composition_agents_summary() -> Dict[str, Any]:
         'MediaStrategist': {
             'role': 'Media Type Decision Specialist',
             'decisions': [
-                'VEO2 vs. images',
+                'VEO3 vs. images',
                 'Resource allocation',
                 'Visual impact optimization']}}

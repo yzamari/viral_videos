@@ -32,11 +32,11 @@ class VideoGenerationTopics:
         return DiscussionTopic(
             topic_id="visual_strategy",
             title="Visual Style and Video Generation Strategy",
-            description="Define visual approach, style, and VEO-2 generation strategy",
+            description="Define visual approach, style, and VEO-3 generation strategy",
             context=context,
             required_decisions=[
                 "visual_style",
-                "veo2_approach",
+                "veo3_approach",
                 "scene_composition",
                 "color_palette",
                 "visual_pacing"

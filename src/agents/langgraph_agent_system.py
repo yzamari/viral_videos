@@ -156,15 +156,15 @@ class BaseAgent(AgentInterface):
         
         MISSION: {state['mission']}
         
-        STRICT COMMUNICATION RULES:
-        - NO casual greetings: "Alright team", "Hey everyone", "Let's", etc.
-        - NO meta-commentary: "Here's what I think", "As your [role]", etc.
-        - NO process talk: "We should discuss", "Let's think about", etc.
-        - ONLY technical analysis and specific decisions
-        - ONLY actionable recommendations with clear reasoning
-        - Start directly with your professional analysis
-        - Maximum 3 sentences per response
-        - Focus on deliverable outcomes, not discussion process
+        STRICT COMMUNICATION RULES - NO EXCEPTIONS:
+        - ABSOLUTELY NO greetings: "Alright team", "Hey everyone", "[Name] here", etc.
+        - ABSOLUTELY NO role announcements: "As your [role]", "AudioMaster here", etc.
+        - ABSOLUTELY NO meta-commentary: "Here's what I think", "Let me break this down", etc.
+        - ABSOLUTELY NO casual phrases: "Great to see", "fired up", "settle in", etc.
+        - START IMMEDIATELY with your technical recommendation
+        - Maximum 2 sentences - be extremely concise
+        - Provide ONLY the specific decision or recommendation
+        - NO social interaction, NO pleasantries, NO team building
         
         Context: {state['discussion_phase']}
         Previous decisions: {history[-200:] if history else 'None'}
@@ -176,7 +176,7 @@ class BaseAgent(AgentInterface):
         
         messages = [
             SystemMessage(content=system_prompt),
-            HumanMessage(content=f"Provide your professional analysis and specific recommendations for: {state['current_topic']}. Be direct and actionable.")
+            HumanMessage(content=f"REQUIREMENT: {state['current_topic']}. Provide ONLY your specific technical decision in 1-2 sentences. NO greetings, NO explanations, NO role identification. Start with your recommendation immediately.")
         ]
         
         response = await self.llm.ainvoke(messages)
@@ -191,7 +191,11 @@ class BaseAgent(AgentInterface):
             "Alright team,", "Hey everyone,", "Let's", "Here's what I think",
             "As your", "I believe we should", "We need to", "Let me tell you",
             "Guys,", "Folks,", "Listen up,", "So basically,", "Basically,",
-            "To be honest,", "If you ask me,", "In my opinion,"
+            "To be honest,", "If you ask me,", "In my opinion,", "AudioMaster here!",
+            "Great to see everyone", "fired up and ready", "settle in", "Thanks for flagging",
+            "AudioMaster here,", "VisionMaster here,", "WordSmith here,", "Team,",
+            "Alright team", "Here's what I'm thinking", "Let me break this down",
+            "I'm excited to", "ready to lay down", "As [role]", "Here's my take"
         ]
         
         professional_response = response
@@ -200,6 +204,21 @@ class BaseAgent(AgentInterface):
         
         # Remove multiple spaces and clean up
         import re
+        professional_response = re.sub(r'\s+', ' ', professional_response).strip()
+        
+        # Remove common role announcements and meta phrases
+        role_patterns = [
+            r'(AudioMaster|VisionMaster|WordSmith|CutMaster|SyncMaster).*?[,:!.]',
+            r'As (your|the|a) \w+.*?[,:!.]',
+            r'(Great|Excellent|Perfect|Wonderful).*?team.*?[,:!.]',
+            r'Here\'s (what|my|the).*?[,:!.]',
+            r'Let me (tell|explain|share|break).*?[,:!.]'
+        ]
+        
+        for pattern in role_patterns:
+            professional_response = re.sub(pattern, '', professional_response, flags=re.IGNORECASE)
+        
+        # Clean up again
         professional_response = re.sub(r'\s+', ' ', professional_response).strip()
         
         # Ensure it starts professionally
