@@ -984,7 +984,8 @@ class WorkingOrchestrator:
                 'target_audience': self.target_audience,
                 'trending_insights': self.trending_insights,
                 'duration_constraints': duration_result.decision  # Pass duration constraints
-            }, required_decisions=["script_structure", "viral_hooks", "engagement_strategy"]
+            }, required_decisions=["script_structure", "viral_hooks", "engagement_strategy"],
+            max_rounds=config.get('max_discussion_rounds', 10)  # Allow override for performance
         )
 
         script_result = self._start_discussion(
@@ -1003,7 +1004,8 @@ class WorkingOrchestrator:
                 'trending_insights': self.trending_insights,
                 'duration': self.duration,
                 'duration_constraints': duration_result.decision
-            }, required_decisions=["visual_style", "technical_approach", "generation_mode", "clip_durations"]
+            }, required_decisions=["visual_style", "technical_approach", "generation_mode", "clip_durations"],
+            max_rounds=config.get('max_discussion_rounds', 6)  # Allow override for performance
         )
 
         visual_result = self._start_discussion(
@@ -1023,7 +1025,8 @@ class WorkingOrchestrator:
                 'script_duration': script_result.decision.get('estimated_duration', self.duration),
                 'max_audio_duration': self.duration * 1.05,  # 5% tolerance
                 'min_audio_duration': self.duration * 0.95   # 5% tolerance
-            }, required_decisions=["voice_style", "audio_approach", "sound_design", "audio_duration_compliance"]
+            }, required_decisions=["voice_style", "audio_approach", "sound_design", "audio_duration_compliance"],
+            max_rounds=config.get('max_discussion_rounds', 5)  # Allow override for performance
         )
 
         audio_result = self._start_discussion(
@@ -1199,7 +1202,8 @@ class WorkingOrchestrator:
                 'mission': self.mission,
                 'languages': config.get('languages', [Language.ENGLISH_US]) or [Language.ENGLISH_US],
                 'cultural_adaptation': getattr(config, 'cultural_adaptation', True)
-            }, required_decisions=["language_priority", "cultural_adaptation", "voice_selection"]
+            }, required_decisions=["language_priority", "cultural_adaptation", "voice_selection"],
+            max_rounds=config.get('max_discussion_rounds', 4)  # Allow override for performance
         )
 
         multilang_result = self._start_discussion(

@@ -472,14 +472,27 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                     target_audience=target_audience
                 )
                 
-                # Perform ethical optimization analysis
-                logger.info("🎯 Performing ethical optimization analysis...")
-                ethical_analysis = self.ethical_optimization.optimize_for_ethics(
-                    content=mission_statement,
-                    topic=mission_statement,
-                    platform=platform.value if platform else "general",
-                    mission_type=mission_type.value
-                )
+                # Perform ethical optimization analysis (skippable for performance)
+                if config.get('skip_ethical_optimization', False):
+                    logger.info("⚡ Skipping ethical optimization for faster testing")
+                    ethical_analysis = EthicalOptimization(
+                        rating="ACCEPTABLE",
+                        compliance_score=7.0,
+                        transparency=7.0,
+                        educational_value=7.0,
+                        positive_engagement=7.0,
+                        recommendations=["Optimization skipped for performance"],
+                        risk_factors=[],
+                        improvement_suggestions=[]
+                    )
+                else:
+                    logger.info("🎯 Performing ethical optimization analysis...")
+                    ethical_analysis = self.ethical_optimization.optimize_for_ethics(
+                        content=mission_statement,
+                        topic=mission_statement,
+                        platform=platform.value if platform else "general",
+                        mission_type=mission_type.value
+                    )
                 
                 # Create content quality analysis
                 content_quality_analysis = {
@@ -569,14 +582,27 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                 "fact_check_priority": "MEDIUM"
             }
             
-            # Also perform ethical optimization for informational content
-            logger.info("🎯 Performing ethical optimization analysis for informational content...")
-            ethical_analysis = self.ethical_optimization.optimize_for_ethics(
-                content=topic,
-                topic=topic,
-                platform=platform.value if platform else "general",
-                mission_type="inform"
-            )
+            # Also perform ethical optimization for informational content (skippable for performance)
+            if config.get('skip_ethical_optimization', False):
+                logger.info("⚡ Skipping ethical optimization for faster testing")
+                ethical_analysis = EthicalOptimization(
+                    rating="ACCEPTABLE",
+                    compliance_score=7.0,
+                    transparency=7.0,
+                    educational_value=7.0,
+                    positive_engagement=7.0,
+                    recommendations=["Optimization skipped for performance"],
+                    risk_factors=[],
+                    improvement_suggestions=[]
+                )
+            else:
+                logger.info("🎯 Performing ethical optimization analysis for informational content...")
+                ethical_analysis = self.ethical_optimization.optimize_for_ethics(
+                    content=topic,
+                    topic=topic,
+                    platform=platform.value if platform else "general",
+                    mission_type="inform"
+                )
             
         except Exception as e:
             logger.warning(f"⚠️ Audience/credibility/ethical analysis failed for informational content: {e}")

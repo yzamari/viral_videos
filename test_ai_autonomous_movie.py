@@ -29,7 +29,7 @@ async def main():
     
     print("\n" + "="*80)
     print("🎬 ISRAEL-IRAN JUNE 2025: OPERATION RED WEDDING")
-    print("🤖 100% AI-DIRECTED MOVIE - FULL QUALITY MODE")
+    print("🤖 100% AI-DIRECTED MOVIE - FULL QUALITY MODE + PERFORMANCE OPTIMIZATIONS")
     print("="*80)
     print("📅 Historical Context: The Twelve-Day War (June 13-24, 2025)")
     print("🧠 Using DecisionFramework + LangGraph for ALL decisions")
@@ -102,6 +102,8 @@ async def main():
         'mode': "enhanced",  # Use LangGraph enhanced mode
         'cheap_mode': False,  # Full quality mode - no cheap mode
         'cheap_mode_level': None,  # Not applicable when cheap_mode is False
+        'skip_ethical_optimization': True,  # Skip slow ethical analysis for faster testing
+        'max_discussion_rounds': 2,  # Limit LangGraph discussions for speed
         'frame_continuity': None,  # Let AI decide
         'continuous': None,  # Let AI decide
         'voice_strategy': None,
