@@ -1150,7 +1150,47 @@ The last frame of this scene connects to the next.
                         'duration': 8.0,  # Standard clip duration
                         'start_time': i * 8.0,
                         'end_time': (i + 1) * 8.0,
-                        'file_path': clip_path,\n                        'description': f\"Scene {i + 1}: Israel-Iran conflict sequence\",\n                        'visual_style': config.visual_style_string,\n                        'key_elements': ['Dynamic action', 'Emotional impact', 'Strategic narrative']\n                    }\n                    clip_data.append(clip_info)\n                \n                # Generate complete storyboard package\n                storyboard_files = storyboard_viz.create_complete_storyboard_package(\n                    video_clips=clip_data,\n                    script_data=script_result,\n                    decisions={\n                        'platform': config.platform.value,\n                        'duration_seconds': config.duration_seconds,\n                        'style': config.style_string,\n                        'tone': config.tone_string,\n                        'target_audience': config.target_audience,\n                        'language': config.language.value,\n                        'mission': config.mission,\n                        'num_clips': len(clips),\n                        'clip_durations': [8.0] * len(clips),\n                        'frame_continuity': getattr(config, 'frame_continuity', False),\n                        'visual_style': config.visual_style_string\n                    }\n                )\n                \n                logger.info(f\"\ud83c\udfac Storyboard package created: {len(storyboard_files)} files\")\n                logger.info(f\"\ud83d\udcfa Interactive storyboard: {storyboard_files['html_storyboard']}\")\n                \n            except Exception as e:\n                logger.warning(f\"\u26a0\ufe0f Failed to generate storyboard: {e}\")\n                # Continue without failing video generation\n            \n            logger.info(f\"✅ Video generation completed in {generation_time:.1f}s\")\n            logger.info(f\"📁 Output: {final_video_path}\")\n            \n            # Log session summary\n            summary = session_context.get_session_summary()\n            logger.info(f\"📊 Session Summary: {summary['file_counts']}\")"
+                        'file_path': clip_path,
+                        'description': f'Scene {i + 1}: Israel-Iran conflict sequence',
+                        'visual_style': config.visual_style_string,
+                        'key_elements': ['Dynamic action', 'Emotional impact', 'Strategic narrative']
+                    }
+                    clip_data.append(clip_info)
+                
+                # Generate complete storyboard package
+                storyboard_files = storyboard_viz.create_complete_storyboard_package(
+                    video_clips=clip_data,
+                    script_data=script_result,
+                    decisions={
+                        'platform': config.platform.value,
+                        'duration_seconds': config.duration_seconds,
+                        'style': config.style_string,
+                        'tone': config.tone_string,
+                        'target_audience': config.target_audience,
+                        'language': config.language.value,
+                        'mission': config.mission,
+                        'num_clips': len(clips),
+                        'clip_durations': [8.0] * len(clips),
+                        'frame_continuity': getattr(config, 'frame_continuity', False),
+                        'visual_style': config.visual_style_string
+                    }
+                )
+                
+                logger.info(f'🎬 Storyboard package created: {len(storyboard_files)} files')
+                storyboard_path = storyboard_files.get('html_storyboard', 'N/A')
+                logger.info(f'📺 Interactive storyboard: {storyboard_path}')
+                
+            except Exception as e:
+                logger.warning(f'⚠️ Failed to generate storyboard: {e}')
+                # Continue without failing video generation
+            
+            logger.info(f'✅ Video generation completed in {generation_time:.1f}s')
+            logger.info(f'📁 Output: {final_video_path}')
+            
+            # Log session summary
+            summary = session_context.get_session_summary()
+            file_counts = summary.get('file_counts', {})
+            logger.info(f'📊 Session Summary: {file_counts}')
             
             # Return VideoGenerationResult for compatibility
             result = VideoGenerationResult(
