@@ -56,7 +56,7 @@ class VertexAIVeo3Client(BaseVeoClient):
         os.makedirs(self.clips_dir, exist_ok=True)
 
         # VEO-3 model configuration
-        self.veo3_model = "veo-3.0-generate-preview"
+        self.veo3_model = "veo-3.0-generate-001"  # Full VEO3 model with portrait support
         
         # Flag for VEO3-fast mode (no audio)
         self.is_veo3_fast = False

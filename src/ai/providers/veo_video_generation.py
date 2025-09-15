@@ -50,10 +50,15 @@ class VEOVideoGenerationService(VideoGenerationService):
         start_time = time.time()
         
         try:
-            # Get appropriate VEO client from factory
-            client = self.veo_factory.get_best_available_client(
+            # Get appropriate VEO client from factory with aspect ratio awareness
+            # Extract aspect ratio from request if available
+            aspect_ratio = getattr(request, 'aspect_ratio', '16:9')
+            if hasattr(request, 'config') and hasattr(request.config, 'aspect_ratio'):
+                aspect_ratio = request.config.aspect_ratio
+            
+            client = self.veo_factory.get_aspect_ratio_aware_client(
                 output_dir=self.output_dir,
-                prefer_veo3=not self.prefer_veo2  # Invert the preference
+                aspect_ratio=aspect_ratio
             )
             
             if not client:

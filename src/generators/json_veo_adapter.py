@@ -78,11 +78,13 @@ class JSONVEOAdapter:
         logger.info(f"   Style: {json_prompt.style}")
         logger.info(f"   Platform: {json_prompt.platform.value}")
         
-        # Get VEO client
+        # Get VEO client with aspect ratio awareness
         output_dir = session_context.get_output_path("video_clips", "veo_clips")
-        veo_client = self.veo_factory.create_client(
-            model=veo_model,
-            output_dir=output_dir
+        aspect_ratio = json_prompt.aspect_ratio if json_prompt.aspect_ratio else "16:9"
+        
+        veo_client = self.veo_factory.get_aspect_ratio_aware_client(
+            output_dir=output_dir,
+            aspect_ratio=aspect_ratio
         )
         
         # Convert to JSON string for VEO
@@ -123,9 +125,10 @@ class JSONVEOAdapter:
         """Generate video from text prompt (fallback)"""
         
         output_dir = session_context.get_output_path("video_clips", "veo_clips")
-        veo_client = self.veo_factory.create_client(
-            model=veo_model,
-            output_dir=output_dir
+        # Default to 16:9 for text prompts (no aspect ratio specified)
+        veo_client = self.veo_factory.get_aspect_ratio_aware_client(
+            output_dir=output_dir,
+            aspect_ratio="16:9"  # Default for text prompts
         )
         
         return veo_client.generate_video(

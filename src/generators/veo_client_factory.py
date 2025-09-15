@@ -44,8 +44,8 @@ logger = get_logger(__name__)
 class VeoModel(Enum):
     """Available VEO models"""
     VEO2 = "veo-2.0-generate-001"
-    VEO3 = "veo-3.0-generate-preview"
-    VEO3_FAST = "veo-3.0-fast-generate-001"  # Official Veo 3 Fast model - faster and cheaper
+    VEO3 = "veo-3.0-generate-001"  # Full VEO3 model - supports portrait mode
+    VEO3_FAST = "veo-3.0-fast-generate-001"  # Official Veo 3 Fast model - faster and cheaper but no portrait
 
 class VeoClientFactory:
     """Factory for creating and managing VEO clients"""
@@ -232,6 +232,46 @@ class VeoClientFactory:
         except Exception as e:
             logger.error(f"❌ Failed to create VEO client: {e}")
             return None
+
+    def get_aspect_ratio_aware_client(self, output_dir: str, aspect_ratio: str = "16:9"):
+        """Get the best VEO client considering aspect ratio requirements"""
+        try:
+            # For portrait (9:16) TikTok videos, we need full VEO3 - VEO3-Fast doesn't support it
+            if aspect_ratio == "9:16":
+                logger.info("🎯 Portrait aspect ratio (9:16) detected - using full VEO3 for TikTok compatibility")
+                
+                # Try full VEO3 first for portrait support
+                if not self.settings.disable_veo3:
+                    try:
+                        client = self.create_client(VeoModel.VEO3, output_dir)
+                        if hasattr(client, 'is_available') and client.is_available:
+                            logger.info("🚀 Using VEO-3 full model (supports portrait + audio)")
+                            return client
+                    except Exception as e:
+                        logger.debug(f"VEO3 full model not available: {e}")
+                
+                # Fallback to VEO3-Fast with landscape + cropping
+                logger.warning("⚠️ Full VEO3 not available, using VEO3-Fast with landscape->portrait cropping")
+                try:
+                    client = self.create_client(VeoModel.VEO3_FAST, output_dir)
+                    if hasattr(client, 'is_available') and client.is_available:
+                        logger.info("⚡ Using VEO3-FAST with post-processing crop to portrait")
+                        return client
+                except Exception as e:
+                    logger.debug(f"VEO3-Fast not available: {e}")
+                    
+            else:
+                # For landscape (16:9) or square (1:1), VEO3-Fast is fine
+                logger.info(f"🎯 Landscape/square aspect ratio ({aspect_ratio}) - VEO3-Fast is compatible")
+                return self.get_best_available_client(output_dir)
+            
+            # Final fallback to any available model
+            logger.warning("⚠️ Falling back to any available VEO model")
+            return self.get_best_available_client(output_dir)
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to create aspect-ratio-aware VEO client: {e}")
+            return self.get_best_available_client(output_dir)
 
     def get_available_models(self) -> List[VeoModel]:
         """Get list of available VEO models"""
