@@ -107,6 +107,7 @@ async def main():
         'max_discussion_rounds': 2,  # Limit LangGraph discussions for speed
         'enable_quality_enhancement': False,  # Skip 60+ minute quality enhancement for faster testing
         'frame_continuity': False,  # Disable to avoid VEO3 safety blocks on image-to-video
+        'skip_continuity_analysis': True,  # Skip continuity analysis that causes 504 timeouts
         'continuous': None,  # Let AI decide
         'voice_strategy': None,
         'voice_personality': None,

@@ -163,7 +163,7 @@ class MissionPlanningAgent:
             else:
                 # Create informational content plan
                 plan = self._create_informational_content_plan(
-                    mission_statement, duration, platform, category, target_audience
+                    mission_statement, duration, platform, category, target_audience, config
                 )
                 logger.info(f"📝 Informational content plan created")
             
@@ -568,8 +568,13 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                                          duration: int,
                                          platform: Platform,
                                          category: VideoCategory,
-                                         target_audience: str) -> MissionPlan:
+                                         target_audience: str,
+                                         config: Dict[str, Any] = None) -> MissionPlan:
         """Create plan for informational (non-mission) content"""
+        
+        # Initialize config if not provided
+        if config is None:
+            config = {}
         
         # Perform audience intelligence analysis for informational content too
         try:
