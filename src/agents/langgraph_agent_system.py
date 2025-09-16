@@ -15,8 +15,15 @@ from enum import Enum
 
 # LangGraph imports
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.sqlite import SqliteSaver
-from langgraph.prebuilt import ToolExecutor, ToolInvocation
+try:
+    from langgraph.checkpoint.sqlite import SqliteSaver
+except ImportError:
+    SqliteSaver = None  # Optional dependency
+try:
+    from langgraph.prebuilt import ToolExecutor, ToolInvocation
+except ImportError:
+    ToolExecutor = None
+    ToolInvocation = None
 
 # LangChain imports
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
@@ -176,7 +183,10 @@ class BaseAgent(AgentInterface):
         
         messages = [
             SystemMessage(content=system_prompt),
-            HumanMessage(content=f"REQUIREMENT: {state['current_topic']}. Provide ONLY your specific technical decision in 1-2 sentences. NO greetings, NO explanations, NO role identification. Start with your recommendation immediately.")
+            HumanMessage(content=f"REQUIREMENT: {state['current_topic']}. "
+                         f"Provide ONLY your specific technical decision in 1-2 sentences. "
+                         f"NO greetings, NO explanations, NO role identification. "
+                         f"Start with your recommendation immediately.")
         ]
         
         response = await self.llm.ainvoke(messages)

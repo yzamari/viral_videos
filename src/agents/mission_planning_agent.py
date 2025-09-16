@@ -217,7 +217,8 @@ class MissionPlanningAgent:
             
             Return JSON:
             {{
-                "mission_type": "convince|persuade|teach|demonstrate|explain|help|stop|prevent|encourage|motivate|change|transform|improve|solve|fix|achieve|inform",
+                "mission_type": "convince|persuade|teach|demonstrate|explain|help|stop|prevent|" +
+                               "encourage|motivate|change|transform|improve|solve|fix|achieve|inform",
                 "is_strategic_mission": true|false,
                 "confidence": 0.0-1.0,
                 "reasoning": "Brief explanation of classification decision"
