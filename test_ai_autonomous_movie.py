@@ -106,7 +106,7 @@ async def main():
         'skip_credibility_analysis': True,  # Skip slow credibility fact-checking for faster testing
         'max_discussion_rounds': 2,  # Limit LangGraph discussions for speed
         'enable_quality_enhancement': False,  # Skip 60+ minute quality enhancement for faster testing
-        'frame_continuity': None,  # Let AI decide
+        'frame_continuity': False,  # Disable to avoid VEO3 safety blocks on image-to-video
         'continuous': None,  # Let AI decide
         'voice_strategy': None,
         'voice_personality': None,
