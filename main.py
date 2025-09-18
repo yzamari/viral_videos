@@ -226,5 +226,9 @@ add_character_commands(cli)
 from src.news_aggregator.cli_integration import add_news_commands
 add_news_commands(cli)
 
+# Add narrative series generation command
+from src.cli.generate_series_command import generate_series_command
+cli.add_command(generate_series_command, name='generate-series')
+
 if __name__ == '__main__':
     cli() 
