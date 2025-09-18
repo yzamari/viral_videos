@@ -516,7 +516,7 @@ class NewsAggregatorV2:
             "discussions": "enhanced" if edition_data.get("agent_insights") else "simple",
             "mode": "enhanced",
             "voice": self._get_voice_for_language(language),
-            "veo_model_order": "veo3-fast,veo3",  # VEO2 deprecated
+            "veo_model_order": "veo3-fast,veo3",  # VEO3 only
             "business_name": composition.name,
             "show_business_info": True
         }

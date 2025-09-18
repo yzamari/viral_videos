@@ -36,7 +36,7 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
          reference_style: Optional[str] = None, character: Optional[str] = None,
          scene: Optional[str] = None, voice: Optional[str] = None, 
          multiple_voices: bool = False, languages: List[str] = None, 
-         veo_model_order: str = 'veo3-fast,veo3',  # VEO2 deprecated
+         veo_model_order: str = 'veo3-fast,veo3',  # VEO3 only
          business_name: Optional[str] = None, business_address: Optional[str] = None,
          business_phone: Optional[str] = None, business_website: Optional[str] = None,
          business_facebook: Optional[str] = None, business_instagram: Optional[str] = None,
@@ -135,7 +135,18 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             discussions = "off" if discussions == "enhanced" else discussions
             # Use simple mode with fewer agents
             mode = "simple"
-            logger.info("💰 Applied cheap mode optimizations: fallback_only=True, discussions=off, mode=simple")
+            
+            # Ultra-fast optimizations for "full" cheap mode level
+            if cheap_mode_level == "full":
+                # Skip visual continuity for speed
+                visual_continuity = False
+                # Skip content continuity for speed  
+                content_continuity = False
+                # Add ultra-fast flag to config
+                config["ultra_fast"] = True
+                logger.info("⚡ Ultra-fast mode: Disabled continuity checks for maximum speed")
+            
+            logger.info(f"💰 Applied cheap mode optimizations: fallback_only=True, discussions=off, mode=simple, level={cheap_mode_level}")
         
         # STEP 1: CENTRALIZED DECISION MAKING
         from ..core.decision_framework import DecisionFramework
@@ -267,6 +278,7 @@ async def async_main(mission: str, category: str = "Comedy", platform: str = "yo
             'scene': scene,
             'session_id': session_id,
             'core_decisions': core_decisions,
+            'discussions': discussions,  # Pass discussions flag to orchestrator
             'languages': language_enums,  # Pass Language enums
             'business_name': business_name,
             'business_address': business_address,

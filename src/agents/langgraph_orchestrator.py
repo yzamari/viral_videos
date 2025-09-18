@@ -659,6 +659,12 @@ Include specific neurological optimizations identified.
                         
         return neuro_optimizations[:5]
         
+    def start_discussion(self, topic: DiscussionTopic, participants: List[AgentRole]) -> DiscussionResult:
+        """
+        Alias for run_discussion to maintain compatibility
+        """
+        return self.run_discussion(topic, participants)
+        
     def run_discussion(self, topic: DiscussionTopic, participants: List[AgentRole]) -> DiscussionResult:
         """
         Run a discussion using the LangGraph workflow

@@ -44,6 +44,9 @@ gtts==2.5.0  # Google Text-to-Speech fallback
 imageio==2.33.0  # Video I/O support
 imageio-ffmpeg==0.6.0  # FFmpeg wrapper for video processing (updated to fix pkg_resources deprecation)
 
+# Async Processing
+nest_asyncio==1.6.0  # Allows nested event loops for async processing
+
 # Web Scraping
 requests==2.32.4
 beautifulsoup4==4.12.2

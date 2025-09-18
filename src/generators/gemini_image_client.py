@@ -1,6 +1,6 @@
 """
-Gemini Image Generation Client for VEO2 Fallback
-Generates images using Gemini 2.0 Flash Image Generation when VEO2 quota is exhausted
+Gemini Image Generation Client for VEO Fallback
+Generates images using Gemini 2.0 Flash Image Generation when VEO quota is exhausted
 Creates slideshow-style videos with 4-5 images per second instead of 30fps
 """
 import os
@@ -24,7 +24,7 @@ logger = get_logger(__name__)
 
 class GeminiImageClient:
     """
-    Enhanced Image Generation Client for VEO2 Fallback
+    Enhanced Image Generation Client for VEO Fallback
 
     Features:
     - Generates 4-5 images per second of video (instead of 30fps)
@@ -199,7 +199,7 @@ class GeminiImageClient:
                     clip_info = {
                         'clip_path': clip_path,
                         'description': prompt_data.get('description', f'Generated clip {i+1}'),
-                        'veo2_prompt': prompt_data.get('veo2_prompt', ''),
+                        'veo_prompt': prompt_data.get('veo_prompt', ''),
                         'duration': image_duration,
                         'scene_index': i,
                         'generated_with': 'enhanced_images_ai_timing',
@@ -235,7 +235,7 @@ class GeminiImageClient:
 
         # Extract base prompt and style
         base_prompt = prompt_data.get(
-            'veo2_prompt',
+            'veo_prompt',
             prompt_data.get('description', ''))
         style = self._detect_style(base_prompt)
 

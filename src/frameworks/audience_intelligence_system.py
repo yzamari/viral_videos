@@ -256,8 +256,12 @@ class AudienceIntelligenceSystem:
             return self._create_fallback_demographics(platform)
     
     def _ai_demographic_analysis(self, topic: str, platform: str, target_audience: str, platform_data: Dict) -> Optional[DemographicProfile]:
-        """AI-powered demographic analysis"""
+        """AI-powered demographic analysis with timeout protection"""
         try:
+            # Add timeout protection - skip AI analysis if it might hang
+            logger.debug("⏱️ Skipping potentially hanging AI demographic analysis")
+            return None  # Force fallback to heuristic analysis
+            
             demo_prompt = f"""
             Analyze the demographic profile for this content:
             

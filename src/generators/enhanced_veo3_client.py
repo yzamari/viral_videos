@@ -57,7 +57,7 @@ class EnhancedVeo3Client:
     MODEL_NAMES = {
         "standard": "veo-3.0-generate-preview",
         "fast": "veo-3.0-fast-generate-001",  # No audio support
-        "experimental": "veo-2.0-generate-exp"  # Fallback with reference support
+        "experimental": "veo.0-generate-exp"  # Fallback with reference support
     }
     
     def __init__(self,

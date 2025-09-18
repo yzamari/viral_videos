@@ -385,7 +385,7 @@ class GCloudAuthTester:
             if response.status_code == 200:
                 # Check for VEO models
                 try:
-                    veo_url = f"https://{location}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{location}/publishers/google/models/veo-2.0-generate-001"
+                    veo_url = f"https://{location}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{location}/publishers/google/models/veo.0-generate-001"
                     veo_response = requests.get(veo_url, headers=headers, timeout=10)
                     veo_available = veo_response.status_code == 200
                 except Exception:
@@ -463,7 +463,7 @@ class GCloudAuthTester:
             os.getenv('VERTEX_AI_GCS_BUCKET') or
             os.getenv('GCS_BUCKET') or
             os.getenv('GOOGLE_CLOUD_STORAGE_BUCKET') or
-            "viral-veo2-results"  # Default from config
+            "viral-veo-results"  # Default from config
         )
 
         logger.info(f"🔍 Using GCS bucket: {bucket_name}")

@@ -73,8 +73,8 @@ class DiscussionTopic:
     description: str
     context: Dict[str, Any]
     required_decisions: List[str]
-    max_rounds: int = 10
-    min_consensus: float = 0.7
+    max_rounds: int = 3  # Reduced from 10 for faster discussions
+    min_consensus: float = 0.6  # Reduced from 0.7 to avoid unnecessary rounds
 
 @dataclass
 class DiscussionResult:
@@ -1137,8 +1137,8 @@ class VideoGenerationTopics:
                     "emotional_vs_logical_approach",
                     "target_audience_adaptation",
                     "call_to_action_for_mission_reinforcement"],
-                max_rounds=8,
-                min_consensus=0.6)
+                max_rounds=3,  # Reduced from 8 for speed
+                min_consensus=0.5)  # Lower threshold
         else:
             return DiscussionTopic(
                 topic_id="script_optimization",
@@ -1152,8 +1152,8 @@ class VideoGenerationTopics:
                     "content_structure",
                     "call_to_action_placement",
                     "viral_elements_integration"],
-                max_rounds=8,
-                min_consensus=0.6)
+                max_rounds=3,  # Reduced from 8 for speed
+                min_consensus=0.5)  # Lower threshold
 
     @staticmethod
     def visual_strategy(context: Dict[str, Any]) -> DiscussionTopic:
@@ -1185,8 +1185,8 @@ class VideoGenerationTopics:
                 "audio_timing_optimization",
                 "sound_effects_integration",
                 "audio_visual_sync"],
-            max_rounds=5,
-            min_consensus=0.8)
+            max_rounds=2,  # Reduced from 5 (Audio was problematic)
+            min_consensus=0.6)  # Reduced from 0.8 to avoid stuck discussions
 
     @staticmethod
     def platform_optimization(context: Dict[str, Any]) -> DiscussionTopic:

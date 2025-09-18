@@ -153,12 +153,12 @@ class MultiLanguageVideoGenerator:
         # Generate master script (in first selected language)
         primary_language = valid_languages[0]
         logger.info(f"📝 Generating master script in {self.language_names[primary_language]}")
-        generator = VideoGenerator(api_key=self.api_key, use_real_veo2=True)
+        generator = VideoGenerator(api_key=self.api_key, use_real_veo=True)
         master_script = generator._generate_creative_script(config, base_video_id)
 
         # Generate sufficient video clips for the full duration
         logger.info("🎬 Generating shared video clips...")
-        veo_prompts = generator._create_veo2_prompts(config, master_script)
+        veo_prompts = generator._create_veo_prompts(config, master_script)
 
         # Ensure we have enough clips for the duration
         clips_needed = max(2, config.duration_seconds // 6)
@@ -171,7 +171,7 @@ class MultiLanguageVideoGenerator:
 
             for i in range(additional_prompts):
                 fallback_prompt = {
-                    'veo2_prompt': f"Continuation of the story, scene {len(veo_prompts) + i + 1}",
+                    'veo_prompt': f"Continuation of the story, scene {len(veo_prompts) + i + 1}",
                     'description': f"Additional scene {i + 1}",
                     'duration': min(8, config.duration_seconds / clips_needed),
                     'scene_type': 'continuation'
@@ -218,7 +218,7 @@ class MultiLanguageVideoGenerator:
             base_video_id=base_video_id,
             master_config=config,
             shared_clips_dir=shared_clips_dir,
-            veo2_clips=veo_clips,
+            veo_clips=veo_clips,
             language_versions=language_versions,
             total_generation_time=total_time,
             master_script=master_script,

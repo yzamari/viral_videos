@@ -85,7 +85,7 @@ Content Details:
 Image Prompts:
 {json.dumps(
     [{"index": i,
-    "prompt": prompt.get('description', prompt.get('veo2_prompt', 'Unknown'))} for i,
+    "prompt": prompt.get('description', prompt.get('veo_prompt', 'Unknown'))} for i,
     prompt in enumerate(prompts)],
     indent=2)}
 :
@@ -240,7 +240,7 @@ Content Details:
 Image Prompts:
 {json.dumps(
     [{"index": i,
-    "prompt": prompt.get('description', prompt.get('veo2_prompt', 'Unknown'))} for i,
+    "prompt": prompt.get('description', prompt.get('veo_prompt', 'Unknown'))} for i,
     prompt in enumerate(prompts)],
     indent=2)}
 :

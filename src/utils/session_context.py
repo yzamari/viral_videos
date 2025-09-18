@@ -51,7 +51,7 @@ class SessionContext:
             "metadata",
             "agent_discussions", 
             "audio",
-            # "veo2_clips", # VEO2 deprecated
+            # "veo_clips", # VEO3 only
             "comprehensive_logs",
             "scripts",
             "analysis",

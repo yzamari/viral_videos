@@ -1,5 +1,5 @@
 """
-JSON-Based Prompt System for VEO2/VEO3 and Image Generation
+JSON-Based Prompt System for VEO/VEO3 and Image Generation
 Provides structured, predictable, and powerful control over AI generation
 """
 
@@ -22,7 +22,7 @@ logger = get_logger(__name__)
 
 class GeneratorType(Enum):
     """Supported AI generators"""
-    VEO2 = "veo2"
+    VEO = "veo"
     VEO3 = "veo3"
     IMAGEN = "imagen"
     
@@ -358,9 +358,9 @@ class JSONPromptValidator:
             errors.append("Duration must be positive")
         
         # Generator-specific validation
-        if target == GeneratorType.VEO2:
+        if target == GeneratorType.VEO:
             if prompt.duration > 60:
-                errors.append("VEO2 supports max 60 seconds")
+                errors.append("VEO supports max 60 seconds")
         elif target == GeneratorType.VEO3:
             if prompt.duration > 120:
                 errors.append("VEO3 supports max 120 seconds")
@@ -538,7 +538,7 @@ if __name__ == "__main__":
     )
     
     # Validate
-    valid, errors = JSONPromptValidator.validate(prompt, GeneratorType.VEO2)
+    valid, errors = JSONPromptValidator.validate(prompt, GeneratorType.VEO)
     print(f"Valid: {valid}, Errors: {errors}")
     
     # Convert to JSON

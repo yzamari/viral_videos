@@ -295,23 +295,25 @@ class DecisionFramework:
             source = DecisionSource.SYSTEM_DEFAULT
             source_desc = "System default"
         
-        # Apply 8-second clip constraint: duration must be multiple of 8
-        # Videos must be in 8-second aligned segments
-        CLIP_DURATION = 8
+        # CRITICAL FIX: Respect exact requested duration instead of forcing 8-second alignment
+        # Generate clips that will be trimmed to exact duration in post-processing
+        MAX_CLIP_DURATION = 8  # VEO3 max per clip
         
-        # Calculate number of clips needed - use ceiling to ensure we have enough clips
+        # Calculate number of clips needed for requested duration
         import math
-        num_clips = max(1, math.ceil(requested_duration / CLIP_DURATION))
-        actual_content_duration = num_clips * CLIP_DURATION
+        num_clips = max(1, math.ceil(requested_duration / MAX_CLIP_DURATION))
+        
+        # Use exact requested duration, not aligned duration
+        actual_content_duration = requested_duration
         
         logger.info(f"📏 Duration calculation:")
         logger.info(f"   Requested: {requested_duration}s")
-        logger.info(f"   Clips: {num_clips} x {CLIP_DURATION}s = {actual_content_duration}s")
-        logger.info(f"   Aligned to 8-second segments (no fadeout addition)")
+        logger.info(f"   Clips: {num_clips} clips (max {MAX_CLIP_DURATION}s each)")
+        logger.info(f"   Final duration: {actual_content_duration}s (EXACT as requested)")
         
-        # Record the actual content duration
+        # Record the exact requested duration
         self._record_decision('duration_seconds', actual_content_duration, source, 1.0, 
-                            f"{source_desc} - Aligned to {num_clips} x {CLIP_DURATION}s segments")
+                            f"{source_desc} - Exact duration as requested: {requested_duration}s")
         
         return actual_content_duration
     
@@ -515,16 +517,33 @@ class DecisionFramework:
         else:
             # English defaults
             if ai_available:
-                # AI would generate these based on mission and platform
-                hook = "Amazing content ahead!"
-                cta = "Follow for more!"
-                self._record_decision('hook', hook, DecisionSource.AI_AGENT, 0.8, "AI-generated hook")
-                self._record_decision('call_to_action', cta, DecisionSource.AI_AGENT, 0.8, "AI-generated CTA")
+                # CRITICAL FIX: Use dynamic content generation system
+                from ..config.dynamic_content_config import DynamicContentConfig
+                
+                # Get tone and visual_style from decisions already made
+                tone_value = self.decisions.get('tone_string', Decision(key='tone_string', value='engaging', source=DecisionSource.SYSTEM_DEFAULT)).value
+                visual_style_value = self.decisions.get('visual_style_string', Decision(key='visual_style_string', value='dynamic', source=DecisionSource.SYSTEM_DEFAULT)).value
+                
+                hook = DynamicContentConfig.generate_hook(
+                    mission=mission,
+                    platform=str(platform).lower(),
+                    tone=tone_value,
+                    visual_style=visual_style_value
+                )
+                cta = DynamicContentConfig.generate_cta(
+                    mission=mission,
+                    platform=str(platform).lower(),
+                    tone=tone_value,
+                    visual_style=visual_style_value
+                )
+                    
+                self._record_decision('hook', hook, DecisionSource.AI_AGENT, 0.8, "Dynamic mission-based hook")
+                self._record_decision('call_to_action', cta, DecisionSource.AI_AGENT, 0.8, "Dynamic mission-based CTA")
             else:
-                hook = "Check this out!"
-                cta = "Like and subscribe!"
-                self._record_decision('hook', hook, DecisionSource.SYSTEM_DEFAULT, 0.5, "Default hook")
-                self._record_decision('call_to_action', cta, DecisionSource.SYSTEM_DEFAULT, 0.5, "Default CTA")
+                hook = "Watch this story"
+                cta = "See more content"
+                self._record_decision('hook', hook, DecisionSource.SYSTEM_DEFAULT, 0.5, "Contextual hook")
+                self._record_decision('call_to_action', cta, DecisionSource.SYSTEM_DEFAULT, 0.5, "Contextual CTA")
         
         return hook, cta
     
@@ -665,10 +684,10 @@ class DecisionFramework:
         CLIP_DURATION = 8.0
         num_clips = max(1, math.ceil(duration / CLIP_DURATION))
         
-        # Ensure duration is exactly multiple of 8
-        if duration != num_clips * CLIP_DURATION:
-            logger.warning(f"⚠️ Duration {duration}s is not multiple of 8. Adjusting to {num_clips * CLIP_DURATION}s")
-            duration = int(num_clips * CLIP_DURATION)
+        # CRITICAL FIX: Don't force 8-second alignment, respect exact requested duration
+        # VEO3 clips will be generated at max 8s each, then trimmed to exact total duration
+        requested_duration = duration  # Save original requested duration
+        # Keep original duration, don't force alignment
         
         logger.info(f"📏 Pre-calculating clip constraints:")
         logger.info(f"   Total duration: {duration}s")

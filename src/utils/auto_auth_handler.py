@@ -37,7 +37,7 @@ class AutoAuthHandler:
             "us-central1")
         self.target_bucket = self.env_vars.get(
             "VERTEX_AI_GCS_BUCKET",
-            "viral-veo2-results")
+            "viral-veo-results")
 
     def load_env_file(self) -> Dict[str, str]:
         """Load environment variables from .env file"""
@@ -349,7 +349,7 @@ GOOGLE_CLOUD_LOCATION={self.target_location}
 # VEO Video Generation
 VEO_PROJECT_ID={self.target_project}
 VEO_LOCATION={self.target_location}
-USE_REAL_VEO2=true
+USE_REAL_VEO=true
 VEO_FALLBACK_ENABLED=true
 
 # Legacy Compatibility

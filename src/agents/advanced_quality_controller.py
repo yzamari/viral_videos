@@ -435,13 +435,10 @@ class VideoEnhancer(BaseEnhancer):
             # Apply stabilization
             stabilized = self._stabilize_video(video_path)
             
-            # Apply denoising
-            denoised = self._denoise_video(stabilized)
-            
-            # Apply sharpening
-            sharpened = self._sharpen_video(denoised)
-            
-            return sharpened
+            # CRITICAL FIX: Disable denoising and sharpening that add visual artifacts to VEO3
+            # These OpenCV filters were contaminating clean VEO3 content with Canny-like artifacts
+            logger.info("🔧 SKIPPING denoising and sharpening to preserve clean VEO3 content")
+            return video_path  # Return original VEO3 content without artifacts
             
         except Exception as e:
             logger.error(f"❌ Video enhancement failed: {e}")

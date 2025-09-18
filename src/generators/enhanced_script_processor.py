@@ -708,13 +708,23 @@ CRITICAL: If target duration is {target_duration}s, ensure total_estimated_durat
             total_words = word_count
             total_duration = estimated_duration
         
-        # Validate the script before returning
-        validation = self.text_validator.validate_text(
-            script_content,
-            context="fallback_script",
-            expected_language=language if isinstance(language, Language) else None
-        )
-        if validation.cleaned_text != script_content:
+        # Skip validation in ultra-fast mode for speed
+        if getattr(self, '_ultra_fast_mode', False):
+            validation_result = type('ValidationResult', (), {
+                'cleaned_text': script_content,
+                'is_valid': True,
+                'issues_found': []
+            })()
+        else:
+            # Validate the script before returning
+            validation = self.text_validator.validate_text(
+                script_content,
+                context="fallback_script",
+                expected_language=language if isinstance(language, Language) else None
+            )
+            validation_result = validation
+            
+        if validation_result.cleaned_text != script_content:
             if validation.issues_found:
                 logger.warning(f"⚠️ Cleaned fallback script - removed: {validation.issues_found}")
             else:

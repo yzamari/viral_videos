@@ -3,7 +3,9 @@ Video Generation Topics for Enhanced Multi-Agent Discussions
 """
 
 from typing import Dict, Any
-from .enhanced_multi_agent_discussion import DiscussionTopic
+from src.agents.multi_agent_discussion import DiscussionTopic
+
+
 class VideoGenerationTopics:
     """Pre-defined discussion topics for video generation phases"""
 

@@ -150,7 +150,7 @@ class PNGOverlayHandler:
             filters = []
             
             # Load and scale the PNG
-            overlay_filter = f"[1:v]scale=iw*{scale}:ih*{scale}"
+            overlay_filter = f"[1:v]scale=iw*{scale}:ih*{scale}:flags=bilinear"
             
             # Add opacity
             if opacity < 1.0:

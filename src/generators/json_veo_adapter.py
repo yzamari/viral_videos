@@ -62,7 +62,7 @@ class JSONVEOAdapter:
             logger.info("📄 Converted dict to VEOJsonPrompt")
         
         # Validate prompt
-        generator_type = GeneratorType.VEO2 if veo_model == VeoModel.VEO2 else GeneratorType.VEO3
+        generator_type = GeneratorType.VEO if veo_model == VeoModel.VEO else GeneratorType.VEO3
         valid, errors = self.validator.validate(json_prompt, generator_type)
         
         if not valid:

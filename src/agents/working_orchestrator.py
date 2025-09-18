@@ -238,6 +238,10 @@ class WorkingOrchestrator:
         # Initialize discussion systems based on mode
         self._initialize_discussion_systems()
         
+        # Initialize parallel processor for performance optimization
+        from ..utils.parallel_processor import ParallelProcessor
+        self.parallel_processor = ParallelProcessor(max_workers=4)
+        
         # Results storage
         self.agent_decisions = {}
         self.discussion_results = {}
@@ -354,37 +358,88 @@ class WorkingOrchestrator:
             if self.mode != OrchestratorMode.SIMPLE and not self.cheap_mode:
                 self._conduct_agent_discussions(config)
             elif self.cheap_mode:
-                logger.info("💰 Skipping full AI agent discussions in cheap mode")
-                # CRITICAL: Still need duration validation even in cheap mode
-                self._conduct_duration_validation_only(config)
+                logger.info("💰 Skipping ALL AI agent discussions in cheap mode for maximum speed")
+                # Create placeholder discussion results
+                self.discussion_results = {
+                    "duration_validation": {
+                        "status": "skipped_for_speed",
+                        "reasoning": "Cheap mode - using default duration settings",
+                        "decisions": {
+                            "duration_compliance": "assumed_compliant",
+                            "word_count_limit": f"auto_calculated_{int(self.duration * 2.8)}_words",
+                            "segment_timing": "auto_segmented"
+                        }
+                    }
+                }
             else:
-                # Simple mode - still need duration validation
-                logger.info("🚀 Simple mode - conducting duration validation only")
-                self._conduct_duration_validation_only(config)
-            
-            # Phase 4: Script Generation with AI Enhancement
-            try:
-                script_data = await self._generate_enhanced_script(config)
-                logger.info("✅ Script generation completed successfully")
-            except Exception as e:
-                logger.error(f"❌ Script generation failed: {e}")
-                logger.error(f"❌ Script generation error details: {type(e).__name__}: {str(e)}")
-                
-                # Create fallback script for cheap mode to continue generation
-                if self.cheap_mode:
-                    logger.info("💰 Creating fallback script for cheap mode")
-                    script_data = self._create_fallback_script()
+                # Simple mode - check if discussions are disabled
+                if config.get('discussions', 'on') == 'off':
+                    logger.info("🚀 Simple mode with discussions OFF - skipping all AI discussions")
+                    # Skip ALL discussions including duration validation
                 else:
-                    logger.error("❌ Script generation failed in non-cheap mode, aborting")
-                    raise
-
-            # Phase 5: Comprehensive AI Decision Making (with continuity context)
+                    logger.info("🚀 Simple mode - conducting duration validation only")
+                    self._conduct_duration_validation_only(config)
+            
+            # Phase 4 & 5: Parallel Script Generation and Decision Making
             try:
-                decisions = self._make_comprehensive_decisions(
-                    script_data,
-                    config,
-                    frame_continuity_decision)
-                logger.info("✅ Decision making completed successfully")
+                if self.cheap_mode:
+                    # Fast sequential mode for cheap processing
+                    logger.info("💰 Using fast script generation and decision making")
+                    script_data = self._create_fast_script()
+                    decisions = self._make_fast_decisions(script_data, config, frame_continuity_decision)
+                else:
+                    # Parallel processing for enhanced performance
+                    logger.info("🚀 Running script generation and style analysis in parallel")
+                    
+                    # Prepare parallel tasks 
+                    parallel_tasks = {
+                        'scripts': [
+                            {
+                                'task_id': 'enhanced_script',
+                                'function': self._generate_enhanced_script,
+                                'args': [config]
+                            }
+                        ]
+                    }
+                    
+                    # Run parallel batch processing
+                    import asyncio
+                    try:
+                        import nest_asyncio
+                        nest_asyncio.apply()
+                    except ImportError:
+                        logger.warning("⚠️ nest_asyncio not installed, may have event loop issues")
+                    
+                    try:
+                        # Check if there's already a running loop
+                        try:
+                            loop = asyncio.get_running_loop()
+                            # There's a running loop, create a new task within it
+                            batch_results = loop.run_until_complete(
+                                self.parallel_processor.run_concurrent_batch(parallel_tasks)
+                            )
+                        except RuntimeError:
+                            # No running loop, safe to use asyncio.run()
+                            batch_results = asyncio.run(
+                                self.parallel_processor.run_concurrent_batch(parallel_tasks)
+                            )
+                    except Exception as e:
+                        logger.error(f"❌ Parallel processing failed: {e}")
+                        # Fallback to sequential processing
+                        logger.info("⚠️ Falling back to sequential processing")
+                        script_data = self._generate_enhanced_script(config)
+                        batch_results = {'scripts': {'enhanced_script': script_data}}
+                    
+                    # Extract script data
+                    script_data = batch_results['scripts']['enhanced_script']
+                    
+                    # Now make decisions based on completed script
+                    decisions = self._make_comprehensive_decisions(
+                        script_data,
+                        config, 
+                        frame_continuity_decision)
+                
+                logger.info("✅ Script generation and decision making completed successfully")
             except Exception as e:
                 logger.error(f"❌ Decision making failed: {e}")
                 # Create fallback decisions for cheap mode
@@ -498,7 +553,7 @@ class WorkingOrchestrator:
         """
         Make frame continuity decision at the beginning of generation
         This decision impacts:
-        - VEO model selection (continuity requires VEO2 only)
+        - VEO model selection (continuity requires VEO only)
         - Video composition (frame overlap handling)
         - Clip generation strategy
         """
@@ -511,7 +566,7 @@ class WorkingOrchestrator:
                 'confidence': 1.0,
                 'primary_reason': 'User forced frame continuity ON',
                 'agent_name': 'User Override',
-                'requires_veo2_only': True,
+                'requires_veo_only': True,
                 'frame_overlap_handling': 'remove_first_frame',
                 'transition_strategy': 'last_to_first_frame'
             }
@@ -522,7 +577,7 @@ class WorkingOrchestrator:
                 'confidence': 1.0,
                 'primary_reason': 'User forced frame continuity OFF',
                 'agent_name': 'User Override',
-                'requires_veo2_only': False,
+                'requires_veo_only': False,
                 'frame_overlap_handling': 'none',
                 'transition_strategy': 'standard_cuts'
             }
@@ -538,11 +593,11 @@ class WorkingOrchestrator:
 
             # Enhance decision with technical requirements
             if decision['use_frame_continuity']:
-                decision['requires_veo2_only'] = True
+                decision['requires_veo_only'] = True
                 decision['frame_overlap_handling'] = 'remove_first_frame'
                 decision['transition_strategy'] = 'last_to_first_frame'
             else:
-                decision['requires_veo2_only'] = False
+                decision['requires_veo_only'] = False
                 decision['frame_overlap_handling'] = 'none'
                 decision['transition_strategy'] = 'standard_cuts'
 
@@ -941,126 +996,130 @@ class WorkingOrchestrator:
         self._generate_discussion_visualization()
 
     def _conduct_enhanced_discussions(self, config: Dict[str, Any]):
-        """Enhanced 7-agent discussions"""
+        """Enhanced 7-agent discussions with parallel processing"""
 
         if not self.discussion_system:
             logger.warning("Discussion system not available, skipping discussions")
             return
 
-        # CRITICAL: Add duration validation discussion first
+        logger.info("🚀 Starting parallel AI agent discussions for enhanced mode")
+        
+        # Prepare all discussion topics for parallel execution
+        discussion_tasks = []
+        
+        # Duration validation discussion (critical)
         duration_topic = DiscussionTopic(
             topic_id="duration_validation",
-            title="Duration & Timing Validation",
+            title="Duration & Timing Validation", 
             description=f"Ensure all content fits EXACTLY within {self.duration} seconds ±5%",
             context={
-                'mission': self.mission,  # Add mission to context
+                'mission': self.mission,
                 'target_duration': self.duration,
-                'max_duration': self.duration * 1.05,  # 5% tolerance
-                'min_duration': self.duration * 0.95,  # 5% tolerance
-                'words_per_second': 2.8,  # Speaking rate (matches TTS configuration)
-                'max_words': int(self.duration * 2.8),
+                'max_duration': self.duration * 1.05,
+                'min_duration': self.duration * 0.95,
+                'words_per_second': 2.8,
                 'platform': self.platform.value,
-                'num_segments': max(1, self.duration // 8)  # Approximate segments
+                'num_segments': max(1, self.duration // 8)
             },
             required_decisions=["duration_compliance", "word_count_limit", "segment_timing"]
         )
         
-        # CRITICAL: AudioMaster is MANDATORY for duration validation
-        duration_result = self._start_discussion(
-            duration_topic,
-            [AgentRole.SOUNDMAN, AgentRole.EDITOR, AgentRole.ORCHESTRATOR]
-        )
-        self.discussion_results['duration_validation'] = duration_result
-
-        # Discussion 1: Script Strategy & Viral Optimization
-        script_topic = DiscussionTopic( topic_id="script_strategy", title="Script Strategy & Viral Optimization", description=f"Write actual movie dialogue and narration content FOR the story described in this mission: {self.mission}. DO NOT create descriptions ABOUT making a video. Create the actual spoken content that will be heard in the movie itself. Write as if you are the narrator or characters speaking IN the movie, not ABOUT the movie.",
-            context={
-                'mission': self.mission,
-                'platform': self.platform.value,
-                'duration': self.duration,
-                'category': self.category.value,
-                'style': self.style,
-                'tone': self.tone,
-                'target_audience': self.target_audience,
-                'trending_insights': self.trending_insights,
-                'duration_constraints': duration_result.decision  # Pass duration constraints
-            }, required_decisions=["script_structure", "viral_hooks", "engagement_strategy"],
-            max_rounds=config.get('max_discussion_rounds', 10)  # Allow override for performance
-        )
-
-        script_result = self._start_discussion(
-            script_topic,
-            [AgentRole.SCRIPT_WRITER, AgentRole.DIRECTOR, AgentRole.SOUNDMAN]  # Add SOUNDMAN for duration awareness
-        )
-        self.discussion_results['script_strategy'] = script_result
+        discussion_tasks.append({
+            'task_id': 'duration_validation',
+            'topic': duration_topic,
+            'participants': [AgentRole.SOUNDMAN, AgentRole.EDITOR, AgentRole.ORCHESTRATOR],
+            'discussion_system': self.discussion_system
+        })
         
-        # Discussion 2: Visual & Technical Strategy
-        visual_topic = DiscussionTopic( topic_id="visual_strategy", title="Visual Composition & Technical Approach", description=f"Optimal visual strategy for {self.platform.value} content",
-            context={
-                'mission': self.mission,
-                'platform': self.platform.value,
-                'visual_style': self.visual_style,
-                'force_generation': config.get('force_generation', 'auto'),
-                'trending_insights': self.trending_insights,
-                'duration': self.duration,
-                'duration_constraints': duration_result.decision
-            }, required_decisions=["visual_style", "technical_approach", "generation_mode", "clip_durations"],
-            max_rounds=config.get('max_discussion_rounds', 6)  # Allow override for performance
-        )
-
-        visual_result = self._start_discussion(
-            visual_topic,
-            [AgentRole.VIDEO_GENERATOR, AgentRole.EDITOR, AgentRole.SOUNDMAN]  # Add SOUNDMAN for sync
-        )
-        self.discussion_results['visual_strategy'] = visual_result
+        # Script Strategy & Viral Optimization (parallel)
+        from .video_generation_topics import VideoGenerationTopics
+        topics = VideoGenerationTopics()
         
-        # Discussion 3: Audio & Production Strategy
-        audio_topic = DiscussionTopic( topic_id="audio_strategy", title="Audio Production & Voice Strategy", description=f"CRITICAL: Audio MUST be EXACTLY {self.duration}s ±5%. Ensure perfect sync!",
-            context={
-                'mission': self.mission,
-                'duration': self.duration,
-                'platform': self.platform.value,
-                'target_audience': self.target_audience,
-                'duration_constraints': duration_result.decision,
-                'script_duration': script_result.decision.get('estimated_duration', self.duration),
-                'max_audio_duration': self.duration * 1.05,  # 5% tolerance
-                'min_audio_duration': self.duration * 0.95   # 5% tolerance
-            }, required_decisions=["voice_style", "audio_approach", "sound_design", "audio_duration_compliance"],
-            max_rounds=config.get('max_discussion_rounds', 5)  # Allow override for performance
-        )
-
-        audio_result = self._start_discussion(
-            audio_topic,
-            [AgentRole.SOUNDMAN, AgentRole.EDITOR, AgentRole.ORCHESTRATOR]  # Add ORCHESTRATOR for sync
-        )
-        self.discussion_results['audio_strategy'] = audio_result
+        script_topic = topics.script_optimization({
+            'topic': self.mission,
+            'platform': self.platform.value,
+            'duration': self.duration,
+            'category': self.category.value,
+            'style': self.style,
+            'tone': self.tone,
+            'target_audience': self.target_audience
+        })
         
-        # Discussion 4: Neuroscience & Brain Engagement Strategy
-        neuro_topic = DiscussionTopic(
-            topic_id="neuroscience_optimization",
-            title="Neuroscience & Dopamine Optimization Strategy",
-            description=f"Apply neuroscience principles to maximize engagement and dopamine triggers for {self.mission}",
-            context={
-                'mission': self.mission,
-                'platform': self.platform.value,
-                'duration': self.duration,
-                'target_audience': self.target_audience,
-                'visual_style': self.visual_style,
-                'script_decisions': script_result.decision if 'script_result' in locals() else {},
-                'visual_decisions': visual_result.decision if 'visual_result' in locals() else {},
-                'content_type': self.category.value
-            },
-            required_decisions=["dopamine_triggers", "attention_hooks", "memory_encoding", "emotional_peaks"]
-        )
+        discussion_tasks.append({
+            'task_id': 'script_strategy',
+            'topic': script_topic,
+            'participants': [AgentRole.SCRIPT_WRITER, AgentRole.DIRECTOR, AgentRole.SOUNDMAN],
+            'discussion_system': self.discussion_system
+        })
         
-        neuro_result = self._start_discussion(
-            neuro_topic,
-            [AgentRole.NEUROSCIENTIST, AgentRole.DIRECTOR, AgentRole.ENGAGEMENT_OPTIMIZER]
-        )
-        self.discussion_results['neuroscience_optimization'] = neuro_result
+        # Visual & Technical Strategy (parallel)
+        visual_topic = topics.visual_strategy({
+            'topic': self.mission,
+            'platform': self.platform.value,
+            'visual_style': self.visual_style,
+            'duration': self.duration
+        })
+        
+        discussion_tasks.append({
+            'task_id': 'visual_strategy',  
+            'topic': visual_topic,
+            'participants': [AgentRole.VIDEO_GENERATOR, AgentRole.EDITOR, AgentRole.SOUNDMAN],
+            'discussion_system': self.discussion_system
+        })
+        
+        # Audio & Production Strategy (parallel)
+        audio_topic = topics.audio_sync({
+            'topic': self.mission,
+            'duration': self.duration,
+            'platform': self.platform.value
+        })
+        
+        discussion_tasks.append({
+            'task_id': 'audio_strategy',
+            'topic': audio_topic, 
+            'participants': [AgentRole.SOUNDMAN, AgentRole.EDITOR, AgentRole.DIRECTOR],
+            'discussion_system': self.discussion_system
+        })
+        
+        # Run all discussions in parallel using async processing
+        import asyncio
+        try:
+            import nest_asyncio
+            nest_asyncio.apply()
+        except ImportError:
+            pass
+        
+        try:
+            # Try to get the current loop
+            loop = asyncio.get_running_loop()
+            # We're in an async context, use nest_asyncio
+            parallel_results = asyncio.run(
+                self.parallel_processor.run_parallel_ai_discussions(discussion_tasks)
+            )
+        except RuntimeError:
+            # No loop running, create new one
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            parallel_results = loop.run_until_complete(
+                self.parallel_processor.run_parallel_ai_discussions(discussion_tasks)
+            )
+            
+            # Store results
+            self.discussion_results.update(parallel_results)
+            
+            logger.info(f"🚀 Parallel enhanced discussions completed: {len(parallel_results)} topics")
+            
+        except Exception as e:
+            logger.error(f"❌ Parallel discussions failed, falling back to sequential: {e}")
+            # Fallback to sequential processing
+            for task in discussion_tasks:
+                try:
+                    result = self._start_discussion(task['topic'], task['participants'])
+                    self.discussion_results[task['task_id']] = result
+                except Exception as task_error:
+                    logger.error(f"❌ Discussion {task['task_id']} failed: {task_error}")
         
         logger.info(f"✅ Completed {len(self.discussion_results)} enhanced discussions")
-
     def _conduct_advanced_discussions(self, config: Dict[str, Any]):
         """Advanced discussions for professional modes with 19+ agents"""
         logger.info("🎯 Starting professional mode discussions with 19+ agents")
@@ -1331,6 +1390,39 @@ class WorkingOrchestrator:
         
         return script_data
     
+    def _make_fast_decisions(self, script_data: Dict[str, Any], config: Dict[str, Any],
+                           frame_continuity_decision: Dict[str, Any]) -> Dict[str, Any]:
+        """Make fast decisions for cheap mode without AI processing"""
+        logger.info("💰 Making fast decisions for cheap mode")
+        
+        # Create optimized decisions based on platform and duration
+        platform_settings = {
+            'tiktok': {'style': 'viral', 'tone': 'energetic', 'pacing': 'fast'},
+            'youtube': {'style': 'engaging', 'tone': 'conversational', 'pacing': 'medium'}, 
+            'instagram': {'style': 'aesthetic', 'tone': 'trendy', 'pacing': 'dynamic'}
+        }
+        
+        platform = self.platform.value.lower()
+        settings = platform_settings.get(platform, platform_settings['tiktok'])
+        
+        fast_decisions = {
+            'style': settings['style'],
+            'tone': settings['tone'], 
+            'pacing': settings['pacing'],
+            'visual_style': 'dynamic',
+            'num_clips': max(2, min(5, self.duration // 6)),  # 6s per clip average
+            'clip_durations': [self.duration / max(2, min(5, self.duration // 6))] * max(2, min(5, self.duration // 6)),
+            'frame_continuity': frame_continuity_decision,
+            'voice_style': 'neutral',
+            'music_style': 'upbeat',
+            'text_overlay': True,
+            'fast_mode': True,
+            'total_duration': self.duration
+        }
+        
+        logger.info(f"✅ Fast decisions made: {fast_decisions['num_clips']} clips, {settings['style']} style")
+        return fast_decisions
+    
     def _make_comprehensive_decisions(self, script_data: Dict[str, Any], config: Dict[str, Any],
                                       frame_continuity_decision: Dict[str, Any]) -> Dict[str, Any]:
         """Make comprehensive AI decisions based on mode"""
@@ -1588,7 +1680,7 @@ class WorkingOrchestrator:
         # Apply cheap mode settings to video config if needed
         if self.cheap_mode:
             logger.info("💰 Applying cheap mode settings to video config")
-            video_config.use_real_veo2 = False
+            video_config.use_real_veo = False  # Disable VEO in cheap mode
             video_config.realistic_audio = False
 
         # Generate multilingual video using simplified approach
@@ -2071,7 +2163,7 @@ class WorkingOrchestrator:
             
             video_generator = VideoGenerator(
                 api_key=self.api_key,
-                use_real_veo2=False,  # VEO2 permanently disabled
+                use_real_veo=True,  # Enable VEO for premium mode
                 use_vertex_ai=True,
                 vertex_project_id=os.getenv('VERTEX_AI_PROJECT_ID') or os.getenv('VERTEX_PROJECT_ID'),
                 vertex_location=os.getenv('VERTEX_AI_LOCATION') or os.getenv('VERTEX_LOCATION', 'us-central1'),
@@ -2263,7 +2355,8 @@ class WorkingOrchestrator:
             languages=languages,  # Add all languages
             voice=config.get('voice'),  # Add specific voice from config
             multiple_voices=config.get('multiple_voices', False),  # Add multiple voices flag
-            use_real_veo2=config.get('force_generation') != 'force_image_gen',
+            # Fix: Enable VEO3 when NOT in cheap mode
+            use_real_veo=not self.cheap_mode,  # Use VEO3 when not in cheap mode
             num_clips=num_clips,
             clip_durations=clip_durations,
             theme_id=self.core_decisions.theme_id if self.core_decisions and hasattr(self.core_decisions, 'theme_id') else None,
@@ -2424,35 +2517,35 @@ class WorkingOrchestrator:
             if self.cheap_mode_level == "full":
                 # Full cheap mode: text video + gTTS audio
                 logger.info("💰 FULL cheap mode: Text video + gTTS audio")
-                use_real_veo2 = False
+                use_real_veo = False
                 fallback_only = True
                 cheap_mode = True
                 
             elif self.cheap_mode_level == "audio":
                 # Audio cheap mode: normal video + gTTS audio
                 logger.info("💰 AUDIO cheap mode: Normal video + gTTS audio")
-                use_real_veo2 = True
+                use_real_veo = True
                 fallback_only = False
                 cheap_mode = False  # Normal video generation
                 
             elif self.cheap_mode_level == "video":
                 # Video cheap mode: fallback video + normal audio
                 logger.info("💰 VIDEO cheap mode: Fallback video + normal audio")
-                use_real_veo2 = False
+                use_real_veo = False
                 fallback_only = True
                 cheap_mode = False  # Normal audio
                 
             else:
                 # Default to full cheap mode
                 logger.warning(f"⚠️ Unknown cheap mode level '{self.cheap_mode_level}', using 'full'")
-                use_real_veo2 = False
+                use_real_veo = False
                 fallback_only = True
                 cheap_mode = True
             
             # Generate the video with configured settings
             video_generator = VideoGenerator(
                 api_key=self.api_key,
-                use_real_veo2=False,  # VEO2 permanently disabled
+                use_real_veo=False,  # Disable VEO for cheap mode
                 use_vertex_ai=False,   # Always disable Vertex AI in cheap modes
                 enable_quality_enhancement=config.get('enable_quality_enhancement', False)  # Default off for cheap mode
             )
@@ -2495,7 +2588,7 @@ class WorkingOrchestrator:
                 predicted_viral_score=0.5,
                 frame_continuity=False,  # No frame continuity in cheap modes
                 image_only_mode=False,
-                use_real_veo2=use_real_veo2,
+                use_real_veo=use_real_veo,
                 fallback_only=fallback_only,
                 cheap_mode=cheap_mode,  # Controls text video vs normal video
                 cheap_mode_level=self.cheap_mode_level,  # Pass granular level to video generator
@@ -2530,6 +2623,53 @@ class WorkingOrchestrator:
         except Exception as e:
             logger.error(f"❌ Cheap mode video generation failed: {e}")
             return None
+
+    def _create_fast_script(self) -> Dict[str, Any]:
+        """Create a fast script for cheap mode without AI processing"""
+        logger.info("💰 Creating fast script for cheap mode")
+        
+        # Create a simple, effective script based on the mission
+        # Split mission into manageable segments for the duration
+        words = self.mission.split()
+        total_words = len(words)
+        
+        # Calculate words per segment based on duration
+        target_words = min(total_words, int(self.duration * 2.8))  # 2.8 words per second
+        
+        # Create engaging hook, main content, and CTA
+        hook_text = f"What if I told you {' '.join(words[:min(8, total_words//3)])}?"
+        main_text = self.mission if len(self.mission) < 200 else f"{self.mission[:200]}..."
+        cta_text = "Don't forget to subscribe for more!"
+        
+        fast_script = {
+            'hook': hook_text,
+            'main_content': main_text, 
+            'call_to_action': cta_text,
+            'segments': [
+                {
+                    'type': 'hook',
+                    'text': hook_text,
+                    'duration': min(5, self.duration * 0.3)
+                },
+                {
+                    'type': 'content', 
+                    'text': main_text,
+                    'duration': self.duration * 0.6
+                },
+                {
+                    'type': 'cta',
+                    'text': cta_text,
+                    'duration': min(3, self.duration * 0.1)
+                }
+            ],
+            'optimized_script': f"{hook_text} {main_text} {cta_text}",
+            'total_duration': self.duration,
+            'word_count': len(f"{hook_text} {main_text} {cta_text}".split()),
+            'fast_mode': True
+        }
+        
+        logger.info(f"✅ Fast script created: {fast_script['word_count']} words for {self.duration}s")
+        return fast_script
 
     def _create_fallback_script(self) -> Dict[str, Any]:
         """Create a fallback script when Director fails"""

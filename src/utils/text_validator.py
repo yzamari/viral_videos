@@ -10,6 +10,7 @@ from ..utils.logging_config import get_logger
 from ..models.video_models import Language
 from ..config.video_config import video_config
 from ..generators.ai_content_analyzer import AIContentAnalyzer
+from ..utils.ai_timeout_wrapper import with_timeout, ai_wrapper
 
 logger = get_logger(__name__)
 
@@ -112,15 +113,21 @@ class TextValidator:
         # Step 5: Validate final text
         is_valid = len(cleaned_text.strip()) > 0 and not self._contains_invalid_patterns(cleaned_text)
         
-        # If text became empty or invalid, use default
+        # CRITICAL FIX: Don't replace script content with "Content" - this breaks audio generation
+        # If text became empty or invalid, use default ONLY for non-script contexts
         if not is_valid or not cleaned_text.strip():
             if context == "cta":
                 cleaned_text = video_config.get_default_cta('youtube')
             elif context == "hook":
                 cleaned_text = video_config.get_default_hook('youtube')
+            elif "script" in context.lower() or "segment" in context.lower():
+                # For script content, preserve original if cleaning failed
+                cleaned_text = original_text.strip()
+                logger.warning(f"⚠️ Text validation failed for {context}, preserving original content")
+                issues_found.append(f"Script content preserved despite validation issues")
             else:
                 cleaned_text = "Content"
-            issues_found.append(f"Text validation failed, using default: {cleaned_text}")
+                issues_found.append(f"Text validation failed, using default: {cleaned_text}")
         
         return TextValidationResult(
             original_text=original_text,

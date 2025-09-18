@@ -39,7 +39,7 @@ class FileService:
         directories = {
             'session_dir': session_dir,
             'audio': os.path.join(session_dir, 'audio'),
-            'veo2_clips': os.path.join(session_dir, 'veo2_clips'),
+            'veo_clips': os.path.join(session_dir, 'veo_clips'),
             'comprehensive_logs': os.path.join(session_dir, 'comprehensive_logs'),
             'agent_discussions': os.path.join(session_dir, 'agent_discussions'),
             'scripts': os.path.join(session_dir, 'scripts'),
@@ -47,7 +47,7 @@ class FileService:
         }
 
         # Only create directories that will actually be used
-        essential_dirs = ['audio', 'veo2_clips', 'comprehensive_logs', 'agent_discussions', 'scripts']
+        essential_dirs = ['audio', 'veo_clips', 'comprehensive_logs', 'agent_discussions', 'scripts']
         for dir_name in essential_dirs:
             os.makedirs(directories[dir_name], exist_ok=True)
 
@@ -81,14 +81,14 @@ class FileService:
                 'tone': config.get('tone', '')
             },
             'directories_created': [
-                'audio', 'veo2_clips', 'comprehensive_logs',
+                'audio', 'veo_clips', 'comprehensive_logs',
                 'agent_discussions', 'scripts', 'analysis'
             ],
             'expected_outputs': [
                 'final_video_*.mp4',
                 'tts_script.json',
                 'audio/*.mp3',
-                'veo2_clips/*.mp4',
+                'veo_clips/*.mp4',
                 'comprehensive_logs/*.json',
                 'agent_discussions/*.md',
                 'scripts/*.txt'
@@ -115,7 +115,7 @@ class FileService:
                     contents = os.listdir(dir_path)
                     if not contents or (len(contents) == 1 and contents[0] == '.gitkeep'):
                         # Don't remove essential directories, just log them
-                        if dir_name in ['audio', 'veo2_clips', 'comprehensive_logs', 'agent_discussions', 'scripts']:
+                        if dir_name in ['audio', 'veo_clips', 'comprehensive_logs', 'agent_discussions', 'scripts']:
                             logger.info(f"📁 Keeping essential empty directory: {dir_name}")
                         else:
                             os.rmdir(dir_path)

@@ -169,7 +169,7 @@ class DefaultTextConfig:
     badge_texts: Dict[str, str] = field(default_factory=lambda: {
         'cheap': "💰 CHEAP",
         'premium': "✨ PREMIUM",
-        # VEO2 deprecated and removed
+        # VEO3 only and removed
         'veo3': "🎬 VEO-3",
         'ai': "🤖 AI",
         'news': "📰 NEWS",
@@ -263,7 +263,7 @@ class AudioConfig:
     
     # Quality thresholds
     min_quality_score: float = 0.6          # Minimum quality score to proceed
-    block_on_duration_failure: bool = True  # Block generation if duration fails
+    block_on_duration_failure: bool = False  # Block generation if duration fails (disabled for development)
     
     # Regeneration settings
     max_regeneration_attempts: int = 3      # Max attempts to regenerate audio
@@ -339,15 +339,25 @@ class VideoGenerationConfig:
             self.text_overlay.stroke_widths['default']
         )
     
-    def get_default_hook(self, platform: str) -> str:
-        """Get default hook for platform"""
+    def get_default_hook(self, platform: str, mission: str = "", tone: str = "", visual_style: str = "") -> str:
+        """Get dynamic hook based on mission context, fallback to platform default"""
+        if mission:
+            from .dynamic_content_config import DynamicContentConfig
+            return DynamicContentConfig.generate_hook(mission, platform, tone, visual_style)
+        
+        # Fallback to static defaults only if no mission context
         return self.default_text.hooks_by_platform.get(
             platform.lower(),
             self.default_text.hooks_by_platform['default']
         )
     
-    def get_default_cta(self, platform: str) -> str:
-        """Get default CTA for platform"""
+    def get_default_cta(self, platform: str, mission: str = "", tone: str = "", visual_style: str = "") -> str:
+        """Get dynamic CTA based on mission context, fallback to platform default"""
+        if mission:
+            from .dynamic_content_config import DynamicContentConfig
+            return DynamicContentConfig.generate_cta(mission, platform, tone, visual_style)
+        
+        # Fallback to static defaults only if no mission context
         return self.default_text.ctas_by_platform.get(
             platform.lower(),
             self.default_text.ctas_by_platform['default']

@@ -1497,18 +1497,17 @@ class Director:
         # If no emotional triggers in text and we have available triggers, enhance the hook
         if (available_triggers and
                 not any(trigger in hook_text.lower() for trigger in available_triggers)):
-            # Use the first available emotional trigger naturally integrated
-            trigger = available_triggers[0].lower()
-            # Integrate trigger naturally without colon prefix
-            if trigger == "amazing":
-                hook['text'] = f"This {hook_text.lower()} is amazing"
-            elif trigger == "shocking":
-                hook['text'] = f"You won't believe this about {hook_text.lower()}"
-            elif trigger == "incredible":
-                hook['text'] = f"The incredible truth about {hook_text.lower()}"
-            else:
-                # Default: just enhance without adding prefixes that break TTS
-                hook['text'] = hook_text
+            # Use dynamic content generation instead of hardcoded phrases
+            from ..config.dynamic_content_config import DynamicContentConfig
+            
+            # Get mission context from viral_elements or fallback
+            mission = viral_elements.get('mission', '')
+            tone = viral_elements.get('tone', '')
+            
+            # Generate enhancement dynamically
+            hook['text'] = DynamicContentConfig.generate_viral_hook_enhancement(
+                hook_text, mission, tone, viral_elements
+            )
         elif not available_triggers:
             # If no triggers available, enhance naturally without colon prefixes
             if not any(

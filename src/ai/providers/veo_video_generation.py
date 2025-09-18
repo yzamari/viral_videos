@@ -32,11 +32,11 @@ class VEOVideoGenerationService(VideoGenerationService):
         self.veo_factory = VeoClientFactory()
         
         # Get preferences from config
-        self.prefer_veo2 = config.custom_config.get('prefer_veo2', False)
+        self.prefer_veo = config.custom_config.get('prefer_veo', False)
         self.disable_veo3 = config.custom_config.get('disable_veo3', False)
         self.output_dir = config.custom_config.get('output_dir', 'outputs/veo_videos')
         
-        logger.info(f"Initialized VEO video generation service (prefer_veo2={self.prefer_veo2}, disable_veo3={self.disable_veo3})")
+        logger.info(f"Initialized VEO video generation service (prefer_veo={self.prefer_veo}, disable_veo3={self.disable_veo3})")
     
     async def generate_video(self, request: VideoGenerationRequest) -> VideoGenerationResponse:
         """Generate video using VEO.

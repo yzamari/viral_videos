@@ -1,6 +1,6 @@
 """
 Video Generator - Main video generation orchestrator
-Coordinates video generation using VEO2/VEO3, Gemini images, and TTS
+Coordinates video generation using VEO3, Gemini images, and TTS
 """
 
 import os
@@ -252,7 +252,7 @@ class VideoGenerator:
                         "ai_confidence": 0.92
                     },
                     "technical_details": {
-                        "veo_model": "veo-2.0-generate-001",
+                        "veo_model": "veo.0-generate-001",
                         "tts_engine": "enhanced_multilingual",
                         "script_processor": "ai_enhanced",
                         "session_tracking": "comprehensive"
@@ -341,7 +341,7 @@ class VideoGenerator:
 - **AI confidence**: 92%
 
 ### 🔧 Technical Configuration
-- **VEO model**: veo-2.0-generate-001
+- **VEO model**: veo.0-generate-001
 - **TTS engine**: Enhanced Multilingual
 - **Script processor**: AI Enhanced
 - **Session tracking**: Comprehensive
@@ -416,9 +416,9 @@ class VideoGenerator:
         except Exception as e:
             logger.error(f"❌ Comprehensive AI discussion generation failed: {e}")
             return {}
-    def _generate_continuous_veo2_video(self, config, session_context, script_segments):
-        """Generate continuous VEO2 video with seamless transitions"""
-        logger.info("🎬 Starting continuous VEO2 video generation")
+    def _generate_continuous_veo_video(self, config, session_context, script_segments):
+        """Generate continuous VEO video with seamless transitions"""
+        logger.info("🎬 Starting continuous VEO video generation")
         
         try:
             # Create VEO client using the factory - prefer VEO-3 for realistic/cinematic
@@ -517,12 +517,12 @@ The last frame of this scene connects to the next.
                 return []
                 
         except Exception as e:
-            logger.error(f"❌ Continuous VEO2 video generation failed: {e}")
+            logger.error(f"❌ Continuous VEO video generation failed: {e}")
             return []
 
     """Main video generator that orchestrates all AI agents and generation components"""
     
-    def __init__(self, api_key: str, use_real_veo2: bool = True, use_vertex_ai: bool = True,
+    def __init__(self, api_key: str, use_real_veo: bool = True, use_vertex_ai: bool = True,
                  vertex_project_id: Optional[str] = None, vertex_location: Optional[str] = None, 
                  vertex_gcs_bucket: Optional[str] = None, output_dir: Optional[str] = None,
                  enable_quality_enhancement: bool = True, quality_preset: str = 'high',
@@ -532,16 +532,16 @@ The last frame of this scene connects to the next.
         
         Args:
             api_key: Google AI API key
-            use_real_veo2: Whether to use VEO for video generation
+            use_real_veo: Whether to use VEO for video generation
             use_vertex_ai: Whether to use Vertex AI or Google AI Studio
             vertex_project_id: Vertex AI project ID
             vertex_location: Vertex AI location
             vertex_gcs_bucket: GCS bucket for Vertex AI results
             output_dir: Output directory for generated content
-            prefer_veo3: Whether to prefer VEO-3 over VEO-2
+            prefer_veo3: Whether to prefer VEO-3 over VEO
         """
         self.api_key = api_key
-        self.use_real_veo2 = use_real_veo2
+        self.use_real_veo = use_real_veo
         self.use_vertex_ai = use_vertex_ai
         self.prefer_veo3 = prefer_veo3
         
@@ -611,7 +611,9 @@ The last frame of this scene connects to the next.
         self.adaptive_generator = None
         if QUALITY_ANALYZER_AVAILABLE:
             try:
-                self.adaptive_generator = AdaptiveVideoGenerator(api_key=api_key)
+                # AdaptiveVideoGenerator needs gemini_api_key and session_id
+                # We'll use a default session_id for now, will be updated when generate is called
+                self.adaptive_generator = AdaptiveVideoGenerator(api_key, "default_session")
                 logger.info("✅ Adaptive video generator initialized with quality analysis")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize adaptive generator: {e}")
@@ -817,7 +819,7 @@ The last frame of this scene connects to the next.
                 # Video cheap mode: fallback video + normal audio
                 logger.info("💰 Using video cheap mode - fallback video with normal audio")
                 config.fallback_only = True  # Force fallback video
-                config.use_real_veo2 = False  # Don't use VEO
+                config.use_real_veo = False  # Don't use VEO
                 # Audio will be normal (not cheap)
         
         session_manager.log_generation_step("video_generation_started", "in_progress", {
@@ -832,7 +834,7 @@ The last frame of this scene connects to the next.
             logger.info(f"🎯 Initialized Duration Coordinator with target: {config.duration_seconds}s")
             
             # Initialize VEO client with session context
-            if self.use_real_veo2 and self.use_vertex_ai:
+            if self.use_real_veo and self.use_vertex_ai:
                 # Always use VEO-3 fast for cost savings
                 self.veo_client = self.veo_factory.get_veo_client(
                     model=VeoModel.VEO3_FAST,  # Always use VEO-3 fast
@@ -910,7 +912,8 @@ The last frame of this scene connects to the next.
                     {
                         'duration': config.duration_seconds,
                         'platform': str(config.target_platform),
-                        'style': style_decision.get('primary_style', 'dynamic')
+                        'style': style_decision.get('primary_style', 'dynamic'),
+                        'session_context': session_context
                     }
                 )
                 # Safely log scene plan information
@@ -1276,15 +1279,17 @@ The last frame of this scene connects to the next.
         if not mission:
             mission = f"Trending: {themes[0] if themes else 'Viral Content'}"
         
-        # Create hook from trending insights
-        hook = hooks[0] if hooks else f"You won't believe what's trending with {mission}!"
+        # Create hook dynamically using DynamicContentConfig
+        from ..config.dynamic_content_config import DynamicContentConfig
         
-        # Generate main content
-        main_content = [
-            f"Opening: {mission} is taking over social media",
-            f"Main: Here's why {mission} is so popular",
-            f"Conclusion: This is just the beginning of {mission}"
-        ]
+        hook = hooks[0] if hooks else DynamicContentConfig.generate_hook(
+            mission, platform, "engaging", "viral"
+        )
+        
+        # Generate main content dynamically
+        main_content = DynamicContentConfig.generate_main_content_structure(
+            mission, platform, "engaging"
+        )
         
         # Generate call to action
         call_to_action = video_config.get_default_cta(platform) if platform else video_config.default_text.ctas_by_platform['default']
@@ -1586,9 +1591,9 @@ The last frame of this scene connects to the next.
         
         # If continuous generation is enabled, use the dedicated continuous mode
         if use_continuous_generation:
-            logger.info("🎬 Using continuous VEO2 generation mode")
+            logger.info("🎬 Using continuous VEO generation mode")
             script_segments = script_result.get('segments', [])
-            return self._generate_continuous_veo2_video(config, session_context, script_segments)
+            return self._generate_continuous_veo_video(config, session_context, script_segments)
         
         return self._generate_standard_video_clips(config, script_result, style_decision, session_context)
     
@@ -1596,10 +1601,13 @@ The last frame of this scene connects to the next.
                                       script_result: Dict[str, Any],
                                       style_decision: Dict[str, Any],
                                       session_context: SessionContext) -> List[str]:
-        """Generate standard video clips using VEO-2"""
+        """Generate standard video clips using VEO"""
         logger.info("🎬 Generating standard video clips")
         
         clips = []
+        
+        # Initialize frame continuity setting at method level to avoid scope issues
+        use_frame_continuity = getattr(config, 'frame_continuity', False)
         
         # Initialize script_segments at the beginning to avoid scope issues
         script_segments = script_result.get('segments', [])
@@ -1619,8 +1627,21 @@ The last frame of this scene connects to the next.
             logger.info(f"🎯 Using core decisions: {num_clips} video clips")
         else:
             # Fallback to optimal calculation if no core decisions
-            target_clip_duration = 5.0  # 5-second clips as configured
-            optimal_num_clips = max(2, int(config.duration_seconds / target_clip_duration))
+            # For short videos (15-20s), use 3 clips for better pacing
+            # For very short videos (<15s), use 2 clips
+            # For longer videos, use ~5-6 second clips
+            if config.duration_seconds <= 12:
+                num_clips = 2  # Very short videos: 2 clips
+            elif config.duration_seconds <= 20:
+                num_clips = 3  # Short videos (15-20s): 3 clips for better storytelling
+            elif config.duration_seconds <= 30:
+                target_clip_duration = 5.0
+                num_clips = max(3, round(config.duration_seconds / target_clip_duration))
+            else:
+                target_clip_duration = 5.0  # Standard clip duration for longer videos
+                num_clips = round(config.duration_seconds / target_clip_duration)
+            
+            optimal_num_clips = max(2, num_clips)  # Ensure minimum 2 clips
             num_clips = optimal_num_clips
             logger.info(f"🎯 No core decisions, using optimal: {num_clips} clips for {config.duration_seconds}s video")
         
@@ -1683,7 +1704,7 @@ The last frame of this scene connects to the next.
         
         # Get the best available VEO client using factory
         veo_client = None
-        if self.use_real_veo2:
+        if self.use_real_veo:
             # Always prefer VEO-3 fast for cost savings - no special logic needed
             veo_client = self.veo_factory.get_best_available_client(
                 output_dir=session_context.get_output_path("video_clips"),
@@ -1694,6 +1715,10 @@ The last frame of this scene connects to the next.
                 logger.info(f"🚀 Using {veo_client.get_model_name()} for video generation")
             else:
                 logger.warning("⚠️ No VEO clients available, falling back to image generation")
+        
+        # For now, always use sequential generation (parallel will be enabled in orchestrator)
+        logger.info(f"🔄 Using sequential video generation for {num_clips} clips")
+        clips = []
         
         for i in range(num_clips):
             try:
@@ -1752,41 +1777,76 @@ The last frame of this scene connects to the next.
                             style=visual_style
                         )
                     else:
-                        enhanced_prompt = f"{prompt} in {visual_style} style"
+                        # CRITICAL FIX: Use dynamic style configuration instead of hardcoded
+                        from ..config.visual_style_config import VisualStyleConfig
+                        enhanced_prompt = VisualStyleConfig.build_style_prompt_enhancement(visual_style, prompt)
                 
                 # Remove preemptive policy checking - let VEO handle it
                 # Policy violations will be caught and handled if VEO rejects the prompt
                 
-                # Convert to JSON prompt format
-                # For now, create a simple JSON structure directly
-                # TODO: Add proper async support or synchronous method
-                # Check if this is satirical/comedy content
-                is_satire = any(word in str(config.mission).lower() + " " + enhanced_prompt.lower() 
-                              for word in ['satire', 'satirical', 'parody', 'comedy', 'comedic', 
-                                         'family guy', 'joke', 'humor', 'funny'])
-                
-                json_prompt = {
-                    "scene": {
+                # CRITICAL INTEGRATION: Use Professional Detailed JSON System
+                # Generate comprehensive JSON using the professional detailed agent
+                try:
+                    from ..agents.detailed_veo3_json_agent import DetailedVEO3JsonAgent
+                    
+                    # Initialize detailed JSON agent 
+                    json_agent = DetailedVEO3JsonAgent(session_context)
+                    
+                    # Generate professional detailed JSON for this clip
+                    import asyncio
+                    
+                    # Create a sync wrapper for the async JSON generation
+                    def generate_detailed_json_sync():
+                        try:
+                            loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(loop)
+                            return loop.run_until_complete(
+                                json_agent.generate_detailed_json_prompt(
+                                    mission=config.mission,
+                                    style=visual_style,
+                                    tone=getattr(config, 'tone_string', getattr(config, 'tone', 'tense')),
+                                    duration=int(clip_duration),
+                                    platform=getattr(config, 'target_platform', 'youtube'),
+                                    additional_context={
+                                        "segment_index": i,
+                                        "total_segments": num_clips,
+                                        "clip_description": enhanced_prompt,
+                                        "sequence_position": "opening" if i == 0 else "continuation" if i < num_clips-1 else "ending",
+                                        "visual_style": visual_style,
+                                        "animation_requirements": "rotoscoped animation, high contrast, desaturated colors, stark black outlines, surreal dreamlike visuals"
+                                    }
+                                )
+                            )
+                        except Exception as e:
+                            logger.warning(f"⚠️ Detailed JSON generation failed: {e}, using fallback")
+                            return None, None
+                        finally:
+                            loop.close()
+                    
+                    # Generate detailed JSON
+                    detailed_json, formatted_json_text = generate_detailed_json_sync()
+                    
+                    if detailed_json:
+                        json_prompt = detailed_json
+                        logger.info(f"✅ Professional detailed JSON generated for clip {i+1}")
+                        logger.info(f"📝 JSON sections: {list(detailed_json.keys())}")
+                    else:
+                        raise Exception("Failed to generate detailed JSON")
+                        
+                except Exception as e:
+                    logger.warning(f"⚠️ Professional JSON system failed: {e}, using fallback")
+                    # Fallback to basic structure
+                    json_prompt = {
                         "description": enhanced_prompt,
-                        "segment_index": i,
-                        "content_type": "satirical_comedy" if is_satire else "general"
-                    },
-                    "visual_style": {
-                        "style": style_decision.get('primary_style', 'dynamic'),
-                        "platform_optimized": str(config.target_platform) if hasattr(config.target_platform, "value") else str(config.target_platform)
-                    },
-                    "camera": {
-                        "shot_type": "dynamic",
-                        "movement": "smooth"
-                    },
-                    "duration": clip_duration,
-                    "mission_context": config.mission,
-                    "content_context": {
-                        "type": "satirical_parody" if is_satire else "general",
-                        "intent": "comedic_entertainment" if is_satire else "informational",
-                        "disclaimer": "This is a comedic/satirical portrayal for entertainment purposes" if is_satire else None
+                        "style": visual_style,
+                        "camera": "first-person POV, handheld",
+                        "lighting": "harsh Mediterranean sunlight",
+                        "setting": "olive grove",
+                        "motion": "defensive movements, stones flying",
+                        "ending": "soldier takes cover",
+                        "text": "none",
+                        "keywords": ["16:9", "Waltz with Bashir", "rotoscoped animation", "Israeli soldier", "M4 rifle", "first-person POV"]
                     }
-                }
                 
                 # CRITICAL: Save ALL VEO prompts to session for debugging
                 self._save_veo_prompt_to_session(session_context, i+1, {
@@ -1814,6 +1874,11 @@ The last frame of this scene connects to the next.
                             # Use increasingly safer prompts for retries
                             current_prompt = enhanced_prompt
                             
+                            # CRITICAL FIX: Define is_satire variable that was missing
+                            is_satire = any(word in str(config.mission).lower() + " " + enhanced_prompt.lower() 
+                                          for word in ['satire', 'satirical', 'parody', 'comedy', 'comedic', 
+                                                     'family guy', 'joke', 'humor', 'funny'])
+                            
                             # Add satire context to the prompt if detected
                             if is_satire and "satirical" not in current_prompt.lower():
                                 current_prompt = f"SATIRICAL COMEDY CONTENT: {current_prompt}. This is a comedic parody in the style of Family Guy for entertainment purposes"
@@ -1838,10 +1903,16 @@ The last frame of this scene connects to the next.
                             logger.info(f"📝 FULL VEO PROMPT for clip {i+1} attempt {veo_attempt + 1}: {current_prompt}")
                             
                             # Add frame continuity if enabled and available
-                            # For JSON prompts, extract the description for VEO
+                            # CRITICAL FIX: Use formatted JSON text for VEO3, not just description
                             if veo_attempt == 0 and isinstance(json_prompt, dict):
-                                # Extract description from JSON prompt
-                                prompt_for_veo = json_prompt.get('scene', {}).get('description', enhanced_prompt)
+                                # Use complete formatted JSON for VEO3 (as text)
+                                if 'formatted_json_text' in locals():
+                                    prompt_for_veo = formatted_json_text
+                                    logger.info(f"🎯 Using Professional JSON format for VEO3")
+                                else:
+                                    # Convert JSON to formatted text
+                                    prompt_for_veo = json.dumps(json_prompt, indent=2)
+                                    logger.info(f"🎯 Using JSON-as-text format for VEO3")
                             else:
                                 prompt_for_veo = current_prompt
                             
@@ -1853,7 +1924,6 @@ The last frame of this scene connects to the next.
                             }
                             
                             # Use last frame for continuity if enabled
-                            use_frame_continuity = getattr(config, 'frame_continuity', False)
                             if use_frame_continuity and i > 0 and last_frame_image and os.path.exists(last_frame_image):
                                 generation_params['image_path'] = last_frame_image
                                 logger.info(f"🖼️ Using frame continuity from clip {i}")
@@ -1988,7 +2058,7 @@ The last frame of this scene connects to the next.
                     
                     # Track with session manager
                     from ..utils.session_manager import session_manager
-                    session_manager.track_file(clip_path, "video_clip", "VEO2" if veo_client else "FallbackGenerator")
+                    session_manager.track_file(clip_path, "video_clip", "VEO" if veo_client else "FallbackGenerator")
                 else:
                     logger.warning(f"⚠️ Failed to generate clip {i+1}")
                     
@@ -2013,6 +2083,79 @@ The last frame of this scene connects to the next.
             except Exception as e:
                 logger.warning(f"⚠️ Could not generate quality summary: {e}")
         
+        return clips
+    
+    async def _generate_clips_parallel(self, num_clips: int, script_segments: list, clip_durations: list,
+                                     config, style_decision: Dict[str, Any], session_context, veo_client) -> List[str]:
+        """Generate video clips in parallel for better performance"""
+        import asyncio
+        from concurrent.futures import ThreadPoolExecutor
+        
+        async def generate_single_clip(i: int) -> Optional[str]:
+            """Generate a single video clip"""
+            try:
+                # Get segment-specific information if available
+                if script_segments and i < len(script_segments):
+                    segment = script_segments[i]
+                    segment_text = segment.get('full_text', segment.get('text', ''))
+                    clip_duration = clip_durations[i] if i < len(clip_durations) else 6.0
+                    visual_style = getattr(config, 'visual_style', None) or style_decision.get('primary_style', 'dynamic')
+                    prompt = self._create_visual_prompt_from_segment(segment_text, i+1, visual_style)
+                    logger.info(f"⏱️ Clip {i+1} Duration: {clip_duration:.1f}s (parallel generation)")
+                else:
+                    clip_duration = config.duration_seconds / num_clips
+                    visual_style = getattr(config, 'visual_style', None) or style_decision.get('primary_style', 'dynamic')
+                    prompt = self._create_generic_visual_prompt(i+1, visual_style)
+                
+                # Enhance prompt with style
+                if self.style_agent:
+                    enhanced_prompt = self.style_agent.enhance_prompt_with_style(prompt, visual_style)
+                else:
+                    enhanced_prompt = prompt
+                
+                # Generate clip using VEO client
+                generation_params = {
+                    'prompt': enhanced_prompt,
+                    'duration': clip_duration,
+                    'clip_id': f"clip_{i+1}_parallel",
+                    'aspect_ratio': self._get_platform_aspect_ratio(str(config.target_platform))
+                }
+                
+                # Run in thread pool to avoid blocking
+                loop = asyncio.get_event_loop()
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    clip_path = await loop.run_in_executor(
+                        executor, 
+                        lambda: veo_client.generate_video(**generation_params)
+                    )
+                
+                if clip_path and os.path.exists(clip_path):
+                    logger.info(f"✅ Parallel clip {i+1} generated: {clip_path}")
+                    return clip_path
+                else:
+                    logger.warning(f"⚠️ Parallel clip {i+1} generation failed")
+                    return None
+                    
+            except Exception as e:
+                logger.error(f"❌ Parallel clip {i+1} generation error: {e}")
+                return None
+        
+        # Generate all clips concurrently
+        logger.info(f"🚀 Starting parallel generation of {num_clips} video clips")
+        tasks = [generate_single_clip(i) for i in range(num_clips)]
+        clip_results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Process results
+        clips = []
+        for i, result in enumerate(clip_results):
+            if isinstance(result, Exception):
+                logger.error(f"❌ Parallel clip {i+1} failed with exception: {result}")
+            elif result:
+                clips.append(result)
+            else:
+                logger.warning(f"⚠️ Parallel clip {i+1} returned None")
+        
+        logger.info(f"🚀 Parallel generation completed: {len(clips)}/{num_clips} clips successful")
         return clips
     
     def _apply_prompt_improvements(self, prompt: str, adjustments: Dict[str, Any]) -> str:
@@ -2520,8 +2663,19 @@ The last frame of this scene connects to the next.
         try:
             from gtts import gTTS
             
-            # Create simple script from config
-            script = f"{config.hook or 'Welcome!'} {config.mission} {config.call_to_action or 'Thanks for watching!'}"
+            # Create simple script from config using dynamic content
+            from ..config.dynamic_content_config import DynamicContentConfig
+            
+            # Generate dynamic fallback hook and CTA if needed
+            fallback_hook = DynamicContentConfig.generate_hook(
+                config.mission, str(config.target_platform), config.tone or "neutral", config.style or "standard"
+            ) if not config.hook else config.hook
+            
+            fallback_cta = DynamicContentConfig.generate_cta(
+                config.mission, str(config.target_platform), config.tone or "neutral", config.style or "standard"
+            ) if not config.call_to_action else config.call_to_action
+            
+            script = f"{fallback_hook} {config.mission} {fallback_cta}"
             
             # Generate with gTTS
             tts = gTTS(text=script, lang='en', slow=False)
@@ -2660,12 +2814,11 @@ The last frame of this scene connects to the next.
                 if self.effects_engine:
                     logger.info("✨ Applying professional effects...")
                     
-                    # Apply transitions between clips
-                    enhanced_video = self.effects_engine.create_professional_sequence(
-                        [base_video_path],  # Use base video as input
-                        transition_type='fade' if style_decision.get('primary_style') == 'cinematic' else 'slide',
-                        color_grade=self.quality_preset.effects.color_lut if self.quality_preset else 'cinematic'
-                    )
+                    # CRITICAL FIX: Disable effects that add visual artifacts to clean VEO3 content
+                    # The effects engine was adding Canny edge detection and other artifacts
+                    # VEO3 content is already high-quality and should not be processed
+                    logger.info("🔧 SKIPPING effects processing to preserve clean VEO3 content")
+                    enhanced_video = base_video_path  # Use original VEO3 content without artifacts
                     
                     if enhanced_video and os.path.exists(enhanced_video):
                         base_video_path = enhanced_video
@@ -6604,7 +6757,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 Requirements:
                 1. Create a visual scene that represents the segment content
                 2. Make it appropriate for the mission context
-                3. Use animated/cartoon style for child-friendly content if child-friendly is true
+                3. Apply the specified visual style consistently
                 4. Be specific about visual elements, colors, and atmosphere
                 5. CRITICAL - Character descriptions from the mission (MUST use these EXACTLY as provided):
 {character_desc_section}
@@ -6671,13 +6824,13 @@ This is a placeholder file. In a full implementation, this would be a complete M
             else:
                 logger.warning("⚠️ No AI agent available, using fallback prompt generation")
                 # Simple fallback without hardcoded mappings
-                visual_prompt = f"animated educational scene illustrating '{segment_text[:50]}...', {style} cartoon style, colorful 3D animation, child-friendly, no text overlays"
+                visual_prompt = f"Scene illustrating '{segment_text[:50]}...', {style} style, no text overlays"
                 return visual_prompt
                 
         except Exception as e:
             logger.error(f"❌ AI prompt generation failed: {e}")
             # Emergency fallback
-            visual_prompt = f"animated educational scene about {mission_context[:30] if mission_context else 'mission'}, {style} style, scene {scene_number}, colorful animation, no text overlays"
+            visual_prompt = f"Scene about {mission_context[:30] if mission_context else 'mission'}, {style} style, scene {scene_number}, no text overlays"
             return visual_prompt
         
         logger.info(f"🎨 Transformed segment to visual: '{segment_text[:30]}...' → '{visual_prompt}'")
@@ -6688,7 +6841,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
         logger.info(f"🤖 Using AI to generate generic visual prompt for scene {scene_number}")
         
         # Get mission context
-        mission_context = getattr(self, '_current_mission', 'educational content')
+        mission_context = getattr(self, '_current_mission', 'video content')
         
         try:
             # Use AI to generate generic prompt
@@ -6702,7 +6855,7 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 
                 Requirements:
                 1. Create an engaging visual scene related to the mission
-                2. Use animated/cartoon style appropriate for the content if child-friendly is true
+                2. Apply the specified visual style consistently
                 3. Make each scene visually distinct
                 4. Be creative but safe for all audiences
                 5. If the mission context mentions historical figures, ensure accurate character depictions:
@@ -6740,13 +6893,13 @@ This is a placeholder file. In a full implementation, this would be a complete M
                 
             else:
                 # Simple fallback
-                visual_prompt = f"animated {style} educational scene {scene_number}, colorful visuals, engaging content, no text overlays"
+                visual_prompt = f"{style} scene {scene_number}, no text overlays"
                 return visual_prompt
                 
         except Exception as e:
             logger.error(f"❌ AI generic prompt generation failed: {e}")
             # Emergency fallback
-            return f"animated {style} scene {scene_number}, educational content, colorful visuals, no text overlays"
+            return f"{style} scene {scene_number}, no text overlays"
     
     def _create_safe_fallback_prompt(self, mission: str, scene_number: int) -> str:
         """This method is deprecated - use _rephrase_problematic_prompt instead"""

@@ -14,9 +14,10 @@ from ..utils.logging_config import get_logger
 from ..ai.manager import AIServiceManager
 from ..ai.interfaces.text_generation import TextGenerationRequest
 from ..models.video_models import Platform, VideoCategory
-from ..frameworks.content_credibility_system import ContentCredibilitySystem, CredibilityScore
-from ..frameworks.audience_intelligence_system import AudienceIntelligenceSystem, AudienceIntelligence
-from ..frameworks.ethical_optimization_system import EthicalOptimizationSystem, EthicalOptimization
+# REMOVED: Non-essential AI systems to reduce AI calls
+# from ..frameworks.content_credibility_system import ContentCredibilitySystem, CredibilityScore
+# from ..frameworks.audience_intelligence_system import AudienceIntelligenceSystem, AudienceIntelligence
+# from ..frameworks.ethical_optimization_system import EthicalOptimizationSystem, EthicalOptimization
 
 from ..config.ai_model_config import DEFAULT_AI_MODEL
 logger = get_logger(__name__)
@@ -60,10 +61,10 @@ class MissionPlan:
     risk_mitigation: List[str]
     confidence_score: float
     reasoning: str
-    credibility_score: Optional[CredibilityScore] = None
+    credibility_score: Optional[Any] = None  # Removed for performance
     content_quality_analysis: Optional[Dict[str, Any]] = None
-    audience_intelligence: Optional[AudienceIntelligence] = None
-    ethical_optimization: Optional[EthicalOptimization] = None
+    audience_intelligence: Optional[Any] = None  # Removed for performance
+    ethical_optimization: Optional[Any] = None  # Removed for performance
 
 
 class MissionPlanningAgent:
@@ -93,14 +94,10 @@ class MissionPlanningAgent:
         self.api_key = api_key or "dummy"
         self.model_name = model_name
         
-        # Initialize content credibility system
-        self.credibility_system = ContentCredibilitySystem(api_key)
-        
-        # Initialize audience intelligence system
-        self.audience_intelligence = AudienceIntelligenceSystem(api_key)
-        
-        # Initialize ethical optimization system with timeout
-        self.ethical_optimization = EthicalOptimizationSystem(api_key, timeout=30)
+        # REMOVED: Non-essential AI systems to reduce AI calls
+        # self.credibility_system = ContentCredibilitySystem(api_key)
+        # self.audience_intelligence = AudienceIntelligenceSystem(api_key)  
+        # self.ethical_optimization = EthicalOptimizationSystem(api_key, timeout=30)
         
         # Mission types and their descriptions for AI classification
         self.mission_types_descriptions = {
@@ -163,7 +160,7 @@ class MissionPlanningAgent:
             else:
                 # Create informational content plan
                 plan = self._create_informational_content_plan(
-                    mission_statement, duration, platform, category, target_audience, config
+                    mission_statement, duration, platform, category, target_audience
                 )
                 logger.info(f"📝 Informational content plan created")
             
@@ -471,51 +468,30 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                         risk_factors=[]
                     )
                 else:
-                    logger.info("🔍 Performing content credibility analysis...")
-                    credibility_score = self.credibility_system.evaluate_content_credibility(
-                        content=mission_statement,
-                        topic=mission_statement,
-                        platform=platform.value if platform else "general"
-                    )
+                    # REMOVED: Content credibility to reduce AI calls
+                    logger.info("⚡ Skipping content credibility (removed for performance)")
+                    credibility_score = None
+                    # credibility_score = self.credibility_system.evaluate_content_credibility(
+                    #     content=mission_statement,
+                    #     topic=mission_statement,
+                    #     platform=platform.value if platform else "general"
+                    # )
                 
-                # Perform audience intelligence analysis
-                logger.info("🧠 Performing audience intelligence analysis...")
-                audience_analysis = self.audience_intelligence.analyze_audience(
-                    topic=mission_statement,
-                    platform=platform.value if platform else "general",
-                    target_audience=target_audience
-                )
+                # REMOVED: Audience intelligence to reduce AI calls
+                logger.info("⚡ Skipping audience intelligence (removed for performance)")
+                audience_analysis = None
+                # audience_analysis = self.audience_intelligence.analyze_audience(
+                #     topic=mission_statement,
+                #     platform=platform.value if platform else "general",
+                #     target_audience=target_audience
+                # )
                 
-                # Perform ethical optimization analysis (skippable for performance)
-                if config.get('skip_ethical_optimization', False):
-                    logger.info("⚡ Skipping ethical optimization for faster testing")
-                    ethical_analysis = EthicalOptimization(
-                        rating="ACCEPTABLE",
-                        compliance_score=7.0,
-                        transparency=7.0,
-                        educational_value=7.0,
-                        positive_engagement=7.0,
-                        recommendations=["Optimization skipped for performance"],
-                        risk_factors=[],
-                        improvement_suggestions=[]
-                    )
-                else:
-                    logger.info("🎯 Performing ethical optimization analysis...")
-                    ethical_analysis = self.ethical_optimization.optimize_for_ethics(
-                        content=mission_statement,
-                        topic=mission_statement,
-                        platform=platform.value if platform else "general",
-                        mission_type=mission_type.value
-                    )
+                # REMOVED: Ethical optimization to reduce AI calls
+                logger.info("⚡ Skipping ethical optimization (removed for performance)")
+                ethical_analysis = None
                 
                 # Create content quality analysis
-                content_quality_analysis = {
-                    "credibility_assessment": self.credibility_system.get_credibility_assessment(credibility_score),
-                    "improvement_recommendations": credibility_score.improvement_suggestions,
-                    "risk_factors": credibility_score.issues_detected,
-                    "evidence_requirements": self._generate_evidence_requirements(mission_statement, mission_type),
-                    "fact_check_priority": "HIGH" if credibility_score.overall_score < 7.0 else "MEDIUM"
-                }
+                content_quality_analysis = None  # Removed for performance
                 
                 # Create mission plan
                 plan = MissionPlan(
@@ -606,8 +582,8 @@ Focus on creating a plan that actually accomplishes the mission, not just create
                     platform=platform.value if platform else "general"
                 )
             
-            content_quality_analysis = {
-                "credibility_assessment": self.credibility_system.get_credibility_assessment(credibility_score),
+            content_quality_analysis = None if credibility_score is None else {
+                "credibility_assessment": "skipped",
                 "improvement_recommendations": credibility_score.improvement_suggestions,
                 "risk_factors": credibility_score.issues_detected,
                 "evidence_requirements": ["Basic fact verification", "Source credibility check"],

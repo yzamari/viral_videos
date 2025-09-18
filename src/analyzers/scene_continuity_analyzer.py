@@ -667,7 +667,10 @@ class SceneContinuityAnalyzer:
                         current_brightness = analysis.scene_features[i].brightness
                         brightness_adjust = target_brightness / current_brightness if current_brightness > 0 else 1
                         
-                        clip = clip.fx(lambda gf, t: gf(t) * brightness_adjust)
+                        # Create proper lambda with captured value
+                        def adjust_brightness(gf, t):
+                            return gf(t) * brightness_adjust
+                        clip = clip.fx(adjust_brightness)
                 
                 # Save corrected clip
                 output_path = clip_path.replace('.mp4', '_corrected.mp4')

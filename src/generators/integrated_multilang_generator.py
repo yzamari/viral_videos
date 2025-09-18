@@ -151,7 +151,7 @@ class IntegratedMultilingualGenerator:
             base_video_id=base_video_id,
             master_config=config,
             shared_clips_dir=self.output_dir,
-            veo2_clips=shared_clips,
+            veo_clips=shared_clips,
             language_versions=language_versions,
             total_generation_time=total_time,
             master_script=processed_script.final_script,

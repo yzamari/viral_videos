@@ -29,6 +29,14 @@ from ..utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+# Import real-time storyboard manager
+try:
+    from ..generators.realtime_storyboard_manager import RealtimeStoryboardManager
+    REALTIME_STORYBOARD_AVAILABLE = True
+except ImportError:
+    REALTIME_STORYBOARD_AVAILABLE = False
+    RealtimeStoryboardManager = None
+
 
 # Scene Types and Structures
 class SceneType(Enum):
@@ -165,6 +173,9 @@ class LangGraphScenePlanner:
             convert_system_message_to_human=True
         )
 
+        # Real-time storyboard manager (will be set when planning starts)
+        self.storyboard_manager = None
+        
         # Build workflow
         self.workflow = self._build_workflow()
 
@@ -209,6 +220,13 @@ class LangGraphScenePlanner:
     def _analyze_content(self, state: ScenePlannerState) -> ScenePlannerState:
         """Analyze content to understand structure and requirements"""
         logger.info("📝 Analyzing content for scene planning")
+        
+        # Update storyboard with content analysis stage
+        if self.storyboard_manager:
+            self.storyboard_manager.add_planning_stage(
+                'Content Analysis', 
+                'Analyzing script content to understand structure and requirements'
+            )
 
         script = state.get("script", "")
         config = state.get("config", {})
@@ -433,6 +451,13 @@ Format as JSON with enhanced_scenes: []
     def _plan_standard_scenes(self, state: ScenePlannerState) -> ScenePlannerState:
         """Plan scenes for non-news content"""
         logger.info("🎬 Planning standard scenes")
+        
+        # Update storyboard with scene planning stage
+        if self.storyboard_manager:
+            self.storyboard_manager.add_planning_stage(
+                'Scene Enhancement', 
+                'Optimizing scenes with enhanced details and platform-specific adjustments'
+            )
 
         scenes = state.get("proposed_scenes", [])
         config = state.get("config", {})
@@ -579,6 +604,39 @@ Format as JSON with enhanced_scenes: []
     def _finalize_scene_plan(self, state: ScenePlannerState) -> ScenePlannerState:
         """Finalize and validate scene plan"""
         logger.info("✅ Finalizing scene plan")
+        
+        # Update storyboard with final scene information
+        if self.storyboard_manager:
+            scenes = state.get("proposed_scenes", [])
+            
+            # Convert scenes to dict format for storyboard
+            scenes_data = []
+            for i, scene in enumerate(scenes):
+                # Extract meaningful description from scene
+                description = getattr(scene, 'description', None)
+                if not description:
+                    # Try to build description from available fields
+                    if hasattr(scene, 'content') and scene.content:
+                        description = scene.content[:100]  # First 100 chars of content
+                    elif hasattr(scene, 'visual_prompts') and scene.visual_prompts:
+                        description = scene.visual_prompts[0] if scene.visual_prompts else "Visual scene"
+                    else:
+                        description = f"{scene.scene_type.value.replace('_', ' ').title()} scene"
+                
+                scenes_data.append({
+                    'scene_number': i + 1,
+                    'type': scene.scene_type.value if hasattr(scene, 'scene_type') else 'unknown',
+                    'duration': getattr(scene, 'duration', 5),
+                    'description': description,
+                    'visual_style': getattr(scene, 'visual_style', {}).value if hasattr(getattr(scene, 'visual_style', {}), 'value') else 'cinematic'
+                })
+            
+            self.storyboard_manager.update_scenes(scenes_data)
+            self.storyboard_manager.add_planning_stage(
+                'Scene Planning Complete', 
+                f'Finalized {len(scenes)} scenes with detailed composition and timing'
+            )
+            self.storyboard_manager.set_status('completed')
 
         scenes = state.get("proposed_scenes", [])
         analysis = state.get("scene_analysis", {})
@@ -746,6 +804,23 @@ Format as JSON with enhanced_scenes: []
         Returns:
             Complete scene plan
         """
+        # Initialize real-time storyboard if session context is available
+        session_context = config.get('session_context')
+        if session_context and REALTIME_STORYBOARD_AVAILABLE:
+            from pathlib import Path
+            self.storyboard_manager = RealtimeStoryboardManager(Path(session_context.session_dir))
+            self.storyboard_manager.update_metadata({
+                'platform': config.get("platform", "general"),
+                'duration': config.get("duration_seconds", 30),
+                'status': 'planning',
+                'stage': 'initialization'
+            })
+            self.storyboard_manager.add_planning_stage(
+                'Scene Planning Started', 
+                'Beginning intelligent scene planning and composition'
+            )
+            logger.info(f"🎬 Real-time storyboard initialized: {self.storyboard_manager.get_storyboard_url()}")
+        
         initial_state = {
             "script": script,
             "config": config,

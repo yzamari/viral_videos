@@ -14,11 +14,11 @@ class VideoGeneratorAgent:
         # Initialize video generator
         self.video_generator = VideoGenerator(
             api_key=settings.google_api_key,
-            use_real_veo2=True,
+            use_real_veo=True,
             use_vertex_ai=True,
             vertex_project_id=settings.veo_project_id,
             vertex_location=settings.veo_location,
-            vertex_gcs_bucket=os.getenv('VERTEX_AI_GCS_BUCKET', 'viral-veo2-results'),
+            vertex_gcs_bucket=os.getenv('VERTEX_AI_GCS_BUCKET', 'viral-veo-results'),
             output_dir="outputs"
         )
 

@@ -155,8 +155,8 @@ class TechTheme(Theme):
             duration=3.0,
             background_type="gradient",
             background_content="#0F0F1E,#00D4FF",
-            title_text="THE FUTURE IS NOW",
-            subtitle_text="SUBSCRIBE FOR MORE TECH",
+            title_text="",  # Will be set dynamically based on mission
+            subtitle_text="",  # Will be set dynamically based on mission
             title_animation="glitch-fade",
             music_path="assets/audio/tech_outro.mp3",
             sound_effects=["power-down", "digital-chime"],

@@ -31,6 +31,17 @@ class AgentRole(Enum):
     PLATFORM_OPTIMIZER = "platform_optimizer"
     VIRAL_SPECIALIST = "viral_specialist"
     NEUROSCIENTIST = "neuroscientist"
+    
+    # Additional Specialist Roles
+    AUDIENCE_PSYCHOLOGIST = "audience_psychologist"
+    PLATFORM_SPECIALIST = "platform_specialist"
+    CREATIVE_STRATEGIST = "creative_strategist"
+    BRAND_STRATEGIST = "brand_strategist"
+    CONTENT_STRATEGIST = "content_strategist"
+    MARKETING_SPECIALIST = "marketing_specialist"
+    DESIGNER = "designer"
+    COPYWRITER = "copywriter"
+    DATA_ANALYST = "data_analyst"
 
 @dataclass
 class AgentContext:

@@ -75,10 +75,11 @@ class FFmpegVideoComposer:
                         '-i', current_video,
                         '-vf', overlay_filters,
                         '-c:v', 'libx264',
-                        '-preset', 'medium',
+                        '-preset', 'slow',    # QUALITY FIX: slow preset for better quality
+                        '-crf', '18',         # QUALITY FIX: High quality CRF (lower = better)
                         '-an',  # CRITICAL: Discard any audio during overlay processing
                         video_with_overlays
-                    ], "Adding viral overlays (no audio)")
+                    ], "Adding viral overlays (high quality, no audio)")
                     
                     current_video = video_with_overlays
                 
@@ -232,7 +233,7 @@ class FFmpegVideoComposer:
                 '-b:a', '128k',
                 '-movflags', '+faststart',  # Enable fast start for web
                 '-pix_fmt', 'yuv420p',
-                '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2',
+                '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease:flags=bilinear,pad=1080:1920:(ow-iw)/2:(oh-ih)/2',
                 output_path
             ]
         elif platform == 'tiktok':
@@ -246,7 +247,7 @@ class FFmpegVideoComposer:
                 '-c:a', 'aac',
                 '-b:a', '128k',
                 '-r', '30',  # 30fps for TikTok
-                '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2',
+                '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease:flags=bilinear,pad=1080:1920:(ow-iw)/2:(oh-ih)/2',
                 output_path
             ]
         elif platform == 'youtube':

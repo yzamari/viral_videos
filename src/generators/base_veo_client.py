@@ -291,7 +291,7 @@ class BaseVeoClient(ABC):
                         # Build FFmpeg filter for crossfade between images
                         filter_parts = []
                         for i in range(len(image_paths)):
-                            filter_parts.append(f"[{i}:v]scale=1080:1920,setpts=PTS-STARTPTS[v{i}]")
+                            filter_parts.append(f"[{i}:v]scale=1080:1920:flags=bilinear,setpts=PTS-STARTPTS[v{i}]")
                         
                         # Add crossfade transitions
                         if len(image_paths) > 1:

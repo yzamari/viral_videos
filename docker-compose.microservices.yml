@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # Redis for caching and messaging
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - viralai_network
+
+  # Prompt Optimizer Service
+  prompt-optimizer:
+    build:
+      context: .
+      dockerfile: src/microservices/prompt_optimizer/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - REDIS_HOST=redis
+      - SERVICE_NAME=prompt-optimizer
+    depends_on:
+      - redis
+    networks:
+      - viralai_network
+    restart: unless-stopped
+
+  # Video Generator Service
+  video-generator:
+    build:
+      context: .
+      dockerfile: src/microservices/video_generator/Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - REDIS_HOST=redis
+      - PROMPT_OPTIMIZER_URL=http://prompt-optimizer:8001
+      - SERVICE_NAME=video-generator
+    depends_on:
+      - redis
+      - prompt-optimizer
+    networks:
+      - viralai_network
+    volumes:
+      - video_outputs:/tmp/video_outputs
+    restart: unless-stopped
+
+  # Monitoring Service
+  monitoring:
+    build:
+      context: .
+      dockerfile: src/microservices/monitoring/Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - SERVICE_NAME=monitoring
+    networks:
+      - viralai_network
+    restart: unless-stopped
+
+  # Orchestrator Service
+  orchestrator:
+    build:
+      context: .
+      dockerfile: src/microservices/orchestrator/Dockerfile
+    ports:
+      - "8005:8005"
+    environment:
+      - PROMPT_OPTIMIZER_URL=http://prompt-optimizer:8001
+      - VIDEO_GENERATOR_URL=http://video-generator:8002
+      - MONITORING_URL=http://monitoring:8003
+      - SERVICE_NAME=orchestrator
+    depends_on:
+      - prompt-optimizer
+      - video-generator
+      - monitoring
+    networks:
+      - viralai_network
+    restart: unless-stopped
+
+  # Nginx API Gateway
+  api-gateway:
+    image: nginx:alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - orchestrator
+      - monitoring
+    networks:
+      - viralai_network
+    restart: unless-stopped
+
+networks:
+  viralai_network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  video_outputs:

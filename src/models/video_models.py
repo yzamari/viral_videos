@@ -56,7 +56,6 @@ class ForceGenerationMode(str, Enum):
     AUTO = "auto"  # Use normal fallback chain
     FORCE_VEO3_FAST = "force_veo3_fast"  # Force VEO-3-fast only
     FORCE_VEO3 = "force_veo3"  # Force VEO-3 only
-    FORCE_VEO2 = "force_veo2"  # Force VEO-2 only
     FORCE_IMAGE_GEN = "force_image_gen"  # Force Image Generation only
     FORCE_CONTINUOUS = "force_continuous"  # Force continuous generation (no stopping)
 
@@ -152,7 +151,7 @@ class GeneratedVideoConfig:
     inspired_by_videos: Optional[List[str]] = None
 
     # Technical settings
-    use_real_veo2: bool = True
+    use_real_veo: bool = True
     use_vertex_ai: bool = True
     realistic_audio: bool = True
 
@@ -371,7 +370,7 @@ class MultiLanguageVideo(BaseModel):
 
     # Shared visual elements (same for all languages)
     shared_clips_dir: str
-    veo2_clips: List[Dict[str, Any]]
+    veo_clips: List[Dict[str, Any]]
 
     # Language-specific versions
     language_versions: Dict[Language, LanguageVersion] = Field(default_factory=dict)

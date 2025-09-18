@@ -420,14 +420,14 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
             "status_emoji": "⚠️",
             "quota_exhausted": False,
             "can_generate_veo": False,
-            "veo_model": "veo-2.0-generate-001",
+            "veo_model": "veo.0-generate-001",
             "timestamp": datetime.now().isoformat()
         }
 
         try:
             # Try to generate a very short VEO video to test quota
             operation = client.models.generate_videos(
-                model="veo-2.0-generate-001",
+                model="veo.0-generate-001",
                 prompt="test quota check - simple scene",
                 config=types.GenerateVideosConfig(
                     duration_seconds=5,
@@ -467,7 +467,7 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
             for i in range(3):  # Test 3 quick requests
                 try:
                     test_op = client.models.generate_videos(
-                        model="veo-2.0-generate-001",
+                        model="veo.0-generate-001",
                         prompt=f"quota test {i + 1}",
                         config=types.GenerateVideosConfig(
                             duration_seconds=5,
@@ -555,7 +555,7 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
                     "message": "VEO quota exhausted",
                     "quota_details": quota_details,
                     "error": error_msg[:300],
-                    "veo_model": "veo-2.0-generate-001",
+                    "veo_model": "veo.0-generate-001",
                     "timestamp": datetime.now().isoformat(),
                     "estimated_usage": {
                         "status": "Quota exhausted",
@@ -572,7 +572,7 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
                     "can_generate_veo": False,
                     "message": "VEO access denied - check permissions",
                     "error": error_msg[:300],
-                    "veo_model": "veo-2.0-generate-001",
+                    "veo_model": "veo.0-generate-001",
                     "timestamp": datetime.now().isoformat()
                 }
 
@@ -584,7 +584,7 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
                     "can_generate_veo": False,
                     "message": "VEO model not available - check access",
                     "error": error_msg[:300],
-                    "veo_model": "veo-2.0-generate-001",
+                    "veo_model": "veo.0-generate-001",
                     "timestamp": datetime.now().isoformat()
                 }
 
@@ -596,7 +596,7 @@ def get_veo_quota_info(api_key: str) -> Dict[str, Any]:
                     "can_generate_veo": False,
                     "message": "VEO test failed - unknown error",
                     "error": error_msg[:300],
-                    "veo_model": "veo-2.0-generate-001",
+                    "veo_model": "veo.0-generate-001",
                     "timestamp": datetime.now().isoformat()
                 }
 

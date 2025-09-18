@@ -62,7 +62,7 @@ class VideoGeneratorV2:
     def __init__(self, 
                  service_manager: AIServiceManager,
                  api_key: str,
-                 use_real_veo2: bool = True,
+                 use_real_veo: bool = True,
                  use_vertex_ai: bool = True,
                  vertex_project_id: Optional[str] = None,
                  vertex_location: Optional[str] = None,
@@ -75,17 +75,17 @@ class VideoGeneratorV2:
         Args:
             service_manager: AI service manager for getting service interfaces
             api_key: Google AI API key (for legacy components)
-            use_real_veo2: Whether to use VEO for video generation
+            use_real_veo: Whether to use VEO for video generation
             use_vertex_ai: Whether to use Vertex AI or Google AI Studio
             vertex_project_id: Vertex AI project ID
             vertex_location: Vertex AI location
             vertex_gcs_bucket: GCS bucket for Vertex AI results
             output_dir: Output directory for generated content
-            prefer_veo3: Whether to prefer VEO-3 over VEO-2
+            prefer_veo3: Whether to prefer VEO-3 over VEO
         """
         self.service_manager = service_manager
         self.api_key = api_key
-        self.use_real_veo2 = use_real_veo2
+        self.use_real_veo = use_real_veo
         self.use_vertex_ai = use_vertex_ai
         self.prefer_veo3 = prefer_veo3
         
@@ -142,7 +142,7 @@ class VideoGeneratorV2:
         
         logger.info(f"Initialized VideoGeneratorV2 with service interfaces")
         logger.info(f"Output directory: {self.output_dir}")
-        logger.info(f"Using VEO: {use_real_veo2}, Prefer VEO3: {prefer_veo3}")
+        logger.info(f"Using VEO: {use_real_veo}, Prefer VEO3: {prefer_veo3}")
     
     async def generate_image_for_scene(self, prompt: str, style: Optional[str] = None, 
                                      aspect_ratio: str = "16:9") -> Optional[str]:

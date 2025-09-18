@@ -21,7 +21,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 
 from ..utils.logging_config import get_logger
-# VEO2 client removed - using VEO3 only
+# VEO client removed - using VEO3 only
 
 logger = get_logger(__name__)
 

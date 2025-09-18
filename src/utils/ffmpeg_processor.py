@@ -94,6 +94,11 @@ class FFmpegProcessor:
                 'ffmpeg', '-y', '-f', 'concat', '-safe', '0',
                 '-i', concat_file.name, '-c', 'copy', output_path
             ]
+            
+            # QUALITY FIX: Log input and output sizes to track quality loss
+            input_sizes = [os.path.getsize(path) for path in video_paths if os.path.exists(path)]
+            total_input_size = sum(input_sizes)
+            logger.info(f"🔧 QUALITY TRACKING: Input clips total size: {total_input_size / 1024 / 1024:.1f}MB")
         else:
             # Use filter_complex for advanced concatenation
             inputs = []
@@ -105,10 +110,28 @@ class FFmpegProcessor:
             
             cmd = ['ffmpeg', '-y'] + inputs + [
                 '-filter_complex', filter_complex,
-                '-map', '[outv]', '-map', '[outa]', output_path
+                '-map', '[outv]', '-map', '[outa]',
+                '-c:v', 'libx264',      # QUALITY FIX: Explicit video codec
+                '-crf', '18',           # QUALITY FIX: High quality (lower = better)
+                '-preset', 'slow',      # QUALITY FIX: Better compression efficiency
+                '-c:a', 'aac',          # QUALITY FIX: High quality audio codec
+                '-b:a', '192k',         # QUALITY FIX: High audio bitrate
+                output_path
             ]
         
         self._run_command(cmd, f"Concatenating {len(video_paths)} videos")
+        
+        # QUALITY FIX: Track output size to identify quality loss
+        if os.path.exists(output_path):
+            output_size = os.path.getsize(output_path)
+            if 'total_input_size' in locals():
+                quality_ratio = (output_size / total_input_size) * 100 if total_input_size > 0 else 0
+                logger.info(f"🔧 QUALITY TRACKING: Output size: {output_size / 1024 / 1024:.1f}MB ({quality_ratio:.1f}% of input)")
+                if quality_ratio < 80:
+                    logger.warning(f"⚠️ QUALITY LOSS DETECTED: {100 - quality_ratio:.1f}% size reduction")
+            else:
+                logger.info(f"🔧 QUALITY TRACKING: Output size: {output_size / 1024 / 1024:.1f}MB")
+        
         return output_path
     
     def concatenate_audio(self, audio_paths: List[str], output_path: str,

@@ -12,6 +12,7 @@ import subprocess
 import requests
 import shutil
 from typing import Dict, Optional, List, Union
+from datetime import datetime
 
 # Add src to path for imports
 if 'src' not in sys.path:
@@ -28,9 +29,11 @@ except ImportError:
 try:
     from src.utils.logging_config import get_logger
     from src.generators.json_prompt_system import VEOJsonPrompt, JSONPromptValidator, GeneratorType
+    from src.utils.veo3_safety_validator import VEO3SafetyValidator, validate_and_fix_prompt
 except ImportError:
     from utils.logging_config import get_logger
     from generators.json_prompt_system import VEOJsonPrompt, JSONPromptValidator, GeneratorType
+    from utils.veo3_safety_validator import VEO3SafetyValidator, validate_and_fix_prompt
 
 logger = get_logger(__name__)
 
@@ -168,6 +171,9 @@ class VertexAIVeo3Client(BaseVeoClient):
         Returns:
             Path to generated video file
         """
+        # Save original prompt for logging
+        original_prompt = prompt
+        
         # Handle JSON prompt
         if isinstance(prompt, VEOJsonPrompt):
             # Validate JSON prompt
@@ -184,10 +190,36 @@ class VertexAIVeo3Client(BaseVeoClient):
             # Convert JSON to optimized text prompt
             text_prompt = self._convert_json_prompt_to_text(prompt)
             logger.info(f"📋 Converted JSON prompt to text: {text_prompt[:200]}...")
+            
+            # Log full prompt details for debugging
+            logger.debug(f"🔍 VEO3 Full JSON Prompt Details for {clip_id}:")
+            logger.debug(f"  - Scene: {prompt.scene.description if hasattr(prompt, 'scene') else 'N/A'}")
+            logger.debug(f"  - Duration: {duration}s")
+            logger.debug(f"  - Aspect Ratio: {aspect_ratio}")
+            logger.debug(f"  - Mission Context: {prompt.mission_context if hasattr(prompt, 'mission_context') else 'N/A'}")
         else:
             text_prompt = prompt
+            logger.debug(f"🔍 VEO3 Text Prompt for {clip_id}: {text_prompt}")
+        
+        # SAFETY VALIDATION: Check and fix prompt before submission
+        validator = VEO3SafetyValidator()
+        if isinstance(original_prompt, dict):
+            fixed_prompt, was_modified = validate_and_fix_prompt(original_prompt)
+            if was_modified:
+                logger.warning(f"⚠️ Prompt modified for safety compliance")
+                # Re-convert if it was a JSON prompt
+                if isinstance(prompt, VEOJsonPrompt):
+                    text_prompt = self._convert_json_prompt_to_text(fixed_prompt)
+                else:
+                    text_prompt = json.dumps(fixed_prompt) if isinstance(fixed_prompt, dict) else fixed_prompt
+        else:
+            fixed_prompt, was_modified = validate_and_fix_prompt(text_prompt)
+            if was_modified:
+                logger.warning(f"⚠️ Text prompt modified for safety compliance")
+                text_prompt = fixed_prompt
+        
         if not self.is_available:
-            logger.error("❌ VEO-3 not available and VEO-2 is deprecated")
+            logger.error("❌ VEO-3 not available and VEO is deprecated")
             return self._create_fallback_clip(text_prompt, duration, clip_id)
 
         # Cost optimization: Disable audio for VEO-3 (expensive)
@@ -202,18 +234,30 @@ class VertexAIVeo3Client(BaseVeoClient):
         
         logger.info(f"🎬 Starting VEO-3 generation for clip: {clip_id}")
         logger.info(f"⏱️ VEO-3 Duration Requested: {duration}s")
+        logger.info(f"📐 Aspect Ratio: {aspect_ratio}")
+        logger.info(f"🔊 Audio Generation: {enable_audio}")
+        if image_path:
+            logger.info(f"🖼️ Using image: {image_path}")
 
         try:
+            # CRITICAL FIX: Handle None prompt issue
+            if text_prompt is None or text_prompt == "":
+                logger.error(f"❌ VEO3 received None/empty prompt for {clip_id}")
+                return None  # CRITICAL FIX: Don't use hardcoded prompts, return None to retry
+            
             # Enhance prompt for VEO-3 with audio and cinematic instructions
             enhanced_prompt = self._enhance_prompt_for_veo3(text_prompt, enable_audio)
+            logger.info(f"✨ Enhanced prompt for VEO3: {enhanced_prompt[:300]}...")
 
             # Submit generation request to Vertex AI VEO-3
+            logger.info(f"📤 Submitting to VEO3 API...")
             video_result = self._submit_veo3_generation_request(
                 enhanced_prompt,
                 duration,
                 image_path,
                 enable_audio,
-                aspect_ratio)
+                aspect_ratio,
+                clip_id=clip_id)  # Pass clip_id for better logging
 
             if video_result:
                 # video_result can be either a GCS URI or a local file path (from base64)
@@ -226,16 +270,26 @@ class VertexAIVeo3Client(BaseVeoClient):
                 
                 if local_path and os.path.exists(local_path):
                     logger.info(f"✅ VEO-3 generation completed: {local_path}")
+                    # Save successful generation details
+                    self._save_generation_log(clip_id, "success", enhanced_prompt, local_path)
                     return local_path
                 else:
-                    logger.error("❌ Failed to process VEO-3 video")
+                    logger.error(f"❌ Failed to process VEO-3 video for {clip_id}")
+                    logger.error(f"  - Video result: {video_result}")
+                    logger.error(f"  - Local path: {local_path if 'local_path' in locals() else 'Not created'}")
+                    self._save_generation_log(clip_id, "processing_failed", enhanced_prompt, None)
                     return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
             else:
-                logger.error("❌ VEO-3 generation failed")
+                logger.error(f"❌ VEO-3 generation failed for {clip_id} - no video result returned")
+                self._save_generation_log(clip_id, "no_result", enhanced_prompt, None)
                 return self._create_fallback_clip(enhanced_prompt, duration, clip_id)
 
         except Exception as e:
-            logger.error(f"❌ VEO-3 generation failed: {e}")
+            logger.error(f"❌ VEO-3 generation exception for {clip_id}: {str(e)}")
+            logger.error(f"  - Exception type: {type(e).__name__}")
+            import traceback
+            logger.error(f"  - Traceback: {traceback.format_exc()}")
+            self._save_generation_log(clip_id, "exception", text_prompt, None, str(e))
             return self._create_fallback_clip(text_prompt, duration, clip_id)
 
     def _check_availability(self) -> bool:
@@ -372,8 +426,15 @@ class VertexAIVeo3Client(BaseVeoClient):
         return ", ".join(audio_elements) if audio_elements else "ambient background audio"
 
     def _submit_veo3_generation_request(self, prompt: str, duration: float,
-                                       image_path: str = None, enable_audio: bool = True, aspect_ratio: str = "9:16") -> str:
+                                       image_path: str = None, enable_audio: bool = True, 
+                                       aspect_ratio: str = "9:16", clip_id: str = "unknown") -> str:
         """Submit video generation request to Vertex AI VEO-3"""
+        logger.info(f"🔄 _submit_veo3_generation_request called for {clip_id}")
+        logger.debug(f"  - Prompt length: {len(prompt)} chars")
+        logger.debug(f"  - Duration: {duration}s")
+        logger.debug(f"  - Aspect ratio: {aspect_ratio}")
+        logger.debug(f"  - Audio enabled: {enable_audio}")
+        
         try:
             # Build the request URL - Use predictLongRunning for VEO models
             model_name = self.get_model_name()
@@ -382,22 +443,9 @@ class VertexAIVeo3Client(BaseVeoClient):
             headers = self._get_auth_headers()
 
             # Build request payload for VEO-3 Fast using the example format
-            # Convert aspect ratio based on model type
-            if self.is_veo3_fast:
-                # VEO3-Fast doesn't support portrait, force landscape
-                if aspect_ratio == "9:16":
-                    logger.warning("⚠️ VEO3-Fast doesn't support portrait (9:16), using landscape (16:9) instead")
-                    veo3_aspect_ratio = "16:9"
-                else:
-                    veo3_aspect_ratio = aspect_ratio  # e.g., "16:9" or "1:1"
-            else:
-                # Regular VEO3 uses descriptive format
-                if aspect_ratio == "9:16":
-                    veo3_aspect_ratio = "9:16 portrait"
-                elif aspect_ratio == "16:9":
-                    veo3_aspect_ratio = "16:9 landscape"
-                else:
-                    veo3_aspect_ratio = aspect_ratio  # Pass as-is if already in correct format
+            # Convert aspect ratio - VEO3 uses clean ratios without descriptive text
+            # CRITICAL FIX: VEO3 API expects "16:9" not "16:9 landscape"
+            veo3_aspect_ratio = aspect_ratio  # e.g., "16:9", "9:16", or "1:1"
             
             payload = {
                 "instances": [
@@ -442,43 +490,78 @@ class VertexAIVeo3Client(BaseVeoClient):
                     logger.warning(f"⚠️ Failed to process image {image_path}: {e}")
                     # Continue without image if processing fails
 
-            logger.info("🚀 Submitting VEO-3 generation request...")
+            # Log the full request details
+            logger.info(f"🚀 Submitting VEO-3 request for {clip_id}...")
+            logger.debug(f"📋 Full VEO3 Request Payload:")
+            logger.debug(f"  URL: {url}")
+            logger.debug(f"  Prompt: {payload['instances'][0]['prompt'][:500]}...")
+            logger.debug(f"  Parameters: {payload['parameters']}")
+            
+            # Save request details to file for debugging
+            self._save_request_log(clip_id, url, payload)
+            
             response = requests.post(url, headers=headers, json=payload, timeout=120)
-
+            
+            # Log response details
+            logger.info(f"📨 VEO3 Response Status for {clip_id}: {response.status_code}")
+            
             if response.status_code == 200:
                 result = response.json()
                 operation_name = result.get("name")
                 if operation_name:
-                    logger.info(f"✅ VEO-3 operation started: {operation_name}")
-                    return self._poll_operation_status(operation_name)
+                    logger.info(f"✅ VEO-3 operation started for {clip_id}: {operation_name}")
+                    # Save operation details
+                    self._save_response_log(clip_id, response.status_code, result)
+                    return self._poll_operation_status(operation_name, clip_id)
                 else:
-                    logger.error("❌ No operation name in VEO-3 response")
+                    logger.error(f"❌ No operation name in VEO-3 response for {clip_id}")
+                    logger.error(f"  Response content: {result}")
+                    self._save_response_log(clip_id, response.status_code, result)
                     return None
             elif response.status_code == 429:
-                logger.error("❌ VEO-3 quota exceeded - no fallback available (VEO-2 deprecated)")
+                logger.error(f"❌ VEO-3 quota exceeded for {clip_id} - no fallback available (VEO3 only)")
+                self._save_response_log(clip_id, response.status_code, {"error": "Quota exceeded", "details": response.text})
+                return None
+            elif response.status_code == 400:
+                logger.error(f"❌ VEO-3 bad request for {clip_id}: {response.status_code}")
+                response_text = response.text
+                logger.error(f"  Response: {response_text}")
+                # Check for content policy violations
+                if "safety" in response_text.lower() or "policy" in response_text.lower() or "inappropriate" in response_text.lower():
+                    logger.error(f"⚠️ CONTENT POLICY VIOLATION DETECTED for {clip_id}")
+                    logger.error(f"  Prompt may contain sensitive content: Gaza, combat, violence, etc.")
+                self._save_response_log(clip_id, response.status_code, {"error": response_text})
                 return None
             else:
-                logger.error(f"❌ VEO-3 request failed: {response.status_code}")
-                logger.error(f"Response: {response.text}")
+                logger.error(f"❌ VEO-3 request failed for {clip_id}: {response.status_code}")
+                logger.error(f"  Response: {response.text}")
+                self._save_response_log(clip_id, response.status_code, {"error": response.text})
             return None
 
         except Exception as e:
-            logger.error(f"❌ VEO-3 generation request failed: {e}")
+            logger.error(f"❌ VEO-3 generation request exception for {clip_id}: {str(e)}")
+            logger.error(f"  Exception type: {type(e).__name__}")
+            import traceback
+            logger.error(f"  Traceback: {traceback.format_exc()}")
+            self._save_response_log(clip_id, -1, {"exception": str(e), "traceback": traceback.format_exc()})
             return None
 
-    def _poll_operation_status(self, operation_name: str) -> str:
+    def _poll_operation_status(self, operation_name: str, clip_id: str = "unknown") -> str:
         """Poll the operation status until completion or failure using fetchPredictOperation"""
         import time
         import requests
         from requests.exceptions import ConnectionError, Timeout
         
         operation_id = operation_name.split('/')[-1]
-        logger.info(f"⏳ Polling VEO-3 operation using fetchPredictOperation: {operation_id}")
+        logger.info(f"⏳ Polling VEO-3 operation for {clip_id} using fetchPredictOperation: {operation_id}")
         
-        max_attempts = 180  # 30 minutes with 10-second intervals
+        # Reduced max attempts for faster failure detection - 15 minutes instead of 30
+        max_attempts = 90  # 15 minutes with 10-second intervals
+        start_time = time.time()
+        
         for attempt in range(max_attempts):
             try:
-                # Use fetchPredictOperation endpoint like VEO-2
+                # Use fetchPredictOperation endpoint like VEO
                 model_name = self.get_model_name()
                 url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{model_name}:fetchPredictOperation"
                 
@@ -498,10 +581,18 @@ class VertexAIVeo3Client(BaseVeoClient):
                     state = result.get("done")
                     if state:
                         if result.get("error"):
-                            logger.error(f"❌ VEO-3 operation {operation_id} failed: {result['error']['message']}")
+                            error_msg = result['error'].get('message', 'Unknown error')
+                            logger.error(f"❌ VEO-3 operation {operation_id} failed for {clip_id}: {error_msg}")
+                            # Check for content policy violations in error message
+                            if any(keyword in error_msg.lower() for keyword in ['safety', 'policy', 'inappropriate', 'harmful', 'violent']):
+                                logger.error(f"⚠️ CONTENT POLICY VIOLATION in operation for {clip_id}")
+                                logger.error(f"  The content likely violates Google's content policies")
+                                logger.error(f"  Consider using less sensitive content or different imagery")
+                            self._save_operation_log(clip_id, operation_id, "failed", result['error'])
                             return None
                         else:
-                            logger.info(f"✅ VEO-3 operation {operation_id} completed successfully.")
+                            logger.info(f"✅ VEO-3 operation {operation_id} completed successfully for {clip_id}.")
+                            self._save_operation_log(clip_id, operation_id, "success", result)
                             if "response" in result:
                                 response_data = result["response"]
                                 
@@ -555,8 +646,16 @@ class VertexAIVeo3Client(BaseVeoClient):
                                 logger.error(f"❌ VEO-3 operation completed but no response data.")
                                 return None
                     else:
+                        elapsed = time.time() - start_time
                         if attempt % 3 == 0:  # Log every 3rd attempt to reduce noise
-                            logger.info(f"⏳ VEO-3 generation in progress... (attempt {attempt+1}/{max_attempts})")
+                            minutes_elapsed = int(elapsed / 60)
+                            seconds_elapsed = int(elapsed % 60)
+                            logger.info(f"⏳ VEO-3 generation in progress for {clip_id}... ({minutes_elapsed}m {seconds_elapsed}s elapsed, attempt {attempt+1}/{max_attempts})")
+                        
+                        # Add warning if taking too long
+                        if elapsed > 600:  # 10 minutes
+                            logger.warning(f"⚠️ VEO-3 generation taking unusually long for {clip_id}: {int(elapsed/60)} minutes")
+                        
                         time.sleep(10)  # Wait 10 seconds before polling again
                         continue
                 else:
@@ -598,9 +697,8 @@ class VertexAIVeo3Client(BaseVeoClient):
             
             logger.info(f"✅ Saved VEO-3 base64 video: {local_path}")
             
-            # Check if video needs cropping to portrait
-            cropped_path = self._ensure_portrait_aspect_ratio(local_path, operation_id)
-            return cropped_path if cropped_path else local_path
+            # VEO3 handles aspect ratios natively - no cropping needed
+            return local_path
             
         except Exception as e:
             logger.error(f"❌ Failed to save base64 video: {e}")
@@ -710,9 +808,8 @@ class VertexAIVeo3Client(BaseVeoClient):
 
             logger.info(f"✅ Downloaded VEO-3 video: {local_path}")
             
-            # Check if video needs cropping to portrait
-            cropped_path = self._ensure_portrait_aspect_ratio(local_path, clip_id)
-            return cropped_path if cropped_path else local_path
+            # VEO3 handles aspect ratios natively - no cropping needed
+            return local_path
 
         except Exception as e:
             logger.error(f"❌ Failed to download video from GCS: {e}")
@@ -727,8 +824,8 @@ class VertexAIVeo3Client(BaseVeoClient):
         """Create fallback clip when VEO-3 generation fails"""
         logger.info("🎨 Creating VEO-3 fallback clip...")
 
-        # VEO-2 deprecated - create basic fallback only
-        logger.info("🎨 Creating fallback clip (VEO-2 deprecated)")
+        # VEO3 only - create basic fallback only
+        logger.info("🎨 Creating fallback clip (VEO3 only)")
         
         # Create basic fallback
         fallback_path = os.path.join(self.clips_dir, f"veo3_fallback_{clip_id}.mp4")
@@ -774,3 +871,97 @@ class VertexAIVeo3Client(BaseVeoClient):
             "image_to_video": True,
             "text_to_video": True
         }
+    
+    def _save_generation_log(self, clip_id: str, status: str, prompt: str, 
+                           output_path: Optional[str] = None, error: Optional[str] = None):
+        """Save detailed generation log for debugging"""
+        try:
+            log_dir = os.path.join(self.clips_dir, "..", "logs", "veo3_generation")
+            os.makedirs(log_dir, exist_ok=True)
+            
+            log_file = os.path.join(log_dir, f"generation_{clip_id}.json")
+            log_data = {
+                "clip_id": clip_id,
+                "timestamp": datetime.now().isoformat(),
+                "status": status,
+                "prompt": prompt,
+                "prompt_length": len(prompt),
+                "output_path": output_path,
+                "error": error,
+                "model": self.get_model_name()
+            }
+            
+            import json
+            with open(log_file, 'w') as f:
+                json.dump(log_data, f, indent=2)
+            
+            logger.debug(f"💾 Saved generation log: {log_file}")
+        except Exception as e:
+            logger.warning(f"Failed to save generation log: {e}")
+    
+    def _save_request_log(self, clip_id: str, url: str, payload: dict):
+        """Save VEO3 API request details for debugging"""
+        try:
+            log_dir = os.path.join(self.clips_dir, "..", "logs", "veo3_requests")
+            os.makedirs(log_dir, exist_ok=True)
+            
+            log_file = os.path.join(log_dir, f"request_{clip_id}.json")
+            log_data = {
+                "clip_id": clip_id,
+                "timestamp": datetime.now().isoformat(),
+                "url": url,
+                "payload": payload
+            }
+            
+            import json
+            with open(log_file, 'w') as f:
+                json.dump(log_data, f, indent=2)
+            
+            logger.debug(f"💾 Saved request log: {log_file}")
+        except Exception as e:
+            logger.warning(f"Failed to save request log: {e}")
+    
+    def _save_response_log(self, clip_id: str, status_code: int, response_data: dict):
+        """Save VEO3 API response details for debugging"""
+        try:
+            log_dir = os.path.join(self.clips_dir, "..", "logs", "veo3_responses")
+            os.makedirs(log_dir, exist_ok=True)
+            
+            log_file = os.path.join(log_dir, f"response_{clip_id}.json")
+            log_data = {
+                "clip_id": clip_id,
+                "timestamp": datetime.now().isoformat(),
+                "status_code": status_code,
+                "response": response_data
+            }
+            
+            import json
+            with open(log_file, 'w') as f:
+                json.dump(log_data, f, indent=2)
+            
+            logger.debug(f"💾 Saved response log: {log_file}")
+        except Exception as e:
+            logger.warning(f"Failed to save response log: {e}")
+    
+    def _save_operation_log(self, clip_id: str, operation_id: str, status: str, details: dict):
+        """Save VEO3 operation polling details for debugging"""
+        try:
+            log_dir = os.path.join(self.clips_dir, "..", "logs", "veo3_operations")
+            os.makedirs(log_dir, exist_ok=True)
+            
+            log_file = os.path.join(log_dir, f"operation_{clip_id}_{operation_id}.json")
+            log_data = {
+                "clip_id": clip_id,
+                "operation_id": operation_id,
+                "timestamp": datetime.now().isoformat(),
+                "status": status,
+                "details": details
+            }
+            
+            import json
+            with open(log_file, 'w') as f:
+                json.dump(log_data, f, indent=2)
+            
+            logger.debug(f"💾 Saved operation log: {log_file}")
+        except Exception as e:
+            logger.warning(f"Failed to save operation log: {e}")
